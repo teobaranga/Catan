@@ -7,10 +7,9 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
+import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
 
 public class CatanGame extends Game {
@@ -23,7 +22,7 @@ public class CatanGame extends Game {
     public void create() {
         createBasicSkin();
         batch = new SpriteBatch();
-        setScreen(new MenuScreen(this));
+        setScreen(new LoginScreen(this));
     }
 
     @Override
@@ -65,5 +64,19 @@ public class CatanGame extends Game {
         windowStyle.titleFont = skin.getFont("default");
         windowStyle.titleFontColor = Color.WHITE;
         skin.add("default", windowStyle);
+
+        //create a label style
+
+        Label.LabelStyle labelStyle = new Label.LabelStyle();
+        labelStyle.background = skin.newDrawable("background", Color.BLACK);
+        labelStyle.font = skin.getFont("default");
+        labelStyle.fontColor = Color.WHITE;
+        skin.add("default", labelStyle);
+
+        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
+        textFieldStyle.background = skin.newDrawable("background", Color.BLUE);
+        textFieldStyle.font = skin.getFont("default");
+        textFieldStyle.fontColor = Color.YELLOW;
+        skin.add("default", textFieldStyle);
     }
 }

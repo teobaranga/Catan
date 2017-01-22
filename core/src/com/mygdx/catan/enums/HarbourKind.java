@@ -1,6 +1,4 @@
-package com.mygdx.catan.enums
-
-enum;
+package com.mygdx.catan.enums;
 
 public enum HarbourKind {
 

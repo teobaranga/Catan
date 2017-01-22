@@ -1,3 +1,6 @@
+package com.mygdx.catan;
+
+import com.mygdx.catan.enums.EventKind;
 
 public class Game {
 	

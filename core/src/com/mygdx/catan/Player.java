@@ -1,4 +1,4 @@
-
+package com.mygdx.catan;
 public class Player {
 
 	PlayerStatus status;

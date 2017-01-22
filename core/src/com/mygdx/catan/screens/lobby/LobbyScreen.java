@@ -4,13 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.ui.CatanWindow;
 
@@ -20,7 +16,6 @@ public class LobbyScreen implements Screen {
 
     private static Stage stage;
     private final CatanGame game;
-    private Skin skin;
     private Texture bg;
 
     public LobbyScreen(CatanGame game) {
@@ -35,11 +30,12 @@ public class LobbyScreen implements Screen {
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
 
-        if (skin == null)
-            createBasicSkin();
-
         // Create & add the window
-        CatanWindow window = new CatanWindow(TITLE, skin);
+        CatanWindow window = new CatanWindow(TITLE, game.skin);
+        window.setWindowListener(() -> Gdx.app.exit());
+        window.debugAll();
+
+        window.add(new Table(game.skin).background(game.skin.newDrawable("background", Color.RED)));
         stage.addActor(window);
     }
 
@@ -58,7 +54,7 @@ public class LobbyScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        stage.getViewport().update(width, height, false);
     }
 
     @Override
@@ -81,36 +77,5 @@ public class LobbyScreen implements Screen {
     public void dispose() {
         bg.dispose();
         stage.dispose();
-    }
-
-    private void createBasicSkin() {
-        // Create a font
-        BitmapFont font = new BitmapFont();
-        skin = new Skin();
-        skin.add("default", font);
-
-        // Create a texture
-        Pixmap pixmap = new Pixmap(Gdx.graphics.getWidth() / 4, Gdx.graphics.getHeight() / 10, Pixmap.Format.RGB888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        skin.add("background", new Texture(pixmap));
-
-        // Create a button style
-        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
-        textButtonStyle.up = skin.newDrawable("background", Color.GRAY);
-        textButtonStyle.down = skin.newDrawable("background", Color.DARK_GRAY);
-        textButtonStyle.checked = skin.newDrawable("background", Color.DARK_GRAY);
-        textButtonStyle.over = skin.newDrawable("background", Color.LIGHT_GRAY);
-        textButtonStyle.font = skin.getFont("default");
-        skin.add("default", textButtonStyle);
-
-        // Create a window style
-        Window.WindowStyle windowStyle = new Window.WindowStyle();
-        windowStyle.background = skin.newDrawable("background", Color.DARK_GRAY);
-        // Dim background
-        windowStyle.stageBackground = skin.newDrawable("background", Color.valueOf("#00000099"));
-        windowStyle.titleFont = skin.getFont("default");
-        windowStyle.titleFontColor = Color.WHITE;
-        skin.add("default", windowStyle);
     }
 }

@@ -1,0 +1,9 @@
+
+public enum VillageKind { 
+	
+	SETTLEMENT,
+	CITY,
+	TRADEMETROPLE,
+	SCIENCEMETROPOLE 
+
+}

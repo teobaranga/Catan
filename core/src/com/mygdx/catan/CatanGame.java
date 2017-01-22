@@ -3,6 +3,7 @@ package com.mygdx.catan;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
+import com.mygdx.catan.screens.menu.MenuScreen;
 
 public class CatanGame extends Game {
 
@@ -11,7 +12,7 @@ public class CatanGame extends Game {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        setScreen(new LobbyScreen(this));
+        setScreen(new MenuScreen(this));
     }
 
     @Override

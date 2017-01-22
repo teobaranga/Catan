@@ -20,11 +20,15 @@ public class CatanGame extends Game {
 
     public SpriteBatch batch;
 
+    MenuScreen menuScreen;
+
     @Override
     public void create() {
         createBasicSkin();
         batch = new SpriteBatch();
-        setScreen(new MenuScreen(this));
+        if (menuScreen == null)
+            menuScreen = new MenuScreen(this);
+        setScreen(menuScreen);
     }
 
     @Override
@@ -71,13 +75,13 @@ public class CatanGame extends Game {
     public void switchScreen(ScreenKind pScreenKind) {
     	switch (pScreenKind) {
     		case MAIN_MENU :
-    			this.setScreen(new MenuScreen(this));
+                this.setScreen(menuScreen);
     		case BROWSE_GAMES:
     			break;
     		case CREATE_GAME:
     			break;
     		case LOBBY:
-    			this.setScreen(new LobbyScreen(this));
+    			this.setScreen(new LobbyScreen(this, menuScreen));
     		case RESUME_GAME:
     			break;
     		default:

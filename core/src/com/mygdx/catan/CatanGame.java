@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
+import com.mygdx.catan.session.SessionScreen;
 
 public class CatanGame extends Game {
 
@@ -79,7 +80,7 @@ public class CatanGame extends Game {
     		case BROWSE_GAMES:
     			break;
     		case CREATE_GAME:
-    			break;
+    			this.setScreen(new SessionScreen(this));
     		case LOBBY:
     			this.setScreen(new LobbyScreen(this, menuScreen));
     		case RESUME_GAME:

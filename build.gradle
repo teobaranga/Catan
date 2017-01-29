@@ -9,6 +9,10 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.github.ben-manes.versions' version '0.13.0'
+}
+
 allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
@@ -19,7 +23,7 @@ allprojects {
         gdxVersion = '1.9.5'
         roboVMVersion = '2.3.0'
         box2DLightsVersion = '1.4'
-        ashleyVersion = '1.7.0'
+        ashleyVersion = '1.7.3'
         aiVersion = '1.8.0'
     }
 

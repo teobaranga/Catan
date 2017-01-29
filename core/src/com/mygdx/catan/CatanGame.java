@@ -7,9 +7,8 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
@@ -26,6 +25,9 @@ public class CatanGame extends Game {
     public void create() {
         createBasicSkin();
         batch = new SpriteBatch();
+        if (menuScreen == null)
+            menuScreen = new MenuScreen(this);
+        setScreen(menuScreen);
         if (menuScreen == null)
             menuScreen = new MenuScreen(this);
         setScreen(menuScreen);
@@ -70,22 +72,37 @@ public class CatanGame extends Game {
         windowStyle.titleFont = skin.getFont("default");
         windowStyle.titleFontColor = Color.WHITE;
         skin.add("default", windowStyle);
+
+        //create a label style
+
+        Label.LabelStyle labelStyle = new Label.LabelStyle();
+        labelStyle.background = skin.newDrawable("background", (Color.CORAL));
+        labelStyle.font = skin.getFont("default");
+        labelStyle.fontColor = Color.WHITE;
+        skin.add("default", labelStyle);
+
+
+        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
+        textFieldStyle.background = skin.newDrawable("background", Color.WHITE);
+        textFieldStyle.font = skin.getFont("default");
+        textFieldStyle.fontColor = Color.YELLOW;
+        skin.add("default", textFieldStyle);
     }
-    
+
     public void switchScreen(ScreenKind pScreenKind) {
-    	switch (pScreenKind) {
-    		case MAIN_MENU :
+        switch (pScreenKind) {
+            case MAIN_MENU:
                 this.setScreen(menuScreen);
-    		case BROWSE_GAMES:
-    			break;
-    		case CREATE_GAME:
-    			break;
-    		case LOBBY:
-    			this.setScreen(new LobbyScreen(this, menuScreen));
-    		case RESUME_GAME:
-    			break;
-    		default:
-    			break;
-    	}
+            case BROWSE_GAMES:
+                break;
+            case CREATE_GAME:
+                break;
+            case LOBBY:
+                this.setScreen(new LobbyScreen(this, menuScreen));
+            case RESUME_GAME:
+                break;
+            default:
+                break;
+        }
     }
 }

@@ -71,7 +71,7 @@ public class LoginScreen implements Screen {
         aButtonStyle.up = aGame.skin.getDrawable("white");
 
 
-        aLoginButton = new TextButton("Join Random", aButtonStyle);
+        aLoginButton = new TextButton("Login", aButtonStyle);
 
 
         aLoginButton.addListener(new ChangeListener() {

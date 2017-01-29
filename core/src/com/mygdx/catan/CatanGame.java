@@ -7,9 +7,11 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
-import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
 
 public class CatanGame extends Game {
@@ -18,11 +20,15 @@ public class CatanGame extends Game {
 
     public SpriteBatch batch;
 
+    MenuScreen menuScreen;
+
     @Override
     public void create() {
         createBasicSkin();
         batch = new SpriteBatch();
-        setScreen(new LoginScreen(this));
+        if (menuScreen == null)
+            menuScreen = new MenuScreen(this);
+        setScreen(menuScreen);
     }
 
     @Override
@@ -42,7 +48,7 @@ public class CatanGame extends Game {
         skin.add("default", font);
 
         // Create a texture
-        Pixmap pixmap = new Pixmap(Gdx.graphics.getWidth() / 4, Gdx.graphics.getHeight() / 10, Pixmap.Format.RGB888);
+        Pixmap pixmap = new Pixmap(Gdx.graphics.getWidth() / 6, Gdx.graphics.getHeight() / 10, Pixmap.Format.RGB888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
         skin.add("background", new Texture(pixmap));
@@ -64,19 +70,22 @@ public class CatanGame extends Game {
         windowStyle.titleFont = skin.getFont("default");
         windowStyle.titleFontColor = Color.WHITE;
         skin.add("default", windowStyle);
-
-        //create a label style
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.background = skin.newDrawable("background", Color.BLACK);
-        labelStyle.font = skin.getFont("default");
-        labelStyle.fontColor = Color.WHITE;
-        skin.add("default", labelStyle);
-
-        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
-        textFieldStyle.background = skin.newDrawable("background", Color.BLUE);
-        textFieldStyle.font = skin.getFont("default");
-        textFieldStyle.fontColor = Color.YELLOW;
-        skin.add("default", textFieldStyle);
+    }
+    
+    public void switchScreen(ScreenKind pScreenKind) {
+    	switch (pScreenKind) {
+    		case MAIN_MENU :
+                this.setScreen(menuScreen);
+    		case BROWSE_GAMES:
+    			break;
+    		case CREATE_GAME:
+    			break;
+    		case LOBBY:
+    			this.setScreen(new LobbyScreen(this, menuScreen));
+    		case RESUME_GAME:
+    			break;
+    		default:
+    			break;
+    	}
     }
 }

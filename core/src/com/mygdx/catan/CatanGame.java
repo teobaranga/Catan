@@ -28,9 +28,6 @@ public class CatanGame extends Game {
         if (menuScreen == null)
             menuScreen = new MenuScreen(this);
         setScreen(menuScreen);
-        if (menuScreen == null)
-            menuScreen = new MenuScreen(this);
-        setScreen(menuScreen);
     }
 
     @Override
@@ -93,12 +90,15 @@ public class CatanGame extends Game {
         switch (pScreenKind) {
             case MAIN_MENU:
                 this.setScreen(menuScreen);
+                break;
             case BROWSE_GAMES:
                 break;
             case CREATE_GAME:
+                this.setScreen(new SessionScreen(this));
                 break;
             case LOBBY:
                 this.setScreen(new LobbyScreen(this, menuScreen));
+                break;
             case RESUME_GAME:
                 break;
             default:

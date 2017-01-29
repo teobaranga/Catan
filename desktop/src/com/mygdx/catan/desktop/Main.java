@@ -41,8 +41,10 @@ public class Main extends JPanel {
             for (int col = 0; col < cols; col++) {
                 int xLbl = row < half ? col - row : col - half;
                 int yLbl = row - half;
+                //System.out.println(origin.x + " " + origin.y);
                 int x = (int) (origin.x + xOff * (col * 2 + 1 - cols));
                 int y = (int) (origin.y + yOff * (row - half) * 3);
+                System.out.println(x + " " + y);
 
                 drawHex(g, xLbl, yLbl, x, y, radius);
             }

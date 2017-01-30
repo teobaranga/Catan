@@ -1,5 +1,7 @@
 package com.mygdx.catan.session;
 
+import java.util.Random;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -12,15 +14,26 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.enums.ResourceKind;
 
 public class SessionScreen implements Screen {
 
 	private final CatanGame aGame;
 	private Stage aSessionStage;
 	private Texture bg;
-	private final int SIZE = 7;
-	private int[] aHexPositions;
+	
+	// all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
+	private final int SIZE = 7;												// number of tiles at longest diagonal
+	private final int LENGTH = 40;											// length of an edge of a tile
+	private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH/2, 2)); // length of base of equilateral triangles within a tile
+	private final int OFFX = BASE;											// offset on the x axis
+	private final int OFFY = LENGTH + LENGTH/2;								// offset on the y axis
+	
+	private Random rd = new Random();
+
+	private Pair<Integer,Integer>[] aHexPositions;
 	private int[] aIntersectionPositions;
+	private int[] aHexKindSetup;
 	
 	PolygonSprite poly;
 	PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
@@ -43,10 +56,10 @@ public class SessionScreen implements Screen {
         aSessionStage = new Stage();
         Gdx.input.setInputProcessor(aSessionStage);
         
-		// initialize hex position coordinates, where x=((aHexPositions[i]/SIZE) - (SIZE/2)) and y=((aHexPositions[i]%SIZE) - (SIZE/2))
+		// initialize hex position coordinates, where x=(aHexPositions[i].getLeft()) and y=(aHexPositions[i].getRight())
         // the coordinates describe the offset from the center.
-        // Note that the x coordinate offset works diagonally, and therefore depends on the y offset
-		aHexPositions = new int[37];
+		aHexPositions = new Pair[37]; //TODO: make this number depend on SIZE
+		aHexKindSetup = new int[37];
 		int index = 0;
         int half = SIZE / 2;
 
@@ -54,12 +67,11 @@ public class SessionScreen implements Screen {
             int cols = SIZE - java.lang.Math.abs(row - half);
 
             for (int col = 0; col < cols; col++) {
-                int x = col - (cols - half) + 1;
+                int x = -cols + 2 * col + 1;
                 int y = (row - half);
-                aHexPositions[index++] = SIZE*(x + half) + (y + half);
-                System.out.print((SIZE*(x + half) + (y + half))+"("+x+","+y+") ");
+                aHexKindSetup[index] = rd.nextInt(ResourceKind.values().length);
+                aHexPositions[index++] = new Pair(x,y);
             }
-            System.out.println();
         }
         
         //TODO: initialize point position coordinates
@@ -72,6 +84,7 @@ public class SessionScreen implements Screen {
         aClayTextureSolid = setupTextureSolid(Color.RED);
     	aForrestTextureSolid = setupTextureSolid(Color.GREEN);
     	aStoneTextureSolid = setupTextureSolid(Color.GRAY);
+    	
 	}
 	
 	private Texture setupTextureSolid(Color color) {
@@ -89,15 +102,22 @@ public class SessionScreen implements Screen {
         aGame.batch.begin();
         aGame.batch.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         aGame.batch.end();
+        
+        // sets center of boad
+        int xCenter = 2*Gdx.graphics.getWidth() / 5;
+        int yCenter = 3*Gdx.graphics.getHeight() / 5;
+        int offsetX, offsetY;
+      
+        // draws hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
+        for(int i = 0; i < aHexPositions.length; i++) {
+        	offsetX = (aHexPositions[i].getLeft());
+        	offsetY = (aHexPositions[i].getRight());
+        	drawHexagon(xCenter + (offsetX * OFFX), yCenter + (offsetY * OFFY), LENGTH, BASE, ResourceKind.values()[aHexKindSetup[i]]);
+        }
 
         aSessionStage.act(delta);
         aSessionStage.draw();
         
-      //TODO: draw hexagons
-        drawHexagon(Gdx.graphics.getWidth() / 3, 5*Gdx.graphics.getHeight() / 6, 70, aWaterTextureSolid);
-        drawHexagon(Gdx.graphics.getWidth() / 3 + 125, 5*Gdx.graphics.getHeight() / 6, 70, aDesertTextureSolid);
-        drawHexagon(Gdx.graphics.getWidth() / 3 + 250, 5*Gdx.graphics.getHeight() / 6, 70, aForrestTextureSolid);
-        drawHexagon(Gdx.graphics.getWidth() / 3 + 60, 5*Gdx.graphics.getHeight() / 6 - 110, 70, aClayTextureSolid);
 	}
 
 	@Override
@@ -137,18 +157,39 @@ public class SessionScreen implements Screen {
 	 * @param yPos y position of hexagon center
 	 * @param length length of the side of the hexagon
 	 * */
-	private void drawHexagon(int xPos, int yPos, int length, Texture pTexture) {
+	private void drawHexagon(int xPos, int yPos, int length, int base, ResourceKind pResourceKind) {
 		
-		int b = (int) Math.sqrt(Math.pow(length, 2) - Math.pow(length/2, 2));
-	        
-		PolygonRegion polyReg = new PolygonRegion(new TextureRegion(pTexture),
+		Texture aTexture = aWaterTextureSolid;
+		
+		// sets aTexture to relevant texture according to ResourceKind
+		switch(pResourceKind) {
+		case BRICK:
+			aTexture = aClayTextureSolid;
+			break;
+		case GRAIN:
+			aTexture = aDesertTextureSolid;
+			break;
+		case LUMBER:
+			aTexture = aForrestTextureSolid;
+			break;
+		case ORE:
+			aTexture = aStoneTextureSolid;
+			break;
+		case WOOL:
+			aTexture = aClayTextureSolid;
+			break;
+		default:
+			break;
+		}
+		
+		PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aTexture),
 				new float[] {      // Six vertices
-						xPos - b, yPos - length/2,        	// Vertex 0                4
-						xPos, yPos - length,       		    // Vertex 1           5         3
-						xPos + b, yPos - length/2,		    // Vertex 2         
-						xPos + b, yPos + length/2,    	    // Vertex 3           0         2 
-						xPos, yPos + length,        		// Vertex 4                1
-						xPos - b, yPos + length/2
+						xPos - base, yPos - length/2,        		// Vertex 0                4
+						xPos, yPos - length,       		    		// Vertex 1           5         3
+						xPos + base, yPos - length/2,		  	    // Vertex 2         
+						xPos + base, yPos + length/2,    	   	    // Vertex 3           0         2 
+						xPos, yPos + length,        				// Vertex 4                1
+						xPos - base, yPos + length/2				// Vertex 5
 		}, new short[] {
 				0, 1, 4,         // Sets up triangulation according to vertices above
 				0, 4, 5,        
@@ -164,3 +205,31 @@ public class SessionScreen implements Screen {
 	    polyBatch.end();
 	}
 }
+
+
+class Pair<L,R> {
+
+	  private final L left;
+	  private final R right;
+
+	  public Pair(L left, R right) {
+	    this.left = left;
+	    this.right = right;
+	  }
+
+	  public L getLeft() { return left; }
+	  public R getRight() { return right; }
+
+	  @Override
+	  public int hashCode() { return left.hashCode() ^ right.hashCode(); }
+
+	  @Override
+	  public boolean equals(Object o) {
+	    if (!(o instanceof Pair)) return false;
+	    Pair pairo = (Pair) o;
+	    return this.left.equals(pairo.getLeft()) &&
+	           this.right.equals(pairo.getRight());
+	  }
+
+	}
+

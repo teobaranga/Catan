@@ -23,7 +23,7 @@ public class SessionScreen implements Screen {
 	private Texture bg;
 	
 	// all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-	private final int SIZE = 7;												// number of tiles at longest diagonal
+	private final int SIZE = 9;												// number of tiles at longest diagonal
 	private final int LENGTH = 40;											// length of an edge of a tile
 	private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH/2, 2)); // length of base of equilateral triangles within a tile
 	private final int OFFX = BASE;											// offset on the x axis
@@ -47,7 +47,17 @@ public class SessionScreen implements Screen {
 	public SessionScreen(CatanGame pGame) {
 		aGame = pGame;
 	}
-	
+
+	public int getHexNumber(int size){
+		int result = size;
+		int level = 1;
+		while(size-- > level){
+			result += size*2;
+			level++;
+		}
+		return result;
+	}
+
 	@Override
 	public void show() {
 		bg = new Texture("BG.png");
@@ -58,8 +68,8 @@ public class SessionScreen implements Screen {
         
 		// initialize hex position coordinates, where x=(aHexPositions[i].getLeft()) and y=(aHexPositions[i].getRight())
         // the coordinates describe the offset from the center.
-		aHexPositions = new Pair[37]; //TODO: make this number depend on SIZE
-		aHexKindSetup = new int[37];
+		aHexPositions = new Pair[getHexNumber(SIZE)]; //TODO: make this number depend on SIZE
+		aHexKindSetup = new int[getHexNumber(SIZE)];
 		int index = 0;
         int half = SIZE / 2;
 
@@ -103,8 +113,8 @@ public class SessionScreen implements Screen {
         aGame.batch.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         aGame.batch.end();
         
-        // sets center of boad
-        int xCenter = 2*Gdx.graphics.getWidth() / 5;
+        // sets center of board
+        int xCenter = 2*Gdx.graphics.getWidth() / 5 + Gdx.graphics.getWidth() / 13;
         int yCenter = 3*Gdx.graphics.getHeight() / 5;
         int offsetX, offsetY;
       

@@ -23,7 +23,7 @@ public class SessionScreen implements Screen {
 	private Texture bg;
 	
 	// all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-	private final int SIZE = 9;												// number of tiles at longest diagonal
+	private final int SIZE = 7;												// number of tiles at longest diagonal
 	private final int LENGTH = 40;											// length of an edge of a tile
 	private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH/2, 2)); // length of base of equilateral triangles within a tile
 	private final int OFFX = BASE;											// offset on the x axis

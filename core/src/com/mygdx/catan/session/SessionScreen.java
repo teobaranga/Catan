@@ -114,7 +114,7 @@ public class SessionScreen implements Screen {
         aGame.batch.end();
         
         // sets center of board
-        int xCenter = 2*Gdx.graphics.getWidth() / 5 + Gdx.graphics.getWidth() / 13;
+        int xCenter = 2*Gdx.graphics.getWidth() / 5;
         int yCenter = 3*Gdx.graphics.getHeight() / 5;
         int offsetX, offsetY;
       

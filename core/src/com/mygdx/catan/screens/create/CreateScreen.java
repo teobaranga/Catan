@@ -36,7 +36,7 @@ public class CreateScreen implements Screen {
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
     private final int SIZE = 7;												// number of tiles at longest diagonal
-    private final int LENGTH = 35;											// length of an edge of a tile
+    private final int LENGTH = 30;											// length of an edge of a tile
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH/2, 2)); // length of base of equilateral triangles within a tile
     private final int OFFX = BASE;											// offset on the x axis
     private final int OFFY = LENGTH + LENGTH/2;								// offset on the y axis
@@ -75,14 +75,13 @@ public class CreateScreen implements Screen {
         window.debugAll();
 
         Table contentTable = new Table(game.skin);
-        contentTable.background(game.skin.newDrawable("background", Color.BLACK));
         contentTable.padTop(window.getPadTop());
         contentTable.setFillParent(true);
 
         Table gameNameTable = new Table(game.skin);
         TextField gameName = new TextField("", game.skin);
-        gameNameTable.defaults().expand().fill().padBottom(4f);
-        gameNameTable.add(new Label("Game Name:", game.skin)).height(20);
+        gameNameTable.defaults().expand().fill().padBottom(4f).padTop(20);
+        gameNameTable.add(new Label("Game Name:", game.skin)).height(20).padTop(20);
         gameNameTable.add(gameName).height(20);
         gameNameTable.pack();
 
@@ -91,27 +90,31 @@ public class CreateScreen implements Screen {
         mapNames.add("Map #2");
 
         Table mapTable = new Table(game.skin);
-        mapTable.background(game.skin.newDrawable("background", Color.BLUE));
+        mapTable.background(game.skin.newDrawable("background", Color.valueOf("eee9e9")));
+        mapTable.add(new Label("Maps", game.skin)).padBottom(20);
         mapTable.row();
         mapTable.top();
         for (String mapName : mapNames){
-            mapTable.add(new TextButton(mapName, game.skin)).height(30).width(420).center().pad(1);
+            mapTable.add(new TextButton(mapName, game.skin)).height(30).width(420).center().padBottom(1);
             mapTable.row();
         }
         mapTable.add(new TextButton("Random", game.skin)).height(35).width(420).center().padTop(10);
         mapTable.pack();
 
-        Table emptyTable = new Table(game.skin);
-        emptyTable.background(game.skin.newDrawable("background", Color.BLACK));
-        emptyTable.pack();
+        Table previewTable = new Table(game.skin);
+        previewTable.background(game.skin.newDrawable("background", Color.valueOf("eee9e9")));
+        previewTable.top();
+        previewTable.add(new Label("Preview", game.skin));
+        previewTable.row();
+        previewTable.pack();
 
         TextButton create = new TextButton("Create", game.skin);
 
-        //contentTable.top().left();
+        contentTable.top().left();
         contentTable.add(gameNameTable).colspan(2);
         contentTable.row();
-        contentTable.add(mapTable).width(425).expandX().height(400).pad(20).top().left();
-        contentTable.add(emptyTable).width(425).expandX().height(400).pad(20).top().left();
+        contentTable.add(mapTable).width(425).expandX().height(400).pad(20);
+        contentTable.add(previewTable).width(425).expandX().height(400).pad(20);
         contentTable.row();
         contentTable.add(create).height(50).width(400).colspan(2);
 
@@ -173,6 +176,7 @@ public class CreateScreen implements Screen {
         // sets center of board
         int xCenter = 82*Gdx.graphics.getWidth() / 120;
         int yCenter = 49*Gdx.graphics.getHeight() / 90;
+
         int offsetX, offsetY;
 
         // draws hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
@@ -263,7 +267,6 @@ public class CreateScreen implements Screen {
         polyBatch = new PolygonSpriteBatch();
 
         polyBatch.begin();
-        //emptyTable.draw(polyBatch, delta);
         poly.draw(polyBatch);
         polyBatch.end();
 

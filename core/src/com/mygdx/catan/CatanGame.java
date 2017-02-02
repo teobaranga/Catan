@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.screens.create.CreateScreen;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
 import com.mygdx.catan.session.SessionScreen;
@@ -94,7 +95,7 @@ public class CatanGame extends Game {
             case BROWSE_GAMES:
                 break;
             case CREATE_GAME:
-                this.setScreen(new SessionScreen(this));
+                this.setScreen(new CreateScreen(this, menuScreen));
                 break;
             case LOBBY:
                 this.setScreen(new LobbyScreen(this, menuScreen));

@@ -1,4 +1,7 @@
 package com.mygdx.catan;
+
+import com.mygdx.catan.enums.PlayerStatus;
+
 public class Player {
 
 	PlayerStatus status;

@@ -15,6 +15,8 @@ import com.mygdx.catan.screens.menu.MenuScreen;
 import com.mygdx.catan.session.SessionScreen;
 
 public class CatanGame extends Game {
+	
+	private GameBoardManager aGameBoardManager = new GameBoardManager();
 
     public Skin skin;
 
@@ -96,7 +98,7 @@ public class CatanGame extends Game {
                 break;
             case CREATE_GAME:
                 //this.setScreen(new CreateScreen(this, menuScreen));
-            	this.setScreen(new SessionScreen(this));
+            	this.setScreen(new SessionScreen(this, aGameBoardManager));
                 break;
             case LOBBY:
                 this.setScreen(new LobbyScreen(this, menuScreen));

@@ -1,8 +1,9 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.EventKind;
+import com.mygdx.catan.enums.GamePhase;
 
-public class Game {
+public class Session {
 	
 	GamePhase currentPhase;
 	EventKind eventDice;
@@ -12,7 +13,7 @@ public class Game {
 	private int numberOfPlayers; //set
 	private int VPsToWin; //set
 	
-	public Game(int barbarianPosition, int redDice, int yellowDice, int numberofPlayers, int VPsToWin) {
+	public Session(int barbarianPosition, int redDice, int yellowDice, int numberofPlayers, int VPsToWin) {
 		this.barbarianPosition = barbarianPosition;
 		this.redDice = redDice;
 		this.yellowDice = yellowDice;

@@ -1,5 +1,5 @@
 package com.mygdx.catan;
 
-public class GameManager {
+public class GameBoard {
 
 }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+import com.mygdx.catan.*;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -21,6 +23,8 @@ import com.mygdx.catan.enums.ResourceKind;
 public class SessionScreen implements Screen {
 
 	private final CatanGame aGame;
+	private final GameBoardManager aGameBoardManager;
+	
 	private Stage aSessionStage;
 	private Texture bg;
 	
@@ -46,8 +50,9 @@ public class SessionScreen implements Screen {
 	Texture aForrestTextureSolid;
 	Texture aStoneTextureSolid;
 	
-	public SessionScreen(CatanGame pGame) {
+	public SessionScreen(CatanGame pGame, GameBoardManager pGameBoardManager) {
 		aGame = pGame;
+		aGameBoardManager = pGameBoardManager;
 	}
 	
 	@Override
@@ -223,31 +228,4 @@ public class SessionScreen implements Screen {
 	}
 	
 }
-
-
-class Pair<L,R> {
-
-	  private final L left;
-	  private final R right;
-
-	  public Pair(L left, R right) {
-	    this.left = left;
-	    this.right = right;
-	  }
-
-	  public L getLeft() { return left; }
-	  public R getRight() { return right; }
-
-	  @Override
-	  public int hashCode() { return left.hashCode() ^ right.hashCode(); }
-
-	  @Override
-	  public boolean equals(Object o) {
-	    if (!(o instanceof Pair)) return false;
-	    Pair pairo = (Pair) o;
-	    return this.left.equals(pairo.getLeft()) &&
-	           this.right.equals(pairo.getRight());
-	  }
-
-	}
 

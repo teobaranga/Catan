@@ -6,9 +6,12 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.screens.lobby.chat.ChatMessage;
 import com.mygdx.catan.ui.CatanWindow;
 
 public class LobbyScreen implements Screen {
@@ -40,7 +43,7 @@ public class LobbyScreen implements Screen {
         window.debugAll();
 
         Table contentTable = new Table(game.skin);
-        contentTable.background(game.skin.newDrawable("background", Color.RED));
+//        contentTable.background(game.skin.newDrawable("background", Color.RED));
 //        contentTable.debugAll();
         contentTable.padTop(window.getPadTop());
         contentTable.setFillParent(true);
@@ -51,9 +54,10 @@ public class LobbyScreen implements Screen {
         rulesTable.pack();
 
         Table chatTable = new Table(game.skin);
-//        chatTable.debugAll();
-        chatTable.background(game.skin.newDrawable("background", Color.YELLOW));
-        chatTable.pack();
+        chatTable.debugAll();
+//        chatTable.background(game.skin.newDrawable("background", Color.YELLOW));
+        setupChat(chatTable);
+//        chatTable.pack();
 
         TextButton ready = new TextButton("Ready", game.skin);
 
@@ -107,5 +111,39 @@ public class LobbyScreen implements Screen {
     public void dispose() {
         bg.dispose();
         stage.dispose();
+    }
+
+    private void setupChat(Table chatTable) {
+        final Skin skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+        String reallyLongString = "This\nIs\nA\nReally\nLong\nString\nThat\nHas\nLots\nOf\nLines\nAnd\nRepeats.\n"
+                + "This\nIs\nA\nReally\nLong\nString\nThat\nHas\nLots\nOf\nLines\nAnd\nRepeats.\n"
+                + "This\nIs\nA\nReally\nLong\nString\nThat\nHas\nLots\nOf\nLines\nAnd\nRepeats.\n";
+        String lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi feugiat mollis nisl, a egestas enim aliquet et. Fusce rhoncus non erat ultricies fringilla. Aliquam auctor est ut neque congue accumsan. Aliquam sed ligula metus. Phasellus luctus arcu sodales leo dictum, vitae iaculis justo pretium. Sed eget vestibulum tortor. Vivamus euismod et libero at tempus. Phasellus ac dolor in urna efficitur laoreet id eu massa. In sit amet nulla at turpis fermentum porttitor nec nec lectus. Nullam ornare nisl at purus venenatis luctus. Suspendisse potenti. Donec finibus sem ac malesuada luctus. Pellentesque auctor felis at feugiat posuere. Duis sollicitudin, urna ut tristique commodo, dolor sapien consectetur tortor, ac convallis ante odio in sem.";
+        final ChatMessage msg = new ChatMessage("Sender", lorem);
+        final ChatMessage msg2 = new ChatMessage("Sender", lorem);
+//        final Label text = new Label(reallyLongString, skin);
+//        text.setAlignment(Align.center);
+//        text.setWrap(true);
+//        final Label text2 = new Label("This is a short string!", skin);
+//        text2.setAlignment(Align.center);
+//        text2.setWrap(true);
+//        final Label text3 = new Label(reallyLongString, skin);
+//        text3.setAlignment(Align.center);
+//        text3.setWrap(true);
+
+        final Table scrollTable = new Table();
+        scrollTable.left().top();
+        scrollTable.add(msg).expandX().fillX();
+        scrollTable.row();
+        scrollTable.add(msg2).expandX().fillX();
+        scrollTable.row();
+//        scrollTable.add(text2);
+//        scrollTable.row();
+//        scrollTable.add(text3);
+
+        final ScrollPane scroller = new ScrollPane(scrollTable);
+
+//        chatTable.setFillParent(true);
+        chatTable.add(scroller).fill().expand();
     }
 }

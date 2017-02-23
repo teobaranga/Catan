@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.mygdx.catan.enums.ScreenKind;
-import com.mygdx.catan.screens.create.CreateScreen;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
 import com.mygdx.catan.session.SessionScreen;
@@ -18,11 +17,12 @@ public class CatanGame extends Game {
 	
 	private GameBoardManager aGameBoardManager = new GameBoardManager();
 
-    public Skin skin;
+    @SuppressWarnings("LibGDXStaticResource")
+    public static Skin skin;
 
     public SpriteBatch batch;
 
-    MenuScreen menuScreen;
+    private MenuScreen menuScreen;
 
     @Override
     public void create() {
@@ -41,6 +41,7 @@ public class CatanGame extends Game {
     @Override
     public void dispose() {
         batch.dispose();
+        skin.dispose();
     }
 
     private void createBasicSkin() {

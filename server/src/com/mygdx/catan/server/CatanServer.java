@@ -15,7 +15,8 @@ public class CatanServer {
         server.addListener(new Listener() {
             @Override
             public void connected(Connection connection) {
-                System.out.println(connection.toString());
+                // Print the client's ID
+                System.out.println(connection.getID());
             }
         });
     }

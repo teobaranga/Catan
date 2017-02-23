@@ -14,53 +14,53 @@ import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.ui.CatanWindow;
 
 public class MenuScreen implements Screen {
-	
-	private final CatanGame aGame;
-	private Stage aMenuStage;
-	private Texture bg;
-	private TextButton aJoinRandomButton;
-	private TextButton aCreateGameButton;
-	private TextButton aBrowseGamesButton;
-	private TextButton aResumeGameButton;
-	private Table aMenuTable;
-	
-	public MenuScreen(CatanGame pGame) {
-		aGame = pGame;
-	}
-	
-	@Override
-	public void show() {
-		
-		bg = new Texture("BG.png");
+
+    private final CatanGame aGame;
+    private Stage aMenuStage;
+    private Texture bg;
+    private TextButton aJoinRandomButton;
+    private TextButton aCreateGameButton;
+    private TextButton aBrowseGamesButton;
+    private TextButton aResumeGameButton;
+    private Table aMenuTable;
+
+    public MenuScreen(CatanGame pGame) {
+        aGame = pGame;
+    }
+
+    @Override
+    public void show() {
+
+        bg = new Texture("BG.png");
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-		aMenuStage = new Stage();
+        aMenuStage = new Stage();
         Gdx.input.setInputProcessor(aMenuStage);
-        
+
         // Setup table for buttons
         aMenuTable = new Table();
         aMenuTable.setFillParent(true);
-		aMenuStage.addActor(aMenuTable);
-		aMenuTable.left().bottom();
-		
-		// Setup buttons
-    	aJoinRandomButton = new TextButton("Join Random Game", aGame.skin);
-    	setupRandomButton();
-    	
-    	aCreateGameButton = new TextButton("Create Game", aGame.skin);
-    	setupButton(aCreateGameButton, ScreenKind.CREATE_GAME);
-    	
-    	aBrowseGamesButton = new TextButton("Browse Games", aGame.skin);
-    	setupButton(aBrowseGamesButton, ScreenKind.BROWSE_GAMES);
-    	
-    	aResumeGameButton = new TextButton("Resume Game", aGame.skin);
-    	setupButton(aResumeGameButton, ScreenKind.LOBBY);
-		
-	}
+        aMenuStage.addActor(aMenuTable);
+        aMenuTable.left().bottom();
 
-	@Override
-	public void render(float delta) {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+        // Setup buttons
+        aJoinRandomButton = new TextButton("Join Random Game", CatanGame.skin);
+        setupRandomButton();
+
+        aCreateGameButton = new TextButton("Create Game", CatanGame.skin);
+        setupButton(aCreateGameButton, ScreenKind.CREATE_GAME);
+
+        aBrowseGamesButton = new TextButton("Browse Games", CatanGame.skin);
+        setupButton(aBrowseGamesButton, ScreenKind.BROWSE_GAMES);
+
+        aResumeGameButton = new TextButton("Resume Game", CatanGame.skin);
+        setupButton(aResumeGameButton, ScreenKind.LOBBY);
+
+    }
+
+    @Override
+    public void render(float delta) {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         aGame.batch.begin();
@@ -69,27 +69,27 @@ public class MenuScreen implements Screen {
 
         aMenuStage.act(delta);
         aMenuStage.draw();
-		
-	}
 
-	@Override
-	public void resize(int width, int height) {
+    }
+
+    @Override
+    public void resize(int width, int height) {
         aMenuStage.getViewport().update(width, height, false);
         aGame.batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		
-	}
 
-	@Override
-	public void pause() {
-		// TODO Auto-generated method stub
-		
-	}
+    }
 
-	@Override
-	public void resume() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void pause() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void resume() {
+        // TODO Auto-generated method stub
+
+    }
 
     @Override
     public void hide() {
@@ -102,41 +102,40 @@ public class MenuScreen implements Screen {
         bg.dispose();
         aMenuStage.dispose();
     }
-    
-    public void setupButton(TextButton pTextButton, ScreenKind pScreenkind) {
-    	// add listener to button
-    	pTextButton.addListener(new ClickListener() {
-        	@Override
-			public void clicked(InputEvent event, float x, float y) {
-        		pTextButton.setChecked(false);
-        		aGame.switchScreen(pScreenkind);
-        	}
-				
-			});
-        
+
+    private void setupButton(TextButton pTextButton, ScreenKind pScreenkind) {
+        // add listener to button
+        pTextButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                pTextButton.setChecked(false);
+                aGame.switchScreen(pScreenkind);
+            }
+        });
+
         aMenuTable.add(pTextButton).pad(50);
     }
-    
-    public void setupRandomButton() {
-    	// add listener to button
-    	aJoinRandomButton.addListener(new ClickListener() {
-        	@Override
-			public void clicked(InputEvent event, float x, float y) {
-        		aJoinRandomButton.setChecked(false);
-        		//TODO: request catanGame to join random game
-        		
-        		// setup window
-        		CatanWindow window = new CatanWindow("Joining Game", aGame.skin);
-        		window.setWidth(1f / 4f * Gdx.graphics.getWidth());
+
+    private void setupRandomButton() {
+        // add listener to button
+        aJoinRandomButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                aJoinRandomButton.setChecked(false);
+                //TODO: request catanGame to join random game
+
+                // setup window
+                CatanWindow window = new CatanWindow("Joining Game", aGame.skin);
+                window.setWidth(1f / 4f * Gdx.graphics.getWidth());
                 window.setHeight(1f / 4f * Gdx.graphics.getHeight());
                 window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
                 window.setWindowListener(() -> window.remove());
-      
+
                 aMenuStage.addActor(window);
-        	}
-				
-			});
-        
+            }
+
+        });
+
         aMenuTable.add(aJoinRandomButton).pad(50);
     }
 }

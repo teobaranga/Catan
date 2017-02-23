@@ -1,5 +1,7 @@
 package com.mygdx.catan.session;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
@@ -31,9 +33,9 @@ public class SessionScreen implements Screen {
 	
 	private Random rd = new Random();
 
-	private Pair<Integer,Integer>[] aHexPositions;
-	private int[] aIntersectionPositions;
-	private int[] aHexKindSetup;
+	private ArrayList<Pair<Integer,Integer>> aHexPositions;
+	private ArrayList<Pair<Integer,Integer>> aIntersectionPositions;
+	private HashMap<Pair<Integer,Integer>,ResourceKind> aHexKindSetup;
 	
 	PolygonSprite poly;
 	PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
@@ -58,9 +60,9 @@ public class SessionScreen implements Screen {
         
 		// initialize hex position coordinates, where x=(aHexPositions[i].getLeft()) and y=(aHexPositions[i].getRight())
         // the coordinates describe the offset from the center.
-		aHexPositions = new Pair[37]; //TODO: make this number depend on SIZE
-		aHexKindSetup = new int[37];
-		int index = 0;
+		aHexPositions = new ArrayList<Pair<Integer, Integer>>();
+		aHexKindSetup = new HashMap<Pair<Integer, Integer>,ResourceKind>();
+		aIntersectionPositions = new ArrayList<Pair<Integer, Integer>>();
         int half = SIZE / 2;
 
         for (int row = 0; row < SIZE; row++) {
@@ -69,12 +71,27 @@ public class SessionScreen implements Screen {
             for (int col = 0; col < cols; col++) {
                 int x = -cols + 2 * col + 1;
                 int y = (row - half);
-                aHexKindSetup[index] = rd.nextInt(ResourceKind.values().length);
-                aHexPositions[index++] = new Pair(x,y);
+                Pair<Integer, Integer> hexCoord = new Pair(x,y);
+                aHexKindSetup.put(hexCoord, ResourceKind.values()[rd.nextInt(ResourceKind.values().length)]);
+                aHexPositions.add(hexCoord);
+                
+                // Creates the top, and top left points adjacent to current hex
+                aIntersectionPositions.add(new Pair(x-1,y*3 - 1));
+                aIntersectionPositions.add(new Pair(x, y*3 - 2));                
+
+                // If at last row, create bottom and bottom left points
+                if (row == SIZE - 1){
+                	aIntersectionPositions.add(new Pair(x-1, y*3 + 1));
+                	aIntersectionPositions.add(new Pair(x, y*3 + 2));
+                }
             }
+            // If the hex is the last column of a row, creates the top right point
+            aIntersectionPositions.add(new Pair((cols - 1) + 1, (row - half)*3 - 1));
         }
         
-        //TODO: initialize point position coordinates
+        // Create bottom right point of last column and last row
+        aIntersectionPositions.add(new Pair(half + 1, (half)*3 + 1));
+        
         //TODO: UI panels
         
         
@@ -109,10 +126,10 @@ public class SessionScreen implements Screen {
         int offsetX, offsetY;
       
         // draws hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
-        for(int i = 0; i < aHexPositions.length; i++) {
-        	offsetX = (aHexPositions[i].getLeft());
-        	offsetY = (aHexPositions[i].getRight());
-        	drawHexagon(xCenter + (offsetX * OFFX), yCenter + (offsetY * OFFY), LENGTH, BASE, ResourceKind.values()[aHexKindSetup[i]]);
+        for(Pair<Integer,Integer> hexPosition : aHexPositions) {
+        	offsetX = hexPosition.getLeft();
+        	offsetY = hexPosition.getRight();
+        	drawHexagon(xCenter + (offsetX * OFFX), yCenter + (offsetY * OFFY), LENGTH, BASE, aHexKindSetup.get(hexPosition));
         }
 
         aSessionStage.act(delta);
@@ -204,6 +221,7 @@ public class SessionScreen implements Screen {
 	    poly.draw(polyBatch);
 	    polyBatch.end();
 	}
+	
 }
 
 

@@ -95,7 +95,8 @@ public class CatanGame extends Game {
             case BROWSE_GAMES:
                 break;
             case CREATE_GAME:
-                this.setScreen(new CreateScreen(this, menuScreen));
+                //this.setScreen(new CreateScreen(this, menuScreen));
+            	this.setScreen(new SessionScreen(this));
                 break;
             case LOBBY:
                 this.setScreen(new LobbyScreen(this, menuScreen));

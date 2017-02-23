@@ -19,11 +19,12 @@ public class CatanGame extends Game {
 	
 	private GameBoardManager aGameBoardManager = new GameBoardManager();
 
-    public Skin skin;
+    @SuppressWarnings("LibGDXStaticResource")
+    public static Skin skin;
 
     public SpriteBatch batch;
 
-    MenuScreen menuScreen;
+    private MenuScreen menuScreen;
 
     @Override
     public void create() {
@@ -42,6 +43,7 @@ public class CatanGame extends Game {
     @Override
     public void dispose() {
         batch.dispose();
+        skin.dispose();
     }
 
     private void createBasicSkin() {

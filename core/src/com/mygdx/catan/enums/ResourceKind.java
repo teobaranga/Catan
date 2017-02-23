@@ -1,10 +1,14 @@
 package com.mygdx.catan.enums;
 
+/**
+ * Types of Catan resources & commodities.
+ */
 public enum ResourceKind {
-
     WOOL,
-    LUMBER,
+    WOOD,
     ORE,
     BRICK,
-    GRAIN
+    GRAIN,
+    PAPER,
+    CLOTH
 }

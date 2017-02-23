@@ -235,7 +235,7 @@ public class CreateScreen implements Screen {
             case GRAIN:
                 aTexture = aDesertTextureSolid;
                 break;
-            case LUMBER:
+            case WOOD:
                 aTexture = aForrestTextureSolid;
                 break;
             case ORE:

@@ -1,11 +1,5 @@
 package com.mygdx.catan.session;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-
-import com.mygdx.catan.*;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -18,7 +12,13 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.GameBoardManager;
+import com.mygdx.catan.Pair;
 import com.mygdx.catan.enums.ResourceKind;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
 
 public class SessionScreen implements Screen {
 
@@ -191,7 +191,7 @@ public class SessionScreen implements Screen {
 		case GRAIN:
 			aTexture = aDesertTextureSolid;
 			break;
-		case LUMBER:
+		case WOOD:
 			aTexture = aForrestTextureSolid;
 			break;
 		case ORE:

@@ -1,8 +1,5 @@
 package com.mygdx.catan.screens.create;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -13,9 +10,7 @@ import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -24,37 +19,34 @@ import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.ui.CatanWindow;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class CreateScreen implements Screen {
 
     private static final String TITLE = "CreateGame";
 
     private final CatanGame game;
     private final Screen parentScreen;
-    private Stage stage;
-    private Texture bg;
-
-
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-    private final int SIZE = 7;												// number of tiles at longest diagonal
-    private final int LENGTH = 30;											// length of an edge of a tile
-    private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH/2, 2)); // length of base of equilateral triangles within a tile
-    private final int OFFX = BASE;											// offset on the x axis
-    private final int OFFY = LENGTH + LENGTH/2;								// offset on the y axis
-
-    private Random rd = new Random();
-
-    private Pair<Integer,Integer>[] aHexPositions;
-    private int[] aIntersectionPositions;
-    private int[] aHexKindSetup;
-
+    private final int SIZE = 7;                                                // number of tiles at longest diagonal
+    private final int LENGTH = 30;                                            // length of an edge of a tile
+    private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
+    private final int OFFX = BASE;                                            // offset on the x axis
+    private final int OFFY = LENGTH + LENGTH / 2;                                // offset on the y axis
     PolygonSprite poly;
     PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
-
     Texture aWaterTextureSolid;
     Texture aDesertTextureSolid;
     Texture aClayTextureSolid;
     Texture aForrestTextureSolid;
     Texture aStoneTextureSolid;
+    private Stage stage;
+    private Texture bg;
+    private Random rd = new Random();
+    private Pair<Integer, Integer>[] aHexPositions;
+    private int[] aIntersectionPositions;
+    private int[] aHexKindSetup;
 
     public CreateScreen(CatanGame pGame, Screen parentScreen) {
         this.parentScreen = parentScreen;
@@ -94,7 +86,7 @@ public class CreateScreen implements Screen {
         mapTable.add(new Label("Maps", game.skin)).padBottom(20);
         mapTable.row();
         mapTable.top();
-        for (String mapName : mapNames){
+        for (String mapName : mapNames) {
             mapTable.add(new TextButton(mapName, game.skin)).height(30).width(420).center().padBottom(1);
             mapTable.row();
         }
@@ -133,7 +125,7 @@ public class CreateScreen implements Screen {
                 int x = -cols + 2 * col + 1;
                 int y = (row - half);
                 aHexKindSetup[index] = rd.nextInt(ResourceKind.values().length);
-                aHexPositions[index++] = new Pair(x,y);
+                aHexPositions[index++] = new Pair(x, y);
             }
         }
 
@@ -146,9 +138,9 @@ public class CreateScreen implements Screen {
 
         contentTable.pack();
         window.row().fill().expand();
-        contentTable.setSize(900,600);
+        contentTable.setSize(900, 600);
         window.add(contentTable);
-        window.setSize(950,600);
+        window.setSize(950, 600);
         stage.addActor(window);
     }
 
@@ -158,7 +150,6 @@ public class CreateScreen implements Screen {
         pix.fill();
         return new Texture(pix);
     }
-
 
 
     @Override
@@ -174,13 +165,13 @@ public class CreateScreen implements Screen {
         stage.draw();
 
         // sets center of board
-        int xCenter = 82*Gdx.graphics.getWidth() / 120;
-        int yCenter = 49*Gdx.graphics.getHeight() / 90;
+        int xCenter = 82 * Gdx.graphics.getWidth() / 120;
+        int yCenter = 49 * Gdx.graphics.getHeight() / 90;
 
         int offsetX, offsetY;
 
         // draws hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
-        for(int i = 0; i < aHexPositions.length; i++) {
+        for (int i = 0; i < aHexPositions.length; i++) {
             offsetX = (aHexPositions[i].getLeft());
             offsetY = (aHexPositions[i].getRight());
             drawHexagon(xCenter + (offsetX * OFFX), yCenter + (offsetY * OFFY), LENGTH, BASE, ResourceKind.values()[aHexKindSetup[i]], delta);
@@ -219,23 +210,23 @@ public class CreateScreen implements Screen {
     /**
      * Draws a hexagon according to given position and length
      *
-     * @param xPos x position of hexagon center
-     * @param yPos y position of hexagon center
+     * @param xPos   x position of hexagon center
+     * @param yPos   y position of hexagon center
      * @param length length of the side of the hexagon
-     * */
+     */
     private void drawHexagon(int xPos, int yPos, int length, int base, ResourceKind pResourceKind, float delta) {
 
         Texture aTexture = aWaterTextureSolid;
 
         // sets aTexture to relevant texture according to ResourceKind
-        switch(pResourceKind) {
+        switch (pResourceKind) {
             case BRICK:
                 aTexture = aClayTextureSolid;
                 break;
             case GRAIN:
                 aTexture = aDesertTextureSolid;
                 break;
-            case LUMBER:
+            case WOOD:
                 aTexture = aForrestTextureSolid;
                 break;
             case ORE:
@@ -249,14 +240,14 @@ public class CreateScreen implements Screen {
         }
 
         PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aTexture),
-                new float[] {      // Six vertices
-                        xPos - base, yPos - length/2,        		// Vertex 0                4
-                        xPos, yPos - length,       		    		// Vertex 1           5         3
-                        xPos + base, yPos - length/2,		  	    // Vertex 2
-                        xPos + base, yPos + length/2,    	   	    // Vertex 3           0         2
-                        xPos, yPos + length,        				// Vertex 4                1
-                        xPos - base, yPos + length/2				// Vertex 5
-                }, new short[] {
+                new float[]{      // Six vertices
+                        xPos - base, yPos - length / 2,                // Vertex 0                4
+                        xPos, yPos - length,                        // Vertex 1           5         3
+                        xPos + base, yPos - length / 2,                // Vertex 2
+                        xPos + base, yPos + length / 2,                // Vertex 3           0         2
+                        xPos, yPos + length,                        // Vertex 4                1
+                        xPos - base, yPos + length / 2                // Vertex 5
+                }, new short[]{
                 0, 1, 4,         // Sets up triangulation according to vertices above
                 0, 4, 5,
                 1, 2, 3,
@@ -274,7 +265,7 @@ public class CreateScreen implements Screen {
 }
 
 
-class Pair<L,R> {
+class Pair<L, R> {
 
     private final L left;
     private final R right;
@@ -284,11 +275,18 @@ class Pair<L,R> {
         this.right = right;
     }
 
-    public L getLeft() { return left; }
-    public R getRight() { return right; }
+    public L getLeft() {
+        return left;
+    }
+
+    public R getRight() {
+        return right;
+    }
 
     @Override
-    public int hashCode() { return left.hashCode() ^ right.hashCode(); }
+    public int hashCode() {
+        return left.hashCode() ^ right.hashCode();
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -299,4 +297,3 @@ class Pair<L,R> {
     }
 
 }
-

@@ -19,6 +19,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.gameboard.GameBoardManager;
 
 public class SessionScreen implements Screen {
 

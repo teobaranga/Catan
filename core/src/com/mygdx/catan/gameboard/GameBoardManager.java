@@ -1,4 +1,4 @@
-package com.mygdx.catan;
+package com.mygdx.catan.gameboard;
 
 public class GameBoardManager {
 

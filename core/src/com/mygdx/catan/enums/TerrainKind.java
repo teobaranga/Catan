@@ -9,6 +9,6 @@ public enum TerrainKind {
     MOUNTAINS, //
     HILLS, //
     FIELDS, //
-    GOLDMINE
+    GOLDFIELD
 
 }

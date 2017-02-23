@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class DesktopLauncher {
     // The IP of the server. All clients need to connect to this IP.
-    private static String MY_IP = "142.157.168.72";
+    private static final String MY_IP = "142.157.168.72";
 
 	public static void main (String[] arg) throws IOException {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();

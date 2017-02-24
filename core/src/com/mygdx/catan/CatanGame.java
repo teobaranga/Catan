@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-
+import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.screens.create.CreateScreen;
@@ -16,9 +16,15 @@ import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
 import com.mygdx.catan.session.SessionScreen;
 
+import java.io.IOException;
+
 public class CatanGame extends Game {
+    // The IP of the server. All clients need to connect to this IP.
+    private static final String MY_IP = "142.157.168.72";
 	
 	private GameBoardManager aGameBoardManager = new GameBoardManager();
+
+	private final Client client;
 
     @SuppressWarnings("LibGDXStaticResource")
     public static Skin skin;
@@ -26,6 +32,11 @@ public class CatanGame extends Game {
     public SpriteBatch batch;
 
     private MenuScreen menuScreen;
+
+    public CatanGame() {
+        client = new Client();
+        client.start();
+    }
 
     @Override
     public void create() {
@@ -99,6 +110,12 @@ public class CatanGame extends Game {
                 this.setScreen(menuScreen);
                 break;
             case BROWSE_GAMES:
+                //
+                try {
+                    client.connect(5000, MY_IP, 54555, 54777);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             case CREATE_GAME:
                 //this.setScreen(new CreateScreen(this, menuScreen));

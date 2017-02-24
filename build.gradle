@@ -45,9 +45,6 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-
-        compile group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
-        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     }
 }
 
@@ -69,6 +66,9 @@ project(":core") {
         compile "com.badlogicgames.ashley:ashley:$ashleyVersion"
         compile "com.badlogicgames.gdx:gdx-ai:$aiVersion"
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+
+        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+        compile group: 'com.esotericsoftware', name: 'kryonet', version: '2.22.0-RC1'
     }
 }
 

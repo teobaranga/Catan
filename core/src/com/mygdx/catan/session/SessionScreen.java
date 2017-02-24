@@ -14,7 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.gameboard.GameBoardManager;
-import com.mygdx.catan.Pair;
+import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.enums.ResourceKind;
 
 import java.util.ArrayList;
@@ -38,9 +38,9 @@ public class SessionScreen implements Screen {
 	
 	private Random rd = new Random();
 
-	private ArrayList<Pair<Integer,Integer>> aHexPositions;
-	private ArrayList<Pair<Integer,Integer>> aIntersectionPositions;
-	private HashMap<Pair<Integer,Integer>,ResourceKind> aHexKindSetup;
+	private ArrayList<CoordinatePair<Integer,Integer>> aHexPositions;
+	private ArrayList<CoordinatePair<Integer,Integer>> aIntersectionPositions;
+	private HashMap<CoordinatePair<Integer,Integer>,ResourceKind> aHexKindSetup;
 	
 	PolygonSprite poly;
 	PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
@@ -66,9 +66,9 @@ public class SessionScreen implements Screen {
         
 		// initialize hex position coordinates, where x=(aHexPositions[i].getLeft()) and y=(aHexPositions[i].getRight())
         // the coordinates describe the offset from the center.
-		aHexPositions = new ArrayList<Pair<Integer, Integer>>();
-		aHexKindSetup = new HashMap<Pair<Integer, Integer>,ResourceKind>();
-		aIntersectionPositions = new ArrayList<Pair<Integer, Integer>>();
+		aHexPositions = new ArrayList<CoordinatePair<Integer, Integer>>();
+		aHexKindSetup = new HashMap<CoordinatePair<Integer, Integer>,ResourceKind>();
+		aIntersectionPositions = new ArrayList<CoordinatePair<Integer, Integer>>();
         int half = SIZE / 2;
 
         for (int row = 0; row < SIZE; row++) {
@@ -77,26 +77,26 @@ public class SessionScreen implements Screen {
             for (int col = 0; col < cols; col++) {
                 int x = -cols + 2 * col + 1;
                 int y = (row - half);
-                Pair<Integer, Integer> hexCoord = new Pair(x,y);
+                CoordinatePair<Integer, Integer> hexCoord = new CoordinatePair(x,y);
                 aHexKindSetup.put(hexCoord, ResourceKind.values()[rd.nextInt(ResourceKind.values().length)]);
                 aHexPositions.add(hexCoord);
                 
                 // Creates the top, and top left points adjacent to current hex
-                aIntersectionPositions.add(new Pair(x-1,y*3 - 1));
-                aIntersectionPositions.add(new Pair(x, y*3 - 2));                
+                aIntersectionPositions.add(new CoordinatePair(x-1,y*3 - 1));
+                aIntersectionPositions.add(new CoordinatePair(x, y*3 - 2));                
 
                 // If at last row, create bottom and bottom left points
                 if (row == SIZE - 1){
-                	aIntersectionPositions.add(new Pair(x-1, y*3 + 1));
-                	aIntersectionPositions.add(new Pair(x, y*3 + 2));
+                	aIntersectionPositions.add(new CoordinatePair(x-1, y*3 + 1));
+                	aIntersectionPositions.add(new CoordinatePair(x, y*3 + 2));
                 }
             }
             // If the hex is the last column of a row, creates the top right point
-            aIntersectionPositions.add(new Pair((cols - 1) + 1, (row - half)*3 - 1));
+            aIntersectionPositions.add(new CoordinatePair((cols - 1) + 1, (row - half)*3 - 1));
         }
         
         // Create bottom right point of last column and last row
-        aIntersectionPositions.add(new Pair(half + 1, (half)*3 + 1));
+        aIntersectionPositions.add(new CoordinatePair(half + 1, (half)*3 + 1));
         
         //TODO: UI panels
         
@@ -132,7 +132,7 @@ public class SessionScreen implements Screen {
         int offsetX, offsetY;
       
         // draws hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
-        for(Pair<Integer,Integer> hexPosition : aHexPositions) {
+        for(CoordinatePair<Integer,Integer> hexPosition : aHexPositions) {
         	offsetX = hexPosition.getLeft();
         	offsetY = hexPosition.getRight();
         	drawHexagon(xCenter + (offsetX * OFFX), yCenter + (offsetY * OFFY), LENGTH, BASE, aHexKindSetup.get(hexPosition));

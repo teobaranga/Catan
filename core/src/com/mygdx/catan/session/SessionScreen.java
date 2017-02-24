@@ -11,15 +11,15 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.GameRules;
+import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
+import com.mygdx.catan.gameboard.Hex;
+
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
 public class SessionScreen implements Screen {
 
@@ -27,25 +27,24 @@ public class SessionScreen implements Screen {
     private final GameBoardManager aGameBoardManager;
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-    private final int SIZE = 7;                                               // number of tiles at longest diagonal
+    private final int SIZE = GameRules.getGameRulesInstance().getSize();      // number of tiles at longest diagonal
     private final int LENGTH = 40;                                            // length of an edge of a tile
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
     private final int OFFX = BASE;                                            // offset on the x axis
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
 
     PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
-    Texture aWaterTextureSolid;
+    Texture aSeaTextureSolid;
     Texture aDesertTextureSolid;
-    Texture aClayTextureSolid;
-    Texture aForrestTextureSolid;
-    Texture aStoneTextureSolid;
+    Texture aHillsTextureSolid;
+    Texture aForestTextureSolid;
+    Texture aMountainTextureSolid;
+    Texture aPastureTextureSolid;
+    Texture aFieldsTextureSolid;
+    Texture aGoldfieldTextureSolid;
 
     private Stage aSessionStage;
     private Texture bg;
-    private Random rd = new Random();
-    private ArrayList<CoordinatePair<Integer, Integer>> aHexPositions;
-    private ArrayList<CoordinatePair<Integer, Integer>> aIntersectionPositions;
-    private HashMap<CoordinatePair<Integer, Integer>, ResourceKind> aHexKindSetup;
 
     /** The list of polygons representing the board hexes */
     private List<PolygonRegion> boardHexes;
@@ -67,62 +66,30 @@ public class SessionScreen implements Screen {
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         aSessionStage = new Stage();
-        Gdx.input.setInputProcessor(aSessionStage);
-
-        // initialize hex position coordinates, where x=(aHexPositions[i].getLeft()) and y=(aHexPositions[i].getRight())
-        // the coordinates describe the offset from the center.
-        aHexPositions = new ArrayList<>();
-        aHexKindSetup = new HashMap<>();
-        aIntersectionPositions = new ArrayList<>();
-        int half = SIZE / 2;
-
-        for (int row = 0; row < SIZE; row++) {
-            int cols = SIZE - java.lang.Math.abs(row - half);
-
-            for (int col = 0; col < cols; col++) {
-                int x = -cols + 2 * col + 1;
-                int y = (row - half);
-                CoordinatePair<Integer, Integer> hexCoord = new CoordinatePair<>(x, y);
-                aHexKindSetup.put(hexCoord, ResourceKind.values()[rd.nextInt(ResourceKind.values().length)]);
-                aHexPositions.add(hexCoord);
-
-                // Creates the top, and top left points adjacent to current hex
-                aIntersectionPositions.add(new CoordinatePair<>(x - 1, y * 3 - 1));
-                aIntersectionPositions.add(new CoordinatePair<>(x, y * 3 - 2));
-
-                // If at last row, create bottom and bottom left points
-                if (row == SIZE - 1) {
-                    aIntersectionPositions.add(new CoordinatePair<>(x - 1, y * 3 + 1));
-                    aIntersectionPositions.add(new CoordinatePair<>(x, y * 3 + 2));
-                }
-            }
-            // If the hex is the last column of a row, creates the top right point
-            aIntersectionPositions.add(new CoordinatePair<>((cols - 1) + 1, (row - half) * 3 - 1));
-        }
-
-        // Create bottom right point of last column and last row
-        aIntersectionPositions.add(new CoordinatePair<>(half + 1, (half) * 3 + 1));
+        Gdx.input.setInputProcessor(aSessionStage);  
 
         //TODO: UI panels
 
-
         // Creating the color filling for hexagons
-        aWaterTextureSolid = setupTextureSolid(Color.BLUE);
-        aDesertTextureSolid = setupTextureSolid(Color.YELLOW);
-        aClayTextureSolid = setupTextureSolid(Color.RED);
-        aForrestTextureSolid = setupTextureSolid(Color.GREEN);
-        aStoneTextureSolid = setupTextureSolid(Color.GRAY);
+        aSeaTextureSolid = setupTextureSolid(Color.CYAN);
+        aDesertTextureSolid = setupTextureSolid(Color.BLACK);
+        aHillsTextureSolid = setupTextureSolid(Color.BROWN);
+        aForestTextureSolid = setupTextureSolid(Color.GREEN);
+        aMountainTextureSolid = setupTextureSolid(Color.GRAY);
+        aPastureTextureSolid = setupTextureSolid(Color.LIME);
+        aFieldsTextureSolid = setupTextureSolid(Color.YELLOW);
+        aGoldfieldTextureSolid = setupTextureSolid(Color.GOLD);
+        
 
         // sets center of board
         int xCenter = 2 * Gdx.graphics.getWidth() / 5;
         int yCenter = 3 * Gdx.graphics.getHeight() / 5;
         int offsetX, offsetY;
-
-        // create hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
-        for (CoordinatePair<Integer, Integer> hexPosition : aHexPositions) {
-            offsetX = hexPosition.getLeft();
-            offsetY = hexPosition.getRight();
-            createHexagon(xCenter + (offsetX * OFFX), yCenter + (offsetY * OFFY), LENGTH, BASE, aHexKindSetup.get(hexPosition));
+        
+        for (Hex hex : aGameBoardManager) {
+        	offsetX = hex.getLeftCoordinate();
+        	offsetY = hex.getRightCoordinate();
+        	createHexagon(xCenter + (offsetX * OFFX), yCenter - (offsetY * OFFY), LENGTH, BASE, hex.getKind());
         }
 
     }
@@ -194,27 +161,35 @@ public class SessionScreen implements Screen {
      * @param yPos   y position of hexagon center
      * @param length length of the side of the hexagon
      */
-    private void createHexagon(int xPos, int yPos, int length, int base, ResourceKind pResourceKind) {
+    private void createHexagon(int xPos, int yPos, int length, int base, TerrainKind pTerrainKind) {
 
-        Texture aTexture = aWaterTextureSolid;
+        Texture aTexture = aSeaTextureSolid;
 
         // sets aTexture to relevant texture according to ResourceKind
-        switch (pResourceKind) {
-            case BRICK:
-                aTexture = aClayTextureSolid;
+        switch (pTerrainKind) {
+            case HILLS:
+                aTexture = aHillsTextureSolid;
                 break;
-            case GRAIN:
-                aTexture = aDesertTextureSolid;
+            case FIELDS:
+                aTexture = aFieldsTextureSolid;
                 break;
-            case WOOD:
-                aTexture = aForrestTextureSolid;
+            case FOREST:
+                aTexture = aForestTextureSolid;
                 break;
-            case ORE:
-                aTexture = aStoneTextureSolid;
+            case MOUNTAINS:
+                aTexture = aMountainTextureSolid;
                 break;
-            case WOOL:
-                aTexture = aClayTextureSolid;
+            case PASTURE:
+                aTexture = aPastureTextureSolid;
                 break;
+            case SEA:
+            	break;
+            case DESERT:
+            	aTexture = aDesertTextureSolid;
+            	break;
+            case GOLDFIELD:
+                aTexture = aGoldfieldTextureSolid;
+            	break;
             default:
                 break;
         }

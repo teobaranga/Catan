@@ -2,6 +2,7 @@ package com.mygdx.catan.gameboard;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
@@ -23,6 +24,8 @@ public class GameBoard {
 		
         int half = SIZE / 2;
 
+        // initialize hex position coordinates, where x=(aHexPositions[i].getLeft()) and y=(aHexPositions[i].getRight())
+        // the coordinates describe the offset from the center.
         for (int row = 0; row < SIZE; row++) {
             int cols = SIZE - java.lang.Math.abs(row - half);
 
@@ -42,6 +45,7 @@ public class GameBoard {
                 	throw new Exception("Mismatch with GameRules");
                 }
                 
+                
                 // Creates the top, and top left points adjacent to current hex
                 aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 - 1));
                 aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 - 2));                
@@ -58,6 +62,14 @@ public class GameBoard {
         
         // Create bottom right point of last column and last row
         aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(half + 1, (half)*3 + 1));
+	}
+	
+	public int getNumberofHexes(){
+		return hexes.size();
+	}
+
+	public Iterator<Hex> getHexIterator() {
+		return hexes.iterator();
 	}
 
 }

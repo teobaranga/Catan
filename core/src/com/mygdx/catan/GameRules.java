@@ -86,15 +86,93 @@ public class GameRules {
 			}
 		}
 			
-		//hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size = 7)
-		//TODO:finish hardcoding these
-		defaultTerrainKindMap.put(-3^-3, TerrainKind.FIELDS);
-		defaultTerrainKindMap.put(-1^-3, TerrainKind.FIELDS);
-		defaultTerrainKindMap.put(1^-3, TerrainKind.HILLS);
-		defaultTerrainKindMap.put(3^-3, TerrainKind.SEA);
+		//hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
+		defaultTerrainKindMap.put(getHashCodeofPair(-3,-3), TerrainKind.FIELDS);
+		defaultTerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.FIELDS);
+		defaultTerrainKindMap.put(getHashCodeofPair(1,-3), TerrainKind.HILLS);
+		defaultTerrainKindMap.put(getHashCodeofPair(3,-3), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-4,-2), TerrainKind.FOREST);
+		defaultTerrainKindMap.put(getHashCodeofPair(-2,-2), TerrainKind.MOUNTAINS);
+		defaultTerrainKindMap.put(getHashCodeofPair(0,-2), TerrainKind.PASTURE);
+		defaultTerrainKindMap.put(getHashCodeofPair(2,-2), TerrainKind.PASTURE);
+		defaultTerrainKindMap.put(getHashCodeofPair(4,-2), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-5,-1), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-3,-1), TerrainKind.HILLS);
+		defaultTerrainKindMap.put(getHashCodeofPair(-1,-1), TerrainKind.PASTURE);
+		defaultTerrainKindMap.put(getHashCodeofPair(1,-1), TerrainKind.MOUNTAINS);
+		defaultTerrainKindMap.put(getHashCodeofPair(3,-1), TerrainKind.FIELDS);
+		defaultTerrainKindMap.put(getHashCodeofPair(5,-1), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-6,0), TerrainKind.HILLS);
+		defaultTerrainKindMap.put(getHashCodeofPair(-4,0), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-2,0), TerrainKind.FOREST);
+		defaultTerrainKindMap.put(getHashCodeofPair(0,0), TerrainKind.FOREST);
+		defaultTerrainKindMap.put(getHashCodeofPair(2,0), TerrainKind.PASTURE);
+		defaultTerrainKindMap.put(getHashCodeofPair(4,0), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(6,0), TerrainKind.HILLS);
+		defaultTerrainKindMap.put(getHashCodeofPair(-5,1), TerrainKind.MOUNTAINS);
+		defaultTerrainKindMap.put(getHashCodeofPair(-3,1), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-1,1), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(1,1), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(3,1), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(5,1), TerrainKind.GOLDFIELD);
+		defaultTerrainKindMap.put(getHashCodeofPair(-4,2), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-2,2), TerrainKind.GOLDFIELD);
+		defaultTerrainKindMap.put(getHashCodeofPair(0,2), TerrainKind.FIELDS);
+		defaultTerrainKindMap.put(getHashCodeofPair(2,2), TerrainKind.PASTURE);
+		defaultTerrainKindMap.put(getHashCodeofPair(4,2), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-3,3), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(-1,3), TerrainKind.SEA);
+		defaultTerrainKindMap.put(getHashCodeofPair(1,3), TerrainKind.MOUNTAINS);
+		defaultTerrainKindMap.put(getHashCodeofPair(3,3), TerrainKind.SEA);
 
-		//TODO:hardcode default dice number map (keys exactly as above) (assumes size = 7)
-		
+
+		//TODO:hardcode default dice number map (keys exactly as above) (assumes size <= 7)
+		defaultDiceNumberMap.put(getHashCodeofPair(-3,-3), 6);
+		defaultDiceNumberMap.put(getHashCodeofPair(-1,-3), 11);
+		defaultDiceNumberMap.put(getHashCodeofPair(1,-3), 8);
+		defaultDiceNumberMap.put(getHashCodeofPair(3,-3), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-4,-2), 5);
+		defaultDiceNumberMap.put(getHashCodeofPair(-2,-2), 3);
+		defaultDiceNumberMap.put(getHashCodeofPair(0,-2), 10);
+		defaultDiceNumberMap.put(getHashCodeofPair(2,-2), 2);
+		defaultDiceNumberMap.put(getHashCodeofPair(4,-2), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-5,-1), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-3,-1), 11);
+		defaultDiceNumberMap.put(getHashCodeofPair(-1,-1), 9);
+		defaultDiceNumberMap.put(getHashCodeofPair(1,-1), 5);
+		defaultDiceNumberMap.put(getHashCodeofPair(3,-1), 4);
+		defaultDiceNumberMap.put(getHashCodeofPair(5,-1), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-6,0), 10);
+		defaultDiceNumberMap.put(getHashCodeofPair(-4,0), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-2,0), 8);
+		defaultDiceNumberMap.put(getHashCodeofPair(0,0), 10);
+		defaultDiceNumberMap.put(getHashCodeofPair(2,0), 6);
+		defaultDiceNumberMap.put(getHashCodeofPair(4,0), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(6,0), 12);
+		defaultDiceNumberMap.put(getHashCodeofPair(-5,1), 8);
+		defaultDiceNumberMap.put(getHashCodeofPair(-3,1), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-1,1), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(1,1), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(3,1), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(5,1), 5);
+		defaultDiceNumberMap.put(getHashCodeofPair(-4,2), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-2,2), 4);
+		defaultDiceNumberMap.put(getHashCodeofPair(0,2), 3);
+		defaultDiceNumberMap.put(getHashCodeofPair(2,2), 4);
+		defaultDiceNumberMap.put(getHashCodeofPair(4,2), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-3,3),0);
+		defaultDiceNumberMap.put(getHashCodeofPair(-1,3), 0);
+		defaultDiceNumberMap.put(getHashCodeofPair(1,3), 9);
+		defaultDiceNumberMap.put(getHashCodeofPair(3,3), 0);
+	}
+	
+	/**
+	 * @param left coordinate
+	 * @param right coordinate
+	 * @return the hashCode of the CoordinatePair <x,y>
+	 * */
+	private int getHashCodeofPair(int x, int y) {
+		return x*10+y;
 	}
 	
 	/**

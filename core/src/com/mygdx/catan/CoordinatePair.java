@@ -38,5 +38,12 @@ public class CoordinatePair<L,R> extends Pair<L,R>{
 		public R getRight() {
 			return right;
 		}
-
+		
+	    @Override
+	    public int hashCode() {
+	        
+	        return (getKey() == null ? 0 : getKey().hashCode()*10) +
+	                (getValue() == null ? 0 : getValue().hashCode());
+	        
+	    }
 }

@@ -8,35 +8,38 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
-import com.mygdx.catan.screens.create.CreateScreen;
+import com.mygdx.catan.request.MarkAsReady;
+import com.mygdx.catan.response.MarkedAsReady;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
 import com.mygdx.catan.session.SessionScreen;
 
-import java.io.IOException;
-
 public class CatanGame extends Game {
-    // The IP of the server. All clients need to connect to this IP.
-    private static final String MY_IP = "142.157.168.72";
-	
-	private GameBoardManager aGameBoardManager = new GameBoardManager();
+    /** The Client representing the current user */
+    public static final Client client;
 
-	private final Client client;
-
+    /** The skin used throughout the whole game */
     @SuppressWarnings("LibGDXStaticResource")
     public static Skin skin;
 
-    public SpriteBatch batch;
-
-    private MenuScreen menuScreen;
-
-    public CatanGame() {
+    static {
         client = new Client();
+
+        // Register request & response classes (needed for networking)
+        Kryo kryo = client.getKryo();
+        kryo.register(MarkAsReady.class);
+        kryo.register(MarkedAsReady.class);
+
         client.start();
     }
+
+    public SpriteBatch batch;
+    private GameBoardManager aGameBoardManager = new GameBoardManager();
+    private MenuScreen menuScreen;
 
     @Override
     public void create() {
@@ -107,22 +110,17 @@ public class CatanGame extends Game {
     public void switchScreen(ScreenKind pScreenKind) {
         switch (pScreenKind) {
             case MAIN_MENU:
-                this.setScreen(menuScreen);
+                setScreen(menuScreen);
                 break;
             case BROWSE_GAMES:
-                //
-                try {
-                    client.connect(5000, MY_IP, 54555, 54777);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
                 break;
             case CREATE_GAME:
+            case IN_GAME:
                 //this.setScreen(new CreateScreen(this, menuScreen));
-            	this.setScreen(new SessionScreen(this, aGameBoardManager));
+                setScreen(new SessionScreen(this, aGameBoardManager));
                 break;
             case LOBBY:
-                this.setScreen(new LobbyScreen(this, menuScreen));
+                setScreen(new LobbyScreen(this, menuScreen));
                 break;
             case RESUME_GAME:
                 break;

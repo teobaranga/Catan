@@ -5,5 +5,6 @@ public enum ScreenKind {
 	LOBBY,
 	BROWSE_GAMES,
 	RESUME_GAME,
-	CREATE_GAME
+	CREATE_GAME,
+	IN_GAME
 }

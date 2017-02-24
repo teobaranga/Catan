@@ -10,8 +10,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.Config;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.ui.CatanWindow;
+
+import java.io.IOException;
 
 public class MenuScreen implements Screen {
 
@@ -30,7 +33,6 @@ public class MenuScreen implements Screen {
 
     @Override
     public void show() {
-
         bg = new Texture("BG.png");
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
@@ -45,13 +47,30 @@ public class MenuScreen implements Screen {
 
         // Setup buttons
         aJoinRandomButton = new TextButton("Join Random Game", CatanGame.skin);
-        setupRandomButton();
+        setupJoinRandomGame();
+        aMenuTable.add(aJoinRandomButton).pad(50);
 
         aCreateGameButton = new TextButton("Create Game", CatanGame.skin);
         setupButton(aCreateGameButton, ScreenKind.CREATE_GAME);
 
         aBrowseGamesButton = new TextButton("Browse Games", CatanGame.skin);
         setupButton(aBrowseGamesButton, ScreenKind.BROWSE_GAMES);
+        aBrowseGamesButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Setup the window
+                CatanWindow window = new CatanWindow("Browse Games", CatanGame.skin);
+                window.setWidth(3f / 4f * Gdx.graphics.getWidth());
+                window.setHeight(3f / 4f * Gdx.graphics.getHeight());
+                window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
+                window.setWindowListener(window::remove);
+
+                // Display the window
+                aMenuStage.addActor(window);
+
+                // TODO: display a list of servers
+            }
+        });
 
         aResumeGameButton = new TextButton("Resume Game", CatanGame.skin);
         setupButton(aResumeGameButton, ScreenKind.LOBBY);
@@ -81,14 +100,12 @@ public class MenuScreen implements Screen {
 
     @Override
     public void pause() {
-        // TODO Auto-generated method stub
-
+        // Nothing to do
     }
 
     @Override
     public void resume() {
-        // TODO Auto-generated method stub
-
+        // Nothing to do
     }
 
     @Override
@@ -116,26 +133,54 @@ public class MenuScreen implements Screen {
         aMenuTable.add(pTextButton).pad(50);
     }
 
-    private void setupRandomButton() {
+    /**
+     * Setup the Join Random Game button.
+     * Displays a window indicating progress towards finding a game.
+     */
+    private void setupJoinRandomGame() {
         // add listener to button
         aJoinRandomButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                // Reset the checked state of the button
                 aJoinRandomButton.setChecked(false);
-                //TODO: request catanGame to join random game
 
-                // setup window
-                CatanWindow window = new CatanWindow("Joining Game", aGame.skin);
+                // Setup the window
+                CatanWindow window = new CatanWindow("Joining Game", CatanGame.skin);
                 window.setWidth(1f / 4f * Gdx.graphics.getWidth());
                 window.setHeight(1f / 4f * Gdx.graphics.getHeight());
                 window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
-                window.setWindowListener(() -> window.remove());
+                window.setWindowListener(window::remove);
 
+                // Display the window
                 aMenuStage.addActor(window);
+
+                new Thread(() -> {
+                    // TODO: remove this
+                    // simulate some loading
+//                    try {
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+                    // TODO find a random game and connect it it
+                    try {
+                        CatanGame.client.connect(5000, Config.IP, Config.TCP, Config.UDP);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        // TODO: connection failed, inform the user
+                    }
+                    Gdx.app.postRunnable(() -> {
+                        // Remove the window
+                        window.remove();
+                        // Bring the user to the lobby screen
+                        if (CatanGame.client.isConnected()) {
+                            aGame.switchScreen(ScreenKind.LOBBY);
+                        }
+                    });
+                }).start();
             }
 
         });
-
-        aMenuTable.add(aJoinRandomButton).pad(50);
     }
 }

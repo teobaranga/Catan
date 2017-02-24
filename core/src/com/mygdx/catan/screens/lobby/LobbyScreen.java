@@ -5,12 +5,19 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.request.MarkAsReady;
+import com.mygdx.catan.response.MarkedAsReady;
 import com.mygdx.catan.screens.lobby.chat.ChatMessage;
 import com.mygdx.catan.ui.CatanWindow;
 
@@ -18,7 +25,9 @@ public class LobbyScreen implements Screen {
 
     private static final String TITLE = "Lobby";
 
-    private static Stage stage;
+    private final Listener lobbyListener;
+
+    private Stage stage;
     private final CatanGame game;
     private final Screen parentScreen;
     private Texture bg;
@@ -26,10 +35,23 @@ public class LobbyScreen implements Screen {
     public LobbyScreen(CatanGame game, Screen parentScreen) {
         this.game = game;
         this.parentScreen = parentScreen;
+        lobbyListener = new Listener() {
+            @Override
+            public void received(Connection connection, Object object) {
+                if (object instanceof MarkedAsReady) {
+                    Gdx.app.postRunnable(() -> {
+                        System.out.println("You have been marked as ready.");
+                        game.switchScreen(ScreenKind.IN_GAME);
+                    });
+                }
+            }
+        };
     }
 
     @Override
     public void show() {
+        CatanGame.client.addListener(lobbyListener);
+
         bg = new Texture("BG.png");
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
@@ -37,29 +59,35 @@ public class LobbyScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
 
         // Create & add the window
-        CatanWindow window = new CatanWindow(TITLE, game.skin);
+        CatanWindow window = new CatanWindow(TITLE + " : " + CatanGame.client.getRemoteAddressTCP(), CatanGame.skin);
         // TODO: Closing the lobby window should bring the user back to the MainMenu
         window.setWindowListener(() -> game.setScreen(parentScreen));
         window.debugAll();
 
-        Table contentTable = new Table(game.skin);
+        Table contentTable = new Table(CatanGame.skin);
 //        contentTable.background(game.skin.newDrawable("background", Color.RED));
 //        contentTable.debugAll();
         contentTable.padTop(window.getPadTop());
         contentTable.setFillParent(true);
 
-        Table rulesTable = new Table(game.skin);
+        Table rulesTable = new Table(CatanGame.skin);
 //        rulesTable.debugAll();
-        rulesTable.background(game.skin.newDrawable("background", Color.BLUE));
+        rulesTable.background(CatanGame.skin.newDrawable("background", Color.BLUE));
         rulesTable.pack();
 
-        Table chatTable = new Table(game.skin);
+        Table chatTable = new Table(CatanGame.skin);
         chatTable.debugAll();
 //        chatTable.background(game.skin.newDrawable("background", Color.YELLOW));
         setupChat(chatTable);
 //        chatTable.pack();
 
-        TextButton ready = new TextButton("Ready", game.skin);
+        TextButton ready = new TextButton("Ready", CatanGame.skin);
+        ready.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                CatanGame.client.sendTCP(new MarkAsReady());
+            }
+        });
 
         contentTable.top().left();
         contentTable.add(rulesTable).width(425).expandX().height(400).pad(20);
@@ -92,17 +120,18 @@ public class LobbyScreen implements Screen {
     }
 
     @Override
-    public void pause() {
-
+    public void resume() {
+        // Nothing to do
     }
 
     @Override
-    public void resume() {
-
+    public void pause() {
+        // Nothing to do
     }
 
     @Override
     public void hide() {
+        CatanGame.client.removeListener(lobbyListener);
         Gdx.input.setInputProcessor(null);
         dispose();
     }

@@ -2,14 +2,14 @@ package com.mygdx.catan.enums;
 
 public enum ProgressCardKind {
 
-    ARECHEMIST,
+    ALCHEMIST,
     CRANE,
     ENGINEER,
     INVENTOR,
     IRRIGATION,
     MEDICINE,
     MINING,
-    PRINER,
+    PRINTER,
     ROADBUILDING,
     SMITH,
     BISHOP,
@@ -23,7 +23,8 @@ public enum ProgressCardKind {
     WEDDING,
     COMMERCIALHARBOUR,
     MASTERMERCHANT,
-    MERCHENTFLEET,
+    MERCHANTFLEET,
+    MERCHANT,
     RESOURCEMONOPOLY,
     TRADEMONOPOLY
 }

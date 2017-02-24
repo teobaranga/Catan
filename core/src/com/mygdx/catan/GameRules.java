@@ -29,64 +29,15 @@ public class GameRules {
 	private static GameRules aGameRules = new GameRules();
 	
 	private GameRules() {
-		// hardcodes the progress card occurences
-		//TODO: add a map from each of the following progress card kinds to integer
-		for (ProgressCardKind pck : ProgressCardKind.values()) {
-			switch (pck) {
-			case ARECHEMIST:
-				break;
-			case BISHOP:
-				break;
-			case COMMERCIALHARBOUR:
-				break;
-			case CONSTITUTION:
-				break;
-			case CRANE:
-				break;
-			case DESERTER:
-				break;
-			case DIPLOMAT:
-				break;
-			case ENGINEER:
-				break;
-			case INTRIGUE:
-				break;
-			case INVENTOR:
-				break;
-			case IRRIGATION:
-				break;
-			case MASTERMERCHANT:
-				break;
-			case MEDICINE:
-				break;
-			case MERCHENTFLEET:
-				break;
-			case MINING:
-				break;
-			case PRINER:
-				break;
-			case RESOURCEMONOPOLY:
-				break;
-			case ROADBUILDING:
-				break;
-			case SABOTEUR:
-				break;
-			case SMITH:
-				break;
-			case SPY:
-				break;
-			case TRADEMONOPOLY:
-				break;
-			case WARLORD:
-				break;
-			case WEDDING:
-				break;
-			default:
-				break;
-			}
-		}
-			
-		//hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
+		initializeProgressCardOccurences();
+		setupDefaultTerrainMap();
+		setupDefaultDiceMap();
+	}
+	
+	/**
+	 * hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
+	 * */
+	private void setupDefaultTerrainMap() {
 		defaultTerrainKindMap.put(getHashCodeofPair(-3,-3), TerrainKind.FIELDS);
 		defaultTerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.FIELDS);
 		defaultTerrainKindMap.put(getHashCodeofPair(1,-3), TerrainKind.HILLS);
@@ -124,9 +75,12 @@ public class GameRules {
 		defaultTerrainKindMap.put(getHashCodeofPair(-1,3), TerrainKind.SEA);
 		defaultTerrainKindMap.put(getHashCodeofPair(1,3), TerrainKind.MOUNTAINS);
 		defaultTerrainKindMap.put(getHashCodeofPair(3,3), TerrainKind.SEA);
-
-
-		//TODO:hardcode default dice number map (keys exactly as above) (assumes size <= 7)
+	}
+	
+	/**
+	 * hardcodes default dice number map (keys exactly as above) (assumes size <= 7)
+	 * */
+	private void setupDefaultDiceMap() {
 		defaultDiceNumberMap.put(getHashCodeofPair(-3,-3), 6);
 		defaultDiceNumberMap.put(getHashCodeofPair(-1,-3), 11);
 		defaultDiceNumberMap.put(getHashCodeofPair(1,-3), 8);
@@ -164,6 +118,37 @@ public class GameRules {
 		defaultDiceNumberMap.put(getHashCodeofPair(-1,3), 0);
 		defaultDiceNumberMap.put(getHashCodeofPair(1,3), 9);
 		defaultDiceNumberMap.put(getHashCodeofPair(3,3), 0);
+	}
+	
+	/**
+	 * initializes progress card occurences
+	 * */
+	private void initializeProgressCardOccurences() {
+		progressCardOccurences.put(ProgressCardKind.ALCHEMIST, 2);
+		progressCardOccurences.put(ProgressCardKind.BISHOP, 2);
+		progressCardOccurences.put(ProgressCardKind.COMMERCIALHARBOUR, 2);
+		progressCardOccurences.put(ProgressCardKind.CONSTITUTION, 1);
+		progressCardOccurences.put(ProgressCardKind.CRANE, 2);
+		progressCardOccurences.put(ProgressCardKind.DESERTER, 2);
+		progressCardOccurences.put(ProgressCardKind.DIPLOMAT, 2);
+		progressCardOccurences.put(ProgressCardKind.ENGINEER, 1);
+		progressCardOccurences.put(ProgressCardKind.INTRIGUE, 2);
+		progressCardOccurences.put(ProgressCardKind.INVENTOR, 2);
+		progressCardOccurences.put(ProgressCardKind.IRRIGATION, 2);
+		progressCardOccurences.put(ProgressCardKind.MASTERMERCHANT, 2);
+		progressCardOccurences.put(ProgressCardKind.MEDICINE, 2);
+		progressCardOccurences.put(ProgressCardKind.MERCHANTFLEET, 2);
+		progressCardOccurences.put(ProgressCardKind.MINING, 2);
+		progressCardOccurences.put(ProgressCardKind.PRINTER, 1);
+		progressCardOccurences.put(ProgressCardKind.RESOURCEMONOPOLY, 4);
+		progressCardOccurences.put(ProgressCardKind.ROADBUILDING, 2);
+		progressCardOccurences.put(ProgressCardKind.SABOTEUR, 2);
+		progressCardOccurences.put(ProgressCardKind.SMITH, 2);
+		progressCardOccurences.put(ProgressCardKind.SPY, 3);
+		progressCardOccurences.put(ProgressCardKind.TRADEMONOPOLY, 2);
+		progressCardOccurences.put(ProgressCardKind.WARLORD, 2);
+		progressCardOccurences.put(ProgressCardKind.WEDDING, 2);
+		progressCardOccurences.put(ProgressCardKind.MERCHANT, 6);
 	}
 	
 	/**

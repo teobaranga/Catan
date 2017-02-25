@@ -2,23 +2,32 @@ package com.mygdx.catan;
 
 import com.mygdx.catan.enums.EventKind;
 import com.mygdx.catan.enums.GamePhase;
+import com.mygdx.catan.enums.PlayerColor;
 
 public class Session {
 	
 	GamePhase currentPhase;
 	EventKind eventDice;
-	private int barbarianPosition; //set
+	private int barbarianPosition; //set      FIXME: currently this is in gameboard
 	private int redDice; //setters needed?
 	private int yellowDice; //setters needed?
 	private int numberOfPlayers; //set
 	private int VPsToWin; //set
+	private Player[] players;
 	
+	//TODO: change this to fit design, so far this is only placeholder!
 	public Session(int barbarianPosition, int redDice, int yellowDice, int numberofPlayers, int VPsToWin) {
 		this.barbarianPosition = barbarianPosition;
 		this.redDice = redDice;
 		this.yellowDice = yellowDice;
 		this.numberOfPlayers = numberofPlayers;
 		this.VPsToWin = VPsToWin;
+		
+		players = new Player[numberOfPlayers];
+		for (int i = 0; i<numberOfPlayers; i++) {
+			Account account = new Account(i+"",i+"");
+			players[i] = new Player(account,PlayerColor.values()[i]);
+		}
 	}
 	
 	public GamePhase getCurrentPhase() {
@@ -61,6 +70,8 @@ public class Session {
 		this.numberOfPlayers = numberOfPlayers;
 	}
 	
-	
+	public Player[] getPlayers() {
+		return players;
+	}
 	
 }

@@ -82,6 +82,8 @@ public class GameBoardManager implements Iterable<Hex>{
 	 * @return true if building the village was successful, false otherwise
 	 * */
 	public boolean buildSettlement(Player player, CoordinatePair<Integer,Integer> position) {
+		// verifies that the intersection is not occupied, and that it is adjacent to a road or ship of player
+		// FIXME: it does not verify that the intersection is not in the sea, or that it is not adjacent to another Village
 		if (position.isOccupied() || !aGameBoard.isAdjacentToEdgeUnit(position, player)) {return false;}
 		
 		Village village = new Village(player,position);
@@ -89,12 +91,14 @@ public class GameBoardManager implements Iterable<Hex>{
 		return true;
 	}
 	
-	//TODO
-	public boolean buildEdgeUnit(CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition) {
+	/**
+	 * @param player 
+	 * */
+	public boolean buildEdgeUnit(Player player, CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition) {
 		return false;
 	} 
 	
-	//TODO
+	//TODOe
 	public int getCityCount() {
 		return 0;
 	}

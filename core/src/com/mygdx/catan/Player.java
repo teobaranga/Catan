@@ -47,6 +47,14 @@ public class Player {
 		return roadsAndShips;
 	}
 	
+	/**
+	 * adds given EdgeUnit to roadsAndShips. Its position and and type is assumed to be legal. 
+	 * @param edge unit. 
+	 * */
+	public void addEdgeUnit(EdgeUnit unit) {
+		roadsAndShips.add(unit);
+	}
+	
 	public PlayerColor getColor() {
 		return color;
 	}

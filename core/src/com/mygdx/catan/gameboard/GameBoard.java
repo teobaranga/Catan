@@ -16,7 +16,7 @@ import com.mygdx.catan.enums.ProgressCardKind;
 public class GameBoard {
 
 	private ArrayList<Hex> hexes;
-	private ArrayList<CoordinatePair<Integer,Integer>> aIntersectionPositions;
+	private ArrayList<CoordinatePair<Integer,Integer>> aIntersectionPositions;			// Villages will be available through the intersection positions
 	private int aBarbarianPosition;
 	private Hex aRobberPosition;
 	private Hex aMerchantPosition;

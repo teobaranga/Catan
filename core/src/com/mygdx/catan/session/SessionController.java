@@ -4,9 +4,13 @@ import java.util.ArrayList;
 
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
+import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
+import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.gameboard.Village;
 
 public class SessionController {
 	private final GameBoardManager aGameBoardManager;
@@ -75,5 +79,56 @@ public class SessionController {
 	public boolean moveRobber(Hex newPosition, boolean fromPeer) {
 		//TODO: as described above
 		return false;
+	}
+
+	/** Allows the user to place a city and an edge unit and then receive the resources near the city */
+	public void placeCityAndRoads(CoordinatePair cityPos, CoordinatePair edgeUnitPos1, CoordinatePair edgeUnitPos2, boolean isShip) {
+		Player cp = aSessionManager.getCurrentPlayer();
+
+		EdgeUnit eu;
+		if (isShip) {
+			eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, cp);
+			buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, true);
+		} else {
+			eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.ROAD, cp);
+			buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, true);
+		}
+		cp.addEdgeUnit(eu);
+
+		Village v = new Village(cp, cityPos);
+		buildSettlement(cityPos, cp, false);
+		cp.addVillage(v);
+
+		ArrayList<Hex> neighbourHexes = new ArrayList<Hex>();
+		ArrayList<Hex> hexes = aGameBoardManager.getHexes();
+
+		for (Hex h : hexes) {
+			if (h.isAdjacent(cityPos)) {
+				neighbourHexes.add(h);
+			}
+		}
+
+		ResourceMap cost = new ResourceMap();
+		for( Hex h: neighbourHexes) {
+			switch (h.getKind()) {
+				case FOREST:
+					cost.put(ResourceKind.WOOD, 1);
+					break;
+				case MOUNTAINS:
+					cost.put(ResourceKind.ORE, 1);
+					break;
+				case HILLS:
+					cost.put(ResourceKind.BRICK, 1);
+					break;
+				case FIELDS:
+					cost.put(ResourceKind.GRAIN, 1);
+					break;
+				case PASTURE:
+					cost.put(ResourceKind.WOOL, 1);
+					break;
+				// GOLDFIELDS ?
+			}
+		}
+		cp.addResources(cost);
 	}
 }

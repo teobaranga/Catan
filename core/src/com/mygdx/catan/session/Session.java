@@ -1,5 +1,7 @@
-package com.mygdx.catan;
+package com.mygdx.catan.session;
 
+import com.mygdx.catan.Account;
+import com.mygdx.catan.Player;
 import com.mygdx.catan.enums.EventKind;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.PlayerColor;

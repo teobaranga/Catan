@@ -5,15 +5,19 @@ import java.util.Iterator;
 
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
+import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ProgressCardKind;
+import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.GameBoard;
+import com.mygdx.catan.session.SessionScreen;
 
 /**
  * Creates and mutates the state of the GameBoard. Iterator iterates through the hexes of the GameBoard
  * */
-public class GameBoardManager implements Iterable<Hex>{
+public class GameBoardManager{
 
 	private static GameBoard aGameBoard;
+	//private ArrayList<SessionScreen> sessionScreens = new ArrayList<SessionScreen>();
 	
 	public GameBoardManager() {
 		
@@ -26,11 +30,6 @@ public class GameBoardManager implements Iterable<Hex>{
 		}
 	}
 
-	@Override
-	public Iterator<Hex> iterator() {
-		return aGameBoard.getHexIterator();
-	}
-	
 	public ArrayList<CoordinatePair<Integer,Integer>> getIntersectionsAndEdges() {
 		return aGameBoard.getIntersectionsAndEdges();
 	}
@@ -88,24 +87,52 @@ public class GameBoardManager implements Iterable<Hex>{
 		
 		Village village = new Village(player,position);
 		position.putVillage(village);
+		player.addVillage(village);
+		
 		return true;
 	}
 	
 	/**
-	 * @param player 
+	 * Builds the edge unit according to corresponding input. Determines if new edge unit piece increases the players longest road, and takes appropriate action
+	 * @param owner of edgeUnit
+	 * @param first end point of road or ship
+	 * @param second end point of road or ship
+	 * @param edge unit kind: ROAD or SHIP
+	 * @return true if building the unit was successful, false otherwise
 	 * */
-	public boolean buildEdgeUnit(Player player, CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition) {
-		return false;
+	public boolean buildEdgeUnit(Player player, CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition, EdgeUnitKind kind) {
+		//TODO: verify that edgeUnit is between two adjacent coordinates, that those coordinates are free
+		// and that the adjacent hexes are compatible with the EdgeUnitKind
+		
+		EdgeUnit edgeunit = new EdgeUnit(firstPosition, SecondPosition, kind);
+		player.addEdgeUnit(edgeunit);
+		//TODO: notify SessionScreens of change
+		//TODO: longest road
+		return true;
 	} 
 	
-	//TODOe
+	/**
+	 * @return total number of cities on the gameboard
+	 * */
 	public int getCityCount() {
-		return 0;
+		int cityCount = 0;
+		
+		ArrayList<CoordinatePair<Integer,Integer>> edgesAndIntersections = aGameBoard.getIntersectionsAndEdges(); 
+		
+		for (CoordinatePair<Integer,Integer> coordinate : edgesAndIntersections) {
+			if (coordinate.isOccupied()) {
+				Village v = coordinate.getOccupyingVillage();
+				if (v.getVillageKind().equals(VillageKind.CITY)) {
+					cityCount++;
+				}
+			}
+		}
+		
+		return cityCount;
 	}
 	
 	//TODO
 	public void moveRobber(CoordinatePair<Integer,Integer> newPosition) {
-	
 	}
 	
 	//TODO

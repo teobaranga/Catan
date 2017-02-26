@@ -11,8 +11,11 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
+import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.TerrainKind;
+import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 
@@ -24,7 +27,7 @@ import java.util.List;
 public class SessionScreen implements Screen {
 
     private final CatanGame aGame;
-    private final GameBoardManager aGameBoardManager;
+    private SessionController aSessionController;
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
     private final int SIZE = GameRules.getGameRulesInstance().getSize();      // number of tiles at longest diagonal
@@ -52,12 +55,15 @@ public class SessionScreen implements Screen {
     /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
 
-    public SessionScreen(CatanGame pGame, GameBoardManager pGameBoardManager) {
+    public SessionScreen(CatanGame pGame) {
         aGame = pGame;
-        aGameBoardManager = pGameBoardManager;
         boardHexes = new ArrayList<>();
         boardOrigin = new MutablePair<>();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    }
+    
+    public void setSessionController(SessionController sc) {
+    	aSessionController = sc;
     }
 
     @Override
@@ -86,7 +92,7 @@ public class SessionScreen implements Screen {
         int yCenter = 3 * Gdx.graphics.getHeight() / 5;
         int offsetX, offsetY;
         
-        for (Hex hex : aGameBoardManager) {
+        for (Hex hex : aSessionController.getHexes()) {
         	offsetX = hex.getLeftCoordinate();
         	offsetY = hex.getRightCoordinate();
         	createHexagon(xCenter + (offsetX * OFFX), yCenter - (offsetY * OFFY), LENGTH, BASE, hex.getKind());
@@ -224,6 +230,14 @@ public class SessionScreen implements Screen {
         // The offset calculations are a bit weird and unintuitive but it works
         boardOrigin.setLeft(((int) (width / 2f)) - OFFX * SIZE * 2);
         boardOrigin.setRight(((int) (height / 2f)) - OFFY * SIZE);
+    }
+    
+    /**
+     * renders the village with appropriate color and kind at the given position. If position is already occupied, the currently placed village will be removed and replaced
+     * @param position of intersection to update
+     * */
+    public void updateIntersection(CoordinatePair<Integer,Integer> position, PlayerColor color, VillageKind kind, boolean build) {
+    	
     }
 
 }

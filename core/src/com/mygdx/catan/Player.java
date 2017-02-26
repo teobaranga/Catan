@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.PlayerStatus;
 import com.mygdx.catan.gameboard.EdgeUnit;
+import com.mygdx.catan.gameboard.Village;
 
 public class Player {
 
 	PlayerStatus status;
 	private PlayerColor color;
 	private ArrayList<EdgeUnit> roadsAndShips = new ArrayList<EdgeUnit>();
+	private ArrayList<Village> villages = new ArrayList<Village>();
 	private int defenderOfCatanVPs;
 	private int gold;
 	
@@ -53,6 +55,14 @@ public class Player {
 	 * */
 	public void addEdgeUnit(EdgeUnit unit) {
 		roadsAndShips.add(unit);
+	}
+	
+	/**
+	 * adds given village to villages. Its position and and type is assumed to be legal. 
+	 * @param village. 
+	 * */
+	public void addVillage(Village v) {
+		villages.add(v);
 	}
 	
 	public PlayerColor getColor() {

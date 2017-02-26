@@ -1,4 +1,6 @@
-package com.mygdx.catan;
+package com.mygdx.catan.session;
+
+import com.mygdx.catan.Player;
 
 public class SessionManager {
 	private Session aSession;

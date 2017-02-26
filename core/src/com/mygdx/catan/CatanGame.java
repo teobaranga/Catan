@@ -16,6 +16,8 @@ import com.mygdx.catan.request.MarkAsReady;
 import com.mygdx.catan.response.MarkedAsReady;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
+import com.mygdx.catan.session.SessionController;
+import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.session.SessionScreen;
 
 public class CatanGame extends Game {
@@ -39,6 +41,7 @@ public class CatanGame extends Game {
 
     public SpriteBatch batch;
     private GameBoardManager aGameBoardManager = new GameBoardManager();
+    private SessionManager aSessionManager = new SessionManager(4);
     private MenuScreen menuScreen;
 
     @Override
@@ -117,7 +120,11 @@ public class CatanGame extends Game {
             case CREATE_GAME:
             case IN_GAME:
                 //this.setScreen(new CreateScreen(this, menuScreen));
-                setScreen(new SessionScreen(this, aGameBoardManager));
+            	SessionController sc = new SessionController(aGameBoardManager, aSessionManager);
+            	SessionScreen screen = new SessionScreen(this);
+            	sc.setSessionScreen(screen);
+            	screen.setSessionController(sc);
+                setScreen(screen);
                 break;
             case LOBBY:
                 setScreen(new LobbyScreen(this, menuScreen));
@@ -127,5 +134,13 @@ public class CatanGame extends Game {
             default:
                 break;
         }
+    }
+    
+    public GameBoardManager getGameBoardManager() {
+    	return aGameBoardManager;
+    }
+    
+    public SessionManager getSessionManager() {
+    	return aSessionManager;
     }
 }

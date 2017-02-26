@@ -1,6 +1,6 @@
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
-    default-font: {
+    default: {
       file: default.fnt
     },
     arial-13: {
@@ -14,13 +14,17 @@
     green: {a: 1, b: 0, g: 1, r: 0},
     white: {a: 1, b: 1, g: 1, r: 1},
     red: {a: 1, b: 0, g: 0, r: 1},
-    black: {a: 1, b: 0, g: 0, r: 0},
+    black: {a: 1, b: 0, g: 0, r: 0}
   },
   com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
     dialogDim: {
       name: white,
       color: {r: 0, g: 0, b: 0, a: 0.45}
     },
+    resTableBackground: {
+      name: white,
+      color: {r: 0.976, g: 0.827, b: 0.647, a: 1}
+    }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
     default: {
@@ -37,14 +41,14 @@
     default: {
       down: default-round-down,
       up: default-round,
-      font: default-font,
+      font: default,
       fontColor: white
     },
     toggle: {
       down: default-round-down,
       up: default-round,
       checked: default-round-down,
-      font: default-font,
+      font: default,
       fontColor: white,
       downFontColor: red
     }
@@ -60,12 +64,12 @@
   },
   com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
     default: {
-      font: default-font,
+      font: default,
       fontColor: white,
       background: default-select,
       scrollStyle: default,
       listStyle: {
-        font: default-font,
+        font: default,
         selection: default-select-selection
       }
     }
@@ -80,12 +84,12 @@
   },
   com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
     default: {
-      titleFont: default-font,
+      titleFont: default,
       background: default-window,
       titleFontColor: white
     },
     dialog: {
-      titleFont: default-font,
+      titleFont: default,
       background: default-window,
       titleFontColor: white,
       stageBackground: dialogDim
@@ -113,15 +117,19 @@
   },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
     default: {
-      font: default-font,
+      font: default,
       fontColor: white
+    },
+    lobby-header: {
+      font: default,
+      background: default-rect
     },
     chat-sender: {
       font: droid-sans-15,
       fontColor: white
     },
     chat-message: {
-      font: default-font,
+      font: default,
       fontColor: white
     }
   },
@@ -129,7 +137,7 @@
     default: {
       selection: selection,
       background: textfield,
-      font: default-font,
+      font: default,
       fontColor: white,
       cursor: cursor
     }
@@ -138,7 +146,7 @@
     default: {
       checkboxOn: check-on,
       checkboxOff: check-off,
-      font: default-font,
+      font: default,
       fontColor: white
     }
   },
@@ -147,7 +155,7 @@
       fontColorUnselected: white,
       selection: selection,
       fontColorSelected: white,
-      font: default-font
+      font: default
     }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Touchpad$TouchpadStyle: {
@@ -166,7 +174,7 @@
   com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle: {
     default: {
       label: {
-        font: default-font,
+        font: default,
         fontColor: white
       },
       background: default-pane,

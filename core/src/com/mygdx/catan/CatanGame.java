@@ -108,6 +108,8 @@ public class CatanGame extends Game {
         textFieldStyle.font = skin.getFont("default");
         textFieldStyle.fontColor = Color.YELLOW;
         skin.add("default", textFieldStyle);
+
+        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
     }
 
     public void switchScreen(ScreenKind pScreenKind) {

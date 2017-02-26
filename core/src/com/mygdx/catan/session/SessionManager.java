@@ -30,6 +30,13 @@ public class SessionManager {
         }
     }
 
+    //TODO FINISH
+    public void updateResourceBar() {
+        for (SessionScreen sessionScreen : sessionScreens) {
+
+        }
+    }
+
     public int getYellowDice() { return aSession.getYellowDice(); }
 
     public int getRedDice() { return aSession.getRedDice(); }

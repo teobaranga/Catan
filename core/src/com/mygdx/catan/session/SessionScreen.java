@@ -83,14 +83,14 @@ public class SessionScreen implements Screen {
     /**
      * The map of resource tables
      */
-    Map<String, Table> resourceTableMap;
+    Map<String, Label> resourceLabelMap;
 
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
         boardHexes = new ArrayList<>();
         villages = new ArrayList<>();
         boardOrigin = new MutablePair<>();
-        resourceTableMap = new HashMap<>();
+        resourceLabelMap = new HashMap<>();
         colorMap = new HashMap<>();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -123,7 +123,6 @@ public class SessionScreen implements Screen {
 
         for (Map.Entry<String, Color> entry : colorMap.entrySet()) {
             Table aTable = createResourceTable(entry.getKey());
-            resourceTableMap.put(entry.getKey(), aTable);
             contentTable.add(aTable).pad(5);
         }
 
@@ -181,7 +180,11 @@ public class SessionScreen implements Screen {
         Table resourceTable = new Table(aGame.skin);
         resourceTable.add(new Label(type, aGame.skin));
         resourceTable.row();
-        resourceTable.add(new Label("0", aGame.skin));
+
+        Label l = new Label("0", aGame.skin);
+        resourceTable.add(l);
+        resourceLabelMap.put(type, l);
+
         resourceTable.setBackground(aGame.skin.newDrawable("background", colorMap.get(type)));
         resourceTable.setSize(40, 40);
         resourceTable.pad(5);
@@ -451,6 +454,7 @@ public class SessionScreen implements Screen {
         //TODO
     }
 
+    // TODO TEST 
     public void showDice() {
         int yellowDice = aSessionController.getYellowDice();
         int redDice = aSessionController.getRedDice();
@@ -478,8 +482,12 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(red);
     }
 
+    // TODO FINISH
     public void updateResourceBar() {
-
+        for (Map.Entry<String, Label> entry : resourceLabelMap.entrySet()) {
+            Label l = entry.getValue();
+            l.setText("");
+        }
     }
 }
 

@@ -6,7 +6,6 @@ import java.util.List;
 import com.mygdx.catan.enums.EventDie;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.enums.PlayerStatus;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.gameboard.EdgeUnit;
@@ -23,8 +22,7 @@ public class Player {
 	
 	private int tokenVictoryPoints;
 	private ResourceMap resourceMap = new ResourceMap();
-	
-	
+
 	public Player(Account playerAccount, PlayerColor pColor) {
 		color = pColor;
 	}	

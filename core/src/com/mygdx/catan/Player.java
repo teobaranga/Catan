@@ -106,7 +106,7 @@ public class Player {
 	
 	/**
 	 * adds given EdgeUnit to roadsAndShips. Its position and and type is assumed to be legal. 
-	 * @param edge unit. 
+	 * @param edge unit.
 	 * */
 	public void addEdgeUnit(EdgeUnit unit) {
 		roadsAndShips.add(unit);
@@ -114,7 +114,7 @@ public class Player {
 	
 	/**
 	 * adds given village to villages. Its position and and type is assumed to be legal. 
-	 * @param village. 
+	 * @param village.
 	 * */
 	public void addVillage(Village v) {
 		villages.add(v);
@@ -123,7 +123,7 @@ public class Player {
 	public PlayerColor getColor() {
 		return color;
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		if (other == null) return false;

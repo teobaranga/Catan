@@ -1,6 +1,8 @@
 package com.mygdx.catan.session;
 
+import com.mygdx.catan.Account;
 import com.mygdx.catan.Player;
+import com.mygdx.catan.enums.PlayerColor;
 
 public class SessionManager {
 	private Session aSession;
@@ -15,4 +17,6 @@ public class SessionManager {
 	public Player[] getPlayers() {
 		return aSession.getPlayers();
 	}
+
+	public Player getCurrentPlayer(){ return new Player(new Account("dummy", "dummy"), PlayerColor.ORANGE);}
 }

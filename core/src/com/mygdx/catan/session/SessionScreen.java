@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
@@ -22,7 +24,9 @@ import com.mygdx.catan.gameboard.Hex;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SessionScreen implements Screen {
 
@@ -65,12 +69,27 @@ public class SessionScreen implements Screen {
     /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
 
+    /** the map of resources to colors */
+    private Map<String, Color> colorMap;
+
+    /** The map of resource tables */
+    Map<String, Table> resourceTableMap;
+
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
         boardHexes = new ArrayList<>();
         villages = new ArrayList<>();
         boardOrigin = new MutablePair<>();
+        resourceTableMap = new HashMap<>();
+        colorMap = new HashMap<>();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        colorMap.put("wood",Color.LIME);
+        colorMap.put("brick",Color.BROWN);
+        colorMap.put("ore",Color.GRAY);
+        colorMap.put("grain",Color.YELLOW);
+        colorMap.put("wool",Color.GREEN);
+        colorMap.put("coin",Color.GOLD);
     }
     
     public void setSessionController(SessionController sc) {
@@ -86,6 +105,17 @@ public class SessionScreen implements Screen {
         Gdx.input.setInputProcessor(aSessionStage);  
 
         //TODO: UI panels
+
+        Table contentTable = new Table(aGame.skin);
+        contentTable.setBackground(aGame.skin.newDrawable("background", Color.valueOf("f9d3a5")));
+        contentTable.setSize(550,120);
+        contentTable.setPosition(400,20);
+
+        for(Map.Entry<String, Color> entry : colorMap.entrySet()) {
+            Table aTable = createResourceTable(entry.getKey());
+            resourceTableMap.put(entry.getKey(), aTable);
+            contentTable.add(aTable).pad(5);
+        }
 
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.CYAN);
@@ -123,7 +153,8 @@ public class SessionScreen implements Screen {
         
         // for testing purposes, removes some arbitrary village
         removeVillage(xCenter + (1 * BASE), yCenter - (-1 * LENGTH/2), i);
-        
+
+        aSessionStage.addActor(contentTable);
     }
 
     private Texture setupTextureSolid(Color color) {
@@ -131,6 +162,17 @@ public class SessionScreen implements Screen {
         pix.setColor(color); // DE is red, AD is green and BE is blue.
         pix.fill();
         return new Texture(pix);
+    }
+
+    private Table createResourceTable(String type) {
+        Table resourceTable = new Table(aGame.skin);
+        resourceTable.add(new Label(type, aGame.skin ));
+        resourceTable.row();
+        resourceTable.add(new Label("0", aGame.skin));
+        resourceTable.setBackground(aGame.skin.newDrawable("background", colorMap.get(type)));
+        resourceTable.setSize(40,40);
+        resourceTable.pad(5);
+        return resourceTable;
     }
 
     @Override
@@ -305,7 +347,7 @@ public class SessionScreen implements Screen {
     /**
      * @param xPos coordinate of center
      * @param yPos coordinate of center
-     * @param base length of piece
+     * @param length length of piece
      * @return PolygonRegion which lies on coordinates xPos and yPos, null if no PolygonRegion lies on that space
      * */
     private PolygonRegion getPolygonRegion(int xPos, int yPos, int length) {
@@ -325,7 +367,7 @@ public class SessionScreen implements Screen {
      * removes polygon of given coordinates from the board
      * @param xPos coordinate of center
      * @param yPos coordinate of center
-     * @param base length of piece
+     * @param length length of piece
      * @return true if a village was removed from the board
      * */
     private boolean removeVillage(int xPos, int yPos, int length) {

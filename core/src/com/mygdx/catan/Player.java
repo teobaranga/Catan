@@ -1,6 +1,7 @@
 package com.mygdx.catan;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.mygdx.catan.enums.EventDie;
 import com.mygdx.catan.enums.HarbourKind;
@@ -18,6 +19,7 @@ public class Player {
 	private ArrayList<EdgeUnit> roadsAndShips = new ArrayList<EdgeUnit>();
 	private ArrayList<Village> villages = new ArrayList<Village>();
 	private int defenderOfCatanPoints;
+	private List<Player> collectionOfPlayers = new ArrayList<Player>();
 	
 	private int tokenVictoryPoints;
 	private ResourceMap resourceMap = new ResourceMap();
@@ -83,8 +85,7 @@ public class Player {
 		throw new RuntimeException("chooseHex not yet implemented");
 	}
 	
-	public Player choosePlayer(CollectionOfPlayer players) {
-		//I made the skeleton for CollectionOfPlayer
+	public Player choosePlayer(List<Player> players) {
 		throw new RuntimeException("chooseplayer not yet implemented");
 	}
 	

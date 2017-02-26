@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
+import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ProgressCardKind;
+import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.GameBoard;
 
@@ -131,5 +133,5 @@ public class GameBoardManager{
 	public ArrayList<Hex> getProducingHexes(int diceNumber) {
 		return null;
 	}
-	
+
 }

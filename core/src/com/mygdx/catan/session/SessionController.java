@@ -16,7 +16,7 @@ public class SessionController {
 	private final GameBoardManager aGameBoardManager;
 	private final SessionManager aSessionManager;
 	private SessionScreen aSessionScreen;
-	
+
 	public SessionController(GameBoardManager gbm, SessionManager sm) {
 		aGameBoardManager = gbm;
 		aSessionManager = sm;
@@ -29,7 +29,12 @@ public class SessionController {
 	public ArrayList<Hex> getHexes() {
 		return aGameBoardManager.getHexes();
 	}
-	
+
+	public int getYellowDice() { return aSessionManager.getYellowDice(); }
+
+	public int getRedDice() { return aSessionManager.getRedDice(); }
+
+
 	public ArrayList<CoordinatePair<Integer,Integer>> getIntersectionsAndEdges() {
 		return aGameBoardManager.getIntersectionsAndEdges();
 	}

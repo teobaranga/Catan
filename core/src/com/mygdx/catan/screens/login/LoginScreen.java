@@ -13,11 +13,16 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.ui.CatanWindow;
+import javafx.scene.control.Alert;
 
 public class LoginScreen implements Screen {
 
@@ -44,15 +49,12 @@ public class LoginScreen implements Screen {
 
         Label usernameLabel = new Label ("Username:", aGame.skin);
         TextField usernameText = new TextField ("", aGame.skin);
-        Label passwordLabel = new Label ("Password:", aGame.skin);
-        TextField passwordText = new TextField("", aGame.skin);
+        usernameText.setMaxLength(20);
 
         aLoginTable = new Table(aGame.skin);
         aLoginTable.add(usernameLabel);
         aLoginTable.add(usernameText).width(200);
         aLoginTable.row();
-        aLoginTable.add(passwordLabel);
-        aLoginTable.add(passwordText).width(200);
         aLoginTable.setFillParent(true);
         aLoginStage.addActor(aLoginTable);
         aLoginTable.bottom().center();
@@ -70,14 +72,20 @@ public class LoginScreen implements Screen {
         aButtonStyle.font = aGame.skin.getFont("default");
         aButtonStyle.up = aGame.skin.getDrawable("white");
 
-
         aLoginButton = new TextButton("Login", aButtonStyle);
-
-
-        aLoginButton.addListener(new ChangeListener() {
+        aLoginButton.addListener(new ClickListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                aLoginButton.setText("Good job!");
+            public void clicked(InputEvent event, float x, float y) {
+                aLoginButton.setChecked(false);
+                if(!(usernameText.getText() == null || usernameText.getText().trim().isEmpty())){
+                    //aLoginButton.setText("Logging In \n Please click to continue to the Main Menu");
+                    setupButton(aLoginButton, ScreenKind.MAIN_MENU);
+                }
+                else{
+                    aLoginButton.setText("Please enter a valid username \n Please click to go back to the Login Screen");
+                    setupButton(aLoginButton, ScreenKind.LOGIN);
+                }
+
             }
 
         });
@@ -97,6 +105,20 @@ public class LoginScreen implements Screen {
         aLoginStage.act(delta);
         aLoginStage.draw();
 
+    }
+
+    public void setupButton(TextButton pTextButton, ScreenKind pScreenkind) {
+        // add listener to button
+        pTextButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                pTextButton.setChecked(false);
+                aGame.switchScreen(pScreenkind);
+            }
+
+        });
+
+        aLoginTable.add(pTextButton).pad(50);
     }
 
     @Override

@@ -2,15 +2,18 @@ package com.mygdx.catan.gameboard;
 
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.Player;
 
 public class EdgeUnit {
 
 	private EdgeUnitKind kind;
 	private CoordinatePair<Integer,Integer> aFirstCoordinate;
 	private CoordinatePair<Integer,Integer> aSecondCoordinate;
+	private Player owner;
 	
-	public EdgeUnit(CoordinatePair<Integer,Integer> pFirstCoordinate, CoordinatePair<Integer,Integer> pSecondCoordinate, EdgeUnitKind pKind) {
+	public EdgeUnit(CoordinatePair<Integer,Integer> pFirstCoordinate, CoordinatePair<Integer,Integer> pSecondCoordinate, EdgeUnitKind pKind, Player pOwner) {
 		kind = pKind;
+		owner = pOwner;
 		aFirstCoordinate = pFirstCoordinate;
 		aSecondCoordinate = pSecondCoordinate;
 	}
@@ -36,5 +39,9 @@ public class EdgeUnit {
 		
 		aFirstCoordinate = newFirstCoordinate;
 		aSecondCoordinate = newSecondCoordinate;
+	}
+	
+	public Player getOwner() {
+		return owner;
 	}
 }

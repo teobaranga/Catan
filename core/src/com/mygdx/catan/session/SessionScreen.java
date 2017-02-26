@@ -13,10 +13,10 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
+import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
-import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -35,7 +35,8 @@ public class SessionScreen implements Screen {
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
     private final int OFFX = BASE;                                            // offset on the x axis
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
-
+    private final int PIECEBASE = LENGTH / 3;
+    
     PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
     Texture aSeaTextureSolid;
     Texture aDesertTextureSolid;
@@ -45,12 +46,21 @@ public class SessionScreen implements Screen {
     Texture aPastureTextureSolid;
     Texture aFieldsTextureSolid;
     Texture aGoldfieldTextureSolid;
+    
+    Texture aOrangeTextureSolid;
+    Texture aRedTextureSolid;
+    Texture aWhiteTextureSolid;
+    Texture aBlueTextureSolid;
+    Texture aYellowTextureSolid;
 
     private Stage aSessionStage;
     private Texture bg;
 
     /** The list of polygons representing the board hexes */
     private List<PolygonRegion> boardHexes;
+    
+    /** The List of villages currently on the board */
+    private List<PolygonRegion> villages;
 
     /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
@@ -58,6 +68,7 @@ public class SessionScreen implements Screen {
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
         boardHexes = new ArrayList<>();
+        villages = new ArrayList<>();
         boardOrigin = new MutablePair<>();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
@@ -86,6 +97,12 @@ public class SessionScreen implements Screen {
         aFieldsTextureSolid = setupTextureSolid(Color.YELLOW);
         aGoldfieldTextureSolid = setupTextureSolid(Color.GOLD);
         
+        //Creating the color filling for player pieces
+        aOrangeTextureSolid = setupTextureSolid(Color.ORANGE);
+        aRedTextureSolid = setupTextureSolid(Color.RED);
+        aWhiteTextureSolid = setupTextureSolid(Color.WHITE);
+        aBlueTextureSolid = setupTextureSolid(Color.BLUE);
+        aYellowTextureSolid = setupTextureSolid(Color.YELLOW);
 
         // sets center of board
         int xCenter = 2 * Gdx.graphics.getWidth() / 5;
@@ -97,7 +114,16 @@ public class SessionScreen implements Screen {
         	offsetY = hex.getRightCoordinate();
         	createHexagon(xCenter + (offsetX * OFFX), yCenter - (offsetY * OFFY), LENGTH, BASE, hex.getKind());
         }
-
+        
+        // for testing purposes, puts a settlement on every intersection of the board
+        int i = 0;
+        for (CoordinatePair<Integer,Integer> coor : aSessionController.getIntersectionsAndEdges()) {
+        	updateIntersection(coor, PlayerColor.values()[i++%2], VillageKind.SETTLEMENT);
+        }
+        
+        // for testing purposes, removes some arbitrary village
+        removeVillage(xCenter + (1 * BASE), yCenter - (-1 * LENGTH/2), i);
+        
     }
 
     private Texture setupTextureSolid(Color color) {
@@ -121,6 +147,9 @@ public class SessionScreen implements Screen {
         polyBatch.begin();
         for (PolygonRegion boardHex : boardHexes) {
             polyBatch.draw(boardHex, boardOrigin.getLeft(), boardOrigin.getRight());
+        }
+        for (PolygonRegion village : villages) {
+        	polyBatch.draw(village, boardOrigin.getLeft(), boardOrigin.getRight());
         }
         polyBatch.end();
 
@@ -217,6 +246,46 @@ public class SessionScreen implements Screen {
 
         boardHexes.add(polyReg);
     }
+    
+    private void createSettlement(int xPos, int yPos, int length, PlayerColor color) {
+    	Texture aTexture = aSeaTextureSolid;
+    	
+    	switch(color) {
+		case BLUE:
+			aTexture = aBlueTextureSolid;
+			break;
+		case ORANGE:
+			aTexture = aOrangeTextureSolid;
+			break;
+		case RED:
+			aTexture = aRedTextureSolid;
+			break;
+		case WHITE:
+			aTexture = aWhiteTextureSolid;
+			break;
+		case YELLOW:
+			aTexture = aYellowTextureSolid;
+			break;
+		default:
+			break;}
+    	
+    	
+    	// all player pieces will have 0 vertex at xPos - length / 2, yPos - length / 2, where length is a value that depends on hex side length
+    	PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aTexture),
+                new float[]{      // Six vertices
+                        xPos - length / 2, yPos - length / 2,        // Vertex 0                
+                        xPos + length / 2, yPos - length / 2,        // Vertex 1             4        
+                        xPos + length / 2, yPos + length / 2,        // Vertex 2		   3    2
+                        xPos - length / 2, yPos + length / 2,        // Vertex 3           0    1     
+                        xPos, yPos + length,     			         // Vertex 4  
+                }, new short[]{
+                0, 1, 2,         // Sets up triangulation according to vertices above
+                0, 2, 3,
+                3, 2, 4
+        });
+    	
+    	villages.add(polyReg);
+    }
 
     /**
      * Set the coordinates of the board origin.
@@ -232,12 +301,94 @@ public class SessionScreen implements Screen {
         boardOrigin.setRight(((int) (height / 2f)) - OFFY * SIZE);
     }
     
+    
+    /**
+     * @param xPos coordinate of center
+     * @param yPos coordinate of center
+     * @param base length of piece
+     * @return PolygonRegion which lies on coordinates xPos and yPos, null if no PolygonRegion lies on that space
+     * */
+    private PolygonRegion getPolygonRegion(int xPos, int yPos, int length) {
+    	
+    	for (PolygonRegion pr : villages) {
+    		float xV0 = pr.getVertices()[0];
+    		float yV0 = pr.getVertices()[0];
+    		if ((int)xV0 == xPos - length / 2 && (int)yV0 == yPos - length / 2) {
+    			return pr;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    /**
+     * removes polygon of given coordinates from the board
+     * @param xPos coordinate of center
+     * @param yPos coordinate of center
+     * @param base length of piece
+     * @return true if a village was removed from the board
+     * */
+    private boolean removeVillage(int xPos, int yPos, int length) {
+    	//FIXME: does not work as intended
+    	PolygonRegion village = getPolygonRegion(xPos, yPos, length);
+    	if (village != null) {
+    		villages.remove(village);
+    		return true;
+    	}
+    	return false;
+    }
+    
+    
     /**
      * renders the village with appropriate color and kind at the given position. If position is already occupied, the currently placed village will be removed and replaced
      * @param position of intersection to update
+     * @param color of player who owns the new Village
+     * @param kind of new Village
      * */
-    public void updateIntersection(CoordinatePair<Integer,Integer> position, PlayerColor color, VillageKind kind, boolean build) {
+    public void updateIntersection(CoordinatePair<Integer,Integer> position, PlayerColor color, VillageKind kind) {
     	
+    	int xCenter = 2 * Gdx.graphics.getWidth() / 5;
+        int yCenter = 3 * Gdx.graphics.getHeight() / 5;
+        int offsetX = position.getLeft();
+        int offsetY = position.getRight();
+        
+    	if (removeVillage(xCenter + (offsetX * BASE), yCenter - (offsetY * LENGTH/2),PIECEBASE)) {
+    		System.out.println("remove: "+offsetX + " " +offsetY);
+    	}
+    	
+    	switch (kind) {
+		case CITY:
+			break;
+		case SCIENCEMETROPOLE:
+			break;
+		case SETTLEMENT:
+			createSettlement(xCenter + (offsetX * BASE), yCenter - (offsetY * LENGTH/2), PIECEBASE, color);
+			break;
+		case TRADEMETROPLE:
+			break;
+		default:
+			break;
+    	
+    	}
+    }
+    
+    /**
+     * renders the road with appropriate color and position.
+     * @param firstCoordinate end point of edge
+     * @param secondCoordinate other end point of edge
+     * @param kind of new edge unit (SHIP or ROAD)
+     * @param color of player who owns the new edge unit
+     * */
+    public void updateEdge(CoordinatePair<Integer,Integer> firstCoordinate, CoordinatePair<Integer,Integer> secondCoordinate, EdgeUnitKind kind, PlayerColor color) {
+    	//TODO
+    }
+    
+    /**
+     * moves the robber to given position
+     * @param position new hex that the robber will be moved to
+     * */
+    public void updateRobberPosition(Hex position) {
+    	//TODO
     }
 
 }

@@ -1,7 +1,6 @@
 package com.mygdx.catan.gameboard;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
@@ -9,10 +8,9 @@ import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.GameBoard;
-import com.mygdx.catan.session.SessionScreen;
 
 /**
- * Creates and mutates the state of the GameBoard. Iterator iterates through the hexes of the GameBoard
+ * Creates and mutates the state of the GameBoard.
  * */
 public class GameBoardManager{
 
@@ -81,34 +79,23 @@ public class GameBoardManager{
 	 * @return true if building the village was successful, false otherwise
 	 * */
 	public boolean buildSettlement(Player player, CoordinatePair<Integer,Integer> position) {
-		// verifies that the intersection is not occupied, and that it is adjacent to a road or ship of player
-		// FIXME: it does not verify that the intersection is not in the sea, or that it is not adjacent to another Village
-		if (position.isOccupied() || !aGameBoard.isAdjacentToEdgeUnit(position, player)) {return false;}
-		
 		Village village = new Village(player,position);
 		position.putVillage(village);
 		player.addVillage(village);
-		
 		return true;
 	}
 	
 	/**
-	 * Builds the edge unit according to corresponding input. Determines if new edge unit piece increases the players longest road, and takes appropriate action
+	 * Builds the edge unit according to corresponding input. 
 	 * @param owner of edgeUnit
 	 * @param first end point of road or ship
 	 * @param second end point of road or ship
 	 * @param edge unit kind: ROAD or SHIP
-	 * @return true if building the unit was successful, false otherwise
 	 * */
-	public boolean buildEdgeUnit(Player player, CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition, EdgeUnitKind kind) {
-		//TODO: verify that edgeUnit is between two adjacent coordinates, that those coordinates are free
-		// and that the adjacent hexes are compatible with the EdgeUnitKind
-		
-		EdgeUnit edgeunit = new EdgeUnit(firstPosition, SecondPosition, kind);
+	public void buildEdgeUnit(Player player, CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition, EdgeUnitKind kind) {		
+		EdgeUnit edgeunit = new EdgeUnit(firstPosition, SecondPosition, kind, player);
 		player.addEdgeUnit(edgeunit);
-		//TODO: notify SessionScreens of change
-		//TODO: longest road
-		return true;
+		aGameBoard.addRoadOrShip(edgeunit);
 	} 
 	
 	/**
@@ -132,7 +119,7 @@ public class GameBoardManager{
 	}
 	
 	//TODO
-	public void moveRobber(CoordinatePair<Integer,Integer> newPosition) {
+	public void moveRobber(Hex newPosition) {
 	}
 	
 	//TODO

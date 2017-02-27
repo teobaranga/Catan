@@ -9,4 +9,7 @@ public class Config {
 
     /** UDP port used when connecting to the server */
     public static final int UDP = 54777;
+
+    /** Path of the file where the current account is stored */
+    public static final String ACCOUNT_PATH = "acct.bin";
 }

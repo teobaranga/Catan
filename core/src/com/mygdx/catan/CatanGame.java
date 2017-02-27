@@ -34,6 +34,9 @@ public class CatanGame extends Game {
     @SuppressWarnings("LibGDXStaticResource")
     public static Skin skin;
 
+    /** The account of the user currently logged in */
+    public static Account account;
+
     static {
         client = new Client();
 
@@ -41,6 +44,7 @@ public class CatanGame extends Game {
         // Must be registered in the same order in the server
         Kryo kryo = client.getKryo();
 
+        kryo.register(Account.class);
         kryo.register(LoginRequest.class);
         kryo.register(LoginResponse.class);
         kryo.register(MarkAsReady.class);
@@ -63,15 +67,14 @@ public class CatanGame extends Game {
     private GameBoardManager aGameBoardManager = new GameBoardManager();
     private SessionManager aSessionManager = new SessionManager(4);
 
-    /** The first screen that shows up when the game starts */
-    private Screen mainScreen;
-
     @Override
     public void create() {
-        createBasicSkin();
         batch = new SpriteBatch();
-        if (mainScreen == null)
-            mainScreen = new LoginScreen(this);
+        createBasicSkin();
+        // Load the current account if cached
+        account = AccountManager.getLocalAccount();
+        // The first screen that shows up when the game starts
+        Screen mainScreen = account == null ? new LoginScreen(this) : new MenuScreen(this);
         setScreen(mainScreen);
     }
 

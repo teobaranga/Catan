@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -42,15 +43,17 @@ public class MenuScreen implements Screen {
         // Setup table for buttons
         aMenuTable = new Table();
 //        aMenuTable.debugAll();
-//        aMenuTable.setFillParent(true);
-        aMenuStage.addActor(aMenuTable);
+        aMenuTable.setFillParent(true);
         aMenuTable.left().bottom().pad(25);
+
+        final Label welcomeLabel = new Label("Welcome, " + CatanGame.account.getUsername(), CatanGame.skin);
+        aMenuTable.add(welcomeLabel).top().left().expandY().row();
 
         // Setup buttons
         aJoinRandomButton = new TextButton("Join Random Game", CatanGame.skin);
         aJoinRandomButton.pad(30, 20, 30, 20);
         setupJoinRandomGame();
-        aMenuTable.add(aJoinRandomButton).expandX().padLeft(25).padRight(25);
+        aMenuTable.add(aJoinRandomButton).padLeft(25).padRight(25);
 
         aCreateGameButton = new TextButton("Create Game", CatanGame.skin);
         aCreateGameButton.pad(30, 20, 30, 20);
@@ -81,6 +84,8 @@ public class MenuScreen implements Screen {
         setupButton(aResumeGameButton, ScreenKind.LOBBY);
 
         aMenuTable.pack();
+
+        aMenuStage.addActor(aMenuTable);
     }
 
     @Override
@@ -136,7 +141,7 @@ public class MenuScreen implements Screen {
             }
         });
 
-        aMenuTable.add(pTextButton).expandX().padLeft(25).padRight(25);
+        aMenuTable.add(pTextButton).padLeft(25).padRight(25).left();
     }
 
     /**

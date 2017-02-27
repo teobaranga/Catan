@@ -17,6 +17,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import com.mygdx.catan.Account;
+import com.mygdx.catan.AccountManager;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.request.LoginRequest;
@@ -38,6 +40,9 @@ public class LoginScreen implements Screen {
 
     private Listener listener;
 
+    /** The account that attempted to log in last */
+    private Account account;
+
     public LoginScreen(CatanGame pGame) {
         aGame = pGame;
         listener = new Listener() {
@@ -47,6 +52,10 @@ public class LoginScreen implements Screen {
                     Gdx.app.postRunnable(() -> {
                         // Handle the login response from the server
                         if (((LoginResponse) object).success) {
+                            // Cache the account used to login successfully
+                            AccountManager.writeLocalAccount(account);
+                            CatanGame.account = account;
+                            // Move on to the main screen
                             aGame.switchScreen(ScreenKind.MAIN_MENU);
                         } else {
                             errorMessageLabel.setText(ERROR_USERNAME);
@@ -98,9 +107,13 @@ public class LoginScreen implements Screen {
                 errorMessageLabel.setText(null);
                 // Send a login request to the server if the input is valid
                 if (usernameText.getText() != null && !usernameText.getText().trim().isEmpty()) {
+                    // Create the login request
                     final LoginRequest request = new LoginRequest();
-                    request.username = usernameText.getText();
+                    request.username = usernameText.getText().trim();
+                    // Send the login request
                     CatanGame.client.sendTCP(request);
+                    // Set the current account optimistically
+                    account = new Account(usernameText.getText().trim(), null);
                 } else {
                     errorMessageLabel.setText(ERROR_USERNAME);
                 }

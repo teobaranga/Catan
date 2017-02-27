@@ -6,6 +6,7 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.mygdx.catan.Account;
 import com.mygdx.catan.Config;
 import com.mygdx.catan.request.ForwardedRequest;
 import com.mygdx.catan.request.LoginRequest;
@@ -47,6 +48,7 @@ public class CatanServer {
         // Register request & response classes (needed for networking)
         // Must be registered in the same order in the client
         Kryo kryo = server.getKryo();
+        kryo.register(Account.class);
         kryo.register(LoginRequest.class);
         kryo.register(LoginResponse.class);
         kryo.register(MarkAsReady.class);

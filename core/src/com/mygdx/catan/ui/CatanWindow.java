@@ -42,8 +42,7 @@ public class CatanWindow extends Window {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         closeButton.setChecked(false);
-                        if (windowCloseListener != null)
-                            windowCloseListener.onWindowClosed();
+                        close();
                     }
                 });
                 getTitleTable().add(closeButton).height(getPadTop()).width(25);
@@ -61,6 +60,16 @@ public class CatanWindow extends Window {
 
         // Position window in the middle
         setPosition(Gdx.graphics.getWidth() / 2 - getWidth() / 2, Gdx.graphics.getHeight() / 2 - getHeight() / 2);
+    }
+
+    /**
+     * Close this window, remove it from its parent, and trigger the
+     * close listener.
+     */
+    public void close() {
+        remove();
+        if (windowCloseListener != null)
+            windowCloseListener.onWindowClosed();
     }
 
     public void setWindowCloseListener(WindowCloseListener windowCloseListener) {

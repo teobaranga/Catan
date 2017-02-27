@@ -13,10 +13,12 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
+import com.mygdx.catan.request.JoinRandomGame;
 import com.mygdx.catan.request.LoginRequest;
 import com.mygdx.catan.request.MarkAsReady;
 import com.mygdx.catan.response.LoginResponse;
 import com.mygdx.catan.response.MarkedAsReady;
+import com.mygdx.catan.response.RandomGameResponse;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
@@ -47,8 +49,11 @@ public class CatanGame extends Game {
         kryo.register(Account.class);
         kryo.register(LoginRequest.class);
         kryo.register(LoginResponse.class);
+        kryo.register(JoinRandomGame.class);
+        kryo.register(RandomGameResponse.class);
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
+        kryo.register(com.mygdx.catan.game.Game.class);
 
         client.start();
 

@@ -10,12 +10,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.Config;
 import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.request.JoinRandomGame;
+import com.mygdx.catan.response.RandomGameResponse;
 import com.mygdx.catan.ui.CatanWindow;
-
-import java.io.IOException;
 
 public class MenuScreen implements Screen {
 
@@ -157,39 +159,75 @@ public class MenuScreen implements Screen {
                 aJoinRandomButton.setChecked(false);
 
                 // Setup the window
-                CatanWindow window = new CatanWindow("Joining Game", CatanGame.skin);
+                CatanWindow window = new CatanWindow("Join Game", CatanGame.skin);
                 window.setWidth(1f / 4f * Gdx.graphics.getWidth());
                 window.setHeight(1f / 4f * Gdx.graphics.getHeight());
                 window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
-                window.setWindowCloseListener(window::remove);
+
+                final Table contentTable = new Table(CatanGame.skin);
+
+                final Label messageLabel = new Label("Looking for games...", CatanGame.skin);
+                messageLabel.setAlignment(Align.center);
+                contentTable.add(messageLabel).colspan(2);
+
+                window.row();
+                window.add(contentTable).expandX().fillX();
 
                 // Display the window
                 aMenuStage.addActor(window);
 
-                new Thread(() -> {
-                    // TODO: remove this
-                    // simulate some loading
-//                    try {
-//                        Thread.sleep(1000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-                    // TODO find a random game and connect it it
-                    try {
-                        CatanGame.client.connect(5000, Config.IP, Config.TCP, Config.UDP);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        // TODO: connection failed, inform the user
-                    }
-                    Gdx.app.postRunnable(() -> {
-                        // Remove the window
-                        window.remove();
-                        // Bring the user to the lobby screen
-                        if (CatanGame.client.isConnected()) {
-                            aGame.switchScreen(ScreenKind.LOBBY);
+                Listener listener = new Listener() {
+                    @Override
+                    public void received(Connection connection, Object object) {
+                        if (object instanceof RandomGameResponse) {
+                            Gdx.app.postRunnable(() -> {
+                                // No game found
+                                if (((RandomGameResponse) object).game == null) {
+                                    // Inform the user
+                                    messageLabel.setText("No games found, would you\nlike to create a new one?");
+
+                                    // Add the choices
+                                    contentTable.row();
+
+                                    final TextButton yes = new TextButton("Yes", CatanGame.skin);
+                                    yes.addListener(new ClickListener() {
+                                        @Override
+                                        public void clicked(InputEvent event, float x, float y) {
+                                            // TODO handle creation of new game
+                                            window.close();
+                                        }
+                                    });
+                                    final TextButton no = new TextButton("No", CatanGame.skin);
+                                    no.addListener(new ClickListener() {
+                                        @Override
+                                        public void clicked(InputEvent event, float x, float y) {
+                                            window.close();
+                                        }
+                                    });
+                                    contentTable.add(yes).right().padRight(10).width(50).padTop(20);
+                                    contentTable.add(no).left().padLeft(10).width(50).padTop(20);
+                                } else {
+                                    // Remove the window
+                                    window.close();
+                                    // Bring the user to the lobby screen
+                                    if (CatanGame.client.isConnected()) {
+                                        aGame.switchScreen(ScreenKind.LOBBY);
+                                    }
+                                }
+
+                                // Stop handling RandomGameResponses
+                                CatanGame.client.removeListener(this);
+                            });
                         }
-                    });
-                }).start();
+                    }
+                };
+
+                CatanGame.client.addListener(listener);
+
+                window.setWindowCloseListener(() -> CatanGame.client.removeListener(listener));
+
+                // Request to join a random game
+                CatanGame.client.sendTCP(new JoinRandomGame());
             }
 
         });

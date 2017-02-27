@@ -25,6 +25,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -215,8 +216,8 @@ public class SessionScreen implements Screen {
         resourceLabelMap.put(type, l);
 
         resourceTable.setBackground(CatanGame.skin.newDrawable("white", colorMap.get(type)));
-        resourceTable.setSize(40, 40);
-        resourceTable.pad(5);
+        resourceTable.setSize(60, 60);
+        resourceTable.pad(10);
         return resourceTable;
     }
 
@@ -629,11 +630,12 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(red);
     }
 
-    // TODO FINISH
-    public void updateResourceBar() {
+    public void updateResourceBar(ArrayList<Integer> updates) {
+        Iterator<Integer> it = updates.iterator();
         for (Map.Entry<String, Label> entry : resourceLabelMap.entrySet()) {
             Label l = entry.getValue();
-            l.setText("");
+            int newValue = it.next() + Integer.valueOf(l.getText().toString());
+            l.setText(newValue + "");
         }
     }
 }

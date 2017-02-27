@@ -1,7 +1,5 @@
 package com.mygdx.catan.session;
 
-import java.util.ArrayList;
-
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
@@ -12,128 +10,161 @@ import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SessionController {
-	private final GameBoardManager aGameBoardManager;
-	private final SessionManager aSessionManager;
-	private SessionScreen aSessionScreen;
+    private final GameBoardManager aGameBoardManager;
+    private final SessionManager aSessionManager;
+    private SessionScreen aSessionScreen;
 
-	public SessionController(GameBoardManager gbm, SessionManager sm) {
-		aGameBoardManager = gbm;
-		aSessionManager = sm;
-	}
-	
-	public void setSessionScreen(SessionScreen s) {
-		aSessionScreen = s;
-	}
-	
-	public ArrayList<Hex> getHexes() {
-		return aGameBoardManager.getHexes();
-	}
+    public SessionController(GameBoardManager gbm, SessionManager sm) {
+        aGameBoardManager = gbm;
+        aSessionManager = sm;
+    }
 
-	public int getYellowDice() { return aSessionManager.getYellowDice(); }
+    public void setSessionScreen(SessionScreen s) {
+        aSessionScreen = s;
+    }
 
-	public int getRedDice() { return aSessionManager.getRedDice(); }
+    public ArrayList<Hex> getHexes() {
+        return aGameBoardManager.getHexes();
+    }
+
+    public int getYellowDice() {
+        return aSessionManager.getYellowDice();
+    }
+
+    public int getRedDice() {
+        return aSessionManager.getRedDice();
+    }
 
 
-	public ArrayList<CoordinatePair<Integer,Integer>> getIntersectionsAndEdges() {
-		return aGameBoardManager.getIntersectionsAndEdges();
-	}
-	
-	public Player[] getPlayers() {
-		return aSessionManager.getPlayers();
-	}
-	
-	/**
-	 * Requests the GameBoardManager to build settlement on given coordinate. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
-	 * @param position of new settlement
-	 * @param owner of new settlement
-	 * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
-	 * @return true if building the settlement was successful, false otherwise 
-	 * */
-	public boolean buildSettlement(CoordinatePair<Integer,Integer> position, Player owner, boolean fromPeer) {
-		// verifies that the intersection is not occupied, and that it is adjacent to a road or ship of player
-		// TODO: it does not verify that the intersection is not in the sea, or that it is not adjacent to another Village
-		// if (position.isOccupied() || !aGameBoard.isAdjacentToEdgeUnit(position, player)) {return false;}
-		return false;
-	}
-	
-	/**
-	 * Requests the GameBoardManager to build edge unit on given coordinates. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
-	 * Determines if new edge unit piece increases the players longest road, and takes appropriate action.
-	 * @param owner of edgeUnit
-	 * @param first end point of road or ship
-	 * @param second end point of road or ship
-	 * @param edge unit kind: ROAD or SHIP
-	 * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
-	 * @return true if building the unit was successful, false otherwise
-	 * */
-	public boolean buildEdgeUnit(Player player, CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
-		//TODO: verify that edgeUnit is between two adjacent coordinates, that those coordinates are free
-		// and that the adjacent hexes are compatible with the EdgeUnitKind (in SessionController)
-		
-		//TODO: longest road
-		
-		return false;
-	}
-	
-	/**
-	 * Requests the GameBoardManager to move the robber to given location. If fromPeer is false, the SessionController verifies that the position is valid.
-	 * If valid finds adjacent players to the new position and initiates prompts player who moved the robber to choose a victim.
-	 * Informs SessionScreen of new robber position
-	 * */
-	public boolean moveRobber(Hex newPosition, boolean fromPeer) {
-		//TODO: as described above
-		return false;
-	}
+    public ArrayList<CoordinatePair<Integer, Integer>> getIntersectionsAndEdges() {
+        return aGameBoardManager.getIntersectionsAndEdges();
+    }
 
-	/** Allows the user to place a city and an edge unit and then receive the resources near the city */
-	public void placeCityAndRoads(CoordinatePair cityPos, CoordinatePair edgeUnitPos1, CoordinatePair edgeUnitPos2, boolean isShip) {
-		Player cp = aSessionManager.getCurrentPlayer();
+    public Player[] getPlayers() {
+        return aSessionManager.getPlayers();
+    }
 
-		EdgeUnit eu;
-		if (isShip) {
-			eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, cp);
-			buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, true);
-		} else {
-			eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.ROAD, cp);
-			buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, true);
-		}
-		cp.addEdgeUnit(eu);
+    /**
+     * Requests the GameBoardManager to build settlement on given coordinate. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
+     *
+     * @param position of new settlement
+     * @param owner    of new settlement
+     * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
+     * @return true if building the settlement was successful, false otherwise
+     */
+    public boolean buildSettlement(CoordinatePair<Integer, Integer> position, Player owner, boolean fromPeer) {
+        // verifies that the intersection is not occupied, and that it is adjacent to a road or ship of player
+        // TODO: it does not verify that the intersection is not in the sea, or that it is not adjacent to another Village
+        // if (position.isOccupied() || !aGameBoard.isAdjacentToEdgeUnit(position, player)) {return false;}
+        return false;
+    }
 
-		Village v = new Village(cp, cityPos);
-		buildSettlement(cityPos, cp, false);
-		cp.addVillage(v);
+    /**
+     * Requests the GameBoardManager to build edge unit on given coordinates. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
+     * Determines if new edge unit piece increases the players longest road, and takes appropriate action.
+     *
+     * @param player         owner of edgeUnit
+     * @param firstPosition  first end point of road or ship
+     * @param SecondPosition second end point of road or ship
+     * @param kind           edge unit kind: ROAD or SHIP
+     * @param fromPeer       indicates whether the method was called from the owner of new settlement, or from a peer
+     * @return true if building the unit was successful, false otherwise
+     */
+    public boolean buildEdgeUnit(Player player, CoordinatePair<Integer, Integer> firstPosition, CoordinatePair<Integer, Integer> SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
+        //TODO: verify that edgeUnit is between two adjacent coordinates, that those coordinates are free
+        // and that the adjacent hexes are compatible with the EdgeUnitKind (in SessionController)
 
-		ArrayList<Hex> neighbourHexes = new ArrayList<Hex>();
-		ArrayList<Hex> hexes = aGameBoardManager.getHexes();
+        //TODO: longest road
 
-		for (Hex h : hexes) {
-			if (h.isAdjacent(cityPos)) {
-				neighbourHexes.add(h);
-			}
-		}
+        return false;
+    }
 
-		ResourceMap cost = new ResourceMap();
-		for( Hex h: neighbourHexes) {
-			switch (h.getKind()) {
-				case FOREST:
-					cost.put(ResourceKind.WOOD, 1);
-					break;
-				case MOUNTAINS:
-					cost.put(ResourceKind.ORE, 1);
-					break;
-				case HILLS:
-					cost.put(ResourceKind.BRICK, 1);
-					break;
-				case FIELDS:
-					cost.put(ResourceKind.GRAIN, 1);
-					break;
-				case PASTURE:
-					cost.put(ResourceKind.WOOL, 1);
-					break;
-				// GOLDFIELDS ?
-			}
-		}
-		cp.addResources(cost);
-	}
+    /**
+     * Requests the GameBoardManager to move the robber to given location. If fromPeer is false, the SessionController verifies that the position is valid.
+     * If valid finds adjacent players to the new position and initiates prompts player who moved the robber to choose a victim.
+     * Informs SessionScreen of new robber position
+     */
+    public boolean moveRobber(Hex newPosition, boolean fromPeer) {
+        //TODO: as described above
+        return false;
+    }
+
+    /**
+     * Allows the user to place a city and an edge unit and then receive the resources near the city
+     */
+    public void placeCityAndRoads(CoordinatePair<Integer, Integer> cityPos, CoordinatePair<Integer, Integer> edgeUnitPos1, CoordinatePair<Integer, Integer> edgeUnitPos2, boolean isShip) {
+        Player cp = aSessionManager.getCurrentPlayer();
+
+        EdgeUnit eu;
+        if (isShip) {
+            eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, cp);
+            buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, true);
+        } else {
+            eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.ROAD, cp);
+            buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, true);
+        }
+        cp.addEdgeUnit(eu);
+
+        Village v = new Village(cp, cityPos);
+        buildSettlement(cityPos, cp, false);
+        cp.addVillage(v);
+
+        List<Hex> neighbourHexes = new ArrayList<>();
+        List<Hex> hexes = aGameBoardManager.getHexes();
+
+        for (Hex h : hexes) {
+            if (h.isAdjacent(cityPos)) {
+                neighbourHexes.add(h);
+            }
+        }
+
+        ResourceMap cost = new ResourceMap();
+        for (Hex h : neighbourHexes) {
+            switch (h.getKind()) {
+                case FOREST:
+                    cost.put(ResourceKind.WOOD, 1);
+                    break;
+                case MOUNTAINS:
+                    cost.put(ResourceKind.ORE, 1);
+                    break;
+                case HILLS:
+                    cost.put(ResourceKind.BRICK, 1);
+                    break;
+                case FIELDS:
+                    cost.put(ResourceKind.GRAIN, 1);
+                    break;
+                case PASTURE:
+                    cost.put(ResourceKind.WOOL, 1);
+                    break;
+                // GOLDFIELDS ?
+            }
+        }
+        cp.addResources(cost);
+    }
+
+    /**
+     *
+     * Adds resources to the bank.
+     *
+     * @param cost The resources to be added to the bank
+     */
+    public void add(ResourceMap cost){
+        aSessionManager.addToBank(cost);
+    }
+
+    /**
+     *
+     * Remove resources from the bank.
+     *
+     * @param cost The resources to be removed from the bank
+     */
+    public ResourceMap remove(ResourceMap cost){
+        cost = aSessionManager.checkMaxCostForBank(cost);
+        aSessionManager.removeFromBank(cost);
+        return cost;
+    }
 }

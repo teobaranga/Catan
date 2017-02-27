@@ -89,7 +89,7 @@ public class CatanGame extends Game {
     private void createBasicSkin() {
         // Create a font
         BitmapFont font = new BitmapFont();
-        skin = new Skin();
+        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         skin.add("default", font);
 
         // Create a texture

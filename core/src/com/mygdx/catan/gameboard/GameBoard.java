@@ -60,29 +60,38 @@ public class GameBoard {
                 	throw new Exception("Mismatch with GameRules");
                 }
                 
+                /*Creates the intersections*/
                 
+                if (y < 0) { // top half of board
                 // Creates the top, and top left points adjacent to current hex
-                aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 - 1,HarbourKind.NONE));
-                aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 - 2,HarbourKind.NONE));                
-
-                // If at last row, create bottom and bottom left points
-                if (row == SIZE - 1){
-                	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1, y*3 + 1,HarbourKind.NONE));
-                	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 + 2,HarbourKind.NONE));
+                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 - 1,HarbourKind.NONE));
+                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 - 2,HarbourKind.NONE));
+                // If the hex is the last column of a row, create the top right point
+                    if (col == cols - 1) {
+                    	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x+1,3*y-1,HarbourKind.NONE));
+                    }
+                } else if (y == 0) { // middle
+                // Creates the top, and top left points adjacent to current hex
+                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 - 1,HarbourKind.NONE));
+                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 - 2,HarbourKind.NONE));
+                // Creates the bottom, and bottom left points adjacent to current hex
+                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 + 1,HarbourKind.NONE));
+                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 + 2,HarbourKind.NONE));
+                // If the hex is the last column of a row, create the top right and bottom right points
+                    if (col == cols - 1) { 
+                    	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x+1,3*y-1,HarbourKind.NONE));
+                    	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x+1,3*y+1,HarbourKind.NONE));
+                    }
+                } else { // bottom half of board
+                // Creates the bottom, and bottom left points adjacent to current hex
+                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 + 1,HarbourKind.NONE));
+                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 + 2,HarbourKind.NONE));
+                // If the hex is the last column of a row, create the bottom right point
+                    if (col == cols - 1) { 
+                    	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x+1,3*y+1,HarbourKind.NONE));
+                    }
                 }
-                
-                // If at bottom half of board, create bottom left of left most point
-                if (row >= 0 && col == 0){
-                	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1, y*3 + 1,HarbourKind.NONE));
-                }
-            }
-            // If the hex is the last column of a row, creates the top right point
-            aIntersectionPositions.add(new CoordinatePair<Integer, Integer>((cols - 1) + 1, (row - half)*3 - 1,HarbourKind.NONE));
-
-            // Additionally if the hex is at the bottom half of the board, create the bottom right point
-            if (row >= 0){
-            	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>((cols-1) + 1, (row - half)*3 + 1,HarbourKind.NONE));
-            }
+            }	
         }
         
         // Initializes barbarian position to 7

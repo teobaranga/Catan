@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 public class SessionManager {
     private Session aSession;
+    
+    //FIXME SessionScreens must be in SessionController
     private ArrayList<SessionScreen> sessionScreens = new ArrayList<SessionScreen>();
 
 

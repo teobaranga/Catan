@@ -41,19 +41,23 @@ public class MenuScreen implements Screen {
 
         // Setup table for buttons
         aMenuTable = new Table();
-        aMenuTable.setFillParent(true);
+//        aMenuTable.debugAll();
+//        aMenuTable.setFillParent(true);
         aMenuStage.addActor(aMenuTable);
-        aMenuTable.left().bottom();
+        aMenuTable.left().bottom().pad(25);
 
         // Setup buttons
         aJoinRandomButton = new TextButton("Join Random Game", CatanGame.skin);
+        aJoinRandomButton.pad(30, 20, 30, 20);
         setupJoinRandomGame();
-        aMenuTable.add(aJoinRandomButton).pad(50);
+        aMenuTable.add(aJoinRandomButton).expandX().padLeft(25).padRight(25);
 
         aCreateGameButton = new TextButton("Create Game", CatanGame.skin);
+        aCreateGameButton.pad(30, 20, 30, 20);
         setupButton(aCreateGameButton, ScreenKind.CREATE_GAME);
 
         aBrowseGamesButton = new TextButton("Browse Games", CatanGame.skin);
+        aBrowseGamesButton.pad(30, 20, 30, 20);
         setupButton(aBrowseGamesButton, ScreenKind.BROWSE_GAMES);
         aBrowseGamesButton.addListener(new ClickListener() {
             @Override
@@ -63,7 +67,7 @@ public class MenuScreen implements Screen {
                 window.setWidth(3f / 4f * Gdx.graphics.getWidth());
                 window.setHeight(3f / 4f * Gdx.graphics.getHeight());
                 window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
-                window.setWindowListener(window::remove);
+                window.setWindowCloseListener(window::remove);
 
                 // Display the window
                 aMenuStage.addActor(window);
@@ -73,8 +77,10 @@ public class MenuScreen implements Screen {
         });
 
         aResumeGameButton = new TextButton("Resume Game", CatanGame.skin);
+        aResumeGameButton.pad(30, 20, 30, 20);
         setupButton(aResumeGameButton, ScreenKind.LOBBY);
 
+        aMenuTable.pack();
     }
 
     @Override
@@ -130,7 +136,7 @@ public class MenuScreen implements Screen {
             }
         });
 
-        aMenuTable.add(pTextButton).pad(50);
+        aMenuTable.add(pTextButton).expandX().padLeft(25).padRight(25);
     }
 
     /**
@@ -150,7 +156,7 @@ public class MenuScreen implements Screen {
                 window.setWidth(1f / 4f * Gdx.graphics.getWidth());
                 window.setHeight(1f / 4f * Gdx.graphics.getHeight());
                 window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
-                window.setWindowListener(window::remove);
+                window.setWindowCloseListener(window::remove);
 
                 // Display the window
                 aMenuStage.addActor(window);

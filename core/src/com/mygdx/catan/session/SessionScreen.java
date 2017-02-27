@@ -20,7 +20,6 @@ import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.Hex;
-
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.ArrayList;
@@ -30,8 +29,21 @@ import java.util.Map;
 
 public class SessionScreen implements Screen {
 
+    /** The map of resources to colors */
+    private static Map<String, Color> colorMap;
+
+    static {
+        // TODO move this to the skin
+        colorMap = new HashMap<>();
+        colorMap.put("wood", Color.LIME);
+        colorMap.put("brick", Color.BROWN);
+        colorMap.put("ore", Color.GRAY);
+        colorMap.put("grain", Color.YELLOW);
+        colorMap.put("wool", Color.GREEN);
+        colorMap.put("coin", Color.GOLD);
+    }
+
     private final CatanGame aGame;
-    private SessionController aSessionController;
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
     private final int SIZE = GameRules.getGameRulesInstance().getSize();      // number of tiles at longest diagonal
@@ -46,6 +58,7 @@ public class SessionScreen implements Screen {
     private final int YCENTER;
 
     PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
+
     Texture aSeaTextureSolid;
     Texture aDesertTextureSolid;
     Texture aHillsTextureSolid;
@@ -61,7 +74,10 @@ public class SessionScreen implements Screen {
     Texture aBlueTextureSolid;
     Texture aYellowTextureSolid;
 
+    private SessionController aSessionController;
+
     private Stage aSessionStage;
+
     private Texture bg;
 
     /** The list of polygons representing the board hexes */
@@ -76,11 +92,9 @@ public class SessionScreen implements Screen {
     /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
 
-    /** the map of resources to colors */
-    private Map<String, Color> colorMap;
 
     /** The map of resource tables */
-    Map<String, Label> resourceLabelMap;
+    private Map<String, Label> resourceLabelMap;
 
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
@@ -89,15 +103,7 @@ public class SessionScreen implements Screen {
         edgeUnits = new ArrayList<>();
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new HashMap<>();
-        colorMap = new HashMap<>();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        colorMap.put("wood", Color.LIME);
-        colorMap.put("brick", Color.BROWN);
-        colorMap.put("ore", Color.GRAY);
-        colorMap.put("grain", Color.YELLOW);
-        colorMap.put("wool", Color.GREEN);
-        colorMap.put("coin", Color.GOLD);
         
         XCENTER = 2 * Gdx.graphics.getWidth() / 5;
         YCENTER = 3 * Gdx.graphics.getHeight() / 5;
@@ -117,8 +123,8 @@ public class SessionScreen implements Screen {
 
         //TODO: UI panels
 
-        Table contentTable = new Table(aGame.skin);
-        contentTable.setBackground(aGame.skin.newDrawable("background", Color.valueOf("f9d3a5")));
+        Table contentTable = new Table(CatanGame.skin);
+        contentTable.setBackground("resTableBackground");
         contentTable.setSize(550, 120);
         contentTable.setPosition(400, 20);
 
@@ -187,15 +193,15 @@ public class SessionScreen implements Screen {
     }
 
     private Table createResourceTable(String type) {
-        Table resourceTable = new Table(aGame.skin);
-        resourceTable.add(new Label(type, aGame.skin));
+        Table resourceTable = new Table(CatanGame.skin);
+        resourceTable.add(new Label(type, CatanGame.skin));
         resourceTable.row();
 
-        Label l = new Label("0", aGame.skin);
+        Label l = new Label("0", CatanGame.skin);
         resourceTable.add(l);
         resourceLabelMap.put(type, l);
 
-        resourceTable.setBackground(aGame.skin.newDrawable("background", colorMap.get(type)));
+        resourceTable.setBackground(CatanGame.skin.newDrawable("white", colorMap.get(type)));
         resourceTable.setSize(40, 40);
         resourceTable.pad(5);
         return resourceTable;
@@ -594,8 +600,8 @@ public class SessionScreen implements Screen {
         Table yellow = new Table();
         Table red = new Table();
 
-        yellow.setBackground(aGame.skin.newDrawable("background", Color.YELLOW));
-        red.setBackground(aGame.skin.newDrawable("background", Color.RED));
+        yellow.setBackground(CatanGame.skin.newDrawable("white", Color.YELLOW));
+        red.setBackground(CatanGame.skin.newDrawable("white", Color.RED));
 
         yellow.setSize(60, 60);
         red.setSize(60, 60);
@@ -603,8 +609,8 @@ public class SessionScreen implements Screen {
         yellow.setPosition(1050, 600);
         red.setPosition(1120, 600);
 
-        yellow.add(new Label("" + yellowDice, aGame.skin));
-        red.add(new Label("" + redDice, aGame.skin));
+        yellow.add(new Label("" + yellowDice, CatanGame.skin));
+        red.add(new Label("" + redDice, CatanGame.skin));
 
         aSessionStage.addActor(yellow);
         aSessionStage.addActor(red);

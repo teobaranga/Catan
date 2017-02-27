@@ -2,15 +2,11 @@ package com.mygdx.catan.screens.lobby;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -61,19 +57,19 @@ public class LobbyScreen implements Screen {
         // Create & add the window
         CatanWindow window = new CatanWindow(TITLE + " : " + CatanGame.client.getRemoteAddressTCP(), CatanGame.skin);
         // TODO: Closing the lobby window should bring the user back to the MainMenu
-        window.setWindowListener(() -> game.setScreen(parentScreen));
-        window.debugAll();
+        window.setWindowCloseListener(() -> game.setScreen(parentScreen));
+//        window.debugAll();
 
         Table contentTable = new Table(CatanGame.skin);
 //        contentTable.background(game.skin.newDrawable("background", Color.RED));
 //        contentTable.debugAll();
-        contentTable.padTop(window.getPadTop());
-        contentTable.setFillParent(true);
 
-        Table rulesTable = new Table(CatanGame.skin);
-//        rulesTable.debugAll();
-        rulesTable.background(CatanGame.skin.newDrawable("background", Color.BLUE));
-        rulesTable.pack();
+        Table mapAndRules = new Table(CatanGame.skin);
+        mapAndRules.top();
+//        mapAndRules.debugAll();
+//        mapAndRules.background(CatanGame.skin.newDrawable("background", Color.BLUE));
+        Label mapAndRulesLabel = new Label(" Maps & Rules:", CatanGame.skin, "lobby-header");
+        mapAndRules.add(mapAndRulesLabel).expandX().fillX();
 
         Table chatTable = new Table(CatanGame.skin);
         chatTable.debugAll();
@@ -89,15 +85,15 @@ public class LobbyScreen implements Screen {
             }
         });
 
-        contentTable.top().left();
-        contentTable.add(rulesTable).width(425).expandX().height(400).pad(20);
-        contentTable.add(chatTable).width(425).expandX().height(400).pad(20);
+//        contentTable.top().left();
+        contentTable.add(mapAndRules).width(400).height(400).expandX();
+        contentTable.add(chatTable).width(400).height(400).expandX().fillX();
         contentTable.row();
-        contentTable.add(ready).height(50).width(400).colspan(2);
+        contentTable.add(ready).height(50).width(400).colspan(2).padTop(20);
 
-        contentTable.pack();
-        window.row().fill().expand();
-        window.add(contentTable);
+//        contentTable.pack();
+        window.row();
+        window.add(contentTable).expandX().fillX();
         stage.addActor(window);
     }
 

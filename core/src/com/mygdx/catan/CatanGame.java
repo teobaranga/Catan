@@ -67,7 +67,7 @@ public class CatanGame extends Game {
     private void createBasicSkin() {
         // Create a font
         BitmapFont font = new BitmapFont();
-        skin = new Skin();
+        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         skin.add("default", font);
 
         // Create a texture
@@ -108,6 +108,8 @@ public class CatanGame extends Game {
         textFieldStyle.font = skin.getFont("default");
         textFieldStyle.fontColor = Color.YELLOW;
         skin.add("default", textFieldStyle);
+
+        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
     }
 
     public void switchScreen(ScreenKind pScreenKind) {

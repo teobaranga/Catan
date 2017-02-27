@@ -5,6 +5,8 @@ import com.mygdx.catan.Player;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.GameRules;
 import java.util.ArrayList;
 
 /**
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 public class GameBoardManager{
 
 	private static GameBoard aGameBoard;
+	private static GameRules aGameRules;
 	//private ArrayList<SessionScreen> sessionScreens = new ArrayList<SessionScreen>();
 	
 	public GameBoardManager() {
@@ -77,6 +80,7 @@ public class GameBoardManager{
 	 * @return true if building the village was successful, false otherwise
 	 * */
 	public boolean buildSettlement(Player player, CoordinatePair<Integer,Integer> position) {
+		ResourceMap cost = aGameRules.getSettlementCost();
 		Village village = new Village(player,position);
 		position.putVillage(village);
 		player.addVillage(village);

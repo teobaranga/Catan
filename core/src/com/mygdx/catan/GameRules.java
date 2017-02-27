@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 
 import com.mygdx.catan.enums.ProgressCardKind;
+import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
 
@@ -11,6 +12,12 @@ import com.mygdx.catan.enums.VillageKind;
  * Singleton object describing the game rules
  * */
 public class GameRules {
+
+	private ResourceMap settlementCost = new ResourceMap();
+	private ResourceMap roadCost = new ResourceMap();
+	private ResourceMap shipCost = new ResourceMap();
+	private ResourceMap cityCost = new ResourceMap();
+	private ResourceMap cityWallCost = new ResourceMap();
 	
 	private EnumMap<ProgressCardKind, Integer> progressCardOccurences = new EnumMap<ProgressCardKind, Integer>(ProgressCardKind.class);
 	private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
@@ -32,6 +39,41 @@ public class GameRules {
 		initializeProgressCardOccurences();
 		setupDefaultTerrainMap();
 		setupDefaultDiceMap();
+
+		setupSettlementCost();
+		setupRoadCost();
+		setupShipCost();
+		setupCityCost();
+		setupCityWallCost();
+	}
+
+	/**
+	 * hardcodes the standard cost for things that can be built throughout the game
+	 */
+	private void setupSettlementCost(){
+		settlementCost.put(ResourceKind.WOOL, 1);
+		settlementCost.put(ResourceKind.WOOD, 1);
+		settlementCost.put(ResourceKind.BRICK, 1);
+		settlementCost.put(ResourceKind.GRAIN, 1);
+	}
+
+	private void setupRoadCost(){
+		roadCost.put(ResourceKind.BRICK, 1);
+		roadCost.put(ResourceKind.WOOD, 1);
+	}
+
+	private void setupShipCost(){
+		shipCost.put(ResourceKind.WOOD, 1);
+		shipCost.put(ResourceKind.WOOL, 1);
+	}
+
+	private void setupCityCost(){
+		cityCost.put(ResourceKind.GRAIN, 2);
+		cityCost.put(ResourceKind.ORE, 3);
+	}
+
+	private void setupCityWallCost(){
+		cityWallCost.put(ResourceKind.BRICK, 2);
 	}
 	
 	/**
@@ -207,4 +249,15 @@ public class GameRules {
 	public HashMap<Integer,Integer> getDefaultDiceNumberMap() {
 		return defaultDiceNumberMap;
 	}
+
+	/**
+	 * @return standard cost of things that can be built throughout the game
+	 */
+	public ResourceMap getSettlementCost() { return settlementCost; }
+	public ResourceMap getRoadCost() { return roadCost; }
+	public ResourceMap getShipCost() { return shipCost; }
+	public ResourceMap getCityCost() { return cityCost; }
+	public ResourceMap getCityWallCost() { return cityWallCost; }
+
+
 }

@@ -151,7 +151,7 @@ public class CatanGame extends Game {
                 setScreen(screen);
                 break;
             case LOBBY:
-                setScreen(new LobbyScreen(this, mainScreen));
+                setScreen(new LobbyScreen(this));
                 break;
             case RESUME_GAME:
                 break;

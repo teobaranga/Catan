@@ -25,12 +25,10 @@ public class LobbyScreen implements Screen {
 
     private Stage stage;
     private final CatanGame game;
-    private final Screen parentScreen;
     private Texture bg;
 
-    public LobbyScreen(CatanGame game, Screen parentScreen) {
+    public LobbyScreen(CatanGame game) {
         this.game = game;
-        this.parentScreen = parentScreen;
         lobbyListener = new Listener() {
             @Override
             public void received(Connection connection, Object object) {
@@ -57,7 +55,7 @@ public class LobbyScreen implements Screen {
         // Create & add the window
         CatanWindow window = new CatanWindow(TITLE + " : " + CatanGame.client.getRemoteAddressTCP(), CatanGame.skin);
         // TODO: Closing the lobby window should bring the user back to the MainMenu
-        window.setWindowCloseListener(() -> game.setScreen(parentScreen));
+        window.setWindowCloseListener(() -> game.switchScreen(ScreenKind.MAIN_MENU));
 //        window.debugAll();
 
         Table contentTable = new Table(CatanGame.skin);

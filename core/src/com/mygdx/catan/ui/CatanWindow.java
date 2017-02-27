@@ -14,18 +14,14 @@ public class CatanWindow extends Window {
 
     private WindowCloseListener windowCloseListener;
 
+    /**
+     * Create a new window
+     *
+     * @param title the title of the window - must not be null
+     * @param skin  skin used for theming the window
+     */
     public CatanWindow(String title, Skin skin) {
-        super(title, skin);
-        init();
-    }
-
-    public CatanWindow(String title, Skin skin, String styleName) {
-        super(title, skin, styleName);
-        init();
-    }
-
-    public CatanWindow(String title, WindowStyle style) {
-        super(title, style);
+        super(title, skin, title.isEmpty() ? "no-title" : "default");
         init();
     }
 
@@ -34,24 +30,28 @@ public class CatanWindow extends Window {
         Skin skin = getSkin();
         if (skin != null) {
             // Skin shouldn't be null, always create this window with a style!
-            // Get the font
+            // Improve font rendering
             BitmapFont font = skin.getFont("default");
             font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-            // Add the close button
-            final TextButton closeButton = new TextButton("X", skin);
-            closeButton.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    closeButton.setChecked(false);
-                    if (windowCloseListener != null)
-                        windowCloseListener.onWindowClosed();
-                }
-            });
-            getTitleTable().add(closeButton).height(getPadTop()).width(25);
+            // Add the close button if the window has a title
+            if (getTitleLabel().getText().length != 0) {
+                // Add the close button
+                final TextButton closeButton = new TextButton("X", skin);
+                closeButton.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        closeButton.setChecked(false);
+                        if (windowCloseListener != null)
+                            windowCloseListener.onWindowClosed();
+                    }
+                });
+                getTitleTable().add(closeButton).height(getPadTop()).width(25);
+            }
         }
         setMovable(false);
         setModal(true);
+
         // Center title
         getTitleLabel().setAlignment(Align.center);
 

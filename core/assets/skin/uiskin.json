@@ -88,6 +88,10 @@
       background: default-window,
       titleFontColor: white
     },
+    no-title: {
+      titleFont: default,
+      background: default-rect
+    },
     dialog: {
       titleFont: default,
       background: default-window,

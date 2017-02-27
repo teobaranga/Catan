@@ -6,39 +6,60 @@ package com.mygdx.catan.screens.login;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.request.LoginRequest;
+import com.mygdx.catan.response.LoginResponse;
+import com.mygdx.catan.ui.CatanWindow;
 
 public class LoginScreen implements Screen {
 
+    private final static String ERROR_USERNAME = "Please enter a valid username";
+
     private final CatanGame aGame;
-    private static final String TITLE = "Login";
+
     private Stage aLoginStage;
+
     private Texture bg;
+
     private TextButton aLoginButton;
-    private TextButtonStyle aButtonStyle;
-    private Table aLoginTable;
+    private Label errorMessageLabel;
+
+    private Listener listener;
 
     public LoginScreen(CatanGame pGame) {
         aGame = pGame;
+        listener = new Listener() {
+            @Override
+            public void received(Connection connection, Object object) {
+                if (object instanceof LoginResponse) {
+                    Gdx.app.postRunnable(() -> {
+                        // Handle the login response from the server
+                        if (((LoginResponse) object).success) {
+                            aGame.switchScreen(ScreenKind.MAIN_MENU);
+                        } else {
+                            errorMessageLabel.setText(ERROR_USERNAME);
+                        }
+                    });
+                }
+            }
+        };
     }
 
     @Override
     public void show() {
+        CatanGame.client.addListener(listener);
 
         bg = new Texture("BG.png");
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -46,50 +67,61 @@ public class LoginScreen implements Screen {
         aLoginStage = new Stage();
         Gdx.input.setInputProcessor(aLoginStage);
 
-        Label usernameLabel = new Label ("Username:", aGame.skin);
-        TextField usernameText = new TextField ("", aGame.skin);
-        usernameText.setMaxLength(20);
+        // Setup the window
+        CatanWindow window = new CatanWindow("", CatanGame.skin);
+        window.setWidth(2f / 4f * Gdx.graphics.getWidth());
+        window.setHeight(2f / 4f * Gdx.graphics.getHeight());
+        window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
+        window.setWindowCloseListener(window::remove);
+        aLoginStage.addActor(window);
 
-        aLoginTable = new Table(aGame.skin);
-        aLoginTable.add(usernameLabel);
-        aLoginTable.add(usernameText).width(200);
-        aLoginTable.row();
+        // Create the table holding the login elements
+        Table aLoginTable = new Table(CatanGame.skin);
         aLoginTable.setFillParent(true);
-        aLoginStage.addActor(aLoginTable);
-        aLoginTable.bottom().center();
 
-        // Generate a 1x1 white texture and store it in skin named white
-        Pixmap pixmap = new Pixmap(1,1, Format.RGBA8888);
-        pixmap.setColor(Color.GRAY);
-        pixmap.fill();
-        aGame.skin.add("white", new Texture(pixmap));
+        // Create the username label & input field
+        Label usernameLabel = new Label("Username:", CatanGame.skin);
+        TextField usernameText = new TextField("", CatanGame.skin);
+        usernameText.setMaxLength(20);
+        aLoginTable.add(usernameLabel);
+        aLoginTable.row();
+        aLoginTable.add(usernameText).width(200);
 
-        // store default font into skin under name default
-        aGame.skin.add("default", new BitmapFont());
-
-        aButtonStyle = new TextButtonStyle();
-        aButtonStyle.font = aGame.skin.getFont("default");
-        aButtonStyle.up = aGame.skin.getDrawable("white");
-
-        aLoginButton = new TextButton("Login", aButtonStyle);
+        // Create the login button
+        aLoginButton = new TextButton("Login", CatanGame.skin);
+        aLoginButton.padLeft(10).padRight(10);
         aLoginButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 aLoginButton.setChecked(false);
-                if(!(usernameText.getText() == null || usernameText.getText().trim().isEmpty())){
-                    //aLoginButton.setText("Logging In \n Please click to continue to the Main Menu");
-                    setupButton(aLoginButton, ScreenKind.MAIN_MENU);
-                }
-                else{
-                    aLoginButton.setText("Please enter a valid username \n Please click to go back to the Login Screen");
-                    setupButton(aLoginButton, ScreenKind.LOGIN);
+                // Clear the error message if there is one
+                errorMessageLabel.setText(null);
+                // Send a login request to the server if the input is valid
+                if (usernameText.getText() != null && !usernameText.getText().trim().isEmpty()) {
+                    final LoginRequest request = new LoginRequest();
+                    request.username = usernameText.getText();
+                    CatanGame.client.sendTCP(request);
+                } else {
+                    errorMessageLabel.setText(ERROR_USERNAME);
                 }
 
             }
 
         });
+        aLoginTable.row();
+        aLoginTable.add(aLoginButton).colspan(2).pad(20);
 
-        aLoginTable.add(aLoginButton).pad(50);
+        // Create the error message label
+        errorMessageLabel = new Label("", CatanGame.skin);
+        aLoginTable.row();
+        aLoginTable.add(errorMessageLabel).colspan(2);
+
+        aLoginTable.pack();
+
+        window.addActor(aLoginTable);
+
+        // Focus on the text field
+        aLoginStage.setKeyboardFocus(usernameText);
     }
 
     @Override
@@ -106,41 +138,25 @@ public class LoginScreen implements Screen {
 
     }
 
-    public void setupButton(TextButton pTextButton, ScreenKind pScreenkind) {
-        // add listener to button
-        pTextButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                pTextButton.setChecked(false);
-                aGame.switchScreen(pScreenkind);
-            }
-
-        });
-
-        aLoginTable.add(pTextButton).pad(50);
-    }
-
     @Override
     public void resize(int width, int height) {
         aLoginStage.getViewport().update(width, height, false);
         aGame.batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-
     }
 
     @Override
     public void pause() {
-        // TODO Auto-generated method stub
-
+        // Nothing to do
     }
 
     @Override
     public void resume() {
-        // TODO Auto-generated method stub
-
+        // Nothing to do
     }
 
     @Override
     public void hide() {
+        CatanGame.client.removeListener(listener);
         Gdx.input.setInputProcessor(null);
         dispose();
     }
@@ -150,6 +166,4 @@ public class LoginScreen implements Screen {
         bg.dispose();
         aLoginStage.dispose();
     }
-
 }
-

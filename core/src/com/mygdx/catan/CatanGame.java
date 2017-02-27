@@ -2,6 +2,7 @@ package com.mygdx.catan;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,13 +13,18 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
+import com.mygdx.catan.request.LoginRequest;
 import com.mygdx.catan.request.MarkAsReady;
+import com.mygdx.catan.response.LoginResponse;
 import com.mygdx.catan.response.MarkedAsReady;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
+import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.session.SessionScreen;
+
+import java.io.IOException;
 
 public class CatanGame extends Game {
     /** The Client representing the current user */
@@ -32,25 +38,41 @@ public class CatanGame extends Game {
         client = new Client();
 
         // Register request & response classes (needed for networking)
+        // Must be registered in the same order in the server
         Kryo kryo = client.getKryo();
+
+        kryo.register(LoginRequest.class);
+        kryo.register(LoginResponse.class);
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
 
         client.start();
+
+        // Connect to the server
+        new Thread(() -> {
+            try {
+                CatanGame.client.connect(5000, Config.IP, Config.TCP, Config.UDP);
+            } catch (IOException e) {
+                e.printStackTrace();
+                // TODO: connection failed, inform the user
+            }
+        }).start();
     }
 
     public SpriteBatch batch;
     private GameBoardManager aGameBoardManager = new GameBoardManager();
     private SessionManager aSessionManager = new SessionManager(4);
-    private MenuScreen menuScreen;
+
+    /** The first screen that shows up when the game starts */
+    private Screen mainScreen;
 
     @Override
     public void create() {
         createBasicSkin();
         batch = new SpriteBatch();
-        if (menuScreen == null)
-            menuScreen = new MenuScreen(this);
-        setScreen(menuScreen);
+        if (mainScreen == null)
+            mainScreen = new LoginScreen(this);
+        setScreen(mainScreen);
     }
 
     @Override
@@ -115,21 +137,21 @@ public class CatanGame extends Game {
     public void switchScreen(ScreenKind pScreenKind) {
         switch (pScreenKind) {
             case MAIN_MENU:
-                setScreen(menuScreen);
+                setScreen(new MenuScreen(this));
                 break;
             case BROWSE_GAMES:
                 break;
             case CREATE_GAME:
             case IN_GAME:
                 //this.setScreen(new CreateScreen(this, menuScreen));
-            	SessionController sc = new SessionController(aGameBoardManager, aSessionManager);
-            	SessionScreen screen = new SessionScreen(this);
-            	sc.setSessionScreen(screen);
-            	screen.setSessionController(sc);
+                SessionController sc = new SessionController(aGameBoardManager, aSessionManager);
+                SessionScreen screen = new SessionScreen(this);
+                sc.setSessionScreen(screen);
+                screen.setSessionController(sc);
                 setScreen(screen);
                 break;
             case LOBBY:
-                setScreen(new LobbyScreen(this, menuScreen));
+                setScreen(new LobbyScreen(this, mainScreen));
                 break;
             case RESUME_GAME:
                 break;
@@ -137,12 +159,12 @@ public class CatanGame extends Game {
                 break;
         }
     }
-    
+
     public GameBoardManager getGameBoardManager() {
-    	return aGameBoardManager;
+        return aGameBoardManager;
     }
-    
+
     public SessionManager getSessionManager() {
-    	return aSessionManager;
+        return aSessionManager;
     }
 }

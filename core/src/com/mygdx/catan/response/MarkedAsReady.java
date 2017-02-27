@@ -5,5 +5,4 @@ package com.mygdx.catan.response;
  * as ready.
  */
 public class MarkedAsReady {
-    public boolean hello;
 }

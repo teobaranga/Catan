@@ -40,6 +40,10 @@ public class SessionScreen implements Screen {
     private final int OFFX = BASE;                                            // offset on the x axis
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
     private final int PIECEBASE = LENGTH / 3;
+    
+    //Temporary
+    private final int XCENTER;
+    private final int YCENTER;
 
     PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
     Texture aSeaTextureSolid;
@@ -60,35 +64,29 @@ public class SessionScreen implements Screen {
     private Stage aSessionStage;
     private Texture bg;
 
-    /**
-     * The list of polygons representing the board hexes
-     */
+    /** The list of polygons representing the board hexes */
     private List<PolygonRegion> boardHexes;
 
-    /**
-     * The List of villages currently on the board
-     */
+    /** The List of villages currently on the board */
     private List<PolygonRegion> villages;
+    
+    /** The List of EdgeUnits currently on the board */
+    private List<PolygonRegion> edgeUnits;
 
-    /**
-     * The origin of the the hex board
-     */
+    /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
 
-    /**
-     * the map of resources to colors
-     */
+    /** the map of resources to colors */
     private Map<String, Color> colorMap;
 
-    /**
-     * The map of resource tables
-     */
+    /** The map of resource tables */
     Map<String, Label> resourceLabelMap;
 
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
         boardHexes = new ArrayList<>();
         villages = new ArrayList<>();
+        edgeUnits = new ArrayList<>();
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new HashMap<>();
         colorMap = new HashMap<>();
@@ -100,6 +98,9 @@ public class SessionScreen implements Screen {
         colorMap.put("grain", Color.YELLOW);
         colorMap.put("wool", Color.GREEN);
         colorMap.put("coin", Color.GOLD);
+        
+        XCENTER = 2 * Gdx.graphics.getWidth() / 5;
+        YCENTER = 3 * Gdx.graphics.getHeight() / 5;
     }
 
     public void setSessionController(SessionController sc) {
@@ -144,8 +145,8 @@ public class SessionScreen implements Screen {
         aYellowTextureSolid = setupTextureSolid(Color.YELLOW);
 
         // sets center of board
-        int xCenter = 2 * Gdx.graphics.getWidth() / 5;
-        int yCenter = 3 * Gdx.graphics.getHeight() / 5;
+        int xCenter = XCENTER;
+        int yCenter = YCENTER;
         int offsetX, offsetY;
 
         for (Hex hex : aSessionController.getHexes()) {
@@ -154,15 +155,24 @@ public class SessionScreen implements Screen {
             createHexagon(xCenter + (offsetX * OFFX), yCenter - (offsetY * OFFY), LENGTH, BASE, hex.getKind());
         }
 
-        // for testing purposes, puts a settlement on every intersection of the board
+        // for testing purposes, puts a settlement on every intersection of the board //TODO remove when done
         int i = 0;
         for (CoordinatePair<Integer, Integer> coor : aSessionController.getIntersectionsAndEdges()) {
-            updateIntersection(coor, PlayerColor.values()[i++ % 2], VillageKind.SETTLEMENT);
+        	// System.out.println(coor.getLeft() +" "+ coor.getRight());
+            updateIntersection(coor, PlayerColor.values()[i++ % 5], VillageKind.SETTLEMENT);
         }
 
-        // for testing purposes, removes some arbitrary village
-        removeVillage(xCenter + (1 * BASE), yCenter - (-1 * LENGTH / 2), i);
-
+        // for testing purposes, removes some arbitrary village //TODO remove when done
+        removeVillage(1,-1);
+        removeVillage(2,-2);
+        removeVillage(0,-2);
+        removeVillage(1,1);
+        removeVillage(2,2);
+        createRoad(1, -1, 2, -2, PlayerColor.WHITE);
+        createRoad(0, -2, 1, -1, PlayerColor.WHITE);
+        createRoad(1, 1, 2, 2, PlayerColor.WHITE);
+        createRoad(0, 2, 1, 1, PlayerColor.WHITE);
+        createRoad(1, -1, 1, 1, PlayerColor.WHITE);
 
         // FOR TEST
         //showDice();
@@ -205,6 +215,9 @@ public class SessionScreen implements Screen {
         polyBatch.begin();
         for (PolygonRegion boardHex : boardHexes) {
             polyBatch.draw(boardHex, boardOrigin.getLeft(), boardOrigin.getRight());
+        }
+        for (PolygonRegion edgeUnit : edgeUnits) {
+            polyBatch.draw(edgeUnit, boardOrigin.getLeft(), boardOrigin.getRight());
         }
         for (PolygonRegion village : villages) {
             polyBatch.draw(village, boardOrigin.getLeft(), boardOrigin.getRight());
@@ -305,7 +318,13 @@ public class SessionScreen implements Screen {
         boardHexes.add(polyReg);
     }
 
-    private void createSettlement(int xPos, int yPos, int length, PlayerColor color) {
+    /**
+     * Creates a settlement according to given position
+     *
+     * @param xCor   x coordinate of game piece center
+     * @param yCor   y coordinate of game piece center
+     */
+    private void createSettlement(int xCor, int yCor, PlayerColor color) {
         Texture aTexture = aSeaTextureSolid;
 
         switch (color) {
@@ -328,22 +347,128 @@ public class SessionScreen implements Screen {
                 break;
         }
 
-
+        //int xCenter = 2 * Gdx.graphics.getWidth() / 5;
+        //int yCenter = 3 * Gdx.graphics.getHeight() / 5;
+        float xPos = XCENTER + (xCor * BASE);
+        float yPos = YCENTER - (yCor * LENGTH / 2);
+        
+        
         // all player pieces will have 0 vertex at xPos - length / 2, yPos - length / 2, where length is a value that depends on hex side length
         PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aTexture),
                 new float[]{      // Six vertices
-                        xPos - length / 2, yPos - length / 2,        // Vertex 0                
-                        xPos + length / 2, yPos - length / 2,        // Vertex 1             4        
-                        xPos + length / 2, yPos + length / 2,        // Vertex 2		   3    2
-                        xPos - length / 2, yPos + length / 2,        // Vertex 3           0    1     
-                        xPos, yPos + length,                         // Vertex 4
+                        (float) (xPos - PIECEBASE / 2.0), (float) (yPos - PIECEBASE / 2.0),        // Vertex 0                
+                        (float) (xPos + PIECEBASE / 2.0), (float) (yPos - PIECEBASE / 2.0),        // Vertex 1           4        
+                        (float) (xPos + PIECEBASE / 2.0), (float) (yPos + PIECEBASE / 2.0),        // Vertex 2		   3    2
+                        (float) (xPos - PIECEBASE / 2.0), (float) (yPos + PIECEBASE / 2.0),        // Vertex 3         0    1     
+                        xPos, yPos + PIECEBASE,                            // Vertex 4
                 }, new short[]{
                 0, 1, 2,         // Sets up triangulation according to vertices above
                 0, 2, 3,
                 3, 2, 4
         });
-
         villages.add(polyReg);
+    }
+    
+    /**
+     * Creates a settlement according to given position. Assumes the coordinates correspond to adjacent intersections
+     *
+     * @param xCorFirst   x coordinate of game piece first endpoint
+     * @param yCorFirst   y coordinate of game piece first endpoint
+     * @param xCorSecond   x coordinate of game piece second endpoint
+     * @param yCorSecond   y coordinate of game piece second endpoint
+     * @param color of game piece
+     */
+    private void createRoad(int xCorFirst, int yCorFirst, int xCorSecond, int yCorSecond, PlayerColor color) {
+        Texture aTexture = aSeaTextureSolid;
+
+        switch (color) {
+            case BLUE:
+                aTexture = aBlueTextureSolid;
+                break;
+            case ORANGE:
+                aTexture = aOrangeTextureSolid;
+                break;
+            case RED:
+                aTexture = aRedTextureSolid;
+                break;
+            case WHITE:
+                aTexture = aWhiteTextureSolid;
+                break;
+            case YELLOW:
+                aTexture = aYellowTextureSolid;
+                break;
+            default:
+                break;
+        }
+
+        //int xCenter = 2 * Gdx.graphics.getWidth() / 5;
+        //int yCenter = 3 * Gdx.graphics.getHeight() / 5;
+        int xCenter = XCENTER;
+        int yCenter = YCENTER;
+        float[] v0 = new float[2],v1 = new float[2],v2 = new float[2],v3 = new float[2],vm = new float[2];
+        
+        //TODO set middle vertex (for identification purposes)
+        // Determines which direction the EdgeUnit will be facing, and gives appropriate vertex values
+        if (xCorFirst == xCorSecond) {
+        	
+        	v0[0] = (float) ((xCenter + (xCorFirst * BASE)) - PIECEBASE / 4.0);
+        	v0[1] = (float) ((yCenter - (Math.min(yCorFirst,yCorSecond) * LENGTH / 2)) - PIECEBASE / 2.0);
+        	
+        	v1[0] = (float) ((xCenter + (xCorFirst * BASE)) + PIECEBASE / 4.0);
+        	v1[1] = (float) ((yCenter - (Math.min(yCorFirst,yCorSecond) * LENGTH / 2)) - PIECEBASE / 2.0);
+        		
+        	v2[0] = (float) ((xCenter + (xCorFirst * BASE)) + PIECEBASE / 4.0);
+        	v2[1] = (float) ((yCenter - (Math.max(yCorFirst,yCorSecond) * LENGTH / 2)) + PIECEBASE / 2.0);
+        		
+        	v3[0] = (float) ((xCenter + (xCorFirst * BASE)) - PIECEBASE / 4.0);
+        	v3[1] = (float) ((yCenter - (Math.max(yCorFirst,yCorSecond) * LENGTH / 2)) + PIECEBASE / 2.0);
+        	
+        } else {
+            if ((Math.min(xCorFirst, xCorSecond) == xCorFirst && Math.max(yCorFirst,yCorSecond) == yCorFirst) ||
+            		(Math.min(xCorFirst, xCorSecond) == xCorSecond && Math.max(yCorFirst,yCorSecond) == yCorSecond)) {
+            	
+            	v0[0] = (float) ((xCenter + (Math.min(xCorFirst, xCorSecond) * BASE)) + PIECEBASE / 2.0);
+            	v0[1] = (float) ((yCenter - (Math.max(yCorFirst,yCorSecond) * LENGTH / 2)) + PIECEBASE / 15.0);
+            	
+            	v1[0] = (float) ((xCenter + (Math.min(xCorFirst, xCorSecond) * BASE)) + PIECEBASE / 4.0);
+            	v1[1] = (float) ((yCenter - (Math.max(yCorFirst,yCorSecond) * LENGTH / 2)) + PIECEBASE / 2.0);
+            		
+            	v2[0] = (float) ((xCenter + (Math.max(xCorFirst, xCorSecond) * BASE)) - PIECEBASE / 2.0);
+            	v2[1] = (float) ((yCenter - (Math.min(yCorFirst,yCorSecond) * LENGTH / 2)) - PIECEBASE / 15.0);
+            		
+            	v3[0] = (float) ((xCenter + (Math.max(xCorFirst, xCorSecond) * BASE)) - PIECEBASE / 4.0);
+            	v3[1] = (float) ((yCenter - (Math.min(yCorFirst,yCorSecond) * LENGTH / 2)) - PIECEBASE / 2.0);
+            		
+           	} else { 
+           		
+           		v0[0] = (float) ((xCenter + (Math.min(xCorFirst, xCorSecond) * BASE)) + PIECEBASE / 4.0);
+           		v0[1] = (float) ((yCenter - (Math.min(yCorFirst,yCorSecond) * LENGTH / 2)) - PIECEBASE / 2.0);
+            		
+            	v1[0] = (float) ((xCenter + (Math.min(xCorFirst, xCorSecond) * BASE)) + PIECEBASE / 2.0);
+            	v1[1] = (float) ((yCenter - (Math.min(yCorFirst,yCorSecond) * LENGTH / 2)) - PIECEBASE / 15.0);
+            		
+            	v2[0] = (float) ((xCenter + (Math.max(xCorFirst, xCorSecond) * BASE)) - PIECEBASE / 4.0);
+            	v2[1] = (float) ((yCenter - (Math.max(yCorFirst,yCorSecond) * LENGTH / 2)) + PIECEBASE / 2.0);
+            		
+            	v3[0] = (float) ((xCenter + (Math.max(xCorFirst, xCorSecond) * BASE)) - PIECEBASE / 2.0);
+            	v3[1] = (float) ((yCenter - (Math.max(yCorFirst,yCorSecond) * LENGTH / 2)) + PIECEBASE / 15.0);
+            		
+           	}
+        }
+        
+        PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aTexture),
+                new float[]{      // Six vertices
+                        v0[0], v0[1],        // Vertex 0                
+                        v1[0], v1[1],        // Vertex 1         1        2     (with rotation)  
+                        v2[0], v2[1],        // Vertex 2		 0        3   
+                        v3[0], v3[1],        // Vertex 3
+                        
+                }, new short[]{
+                0, 3, 2,         // Sets up triangulation according to vertices above
+                0, 2, 1
+        });
+        edgeUnits.add(polyReg);
+        
     }
 
     /**
@@ -362,17 +487,24 @@ public class SessionScreen implements Screen {
 
 
     /**
-     * @param xPos   coordinate of center
-     * @param yPos   coordinate of center
-     * @param length length of piece
-     * @return PolygonRegion which lies on coordinates xPos and yPos, null if no PolygonRegion lies on that space
+     * @param xCor   left coordinate of intersection
+     * @param yCor   right coordinate of intersection
+     * @return PolygonRegion which lies on intersection with coordinates xCor and yCor, null if no game piece lies on that space
      */
-    private PolygonRegion getPolygonRegion(int xPos, int yPos, int length) {
+    private PolygonRegion getBoardGamePiece(int xCor, int yCor) {
 
         for (PolygonRegion pr : villages) {
             float xV0 = pr.getVertices()[0];
-            float yV0 = pr.getVertices()[0];
-            if ((int) xV0 == xPos - length / 2 && (int) yV0 == yPos - length / 2) {
+            float yV0 = pr.getVertices()[1];
+            
+            //int xCenter = 2 * Gdx.graphics.getWidth() / 5;							// will break if screen is resized 
+            //int yCenter = 3 * Gdx.graphics.getHeight() / 5;
+            int xCenter = XCENTER;
+            int yCenter = YCENTER;
+            float xPos = xCenter + (xCor * BASE);
+            float yPos = yCenter - (yCor * LENGTH / 2);
+            
+            if ((float) xV0 == xPos - PIECEBASE / 2.0 && (float) yV0 == yPos - PIECEBASE / 2.0) {
                 return pr;
             }
         }
@@ -383,14 +515,12 @@ public class SessionScreen implements Screen {
     /**
      * removes polygon of given coordinates from the board
      *
-     * @param xPos   coordinate of center
-     * @param yPos   coordinate of center
-     * @param length length of piece
+     * @param xCor   left coordinate of intersection 
+     * @param yCor   right coordinate of intersection
      * @return true if a village was removed from the board
      */
-    private boolean removeVillage(int xPos, int yPos, int length) {
-        //FIXME: does not work as intended
-        PolygonRegion village = getPolygonRegion(xPos, yPos, length);
+    private boolean removeVillage(int xCor, int yCor) {
+        PolygonRegion village = getBoardGamePiece(xCor, yCor);
         if (village != null) {
             villages.remove(village);
             return true;
@@ -408,12 +538,10 @@ public class SessionScreen implements Screen {
      */
     public void updateIntersection(CoordinatePair<Integer, Integer> position, PlayerColor color, VillageKind kind) {
 
-        int xCenter = 2 * Gdx.graphics.getWidth() / 5;
-        int yCenter = 3 * Gdx.graphics.getHeight() / 5;
         int offsetX = position.getLeft();
         int offsetY = position.getRight();
 
-        if (removeVillage(xCenter + (offsetX * BASE), yCenter - (offsetY * LENGTH / 2), PIECEBASE)) {
+        if (removeVillage(offsetX, offsetY)) {
             System.out.println("remove: " + offsetX + " " + offsetY);
         }
 
@@ -423,7 +551,7 @@ public class SessionScreen implements Screen {
             case SCIENCEMETROPOLE:
                 break;
             case SETTLEMENT:
-                createSettlement(xCenter + (offsetX * BASE), yCenter - (offsetY * LENGTH / 2), PIECEBASE, color);
+                createSettlement(offsetX, offsetY, color);
                 break;
             case TRADEMETROPLE:
                 break;

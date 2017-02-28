@@ -9,17 +9,29 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.GameRules;
+import com.mygdx.catan.enums.TerrainKind;
+import com.mygdx.catan.gameboard.GameBoardManager;
+import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.screens.lobby.LobbyScreen;
+import com.mygdx.catan.session.SessionController;
+import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.ui.CatanWindow;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class CreateScreen implements Screen {
@@ -35,22 +47,53 @@ public class CreateScreen implements Screen {
     private final int OFFX = BASE;                                            // offset on the x axis
     private final int OFFY = LENGTH + LENGTH / 2;                                // offset on the y axis
     PolygonSprite poly;
+
     PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
-    Texture aWaterTextureSolid;
+    SpriteBatch fontBatch = new SpriteBatch(); //Q: can/should we use polyBatch to draw fonts, or do we need a new batch for it?
+
+
+    Texture aSeaTextureSolid;
     Texture aDesertTextureSolid;
-    Texture aClayTextureSolid;
-    Texture aForrestTextureSolid;
-    Texture aStoneTextureSolid;
+    Texture aHillsTextureSolid;
+    Texture aForestTextureSolid;
+    Texture aMountainTextureSolid;
+    Texture aPastureTextureSolid;
+    Texture aFieldsTextureSolid;
+    Texture aGoldfieldTextureSolid;
+
+
     private Stage stage;
     private Texture bg;
     private Random rd = new Random();
     private Pair<Integer, Integer>[] aHexPositions;
     private int[] aIntersectionPositions;
     private int[] aHexKindSetup;
+    SessionController sessionController;
+    /**
+     * The list of polygons representing the board hexes
+     */
+    private List<PolygonRegion> boardHexes;
+
+    /**
+     * The origin of the the hex board
+     */
+    private MutablePair<Integer, Integer> boardOrigin;
 
     public CreateScreen(CatanGame pGame, Screen parentScreen) {
+        sessionController = new SessionController(new GameBoardManager(), new SessionManager(1));
         this.parentScreen = parentScreen;
         game = pGame;
+        boardHexes = new ArrayList<>();
+        boardOrigin = new MutablePair<>();
+        setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+    }
+
+    private void setupBoardOrigin(int width, int height) {
+        // Coordinates that make the board centered on screen
+        // The offset calculations are a bit weird and unintuitive but it works
+        boardOrigin.setLeft(((int) (width / 2f)) - (int) (OFFX * SIZE * 3.65));
+        boardOrigin.setRight(((int) (height / 2f)) - (int) (OFFY * SIZE * 1.1));
     }
 
     @Override
@@ -79,10 +122,9 @@ public class CreateScreen implements Screen {
 
         ArrayList<String> mapNames = new ArrayList<>();
         mapNames.add("Map #1");
-        mapNames.add("Map #2");
+
 
         Table mapTable = new Table(game.skin);
-        mapTable.background(game.skin.newDrawable("background", Color.valueOf("eee9e9")));
         mapTable.add(new Label("Maps", game.skin)).padBottom(20);
         mapTable.row();
         mapTable.top();
@@ -90,18 +132,22 @@ public class CreateScreen implements Screen {
             mapTable.add(new TextButton(mapName, game.skin)).height(30).width(420).center().padBottom(1);
             mapTable.row();
         }
-        mapTable.add(new TextButton("Random", game.skin)).height(35).width(420).center().padTop(10);
         mapTable.pack();
 
         Table previewTable = new Table(game.skin);
-        previewTable.background(game.skin.newDrawable("background", Color.valueOf("eee9e9")));
         previewTable.top();
         previewTable.add(new Label("Preview", game.skin));
         previewTable.row();
         previewTable.pack();
 
         TextButton create = new TextButton("Create", game.skin);
-
+        create.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // TODO handle creation of new game
+                game.setScreen(new LobbyScreen(game));
+            }
+        });
         contentTable.top().left();
         contentTable.add(gameNameTable).colspan(2);
         contentTable.row();
@@ -124,17 +170,36 @@ public class CreateScreen implements Screen {
             for (int col = 0; col < cols; col++) {
                 int x = -cols + 2 * col + 1;
                 int y = (row - half);
-                aHexKindSetup[index] = rd.nextInt(ResourceKind.values().length);
+                aHexKindSetup[index] = 3;
                 aHexPositions[index++] = new Pair(x, y);
             }
         }
 
         // Creating the color filling for hexagons
-        aWaterTextureSolid = setupTextureSolid(Color.BLUE);
-        aDesertTextureSolid = setupTextureSolid(Color.YELLOW);
-        aClayTextureSolid = setupTextureSolid(Color.RED);
-        aForrestTextureSolid = setupTextureSolid(Color.GREEN);
-        aStoneTextureSolid = setupTextureSolid(Color.GRAY);
+        aSeaTextureSolid = setupTextureSolid(Color.TEAL);
+        aDesertTextureSolid = setupTextureSolid(Color.GRAY);
+        aHillsTextureSolid = setupTextureSolid(Color.valueOf("FFB386"));
+        aForestTextureSolid = setupTextureSolid(Color.valueOf("679861"));
+        aMountainTextureSolid = setupTextureSolid(Color.valueOf("996633"));
+        aPastureTextureSolid = setupTextureSolid(Color.valueOf("66FF66"));
+        aFieldsTextureSolid = setupTextureSolid(Color.valueOf("FFFF66"));
+        aGoldfieldTextureSolid = setupTextureSolid(Color.valueOf("FF9A00"));
+
+
+        // sets center of board
+        int xCenter = 82 * Gdx.graphics.getWidth() / 120;
+        int yCenter = 49 * Gdx.graphics.getHeight() / 90;
+
+        int offsetX, offsetY;
+
+        // draws hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
+        for (Hex hex : sessionController.getHexes()) {
+            offsetX = (hex.getLeftCoordinate());
+            offsetY = (hex.getRightCoordinate());
+            createHexagon(xCenter + (offsetX * OFFX), yCenter - (offsetY * OFFY), LENGTH, BASE, hex.getKind());
+        }
+
+
 
         contentTable.pack();
         window.row().fill().expand();
@@ -164,18 +229,26 @@ public class CreateScreen implements Screen {
         stage.act(delta);
         stage.draw();
 
-        // sets center of board
-        int xCenter = 82 * Gdx.graphics.getWidth() / 120;
-        int yCenter = 49 * Gdx.graphics.getHeight() / 90;
-
-        int offsetX, offsetY;
-
-        // draws hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
-        for (int i = 0; i < aHexPositions.length; i++) {
-            offsetX = (aHexPositions[i].getLeft());
-            offsetY = (aHexPositions[i].getRight());
-            drawHexagon(xCenter + (offsetX * OFFX), yCenter + (offsetY * OFFY), LENGTH, BASE, ResourceKind.values()[aHexKindSetup[i]], delta);
+        polyBatch.begin();
+        for (PolygonRegion boardHex : boardHexes) {
+           polyBatch.draw(boardHex, boardOrigin.getLeft(), boardOrigin.getRight());
         }
+        polyBatch.end();
+
+        int xCenter = 82 * Gdx.graphics.getWidth() / 121;
+        int yCenter = 52 * Gdx.graphics.getHeight() / 90;
+
+        fontBatch.begin();
+        for (Hex hex : sessionController.getHexes()) {
+            Integer prob = GameRules.getGameRulesInstance().getDiceNumber(hex);
+            if (prob != 0 && prob != null) {
+                //FIXME: screen center coordinates do not work as expected? (fix centering of boardgame)
+                float xPos =  (float) (xCenter + (hex.getLeftCoordinate() * OFFX));
+                float yPos = (float) (yCenter - (hex.getRightCoordinate() * OFFY));
+                CatanGame.skin.getFont("default").draw(fontBatch, prob.toString(), xPos, yPos);
+            }
+        }
+        fontBatch.end();
 
     }
 
@@ -207,33 +280,42 @@ public class CreateScreen implements Screen {
         stage.dispose();
     }
 
+
     /**
-     * Draws a hexagon according to given position and length
+     * Creates a hexagon according to given position and length
      *
      * @param xPos   x position of hexagon center
      * @param yPos   y position of hexagon center
      * @param length length of the side of the hexagon
      */
-    private void drawHexagon(int xPos, int yPos, int length, int base, ResourceKind pResourceKind, float delta) {
+    private void createHexagon(int xPos, int yPos, int length, int base, TerrainKind pTerrainKind) {
 
-        Texture aTexture = aWaterTextureSolid;
+        Texture aTexture = aSeaTextureSolid;
 
         // sets aTexture to relevant texture according to ResourceKind
-        switch (pResourceKind) {
-            case BRICK:
-                aTexture = aClayTextureSolid;
+        switch (pTerrainKind) {
+            case HILLS:
+                aTexture = aHillsTextureSolid;
                 break;
-            case GRAIN:
+            case FIELDS:
+                aTexture = aFieldsTextureSolid;
+                break;
+            case FOREST:
+                aTexture = aForestTextureSolid;
+                break;
+            case MOUNTAINS:
+                aTexture = aMountainTextureSolid;
+                break;
+            case PASTURE:
+                aTexture = aPastureTextureSolid;
+                break;
+            case SEA:
+                break;
+            case DESERT:
                 aTexture = aDesertTextureSolid;
                 break;
-            case WOOD:
-                aTexture = aForrestTextureSolid;
-                break;
-            case ORE:
-                aTexture = aStoneTextureSolid;
-                break;
-            case WOOL:
-                aTexture = aClayTextureSolid;
+            case GOLDFIELD:
+                aTexture = aGoldfieldTextureSolid;
                 break;
             default:
                 break;
@@ -241,29 +323,22 @@ public class CreateScreen implements Screen {
 
         PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aTexture),
                 new float[]{      // Six vertices
-                        xPos - base, yPos - length / 2,                // Vertex 0                4
+                        xPos - base, yPos - length / 2,             // Vertex 0                4
                         xPos, yPos - length,                        // Vertex 1           5         3
-                        xPos + base, yPos - length / 2,                // Vertex 2
-                        xPos + base, yPos + length / 2,                // Vertex 3           0         2
+                        xPos + base, yPos - length / 2,             // Vertex 2
+                        xPos + base, yPos + length / 2,             // Vertex 3           0         2
                         xPos, yPos + length,                        // Vertex 4                1
-                        xPos - base, yPos + length / 2                // Vertex 5
+                        xPos - base, yPos + length / 2              // Vertex 5
                 }, new short[]{
-                0, 1, 4,         // Sets up triangulation according to vertices above
+                0, 1, 4,         // Sets up triangulatio          n according to vertices above
                 0, 4, 5,
                 1, 2, 3,
                 1, 3, 4
         });
-        poly = new PolygonSprite(polyReg);
-        poly.setOrigin(100, 100);
-        polyBatch = new PolygonSpriteBatch();
 
-        polyBatch.begin();
-        poly.draw(polyBatch);
-        polyBatch.end();
-
+        boardHexes.add(polyReg);
     }
 }
-
 
 class Pair<L, R> {
 

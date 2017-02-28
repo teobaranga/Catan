@@ -1,8 +1,9 @@
-package com.mygdx.catan;
+package com.mygdx.catan.account;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.mygdx.catan.CatanGame;
 
 import java.io.*;
 import java.nio.file.Files;

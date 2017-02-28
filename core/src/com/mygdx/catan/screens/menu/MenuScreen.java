@@ -15,8 +15,10 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.game.GameManager;
+import com.mygdx.catan.request.CreateGame;
 import com.mygdx.catan.request.JoinRandomGame;
-import com.mygdx.catan.response.RandomGameResponse;
+import com.mygdx.catan.response.GameResponse;
 import com.mygdx.catan.ui.CatanWindow;
 
 public class MenuScreen implements Screen {
@@ -179,10 +181,10 @@ public class MenuScreen implements Screen {
                 Listener listener = new Listener() {
                     @Override
                     public void received(Connection connection, Object object) {
-                        if (object instanceof RandomGameResponse) {
+                        if (object instanceof GameResponse) {
                             Gdx.app.postRunnable(() -> {
                                 // No game found
-                                if (((RandomGameResponse) object).game == null) {
+                                if (((GameResponse) object).game == null) {
                                     // Inform the user
                                     messageLabel.setText("No games found, would you\nlike to create a new one?");
 
@@ -194,7 +196,9 @@ public class MenuScreen implements Screen {
                                         @Override
                                         public void clicked(InputEvent event, float x, float y) {
                                             // TODO handle creation of new game
-                                            window.close();
+                                            final CreateGame createGame = new CreateGame();
+                                            createGame.account = CatanGame.account;
+                                            CatanGame.client.sendTCP(createGame);
                                         }
                                     });
                                     final TextButton no = new TextButton("No", CatanGame.skin);
@@ -207,6 +211,8 @@ public class MenuScreen implements Screen {
                                     contentTable.add(yes).right().padRight(10).width(50).padTop(20);
                                     contentTable.add(no).left().padLeft(10).width(50).padTop(20);
                                 } else {
+                                    // Set the current game
+                                    GameManager.getInstance().setCurrentGame(((GameResponse) object).game);
                                     // Remove the window
                                     window.close();
                                     // Bring the user to the lobby screen
@@ -214,9 +220,6 @@ public class MenuScreen implements Screen {
                                         aGame.switchScreen(ScreenKind.LOBBY);
                                     }
                                 }
-
-                                // Stop handling RandomGameResponses
-                                CatanGame.client.removeListener(this);
                             });
                         }
                     }

@@ -17,8 +17,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-import com.mygdx.catan.Account;
-import com.mygdx.catan.AccountManager;
+import com.mygdx.catan.account.Account;
+import com.mygdx.catan.account.AccountManager;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.request.LoginRequest;
@@ -107,13 +107,13 @@ public class LoginScreen implements Screen {
                 errorMessageLabel.setText(null);
                 // Send a login request to the server if the input is valid
                 if (usernameText.getText() != null && !usernameText.getText().trim().isEmpty()) {
-                    // Create the login request
-                    final LoginRequest request = new LoginRequest();
-                    request.username = usernameText.getText().trim();
-                    // Send the login request
-                    CatanGame.client.sendTCP(request);
                     // Set the current account optimistically
                     account = new Account(usernameText.getText().trim(), null);
+                    // Create the login request
+                    final LoginRequest request = new LoginRequest();
+                    request.account = account;
+                    // Send the login request
+                    CatanGame.client.sendTCP(request);
                 } else {
                     errorMessageLabel.setText(ERROR_USERNAME);
                 }

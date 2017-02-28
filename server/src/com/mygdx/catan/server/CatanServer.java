@@ -6,23 +6,22 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import com.mygdx.catan.Account;
+import com.mygdx.catan.account.Account;
 import com.mygdx.catan.Config;
 import com.mygdx.catan.game.Game;
-import com.mygdx.catan.request.ForwardedRequest;
-import com.mygdx.catan.request.JoinRandomGame;
-import com.mygdx.catan.request.LoginRequest;
-import com.mygdx.catan.request.MarkAsReady;
+import com.mygdx.catan.request.*;
+import com.mygdx.catan.response.GameResponse;
 import com.mygdx.catan.response.LoginResponse;
 import com.mygdx.catan.response.MarkedAsReady;
-import com.mygdx.catan.response.RandomGameResponse;
 import com.mygdx.catan.response.Response;
+import com.mygdx.catan.session.Session;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,17 +36,18 @@ public class CatanServer {
      */
     private static Map<String, Game> gamesMap;
 
-    private static List<String> defaultAccounts;
-    private static List<String> accounts;
+    private static List<Account> defaultAccounts;
+    private static List<Account> accounts;
 
     static {
         // Create the default accounts
         defaultAccounts = new ArrayList<>();
-        defaultAccounts.add("aina");
-        defaultAccounts.add("amanda");
-        defaultAccounts.add("arnaud");
-        defaultAccounts.add("emma");
-        defaultAccounts.add("teo");
+        defaultAccounts.add(new Account("aina", null));
+        defaultAccounts.add(new Account("amanda", null));
+        defaultAccounts.add(new Account("arnaud", null));
+        defaultAccounts.add(new Account("emma", null));
+        defaultAccounts.add(new Account("teo", null));
+        defaultAccounts.add(new Account("teo test", null));
     }
 
     public static void main(String[] args) throws IOException {
@@ -57,13 +57,17 @@ public class CatanServer {
         // Must be registered in the same order in the client
         Kryo kryo = server.getKryo();
         kryo.register(Account.class);
+        kryo.register(Game.class);
+        kryo.register(Session.class);
         kryo.register(LoginRequest.class);
         kryo.register(LoginResponse.class);
         kryo.register(JoinRandomGame.class);
-        kryo.register(RandomGameResponse.class);
+        kryo.register(CreateGame.class);
+        kryo.register(GameResponse.class);
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
         kryo.register(ForwardedRequest.class);
+        kryo.register(HashMap.class);
         kryo.register(ArrayList.class);
 
         // Create the default accounts if they don't exist
@@ -80,6 +84,10 @@ public class CatanServer {
         accounts = kryo.readObject(input, ArrayList.class);
         input.close();
 
+        // Load the games TODO complete this
+        gamesMap = new HashMap<>();
+
+        // Start the server
         server.start();
         server.bind(Config.TCP, Config.UDP);
 
@@ -99,6 +107,8 @@ public class CatanServer {
                     response = attemptLogin(((LoginRequest) object));
                 } else if (object instanceof JoinRandomGame) {
                     response = getRandomGame();
+                } else if (object instanceof CreateGame) {
+                    response = createNewGame(connection, ((CreateGame) object).account);
                 } else if (object instanceof MarkAsReady) {
                     // TODO: mark the player as ready
                     System.out.println(connection.getID() + " marked as ready");
@@ -110,7 +120,7 @@ public class CatanServer {
                     for (Account peer : game.peers.keySet()) {
                         // Forward the object (message) to the other peers
                         if (!peer.getUsername().equals(forwardedRequest.username)) {
-                            game.peers.get(peer).sendTCP(object);
+                            server.sendToTCP(game.peers.get(peer), object);
                         }
                     }
                 }
@@ -124,15 +134,15 @@ public class CatanServer {
 
     private static LoginResponse attemptLogin(LoginRequest request) {
         // Check if the account exists
-        boolean success = accounts.contains(request.username);
+        boolean success = accounts.contains(request.account);
         // Reply to the client with the success status
         final LoginResponse response = new LoginResponse();
         response.success = success;
         return response;
     }
 
-    private static RandomGameResponse getRandomGame() {
-        final RandomGameResponse response = new RandomGameResponse();
+    private static GameResponse getRandomGame() {
+        final GameResponse response = new GameResponse();
         // Go through the games
         if (gamesMap != null) {
             for (Game game : gamesMap.values()) {
@@ -142,6 +152,19 @@ public class CatanServer {
                 }
             }
         }
+        return response;
+    }
+
+    private static GameResponse createNewGame(Connection connection, Account account) {
+        final GameResponse response = new GameResponse();
+
+        final Game game = new Game();
+        game.peers.put(account, connection.getID());
+
+        gamesMap.put(account.getUsername(), game);
+
+        response.game = game;
+
         return response;
     }
 }

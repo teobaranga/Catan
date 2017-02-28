@@ -1,20 +1,25 @@
 package com.mygdx.catan.game;
 
-import com.esotericsoftware.kryonet.Connection;
-import com.mygdx.catan.Account;
+import com.mygdx.catan.Config;
+import com.mygdx.catan.account.Account;
 import com.mygdx.catan.session.Session;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Game {
 
     /**
-     * Map of game accounts to their latest connection.
+     * Map of game accounts to their latest connection (by ID).
      * Needs to be kept up-to-date because the connection might change.
      */
-    public Map<Account, Connection> peers;
+    public Map<Account, Integer> peers;
 
     public Session session;
+
+    public Game() {
+        peers = new HashMap<>(Config.MAX_PLAYERS);
+    }
 
     /**
      * Get the number of players participating in this game.

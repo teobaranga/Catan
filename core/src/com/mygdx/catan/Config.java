@@ -14,5 +14,5 @@ public class Config {
     public static final int MAX_PLAYERS = 5;
 
     /** Path of the file where the current account is stored */
-    static final String ACCOUNT_PATH = "acct.bin";
+    public static final String ACCOUNT_PATH = "acct.bin";
 }

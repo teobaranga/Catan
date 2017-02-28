@@ -1,6 +1,6 @@
 package com.mygdx.catan.session;
 
-import com.mygdx.catan.Account;
+import com.mygdx.catan.account.Account;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EventKind;

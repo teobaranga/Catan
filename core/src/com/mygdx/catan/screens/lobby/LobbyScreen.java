@@ -12,6 +12,8 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.game.Game;
+import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.request.MarkAsReady;
 import com.mygdx.catan.response.MarkedAsReady;
 import com.mygdx.catan.screens.lobby.chat.ChatMessage;
@@ -23,8 +25,9 @@ public class LobbyScreen implements Screen {
 
     private final Listener lobbyListener;
 
-    private Stage stage;
     private final CatanGame game;
+
+    private Stage stage;
     private Texture bg;
 
     public LobbyScreen(CatanGame game) {
@@ -45,6 +48,9 @@ public class LobbyScreen implements Screen {
     @Override
     public void show() {
         CatanGame.client.addListener(lobbyListener);
+
+        final Game currentGame = GameManager.getInstance().getCurrentGame();
+        System.out.printf("%s started a new game\n", currentGame.peers.keySet().iterator().next().getUsername());
 
         bg = new Texture("BG.png");
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);

@@ -11,22 +11,24 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
+import com.mygdx.catan.account.Account;
+import com.mygdx.catan.account.AccountManager;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
-import com.mygdx.catan.request.JoinRandomGame;
-import com.mygdx.catan.request.LoginRequest;
-import com.mygdx.catan.request.MarkAsReady;
+import com.mygdx.catan.request.*;
+import com.mygdx.catan.response.GameResponse;
 import com.mygdx.catan.response.LoginResponse;
 import com.mygdx.catan.response.MarkedAsReady;
-import com.mygdx.catan.response.RandomGameResponse;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
+import com.mygdx.catan.session.Session;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.session.SessionScreen;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class CatanGame extends Game {
     /** The Client representing the current user */
@@ -47,13 +49,17 @@ public class CatanGame extends Game {
         Kryo kryo = client.getKryo();
 
         kryo.register(Account.class);
+        kryo.register(com.mygdx.catan.game.Game.class);
+        kryo.register(Session.class);
         kryo.register(LoginRequest.class);
         kryo.register(LoginResponse.class);
         kryo.register(JoinRandomGame.class);
-        kryo.register(RandomGameResponse.class);
+        kryo.register(CreateGame.class);
+        kryo.register(GameResponse.class);
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
-        kryo.register(com.mygdx.catan.game.Game.class);
+        kryo.register(ForwardedRequest.class);
+        kryo.register(HashMap.class);
 
         client.start();
 

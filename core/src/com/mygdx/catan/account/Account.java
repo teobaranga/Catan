@@ -1,4 +1,4 @@
-package com.mygdx.catan;
+package com.mygdx.catan.account;
 
 public class Account {
 
@@ -33,4 +33,17 @@ public class Account {
         this.password = password;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+
+        Account otherAcc = (Account) obj;
+
+        return username.equals(otherAcc.username);
+    }
 }

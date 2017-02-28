@@ -7,6 +7,7 @@ import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.gameboard.Hex;
 
 /**
  * Singleton object describing the game rules
@@ -81,7 +82,7 @@ public class GameRules {
 	 * */
 	private void setupDefaultTerrainMap() {
 		defaultTerrainKindMap.put(getHashCodeofPair(-3,-3), TerrainKind.FIELDS);
-		defaultTerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.FIELDS);
+		defaultTerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.DESERT);
 		defaultTerrainKindMap.put(getHashCodeofPair(1,-3), TerrainKind.HILLS);
 		defaultTerrainKindMap.put(getHashCodeofPair(3,-3), TerrainKind.SEA);
 		defaultTerrainKindMap.put(getHashCodeofPair(-4,-2), TerrainKind.FOREST);
@@ -124,7 +125,7 @@ public class GameRules {
 	 * */
 	private void setupDefaultDiceMap() {
 		defaultDiceNumberMap.put(getHashCodeofPair(-3,-3), 6);
-		defaultDiceNumberMap.put(getHashCodeofPair(-1,-3), 11);
+		defaultDiceNumberMap.put(getHashCodeofPair(-1,-3), 0);
 		defaultDiceNumberMap.put(getHashCodeofPair(1,-3), 8);
 		defaultDiceNumberMap.put(getHashCodeofPair(3,-3), 0);
 		defaultDiceNumberMap.put(getHashCodeofPair(-4,-2), 5);
@@ -248,6 +249,10 @@ public class GameRules {
 	
 	public HashMap<Integer,Integer> getDefaultDiceNumberMap() {
 		return defaultDiceNumberMap;
+	}
+	
+	public Integer getDiceNumber(Hex hex) {
+	    return defaultDiceNumberMap.get(getHashCodeofPair(hex.getLeftCoordinate(),hex.getRightCoordinate()));
 	}
 
 	/**

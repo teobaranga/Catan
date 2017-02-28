@@ -24,6 +24,10 @@
     resTableBackground: {
       name: white,
       color: {r: 0.976, g: 0.827, b: 0.647, a: 1}
+    },
+    readyBackground: {
+      name: white,
+      color: {r: 0.49020, g: 0.79216, b: 0.36078, a: 1}
     }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {

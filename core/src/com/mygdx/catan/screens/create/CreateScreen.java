@@ -11,16 +11,19 @@ import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.ui.CatanWindow;
@@ -138,7 +141,13 @@ public class CreateScreen implements Screen {
         previewTable.pack();
 
         TextButton create = new TextButton("Create", game.skin);
-
+        create.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // TODO handle creation of new game
+                game.setScreen(new LobbyScreen(game));
+            }
+        });
         contentTable.top().left();
         contentTable.add(gameNameTable).colspan(2);
         contentTable.row();

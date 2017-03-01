@@ -46,10 +46,10 @@ public class Player {
     }
 
     public int getHighestHarbourLevel(ResourceKind resKind) {
-        CoordinatePair pos;
+        CoordinatePair<Integer,Integer> pos;
         HarbourKind hKind;
         int highest = 4;
-        for (v: villages){
+        for (Village v: villages){
             pos = v.getPosition();
             hKind = pos.getHarbourKind();
             if (hKind.equals(HarbourKind.SPECIAL)) {
@@ -62,8 +62,8 @@ public class Player {
             else if(highest != 3){
                 highest = 4;
             }
-            return highest;
         }
+        return highest;
     }
 
     public void addResources(ResourceMap cost) {

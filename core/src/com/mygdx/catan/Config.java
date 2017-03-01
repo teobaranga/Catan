@@ -2,7 +2,7 @@ package com.mygdx.catan;
 
 public class Config {
     /** The IP of the server. All clients need to connect to this IP. */
-    public static final String IP = "localhost";
+    public static final String IP = "24.201.163.43";
 
     /** TCP port used when connecting to the server */
     public static final int TCP = 54555;

@@ -14,6 +14,7 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.GameRules;
 
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
@@ -71,8 +72,26 @@ public class SessionController {
      * */
     public boolean requestBuildVillage(PlayerColor owner, VillageKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        
-        return false;
+        Player currentP = null;
+        ResourceMap cost = null;
+        for(Player p: aSessionManager.getPlayers()){
+            if (p.getColor().equals(owner)) {
+                currentP = p;
+            }
+        }
+        if (kind.equals(VillageKind.SETTLEMENT)) {
+            cost = GameRules.getGameRulesInstance().getSettlementCost();
+        }
+        else if (kind.equals(VillageKind.CITY)) {
+            cost = GameRules.getGameRulesInstance().getCityCost();
+        }
+        //check to make sure player has sufficient resources
+        if (currentP.hasEnoughResources(cost)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
     
     /**

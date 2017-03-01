@@ -45,6 +45,17 @@ public class Player {
         this.tokenVictoryPoints = tokenVictoryPoints;
     }
 
+    public boolean hasEnoughResources(ResourceMap rm) {
+        for (ResourceKind key: rm.keySet()){
+            if(resourceMap.containsKey(key) && resourceMap.get(key) >= 1) {
+                continue;
+            }
+            else{
+                return false;
+            }
+        }
+        return true;
+    }
     public int getHighestHarbourLevel(ResourceKind resKind) {
         CoordinatePair<Integer,Integer> pos;
         HarbourKind hKind;
@@ -161,6 +172,8 @@ public class Player {
     public PlayerColor getColor() {
         return color;
     }
+
+    public ResourceMap getResourceMap() { return resourceMap;}
 
     @Override
     public boolean equals(Object other) {

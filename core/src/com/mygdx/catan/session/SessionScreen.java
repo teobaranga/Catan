@@ -239,7 +239,7 @@ public class SessionScreen implements Screen {
         createShip(0, 2, 0, 4, PlayerColor.RED);
 
         // FOR TEST
-        //showDice();
+        showDice();
         aSessionStage.addActor(contentTable);
         aSessionStage.addActor(menuTable);
     }

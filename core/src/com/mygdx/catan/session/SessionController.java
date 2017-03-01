@@ -76,11 +76,58 @@ public class SessionController {
     }
     
     /**
+     * @param owner of request
+     * @param kind of edge unit requested to be built
+     * @return true if owner has the resources to build the requested village kind
+     * */
+    public boolean requestBuildEdgeUnit(PlayerColor owner, EdgeUnitKind kind) {
+        // does not change any state, gui does not need to be notified, method call cannot come from peer
+        
+        return false;
+    }
+    
+    /**
      * @param owner of requested valid intersections
      * @return a list of all the intersections that are (1) connected to road owned by player and (2) not adjacent to another village and (3) on land
      * */
     public ArrayList<CoordinatePair<Integer,Integer>> requestValidBuildIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
+        
+        return null;
+    }
+    
+    /**
+     * @param owner of requested valid intersections
+     * @return a list of all the intersections that have an owner's settlement on it
+     * */
+    public ArrayList<CoordinatePair<Integer,Integer>> requestValidCityUpgradeIntersections(PlayerColor owner) {
+        // does not change any state, gui does not need to be notified, method call cannot come from peer
+        
+        return null;
+    }
+    
+    /**
+     * @param owner of requested valid intersections
+     * @return a list of all the intersections that are (1) connected to a road or village owned by owner
+     * */
+    public ArrayList<CoordinatePair<Integer,Integer>> requestValidRoadEndpoints(PlayerColor owner) {
+        // does not change any state, gui does not need to be notified, method call cannot come from peer
+        
+        // this method will essentially return all the endpoints where you can build a road at any edge 
+        // starting at that endpoint (if we disregard the edges that are occupied). The GUI will make sure 
+        // none of the edges that are occupied or in water can be chosen.
+        
+        return null;
+    }
+    
+    /**
+     * @param owner of requested valid intersections
+     * @return a list of all the intersections that are (1) connected to a ship or harbour village owned by owner (2) something something pirate
+     * */
+    public ArrayList<CoordinatePair<Integer,Integer>> requestValidShipEndpoints(PlayerColor owner) {
+        // does not change any state, gui does not need to be notified, method call cannot come from peer
+        
+        // same as above but with no edges that are in land can be chosen
         
         return null;
     }
@@ -99,6 +146,8 @@ public class SessionController {
         // otherwise the gui will also need to be notified about resource changes
         return false;
     }
+    
+    
 
     /**
      * Requests the GameBoardManager to build edge unit on given coordinates. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
@@ -112,10 +161,8 @@ public class SessionController {
      * @return true if building the unit was successful, false otherwise
      */
     public boolean buildEdgeUnit(Player player, CoordinatePair<Integer, Integer> firstPosition, CoordinatePair<Integer, Integer> SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
-        //TODO: verify that edgeUnit is between two adjacent coordinates, that those coordinates are free
-        // and that the adjacent hexes are compatible with the EdgeUnitKind (in SessionController)
-
-        //TODO: longest road
+        
+        //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)
 
         return false;
     }

@@ -7,6 +7,7 @@ import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
+import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.EdgeUnit;
@@ -18,6 +19,15 @@ public class SessionController {
     private final GameBoardManager aGameBoardManager;
     private final SessionManager aSessionManager;
     private SessionScreen aSessionScreen;
+    private PlayerColor aPlayerColor;
+    
+    public PlayerColor getPlayerColor() {
+        return aPlayerColor;
+    }
+    
+    public void setPlayerColor(PlayerColor pc) {
+        aPlayerColor = pc;
+    }
 
     public SessionController(GameBoardManager gbm, SessionManager sm) {
         aGameBoardManager = gbm;
@@ -59,7 +69,7 @@ public class SessionController {
      * @param kind of village requested to be built
      * @return true if owner has the resources to build the requested village kind
      * */
-    public boolean requestBuildVillage(Player owner, VillageKind kind) {
+    public boolean requestBuildVillage(PlayerColor owner, VillageKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         
         return false;
@@ -69,7 +79,7 @@ public class SessionController {
      * @param owner of requested valid intersections
      * @return a list of all the intersections that are (1) connected to road owned by player and (2) not adjacent to another village and (3) on land
      * */
-    public ArrayList<CoordinatePair<Integer,Integer>> requestValidBuildIntersections(Player owner) {
+    public ArrayList<CoordinatePair<Integer,Integer>> requestValidBuildIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         
         return null;
@@ -83,7 +93,7 @@ public class SessionController {
      * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
      * @return true if building the settlement was successful, false otherwise
      */
-    public boolean buildSettlement(CoordinatePair<Integer, Integer> position, Player owner, boolean fromPeer) {
+    public boolean buildSettlement(CoordinatePair<Integer, Integer> position, PlayerColor owner, boolean fromPeer) {
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
         // if method call is from a peer, the gui only needs to be notified of the new gameboard change.
         // otherwise the gui will also need to be notified about resource changes
@@ -136,7 +146,7 @@ public class SessionController {
         }
 
         Village v = new Village(cp, cityPos);
-        buildSettlement(cityPos, cp, fromPeer);
+        buildSettlement(cityPos, cp.getColor(), fromPeer);
 
         List<Hex> neighbourHexes = new ArrayList<>();
         List<Hex> hexes = aGameBoardManager.getHexes();

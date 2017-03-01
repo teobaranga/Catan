@@ -9,14 +9,19 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.Input;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.SessionScreenModes;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.Hex;
@@ -112,7 +117,22 @@ public class SessionScreen implements Screen {
      * The map of resource tables
      */
     private Map<String, Label> resourceLabelMap;
-
+    
+    /** 
+     * determines the current mode of the session screen 
+     * */
+    private SessionScreenModes aMode;
+    
+    /** 
+     * The List of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE
+     * */
+    private ArrayList<CoordinatePair<Integer,Integer>> validIntersections = new ArrayList<CoordinatePair<Integer,Integer>>();
+    
+    /**
+     * Menu Buttons
+     * */
+    private TextButton buildSettlementButton;
+    
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
         boardHexes = new ArrayList<>();
@@ -121,6 +141,9 @@ public class SessionScreen implements Screen {
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new HashMap<>();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        
+        // sets the initializing mode of the session screen (VIEWMODE). set to CHOOSEACTIONMODE for testing purposes 
+        aMode = SessionScreenModes.CHOOSEACTIONMODE;
     }
 
     public void setSessionController(SessionController sc) {
@@ -137,6 +160,7 @@ public class SessionScreen implements Screen {
 
         //TODO: UI panels
 
+        // resource table
         Table contentTable = new Table(CatanGame.skin);
         contentTable.setBackground("resTableBackground");
         contentTable.setSize(550, 120);
@@ -146,6 +170,17 @@ public class SessionScreen implements Screen {
             Table aTable = createResourceTable(entry.getKey());
             contentTable.add(aTable).pad(5);
         }
+        
+        // menu table
+        Table menuTable = new Table(CatanGame.skin);
+        menuTable.setBackground("resTableBackground");
+        menuTable.setSize(200, 300);
+        menuTable.setPosition(20, 20);
+        
+        buildSettlementButton = new TextButton("Build Settlement",CatanGame.skin);
+        setupBuildSettlementButton(buildSettlementButton);
+        buildSettlementButton.pad(0, 10, 0, 10);
+        menuTable.add(buildSettlementButton).padBottom(200);;
 
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
@@ -184,10 +219,10 @@ public class SessionScreen implements Screen {
         }
 
         // for testing purposes, puts a settlement on every intersection of the board //TODO remove when done
-        int i = 0;
-        for (CoordinatePair<Integer, Integer> coor : aSessionController.getIntersectionsAndEdges()) {
-            updateIntersection(coor, PlayerColor.values()[i++ % 5], VillageKind.values()[i%3]);
-        }
+        //int i = 0;
+        //for (CoordinatePair<Integer, Integer> coor : aSessionController.getIntersectionsAndEdges()) {
+        //    updateIntersection(coor, PlayerColor.values()[i++ % 5], VillageKind.values()[i%3]);
+        //}
 
         // for testing purposes, removes some arbitrary village //TODO remove when done
         removeVillage(1, -1);
@@ -206,8 +241,33 @@ public class SessionScreen implements Screen {
         // FOR TEST
         //showDice();
         aSessionStage.addActor(contentTable);
+        aSessionStage.addActor(menuTable);
     }
 
+    private void setupBuildSettlementButton(TextButton buildSettlementButton) {
+        buildSettlementButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                buildSettlementButton.setChecked(false);
+                // TODO: figure out how to ask the server to get the Player object who is associated to this player
+                if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
+                    // TODO: ask SessionController if there are enough resources
+                    // make the following loop go through requested valid build positions
+                    for (CoordinatePair<Integer,Integer> intersections : aSessionController.getIntersectionsAndEdges()) {
+                        validIntersections.add(intersections);
+                        //TODO make a sprite that highlights the area
+                    }
+                    aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+                    buildSettlementButton.setText("Cancel");
+                } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
+                    validIntersections.clear();
+                    buildSettlementButton.setText("Build Settlement");
+                    aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                }
+            }
+        });
+    }
+    
     private Texture setupTextureSolid(Color color) {
         Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pix.setColor(color); // DE is red, AD is green and BE is blue.
@@ -240,6 +300,30 @@ public class SessionScreen implements Screen {
         aGame.batch.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         aGame.batch.end();
 
+        // 
+        if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
+            for (CoordinatePair<Integer,Integer> validIntersection : validIntersections) {
+                if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+                   
+                    if (Gdx.input.getX() > boardOrigin.getLeft() + validIntersection.getLeft() * BASE - 10 &&
+                            Gdx.input.getX() < boardOrigin.getLeft() + validIntersection.getLeft() * BASE + 10 &&
+                            Gdx.input.getY() > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
+                            Gdx.input.getY() < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
+                        
+                        //TODO: call buildSettlement method in SessionController and delete following
+                        updateIntersection(validIntersection, PlayerColor.BLUE, VillageKind.SETTLEMENT);
+                        
+                        aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                    }
+                }
+            }
+            if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
+                buildSettlementButton.setText("Build Settlement");
+                validIntersections.clear();
+            }
+        }
+        
+        
         // Display the board hexes and game pieces and dice number tokens
         polyBatch.begin();
         for (PolygonRegion boardHex : boardHexes) {

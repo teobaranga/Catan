@@ -64,6 +64,15 @@ public class SessionController {
         return aGameBoardManager.getRobberPosition();
     }
 
+    /**
+     * @param a one interesection
+     * @param b another intersection
+     * @return true if a and b are adjacent
+     * */
+    private boolean isAdjacent (CoordinatePair<Integer, Integer> a, CoordinatePair<Integer, Integer> b) {
+        return (Math.abs(a.getLeft() - b.getLeft()) + Math.abs(a.getRight() - b.getRight()) == 2);
+    }
+
     
     /**
      * @param owner of request
@@ -111,7 +120,12 @@ public class SessionController {
      * */
     public ArrayList<CoordinatePair<Integer,Integer>> requestValidBuildIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        
+        ArrayList<CoordinatePair<Integer, Integer>> validIntersections;
+        for (CoordinatePair<Integer, Integer> i: aGameBoardManager.getIntersectionsAndEdges()) {
+            //need to iterate through all players villages and make sure i is not adjacent
+            //need to iterate through all players edge units and make sure i is on an edge unit
+            //need to check it its on land
+        }
         return null;
     }
     

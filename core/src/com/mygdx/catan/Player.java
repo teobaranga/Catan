@@ -44,7 +44,11 @@ public class Player {
     public void setTokenVictoryPoints(int tokenVictoryPoints) {
         this.tokenVictoryPoints = tokenVictoryPoints;
     }
-
+    
+    /**
+     * @param rm of rm is the resource map in question. need to see if player can pay for rm
+     * @return true if player has enough resources for rm
+     * */
     public boolean hasEnoughResources(ResourceMap rm) {
         for (ResourceKind key: rm.keySet()){
             if(resourceMap.containsKey(key) && resourceMap.get(key) >= 1) {

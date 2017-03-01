@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -40,12 +39,12 @@ public class SessionScreen implements Screen {
     static {
         // TODO move this to the skin
         colorMap = new HashMap<>();
-        colorMap.put("wood", Color.LIME);
-        colorMap.put("brick", Color.BROWN);
-        colorMap.put("ore", Color.GRAY);
-        colorMap.put("grain", Color.YELLOW);
-        colorMap.put("wool", Color.GREEN);
-        colorMap.put("coin", Color.GOLD);
+        colorMap.put("wood", Color.valueOf("679861"));
+        colorMap.put("brick", Color.valueOf("CC6633"));
+        colorMap.put("ore", Color.valueOf("996633"));
+        colorMap.put("grain", Color.valueOf("FFFF66"));
+        colorMap.put("wool", Color.valueOf("66FF66"));
+        colorMap.put("coin", Color.valueOf("FF9A00"));
     }
 
     private final CatanGame aGame;
@@ -58,12 +57,7 @@ public class SessionScreen implements Screen {
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
     private final int PIECEBASE = (int) (LENGTH * 0.4);
 
-    //Temporary
-    private final int XCENTER;
-    private final int YCENTER;
-
     PolygonSpriteBatch polyBatch = new PolygonSpriteBatch(); // To assign at the beginning
-    SpriteBatch fontBatch = new SpriteBatch(); //Q: can/should we use polyBatch to draw fonts, or do we need a new batch for it?
 
     Texture aSeaTextureSolid;
     Texture aDesertTextureSolid;
@@ -79,6 +73,8 @@ public class SessionScreen implements Screen {
     Texture aWhiteTextureSolid;
     Texture aBlueTextureSolid;
     Texture aYellowTextureSolid;
+    
+    Texture aRobberTextureSolid;
 
     private SessionController aSessionController;
 
@@ -100,6 +96,11 @@ public class SessionScreen implements Screen {
      * The List of EdgeUnits currently on the board
      */
     private List<PolygonRegion> edgeUnits;
+    
+    /**
+     * The Robber
+     * */
+    private PolygonRegion robber;
 
     /**
      * The origin of the the hex board
@@ -120,9 +121,6 @@ public class SessionScreen implements Screen {
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new HashMap<>();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        XCENTER = 2 * Gdx.graphics.getWidth() / 5;
-        YCENTER = 3 * Gdx.graphics.getHeight() / 5;
     }
 
     public void setSessionController(SessionController sc) {
@@ -151,13 +149,13 @@ public class SessionScreen implements Screen {
 
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
-        aDesertTextureSolid = setupTextureSolid(Color.GRAY);
-        aHillsTextureSolid = setupTextureSolid(Color.valueOf("FFB386"));
-        aForestTextureSolid = setupTextureSolid(Color.valueOf("679861"));
-        aMountainTextureSolid = setupTextureSolid(Color.valueOf("996633"));
-        aPastureTextureSolid = setupTextureSolid(Color.valueOf("66FF66"));
-        aFieldsTextureSolid = setupTextureSolid(Color.valueOf("FFFF66"));
-        aGoldfieldTextureSolid = setupTextureSolid(Color.valueOf("FF9A00"));
+        aDesertTextureSolid = setupTextureSolid(Color.DARK_GRAY);
+        aHillsTextureSolid = setupTextureSolid(colorMap.get("brick"));
+        aForestTextureSolid = setupTextureSolid(colorMap.get("wood"));
+        aMountainTextureSolid = setupTextureSolid(colorMap.get("ore"));
+        aPastureTextureSolid = setupTextureSolid(colorMap.get("wool"));
+        aFieldsTextureSolid = setupTextureSolid(colorMap.get("grain"));
+        aGoldfieldTextureSolid = setupTextureSolid(colorMap.get("coin"));
 
         //Creating the color filling for player pieces
         aOrangeTextureSolid = setupTextureSolid(Color.ORANGE);
@@ -165,16 +163,24 @@ public class SessionScreen implements Screen {
         aWhiteTextureSolid = setupTextureSolid(Color.WHITE);
         aBlueTextureSolid = setupTextureSolid(Color.BLUE);
         aYellowTextureSolid = setupTextureSolid(Color.YELLOW);
+        
+        //Creating the color filling for the robber piece
+        aRobberTextureSolid = setupTextureSolid(Color.valueOf("666666"));
 
         // sets center of board
-        int xCenter = XCENTER;
-        int yCenter = YCENTER;
         int offsetX, offsetY;
 
+        // creates hexes of the board
         for (Hex hex : aSessionController.getHexes()) {
             offsetX = hex.getLeftCoordinate();
             offsetY = hex.getRightCoordinate();
-            createHexagon(xCenter + (offsetX * OFFX), yCenter - (offsetY * OFFY), LENGTH, BASE, hex.getKind());
+            createHexagon((offsetX * OFFX),-(offsetY * OFFY), LENGTH, BASE, hex.getKind());
+        }
+        
+        // places robber at initial robber position
+        Hex robberPos = aSessionController.getRobberPosition();
+        if (robberPos != null) {
+            updateRobberPosition(robberPos);
         }
 
         // for testing purposes, puts a settlement on every intersection of the board //TODO remove when done
@@ -195,6 +201,7 @@ public class SessionScreen implements Screen {
         createRoad(0, 2, 1, 1, PlayerColor.ORANGE);
         createRoad(1, -1, 1, 1, PlayerColor.WHITE);
         removeEdgeUnit(1, -1, 2, -2);
+        createShip(0, 2, 0, 4, PlayerColor.RED);
 
         // FOR TEST
         //showDice();
@@ -233,7 +240,7 @@ public class SessionScreen implements Screen {
         aGame.batch.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         aGame.batch.end();
 
-        // Display the board hexes and game pieces
+        // Display the board hexes and game pieces and dice number tokens
         polyBatch.begin();
         for (PolygonRegion boardHex : boardHexes) {
             polyBatch.draw(boardHex, boardOrigin.getLeft(), boardOrigin.getRight());
@@ -244,19 +251,16 @@ public class SessionScreen implements Screen {
         for (PolygonRegion village : villages) {
             polyBatch.draw(village, boardOrigin.getLeft(), boardOrigin.getRight());
         }
-        polyBatch.end();
-        
-        fontBatch.begin();
         for (Hex hex : aSessionController.getHexes()) {
             Integer prob = GameRules.getGameRulesInstance().getDiceNumber(hex);
             if (prob != 0 && prob != null) {
-                //FIXME: screen center coordinates do not work as expected? (fix centering of boardgame)
-                float xPos =  (float) (Gdx.graphics.getWidth() * 0.52 + (hex.getLeftCoordinate() * OFFX));
-                float yPos = (float) (Gdx.graphics.getWidth() * 0.3 - (hex.getRightCoordinate() * OFFY));
-                CatanGame.skin.getFont("default").draw(fontBatch, prob.toString(), xPos, yPos);
+                float xPos =  (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX - 7));
+                float yPos = (float) (boardOrigin.getRight() - (hex.getRightCoordinate() * OFFY - 5));
+                CatanGame.skin.getFont("default").draw(polyBatch, prob.toString(), xPos, yPos);
             }
         }
-        fontBatch.end();
+        polyBatch.draw(robber, boardOrigin.getLeft(), boardOrigin.getRight());
+        polyBatch.end();
 
         aSessionStage.act(delta);
         aSessionStage.draw();
@@ -353,6 +357,30 @@ public class SessionScreen implements Screen {
     }
 
     /**
+     * Places Robber on given coordinates
+     * 
+     * @param xCor left coordinate
+     * @param yCor right coordinate
+     * */
+    private void placeRobber(int xCor, int yCor) {
+        
+        float xPos = xCor * OFFX;
+        float yPos = - yCor * OFFY;
+        
+        PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aRobberTextureSolid),
+                new float[]{     
+                        (float) (xPos - BASE * 0.6), (float) (yPos - BASE * 0.5),     // Vertex 0            2
+                        (float) (xPos + BASE * 0.6), yPos - BASE / 2,                 // Vertex 1                   
+                        xPos, (float) (yPos + BASE * 0.8),                            // Vertex 2         0     1
+
+                }, new short[]{
+                0, 1, 2         // Sets up triangulation according to vertices above
+        });
+        
+        robber = polyReg;
+    }
+    
+    /**
      * Creates a settlement according to given position
      *
      * @param xCor x coordinate of game piece center
@@ -380,11 +408,9 @@ public class SessionScreen implements Screen {
             default:
                 break;
         }
-
-        //int xCenter = 2 * Gdx.graphics.getWidth() / 5;
-        //int yCenter = 3 * Gdx.graphics.getHeight() / 5;
-        float xPos = XCENTER + (xCor * BASE);
-        float yPos = YCENTER - (yCor * LENGTH / 2);
+        
+        float xPos = (xCor * BASE);
+        float yPos = - (yCor * LENGTH / 2);
 
 
         // all player pieces will have 0 vertex at xPos - length / 2, yPos - length / 2, where length is a value that depends on hex side length
@@ -432,8 +458,8 @@ public class SessionScreen implements Screen {
                 break;
         }
 
-        float xPos = XCENTER + (xCor * BASE);
-        float yPos = YCENTER - (yCor * LENGTH / 2);
+        float xPos = + (xCor * BASE);
+        float yPos = - (yCor * LENGTH / 2);
 
 
         // all player pieces will have 0 vertex at xPos - length / 2, yPos - length / 2, where length is a value that depends on hex side length
@@ -486,8 +512,8 @@ public class SessionScreen implements Screen {
                 break;
         }
 
-        float xPos = XCENTER + (xCor * BASE);
-        float yPos = YCENTER - (yCor * LENGTH / 2);
+        float xPos = (xCor * BASE);
+        float yPos = - (yCor * LENGTH / 2);
 
 
         // all player pieces will have 0 vertex at xPos - length / 2, yPos - length / 2, where length is a value that depends on hex side length
@@ -495,8 +521,8 @@ public class SessionScreen implements Screen {
                 new float[]{      
                         (float) (xPos - PIECEBASE / 2.0), (float) (yPos - PIECEBASE / 2.0),        // Vertex 0
                         (float) (xPos/* + PIECEBASE / 2.0*/), (float) (yPos - PIECEBASE / 2.0),    // Vertex 1
-                        (float) (xPos), (float) (yPos + PIECEBASE / 10.0),                          // Vertex 2
-                        (float) (xPos + PIECEBASE / 2.0), (float) (yPos + PIECEBASE / 10.0),        // Vertex 3        12      7
+                        (float) (xPos), (float) (yPos + PIECEBASE / 10.0),                         // Vertex 2
+                        (float) (xPos + PIECEBASE / 2.0), (float) (yPos + PIECEBASE / 10.0),       // Vertex 3        12      7
                         (float) (xPos + PIECEBASE / 2.0), (float) (yPos - PIECEBASE / 2.0),        // Vertex 4      13  11   8  6
                         (float) (xPos + PIECEBASE), (float) (yPos - PIECEBASE / 2.0),              // Vertex 5
                         (float) (xPos + PIECEBASE), (float) (yPos + PIECEBASE / 2.0),              // Vertex 6          10   9  
@@ -523,7 +549,7 @@ public class SessionScreen implements Screen {
     }
 
     /**
-     * Creates a settlement according to given position. Assumes the coordinates correspond to adjacent intersections
+     * Creates a road according to given positions. Assumes the coordinates correspond to adjacent intersections
      *
      * @param xCorFirst  x coordinate of game piece first endpoint
      * @param yCorFirst  y coordinate of game piece first endpoint
@@ -554,10 +580,6 @@ public class SessionScreen implements Screen {
                 break;
         }
 
-        //int xCenter = 2 * Gdx.graphics.getWidth() / 5;
-        //int yCenter = 3 * Gdx.graphics.getHeight() / 5;
-        int xCenter = XCENTER;
-        int yCenter = YCENTER;
         float[] v0 = new float[2], v1 = new float[2], v2 = new float[2], v3 = new float[2], vm = new float[2];
         
         int xMin = Math.min(xCorFirst, xCorSecond);
@@ -572,47 +594,47 @@ public class SessionScreen implements Screen {
         // Determines which direction the EdgeUnit will be facing, and gives appropriate vertex values
         if (xCorFirst == xCorSecond) {
 
-            v0[0] = (float) ((xCenter + (xCorFirst * BASE)) - PIECEBASE / 4.0);
-            v0[1] = (float) ((yCenter - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
+            v0[0] = (float) (((xCorFirst * BASE)) - PIECEBASE / 4.0);
+            v0[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
 
-            v1[0] = (float) ((xCenter + (xCorFirst * BASE)) + PIECEBASE / 4.0);
-            v1[1] = (float) ((yCenter - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
+            v1[0] = (float) (((xCorFirst * BASE)) + PIECEBASE / 4.0);
+            v1[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
 
-            v2[0] = (float) ((xCenter + (xCorFirst * BASE)) + PIECEBASE / 4.0);
-            v2[1] = (float) ((yCenter - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
+            v2[0] = (float) (((xCorFirst * BASE)) + PIECEBASE / 4.0);
+            v2[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
 
-            v3[0] = (float) ((xCenter + (xCorFirst * BASE)) - PIECEBASE / 4.0);
-            v3[1] = (float) ((yCenter - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
+            v3[0] = (float) (( + (xCorFirst * BASE)) - PIECEBASE / 4.0);
+            v3[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
 
         } else {
             if ((Math.min(xCorFirst, xCorSecond) == xCorFirst && Math.max(yCorFirst, yCorSecond) == yCorFirst) ||
                     (Math.min(xCorFirst, xCorSecond) == xCorSecond && Math.max(yCorFirst, yCorSecond) == yCorSecond)) {
 
-                v0[0] = (float) ((xCenter + (xMin * BASE)) + PIECEBASE / 2.0);
-                v0[1] = (float) ((yCenter - (yMax * LENGTH / 2)) + PIECEBASE / 15.0);
+                v0[0] = (float) (( + (xMin * BASE)) + PIECEBASE / 2.0);
+                v0[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 15.0);
 
-                v1[0] = (float) ((xCenter + (xMin * BASE)) + PIECEBASE / 4.0);
-                v1[1] = (float) ((yCenter - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
+                v1[0] = (float) (( + (xMin * BASE)) + PIECEBASE / 4.0);
+                v1[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
 
-                v2[0] = (float) ((xCenter + (xMax * BASE)) - PIECEBASE / 2.0);
-                v2[1] = (float) ((yCenter - (yMin * LENGTH / 2)) - PIECEBASE / 15.0);
+                v2[0] = (float) (( + (xMax * BASE)) - PIECEBASE / 2.0);
+                v2[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 15.0);
 
-                v3[0] = (float) ((xCenter + (xMax * BASE)) - PIECEBASE / 4.0);
-                v3[1] = (float) ((yCenter - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
+                v3[0] = (float) (( + (xMax * BASE)) - PIECEBASE / 4.0);
+                v3[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
 
             } else {
 
-                v0[0] = (float) ((xCenter + (xMin * BASE)) + PIECEBASE / 4.0);
-                v0[1] = (float) ((yCenter - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
+                v0[0] = (float) (( + (xMin * BASE)) + PIECEBASE / 4.0);
+                v0[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
 
-                v1[0] = (float) ((xCenter + (xMin * BASE)) + PIECEBASE / 2.0);
-                v1[1] = (float) ((yCenter - (yMin * LENGTH / 2)) - PIECEBASE / 15.0);
+                v1[0] = (float) (( + (xMin * BASE)) + PIECEBASE / 2.0);
+                v1[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 15.0);
 
-                v2[0] = (float) ((xCenter + (xMax * BASE)) - PIECEBASE / 4.0);
-                v2[1] = (float) ((yCenter - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
+                v2[0] = (float) (( + (xMax * BASE)) - PIECEBASE / 4.0);
+                v2[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
 
-                v3[0] = (float) ((xCenter + (xMax * BASE)) - PIECEBASE / 2.0);
-                v3[1] = (float) ((yCenter - (yMax * LENGTH / 2)) + PIECEBASE / 15.0);
+                v3[0] = (float) (( + (xMax * BASE)) - PIECEBASE / 2.0);
+                v3[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 15.0);
 
             }
         }
@@ -635,6 +657,148 @@ public class SessionScreen implements Screen {
 
     }
 
+    
+    /**
+     * Creates a ship according to given positions. Assumes the coordinates correspond to adjacent intersections
+     *
+     * @param xCorFirst  x coordinate of game piece first endpoint
+     * @param yCorFirst  y coordinate of game piece first endpoint
+     * @param xCorSecond x coordinate of game piece second endpoint
+     * @param yCorSecond y coordinate of game piece second endpoint
+     * @param color      of game piece
+     */
+    private void createShip(int xCorFirst, int yCorFirst, int xCorSecond, int yCorSecond, PlayerColor color) {
+        Texture aTexture = aSeaTextureSolid;
+
+        switch (color) {
+            case BLUE:
+                aTexture = aBlueTextureSolid;
+                break;
+            case ORANGE:
+                aTexture = aOrangeTextureSolid;
+                break;
+            case RED:
+                aTexture = aRedTextureSolid;
+                break;
+            case WHITE:
+                aTexture = aWhiteTextureSolid;
+                break;
+            case YELLOW:
+                aTexture = aYellowTextureSolid;
+                break;
+            default:
+                break;
+        }
+
+        float[] v0 = new float[2], v1 = new float[2], v2 = new float[2],
+                v3 = new float[2], v4 = new float[2], vm = new float[2],
+                v5 = new float[2], v6 = new float[2];
+        
+        int xMin = Math.min(xCorFirst, xCorSecond);
+        int xMax = Math.max(xCorFirst, xCorSecond);
+        int yMin = Math.min(yCorFirst, yCorSecond);
+        int yMax = Math.max(yCorFirst, yCorSecond);
+        
+        // Sets the identifying coordinates as middle between the two end points
+        vm[0] = (float) (xMin + (xMax - xMin) / 2.0);
+        vm[1] = (float) (yMin + (yMax - yMin) / 2.0);
+        
+        // Determines which direction the EdgeUnit will be facing, and gives appropriate vertex values
+        if (xCorFirst == xCorSecond) {
+
+            v0[0] = (float) (( + (xCorFirst * BASE)) - PIECEBASE / 4.0);
+            v0[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
+
+            v1[0] = (float) (( + (xCorFirst * BASE)) + PIECEBASE / 4.0);
+            v1[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
+
+            v2[0] = (float) (( + (xCorFirst * BASE)) + PIECEBASE / 4.0);
+            v2[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
+
+            v3[0] = (float) (( + (xCorFirst * BASE)) - PIECEBASE / 4.0);
+            v3[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
+            
+            v4[0] = (float) ( + (vm[0] * BASE + PIECEBASE * 1.1)); 
+            v4[1] = (float) ( - (vm[1] * (LENGTH / 2)));
+            
+            v5[0] = (float) (( + (xCorFirst * BASE)) + PIECEBASE / 4.0);
+            v5[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE);
+            
+            v6[0] = (float) (( + (xCorFirst * BASE)) + PIECEBASE / 4.0);
+            v6[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE * 0.8);
+
+        } else {
+            if ((Math.min(xCorFirst, xCorSecond) == xCorFirst && Math.max(yCorFirst, yCorSecond) == yCorFirst) ||
+                    (Math.min(xCorFirst, xCorSecond) == xCorSecond && Math.max(yCorFirst, yCorSecond) == yCorSecond)) {
+
+                v0[0] = (float) (( + (xMin * BASE)) + PIECEBASE / 2.0);
+                v0[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 15.0);
+
+                v1[0] = (float) (( + (xMin * BASE)) + PIECEBASE / 4.0);
+                v1[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
+
+                v2[0] = (float) (( + (xMax * BASE)) - PIECEBASE / 2.0);
+                v2[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 15.0);
+
+                v3[0] = (float) (( + (xMax * BASE)) - PIECEBASE / 4.0);
+                v3[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
+                
+                v4[0] = (float) ( + (vm[0] * BASE - PIECEBASE / 3.0)); 
+                v4[1] = (float) ( - (vm[1] * (LENGTH / 2) - PIECEBASE));
+                
+                v5[0] = (float) (( + (xMin * BASE)) + PIECEBASE * 0.5);
+                v5[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE * 0.4);
+                
+                v6[0] = (float) (( + (xMax * BASE)) - PIECEBASE * 0.8);
+                v6[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE * 0.5);
+
+            } else {
+
+                v0[0] = (float) (( + (xMin * BASE)) + PIECEBASE / 4.0);
+                v0[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 2.0);
+
+                v1[0] = (float) (( + (xMin * BASE)) + PIECEBASE / 2.0);
+                v1[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE / 15.0);
+
+                v2[0] = (float) (( + (xMax * BASE)) - PIECEBASE / 4.0);
+                v2[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 2.0);
+
+                v3[0] = (float) (( + (xMax * BASE)) - PIECEBASE / 2.0);
+                v3[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE / 15.0);
+                
+                v4[0] = (float) ( + (vm[0] * BASE + PIECEBASE / 3.0)); 
+                v4[1] = (float) ( - (vm[1] * (LENGTH / 2) - PIECEBASE));
+                
+                v5[0] = (float) (( + (xMin * BASE)) + PIECEBASE * 0.8);
+                v5[1] = (float) (( - (yMin * LENGTH / 2)) - PIECEBASE * 0.5);
+                
+                v6[0] = (float) (( + (xMax * BASE)) - PIECEBASE * 0.5);
+                v6[1] = (float) (( - (yMax * LENGTH / 2)) + PIECEBASE * 0.4);
+            }
+        }
+
+        PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aTexture),
+                new float[]{  
+                        vm[0], vm[1],         // Vertex 0, for identification purposes 
+                                             // describes the x y coordinates of the middle of an EdgeUnit
+                        v0[0], v0[1],        // Vertex 1              5 
+                        v1[0], v1[1],        // Vertex 2            /   \
+                        v2[0], v2[1],        // Vertex 3         2 6     7 3     (with rotation)  
+                        v3[0], v3[1],        // Vertex 4         1   vm    4
+                        v4[0], v4[1],        // Vertex 5
+                        v5[0], v5[1],        // Vertex 6
+                        v6[0], v6[1]         // Vertex 7
+                        
+
+                }, new short[]{
+                1, 4, 3,         // Sets up triangulation according to vertices above
+                1, 3, 2,
+                6, 7, 5
+        });
+        edgeUnits.add(polyReg);
+
+    }
+    
     /**
      * Set the coordinates of the board origin.
      * Currently the board origin is such that the board appears centered on screen.
@@ -645,8 +809,11 @@ public class SessionScreen implements Screen {
     private void setupBoardOrigin(int width, int height) {
         // Coordinates that make the board centered on screen
         // The offset calculations are a bit weird and unintuitive but it works
-        boardOrigin.setLeft(((int) (width / 2f)) - OFFX * SIZE * 2);
-        boardOrigin.setRight(((int) (height / 2f)) - OFFY * SIZE);
+        //boardOrigin.setLeft(((int) (width / 2f)) - OFFX * SIZE * 2);
+        //boardOrigin.setRight(((int) (height / 2f)) - OFFY * SIZE);
+        
+        boardOrigin.setLeft(((int) (width / 2f)));
+        boardOrigin.setRight(((int) (height / 2f)));
     }
 
 
@@ -660,11 +827,9 @@ public class SessionScreen implements Screen {
         for (PolygonRegion pr : villages) {
             float xV0 = pr.getVertices()[0];
             float yV0 = pr.getVertices()[1];
-  
-            int xCenter = XCENTER;
-            int yCenter = YCENTER;
-            float xPos = xCenter + (xCor * BASE);
-            float yPos = yCenter - (yCor * LENGTH / 2);
+
+            float xPos =(xCor * BASE);
+            float yPos = -1 * (yCor * LENGTH / 2);
 
             if ((float) xV0 == xPos - PIECEBASE / 2.0 && (float) yV0 == yPos - PIECEBASE / 2.0) {
                 return pr;
@@ -789,6 +954,7 @@ public class SessionScreen implements Screen {
             createRoad(xCorFirst, yCorFirst, xCorSecond, yCorSecond, color);
             break;
         case SHIP:
+            createShip(xCorFirst, yCorFirst, xCorSecond, yCorSecond, color);
             break;
         default:
             break;
@@ -801,7 +967,7 @@ public class SessionScreen implements Screen {
      * @param position new hex that the robber will be moved to
      */
     public void updateRobberPosition(Hex position) {
-        //TODO
+        placeRobber(position.getLeftCoordinate(), position.getRightCoordinate());
     }
 
     // TODO TEST 

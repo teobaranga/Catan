@@ -4,18 +4,24 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.SnapshotArray;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
+import com.mygdx.catan.request.LeaveGame;
 import com.mygdx.catan.request.MarkAsReady;
 import com.mygdx.catan.response.MarkedAsReady;
+import com.mygdx.catan.response.PlayerJoined;
+import com.mygdx.catan.response.PlayerLeft;
 import com.mygdx.catan.screens.lobby.chat.ChatMessage;
 import com.mygdx.catan.ui.CatanWindow;
 
@@ -30,6 +36,8 @@ public class LobbyScreen implements Screen {
     private Stage stage;
     private Texture bg;
 
+    private Table playersTable;
+
     public LobbyScreen(CatanGame game) {
         this.game = game;
         lobbyListener = new Listener() {
@@ -37,8 +45,21 @@ public class LobbyScreen implements Screen {
             public void received(Connection connection, Object object) {
                 if (object instanceof MarkedAsReady) {
                     Gdx.app.postRunnable(() -> {
-                        System.out.println("You have been marked as ready.");
-                        game.switchScreen(ScreenKind.IN_GAME);
+                        final String username = ((MarkedAsReady) object).username;
+                        System.out.println(username + " has been marked as ready.");
+                        markPlayerAsReady(username);
+                    });
+                } else if (object instanceof PlayerJoined) {
+                    Gdx.app.postRunnable(() -> {
+                        final String username = ((PlayerJoined) object).username;
+                        System.out.printf("%s has joined the game\n", username);
+                        addPlayer(username);
+                    });
+                } else if (object instanceof PlayerLeft) {
+                    Gdx.app.postRunnable(() -> {
+                        final String username = ((PlayerLeft) object).username;
+                        System.out.printf("%s has left the game\n", username);
+                        removePlayer(username);
                     });
                 }
             }
@@ -50,7 +71,8 @@ public class LobbyScreen implements Screen {
         CatanGame.client.addListener(lobbyListener);
 
         final Game currentGame = GameManager.getInstance().getCurrentGame();
-        System.out.printf("%s started a new game\n", currentGame.peers.keySet().iterator().next().getUsername());
+        if (currentGame != null && currentGame.getPlayerCount() == 1)
+            System.out.printf("%s started a new game\n", currentGame.peers.keySet().iterator().next().getUsername());
 
         bg = new Texture("BG.png");
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -61,37 +83,61 @@ public class LobbyScreen implements Screen {
         // Create & add the window
         CatanWindow window = new CatanWindow(TITLE + " : " + CatanGame.client.getRemoteAddressTCP(), CatanGame.skin);
         // TODO: Closing the lobby window should bring the user back to the MainMenu
-        window.setWindowCloseListener(() -> game.switchScreen(ScreenKind.MAIN_MENU));
+        window.setWindowCloseListener(() -> {
+            game.switchScreen(ScreenKind.MAIN_MENU);
+            CatanGame.client.sendTCP(LeaveGame.newInstance(CatanGame.account.getUsername()));
+        });
 //        window.debugAll();
 
+        // Create the container table
         Table contentTable = new Table(CatanGame.skin);
 //        contentTable.background(game.skin.newDrawable("background", Color.RED));
 //        contentTable.debugAll();
 
+        // Create the left table, which contains the map & game rules
         Table mapAndRules = new Table(CatanGame.skin);
         mapAndRules.top();
 //        mapAndRules.debugAll();
 //        mapAndRules.background(CatanGame.skin.newDrawable("background", Color.BLUE));
-        Label mapAndRulesLabel = new Label(" Maps & Rules:", CatanGame.skin, "lobby-header");
+        Label mapAndRulesLabel = new Label(" Maps & Rules", CatanGame.skin, "lobby-header");
         mapAndRules.add(mapAndRulesLabel).expandX().fillX();
 
-        Table chatTable = new Table(CatanGame.skin);
-        chatTable.debugAll();
-//        chatTable.background(game.skin.newDrawable("background", Color.YELLOW));
+        // Create the right table, which contains the list of players along with the chat
+        Table playersAndChatTable = new Table(CatanGame.skin);
+
+        // Create the players table
+        playersTable = new Table(CatanGame.skin).top();
+        Label playersLabel = new Label(" Players", CatanGame.skin, "lobby-header");
+        playersTable.add(playersLabel).expandX().fillX();
+        if (currentGame != null) {
+            for (Account account : currentGame.peers.keySet()) {
+                addPlayer(account.getUsername());
+            }
+        }
+
+        // Create the chat table
+        Table chatTable = new Table(CatanGame.skin).top();
+        Label chatLabel = new Label(" Chat", CatanGame.skin, "lobby-header");
+        chatTable.add(chatLabel).expandX().fillX();
+        chatTable.row();
         setupChat(chatTable);
+
+        playersAndChatTable.add(playersTable).height(200).expandX().fillX();
+        playersAndChatTable.row();
+        playersAndChatTable.add(chatTable).expand().fill();
 //        chatTable.pack();
 
         TextButton ready = new TextButton("Ready", CatanGame.skin);
         ready.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                CatanGame.client.sendTCP(new MarkAsReady());
+                CatanGame.client.sendTCP(MarkAsReady.newInstance(CatanGame.account.getUsername()));
             }
         });
 
 //        contentTable.top().left();
         contentTable.add(mapAndRules).width(400).height(400).expandX();
-        contentTable.add(chatTable).width(400).height(400).expandX().fillX();
+        contentTable.add(playersAndChatTable).width(400).height(400).expandX().fillX();
         contentTable.row();
         contentTable.add(ready).height(50).width(400).colspan(2).padTop(20);
 
@@ -140,6 +186,66 @@ public class LobbyScreen implements Screen {
     public void dispose() {
         bg.dispose();
         stage.dispose();
+    }
+
+    private void addPlayer(String username) {
+        // Create a table that holds a label containing the player's name
+        // The table seems a bit overkill but it's much easier to change its background
+        final Table table = new Table(CatanGame.skin);
+        final Label label = new Label(username, CatanGame.skin);
+        table.add(label);
+        playersTable.row();
+        playersTable.add(table).pad(10).expandX().fillX();
+    }
+
+    /**
+     * Visually indicate that a player has been marked as ready.
+     *
+     * @param username username of the ready player
+     */
+    private void markPlayerAsReady(String username) {
+        // Find the table row containing the player that has been marked as ready
+        final SnapshotArray<Actor> children = playersTable.getChildren();
+        // Ignore the first child since it's just the table header
+        for (int i = 1; i < children.size; i++) {
+            Actor actor = children.get(i);
+            if (actor instanceof Table) {
+                final Actor label = ((Table) actor).getCells().get(0).getActor();
+                if (label instanceof Label) {
+                    if (((Label) label).getText().toString().equals(username)) {
+                        ((Table) actor).setBackground("readyBackground");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove a player from the list of players as a result of him/her leaving
+     * the game.
+     *
+     * @param username username of the player
+     */
+    private void removePlayer(String username) {
+        Table playerTable = null;
+        // Find the table row containing the player that left the game
+        final SnapshotArray<Actor> children = playersTable.getChildren();
+        // Ignore the first child since it's just the table header
+        for (int i = 1; i < children.size; i++) {
+            Actor actor = children.get(i);
+            if (actor instanceof Table) {
+                final Actor label = ((Table) actor).getCells().get(0).getActor();
+                if (label instanceof Label) {
+                    if (((Label) label).getText().toString().equals(username)) {
+                        playerTable = ((Table) actor);
+                        break;
+                    }
+                }
+            }
+        }
+        if (playerTable != null)
+            playersTable.removeActor(playerTable);
     }
 
     private void setupChat(Table chatTable) {

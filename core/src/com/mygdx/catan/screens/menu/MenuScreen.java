@@ -230,7 +230,7 @@ public class MenuScreen implements Screen {
                 window.setWindowCloseListener(() -> CatanGame.client.removeListener(listener));
 
                 // Request to join a random game
-                CatanGame.client.sendTCP(new JoinRandomGame());
+                CatanGame.client.sendTCP(JoinRandomGame.newInstance(CatanGame.account));
             }
 
         });

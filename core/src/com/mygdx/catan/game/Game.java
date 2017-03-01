@@ -4,7 +4,7 @@ import com.mygdx.catan.Config;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.session.Session;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Game {
@@ -15,10 +15,39 @@ public class Game {
      */
     public Map<Account, Integer> peers;
 
+    public Map<Account, Boolean> readyStatus;
+
     public Session session;
 
     public Game() {
-        peers = new HashMap<>(Config.MAX_PLAYERS);
+        peers = new LinkedHashMap<>(Config.MAX_PLAYERS);
+        readyStatus = new LinkedHashMap<>(Config.MAX_PLAYERS);
+    }
+
+    /**
+     * Add a new player to the game.
+     *
+     * @param account      account of the new player
+     * @param connectionId connection ID of the new player
+     */
+    public void addPlayer(Account account, Integer connectionId) {
+        peers.put(account, connectionId);
+        readyStatus.put(account, false);
+    }
+
+    /**
+     * Remove a player from the game.
+     *
+     * @param account account of the player being removed
+     */
+    public void removePlayer(Account account) {
+        peers.remove(account);
+        readyStatus.remove(account);
+    }
+
+    public void markAsReady(String username) {
+        final Account account = getAccount(username);
+        readyStatus.put(account, true);
     }
 
     /**
@@ -34,5 +63,15 @@ public class Game {
      */
     public boolean inProgress() {
         return session != null;
+    }
+
+    private Account getAccount(String username) {
+        Account playerAccount = null;
+        for (Account account : readyStatus.keySet()) {
+            if (account.getUsername().equals(username)) {
+                playerAccount = account;
+            }
+        }
+        return playerAccount;
     }
 }

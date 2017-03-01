@@ -5,6 +5,7 @@ import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.CoordinatePair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +45,25 @@ public class Player {
         this.tokenVictoryPoints = tokenVictoryPoints;
     }
 
-    public HarbourKind getHighestHarbourLevel(ResourceKind resKind) {
-        throw new RuntimeException("getHighestHarbourLevel not yet implemented");
+    public int getHighestHarbourLevel(ResourceKind resKind) {
+        CoordinatePair<Integer,Integer> pos;
+        HarbourKind hKind;
+        int highest = 4;
+        for (Village v: villages){
+            pos = v.getPosition();
+            hKind = pos.getHarbourKind();
+            if (hKind.equals(HarbourKind.SPECIAL)) {
+                //need to check if resKind corresponds with this special harbor
+                return 2;
+            }
+            else if(hKind.equals(HarbourKind.GENERIC)){
+                highest = 3;
+            }
+            else if(highest != 3){
+                highest = 4;
+            }
+        }
+        return highest;
     }
 
     public void addResources(ResourceMap cost) {

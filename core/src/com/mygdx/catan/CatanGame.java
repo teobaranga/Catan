@@ -16,9 +16,7 @@ import com.mygdx.catan.account.AccountManager;
 import com.mygdx.catan.enums.ScreenKind;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.request.*;
-import com.mygdx.catan.response.GameResponse;
-import com.mygdx.catan.response.LoginResponse;
-import com.mygdx.catan.response.MarkedAsReady;
+import com.mygdx.catan.response.*;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
@@ -28,7 +26,7 @@ import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.session.SessionScreen;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class CatanGame extends Game {
     /** The Client representing the current user */
@@ -59,7 +57,10 @@ public class CatanGame extends Game {
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
         kryo.register(ForwardedRequest.class);
-        kryo.register(HashMap.class);
+        kryo.register(LeaveGame.class);
+        kryo.register(PlayerJoined.class);
+        kryo.register(PlayerLeft.class);
+        kryo.register(LinkedHashMap.class);
 
         client.start();
 

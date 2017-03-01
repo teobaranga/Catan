@@ -1,6 +1,6 @@
 package com.mygdx.catan.TradeAndTransaction;
 
-import com.mygdx.catan.SessionManager;
+import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.session.Session;
 import com.mygdx.catan.Player;

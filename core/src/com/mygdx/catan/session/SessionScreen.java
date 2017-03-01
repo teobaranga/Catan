@@ -132,6 +132,7 @@ public class SessionScreen implements Screen {
      * Menu Buttons
      * */
     private TextButton buildSettlementButton;
+    private TextButton buildCityButton;
     
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
@@ -158,8 +159,6 @@ public class SessionScreen implements Screen {
         aSessionStage = new Stage();
         Gdx.input.setInputProcessor(aSessionStage);
 
-        //TODO: UI panels
-
         // resource table
         Table contentTable = new Table(CatanGame.skin);
         contentTable.setBackground("resTableBackground");
@@ -177,10 +176,17 @@ public class SessionScreen implements Screen {
         menuTable.setSize(200, 300);
         menuTable.setPosition(20, 20);
         
+        // creates the menu buttons TODO:remainder of buttons
         buildSettlementButton = new TextButton("Build Settlement",CatanGame.skin);
         setupBuildSettlementButton(buildSettlementButton);
         buildSettlementButton.pad(0, 10, 0, 10);
-        menuTable.add(buildSettlementButton).padBottom(200);;
+        menuTable.add(buildSettlementButton).padBottom(10).row();
+        
+        buildCityButton = new TextButton("Build City",CatanGame.skin);
+        setupBuildCityButton(buildCityButton);
+        buildCityButton.pad(0, 10, 0, 10);
+        menuTable.add(buildCityButton).padBottom(10).row();
+        
 
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
@@ -249,9 +255,8 @@ public class SessionScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 buildSettlementButton.setChecked(false);
-                // TODO: figure out how to ask the server to get the Player object who is associated to this player
+             // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
-                    // TODO: ask SessionController if there are enough resources
                     // make the following loop go through requested valid build positions
                     for (CoordinatePair<Integer,Integer> intersections : aSessionController.getIntersectionsAndEdges()) {
                         validIntersections.add(intersections);
@@ -262,6 +267,29 @@ public class SessionScreen implements Screen {
                 } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
                     validIntersections.clear();
                     buildSettlementButton.setText("Build Settlement");
+                    aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                }
+            }
+        });
+    }
+    
+    private void setupBuildCityButton(TextButton buildCityButton) {
+        buildCityButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                buildSettlementButton.setChecked(false);
+             // TODO: ask SessionController if there are enough resources
+                if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
+                    // make the following loop go through requested valid build positions
+                    for (CoordinatePair<Integer,Integer> intersections : aSessionController.getIntersectionsAndEdges()) {
+                        validIntersections.add(intersections);
+                        //TODO make a sprite that highlights the area
+                    }
+                    aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+                    buildCityButton.setText("Cancel");
+                } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
+                    validIntersections.clear();
+                    buildCityButton.setText("Build Settlement");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                 }
             }
@@ -319,6 +347,7 @@ public class SessionScreen implements Screen {
             }
             if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                 buildSettlementButton.setText("Build Settlement");
+                buildCityButton.setText("Build City");
                 validIntersections.clear();
             }
         }

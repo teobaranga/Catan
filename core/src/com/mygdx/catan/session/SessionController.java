@@ -152,17 +152,19 @@ public class SessionController {
     }
     
     /**
-     * Requests the GameBoardManager to build settlement on given coordinate. SessionScreen is notified of any boardgame changes.
+     * Requests the GameBoardManager to build village on given coordinate. SessionScreen is notified of any boardgame changes.
      *
      * @param position of new settlement
+     * @param kind of village to build
      * @param owner    of new settlement
      * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
-     * @return true if building the settlement was successful, false otherwise
+     * @return true if building the village was successful, false otherwise
      */
-    public boolean buildSettlement(CoordinatePair<Integer, Integer> position, PlayerColor owner, boolean fromPeer) {
+    public boolean buildVillage(CoordinatePair<Integer, Integer> position, VillageKind kind, PlayerColor owner, boolean fromPeer) {
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
         // if method call is from a peer, the gui only needs to be notified of the new gameboard change.
         // otherwise the gui will also need to be notified about resource changes
+        //NOTE: if kind is for example city, then all you need to do is upgrade the settlement on that coordinate to a city
         return false;
     }
     
@@ -212,7 +214,7 @@ public class SessionController {
         }
 
         Village v = new Village(cp, cityPos);
-        buildSettlement(cityPos, cp.getColor(), fromPeer);
+        buildVillage(cityPos, VillageKind.SETTLEMENT, cp.getColor(), fromPeer);
 
         List<Hex> neighbourHexes = new ArrayList<>();
         List<Hex> hexes = aGameBoardManager.getHexes();

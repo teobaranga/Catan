@@ -96,22 +96,20 @@ public class SessionController {
     /**
      * Allows the user to place a city and an edge unit and then receive the resources near the city
      */
-    public void placeCityAndRoads(CoordinatePair<Integer, Integer> cityPos, CoordinatePair<Integer, Integer> edgeUnitPos1, CoordinatePair<Integer, Integer> edgeUnitPos2, boolean isShip) {
+    public void placeCityAndRoads(CoordinatePair<Integer, Integer> cityPos, CoordinatePair<Integer, Integer> edgeUnitPos1, CoordinatePair<Integer, Integer> edgeUnitPos2, boolean isShip, boolean fromPeer) {
         Player cp = aSessionManager.getCurrentPlayer();
 
         EdgeUnit eu;
         if (isShip) {
             eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, cp);
-            buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, true);
+            buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, fromPeer);
         } else {
             eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.ROAD, cp);
-            buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, true);
+            buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, fromPeer);
         }
-        cp.addEdgeUnit(eu);
 
         Village v = new Village(cp, cityPos);
-        buildSettlement(cityPos, cp, false);
-        cp.addVillage(v);
+        buildSettlement(cityPos, cp, fromPeer);
 
         List<Hex> neighbourHexes = new ArrayList<>();
         List<Hex> hexes = aGameBoardManager.getHexes();
@@ -123,22 +121,28 @@ public class SessionController {
         }
 
         ResourceMap cost = new ResourceMap();
+        Integer curr;
         for (Hex h : neighbourHexes) {
             switch (h.getKind()) {
                 case FOREST:
-                    cost.put(ResourceKind.WOOD, 1);
+                    curr = cost.get(ResourceKind.WOOD);
+                    cost.put(ResourceKind.WOOD, (curr == null ? 0 : curr) + 1);
                     break;
                 case MOUNTAINS:
-                    cost.put(ResourceKind.ORE, 1);
+                    curr = cost.get(ResourceKind.ORE);
+                    cost.put(ResourceKind.ORE, (curr == null ? 0 : curr) + 1);
                     break;
                 case HILLS:
-                    cost.put(ResourceKind.BRICK, 1);
+                    curr = cost.get(ResourceKind.BRICK);
+                    cost.put(ResourceKind.BRICK, (curr == null ? 0 : curr) + 1);
                     break;
                 case FIELDS:
-                    cost.put(ResourceKind.GRAIN, 1);
+                    curr = cost.get(ResourceKind.GRAIN);
+                    cost.put(ResourceKind.GRAIN, (curr == null ? 0 : curr) + 1);
                     break;
                 case PASTURE:
-                    cost.put(ResourceKind.WOOL, 1);
+                    curr = cost.get(ResourceKind.WOOL);
+                    cost.put(ResourceKind.WOOL, (curr == null ? 0 : curr) + 1);
                     break;
                 // GOLDFIELDS ?
             }
@@ -147,22 +151,20 @@ public class SessionController {
     }
 
     /**
-     *
      * Adds resources to the bank.
      *
      * @param cost The resources to be added to the bank
      */
-    public void add(ResourceMap cost){
+    public void add(ResourceMap cost) {
         aSessionManager.addToBank(cost);
     }
 
     /**
-     *
      * Remove resources from the bank.
      *
      * @param cost The resources to be removed from the bank
      */
-    public ResourceMap remove(ResourceMap cost){
+    public ResourceMap remove(ResourceMap cost) {
         cost = aSessionManager.checkMaxCostForBank(cost);
         aSessionManager.removeFromBank(cost);
         return cost;

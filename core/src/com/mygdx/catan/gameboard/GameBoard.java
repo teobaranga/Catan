@@ -21,6 +21,7 @@ public class GameBoard {
 	private int aBarbarianPosition;
 	private Hex aRobberPosition;
 	private Hex aMerchantPosition;
+	private Player aMerchantOwner;
 	private Stack<ProgressCardKind> aProgressCardStack = new Stack<ProgressCardKind>();
 	
 	private final int SIZE = GameRules.getGameRulesInstance().getSize();
@@ -131,6 +132,14 @@ public class GameBoard {
 		return aBarbarianPosition;
 	}
 	
+	public void setMerchantOwner(Player newOwner) {
+	    aMerchantOwner = newOwner;
+	}
+	
+	public Player getMerchantOwner() {
+	    return aMerchantOwner;
+	}
+	
 	
 	/**
 	 * @return top card of the progress card stack. returns null if empty
@@ -180,7 +189,11 @@ public class GameBoard {
 	 * @return true if given player has an edge unit with end point at given intersection
 	 * */
 	public boolean isAdjacentToEdgeUnit(CoordinatePair<Integer,Integer> intersection, Player owner) {
-		//TODO
+		for (EdgeUnit roadOrShip : aRoadsAndShips) {
+		    if (roadOrShip.hasEndpoint(intersection)) {
+		        if (roadOrShip.getOwner().equals(owner)) {return true;}
+		    }
+		}
 		return false;
 	}
 	

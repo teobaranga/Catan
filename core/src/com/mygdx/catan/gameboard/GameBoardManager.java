@@ -5,8 +5,6 @@ import com.mygdx.catan.Player;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.VillageKind;
-import com.mygdx.catan.ResourceMap;
-import com.mygdx.catan.GameRules;
 import java.util.ArrayList;
 
 /**
@@ -15,8 +13,6 @@ import java.util.ArrayList;
 public class GameBoardManager{
 
 	private static GameBoard aGameBoard;
-	private static GameRules aGameRules;
-	//private ArrayList<SessionScreen> sessionScreens = new ArrayList<SessionScreen>();
 	
 	public GameBoardManager() {
 		
@@ -35,6 +31,10 @@ public class GameBoardManager{
 	
 	public ArrayList<Hex> getHexes() {
 		return aGameBoard.getHexes();
+	}
+	
+	public Hex getRobberPosition() {
+	    return aGameBoard.getRobberPosition();
 	}
 	
 	/**
@@ -64,9 +64,16 @@ public class GameBoardManager{
 		return aGameBoard.popProgressCardStack();
 	}
 	
-	//TODO
+	/**
+	 * @param player whose merchant point is requested
+	 * @return 0 if player does not own merchant, 1 otherwise
+	 * */
 	public int getMerchantPoint(Player player) {
-		return 0;
+	    if (aGameBoard.getMerchantOwner().equals(player)) {
+	        return 1;
+	    } else {
+	        return 0;
+	    }
 	}
 	
 	//TODO
@@ -75,12 +82,12 @@ public class GameBoardManager{
 	}
 	
 	/**
+	 * builds a settlement for player at given position. Adds the settlement to the player's collection of settlements, and associates it to the given position 
 	 * @param owner of village
 	 * @param position of village
 	 * @return true if building the village was successful, false otherwise
 	 * */
 	public boolean buildSettlement(Player player, CoordinatePair<Integer,Integer> position) {
-		ResourceMap cost = aGameRules.getSettlementCost();
 		Village village = new Village(player,position);
 		position.putVillage(village);
 		player.addVillage(village);
@@ -88,7 +95,7 @@ public class GameBoardManager{
 	}
 	
 	/**
-	 * Builds the edge unit according to corresponding input. 
+	 * Builds the edge unit according to corresponding input. Adds the edge unit to the player's collection of edge units, as well as the gameboard's collection of edge units
 	 * @param owner of edgeUnit
 	 * @param first end point of road or ship
 	 * @param second end point of road or ship
@@ -120,18 +127,41 @@ public class GameBoardManager{
 		return cityCount;
 	}
 	
-	//TODO
+	/**
+	 * Places the robber on newPosition
+	 * 
+	 * @param new Hex to position robber on
+	 * */
 	public void moveRobber(Hex newPosition) {
+	    aGameBoard.setRobberPosition(newPosition);
 	}
 	
-	//TODO
+	/**
+	 * @param hex to find adjacent intersections of
+	 * @return a list of adjacent intersections
+	 * */
 	public ArrayList<CoordinatePair<Integer,Integer>> getAdjacentIntersections(Hex hex) {
-		return null;
+		ArrayList<CoordinatePair<Integer,Integer>> adjacentIntersections = new ArrayList<CoordinatePair<Integer, Integer>>();
+	    for (CoordinatePair<Integer,Integer> intersection : aGameBoard.getIntersectionsAndEdges()) {
+	        if (hex.isAdjacent(intersection)) {
+	            adjacentIntersections.add(intersection);
+	        }
+	    }
+	    return adjacentIntersections;
 	}
 	
-	//TODO
+	/**
+	 * @param result of dice roll
+	 * @return a list of hexes whose dice number equals diceNumber
+	 * */
 	public ArrayList<Hex> getProducingHexes(int diceNumber) {
-		return null;
+		ArrayList<Hex> producingHexes = new ArrayList<Hex>();
+		for (Hex hex : aGameBoard.getHexes()) {
+		    if (hex.getDiceNumber() == diceNumber) {
+		        producingHexes.add(hex);
+		    }
+		}
+		return producingHexes;
 	}
 
 }

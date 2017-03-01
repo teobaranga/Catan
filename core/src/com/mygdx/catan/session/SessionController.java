@@ -47,6 +47,10 @@ public class SessionController {
     public Player[] getPlayers() {
         return aSessionManager.getPlayers();
     }
+    
+    public Hex getRobberPosition() {
+        return aGameBoardManager.getRobberPosition();
+    }
 
     /**
      * Requests the GameBoardManager to build settlement on given coordinate. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.

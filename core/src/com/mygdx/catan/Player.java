@@ -52,14 +52,35 @@ public class Player {
         for (Village v: villages){
             pos = v.getPosition();
             hKind = pos.getHarbourKind();
-            if (hKind.equals(HarbourKind.SPECIAL)) {
-                //need to check if resKind corresponds with this special harbor
-                return 2;
+            if (hKind.equals(HarbourKind.SPECIAL_WOOD)) {
+                if (resKind.equals(ResourceKind.WOOD)) {
+                    return 2;
+                }
             }
-            else if(hKind.equals(HarbourKind.GENERIC)){
+            else if (hKind.equals(HarbourKind.SPECIAL_BRICK)) {
+                if (resKind.equals(ResourceKind.BRICK)) {
+                    return 2;
+                }
+            }
+            else if (hKind.equals(HarbourKind.SPECIAL_ORE)) {
+                if (resKind.equals(ResourceKind.ORE)){
+                    return 2;
+                }
+            }
+            else if (hKind.equals(HarbourKind.SPECIAL_GRAIN)) {
+                if (resKind.equals(ResourceKind.GRAIN)) {
+                    return 2;
+                }
+            }
+            else if (hKind.equals(HarbourKind.SPECIAL_WOOL)) {
+                if (resKind.equals(ResourceKind.WOOL)) {
+                    return 2;
+                }
+            }
+            else if(hKind.equals(HarbourKind.GENERIC)) {
                 highest = 3;
             }
-            else if(highest != 3){
+            else if(highest != 3) {
                 highest = 4;
             }
         }

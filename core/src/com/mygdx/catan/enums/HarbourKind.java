@@ -4,5 +4,9 @@ public enum HarbourKind {
 
     NONE,
     GENERIC,
-    SPECIAL
+    SPECIAL_WOOD,
+    SPECIAL_WOOL,
+    SPECIAL_GRAIN,
+    SPECIAL_ORE,
+    SPECIAL_BRICK
 }

@@ -8,6 +8,7 @@ import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
@@ -52,8 +53,30 @@ public class SessionController {
         return aGameBoardManager.getRobberPosition();
     }
 
+    
     /**
-     * Requests the GameBoardManager to build settlement on given coordinate. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
+     * @param owner of request
+     * @param kind of village requested to be built
+     * @return true if owner has the resources to build the requested village kind
+     * */
+    public boolean requestBuildVillage(Player owner, VillageKind kind) {
+        // does not change any state, gui does not need to be notified, method call cannot come from peer
+        
+        return false;
+    }
+    
+    /**
+     * @param owner of requested valid intersections
+     * @return a list of all the intersections that are (1) connected to road owned by player and (2) not adjacent to another village and (3) on land
+     * */
+    public ArrayList<CoordinatePair<Integer,Integer>> requestValidBuildIntersections(Player owner) {
+        // does not change any state, gui does not need to be notified, method call cannot come from peer
+        
+        return null;
+    }
+    
+    /**
+     * Requests the GameBoardManager to build settlement on given coordinate. SessionScreen is notified of any boardgame changes.
      *
      * @param position of new settlement
      * @param owner    of new settlement
@@ -61,9 +84,9 @@ public class SessionController {
      * @return true if building the settlement was successful, false otherwise
      */
     public boolean buildSettlement(CoordinatePair<Integer, Integer> position, Player owner, boolean fromPeer) {
-        // verifies that the intersection is not occupied, and that it is adjacent to a road or ship of player
-        // TODO: it does not verify that the intersection is not in the sea, or that it is not adjacent to another Village
-        // if (position.isOccupied() || !aGameBoard.isAdjacentToEdgeUnit(position, player)) {return false;}
+        // changes state: of owner and gameboard. All validity checks have been done beforehand. 
+        // if method call is from a peer, the gui only needs to be notified of the new gameboard change.
+        // otherwise the gui will also need to be notified about resource changes
         return false;
     }
 

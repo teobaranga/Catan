@@ -13,6 +13,7 @@ public class SessionManager {
     //FIXME SessionScreens must be in SessionController
     private ArrayList<SessionScreen> sessionScreens = new ArrayList<SessionScreen>();
 
+    public Session getSession() { return this.aSession; }
 
     //TODO: change this to fit design, so far this is only placeholder!
     public SessionManager(int numberOfPlayers) {

@@ -1,5 +1,8 @@
 package com.mygdx.catan.session;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
@@ -9,9 +12,6 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SessionController {
     private final GameBoardManager aGameBoardManager;

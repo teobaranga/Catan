@@ -24,9 +24,11 @@ import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.SessionScreenModes;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,52 +89,40 @@ public class SessionScreen implements Screen {
 
     private Texture bg;
 
-    /**
-     * The list of polygons representing the board hexes
-     */
+    /** The list of polygons representing the board hexes */
     private List<PolygonRegion> boardHexes;
 
-    /**
-     * The List of villages currently on the board
-     */
+    /** The List of villages currently on the board */
     private List<PolygonRegion> villages;
 
-    /**
-     * The List of EdgeUnits currently on the board
-     */
+    /** The List of EdgeUnits currently on the board */
     private List<PolygonRegion> edgeUnits;
     
-    /**
-     * The Robber
-     * */
+    /** The Robber */
     private PolygonRegion robber;
 
-    /**
-     * The origin of the the hex board
-     */
+    /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
 
 
-    /**
-     * The map of resource tables
-     */
+    /** The map of resource tables */
     private Map<String, Label> resourceLabelMap;
     
-    /** 
-     * determines the current mode of the session screen 
-     * */
+    /** determines the current mode of the session screen */
     private SessionScreenModes aMode;
     
-    /** 
-     * The List of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE
-     * */
+    /** The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE*/
     private ArrayList<CoordinatePair<Integer,Integer>> validIntersections = new ArrayList<CoordinatePair<Integer,Integer>>();
+    private ArrayList<Pair<Pair<Integer,Integer>,Pair<Integer,Integer>>> validEdges = new ArrayList<Pair<Pair<Integer,Integer>,Pair<Integer,Integer>>>();
     
-    /**
-     * Menu Buttons
-     * */
+    /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
+    private VillageKind villagePieceKind;
+    private EdgeUnitKind edgePieceKind;
+    
+    /** Menu Buttons */
     private TextButton buildSettlementButton;
     private TextButton buildCityButton;
+    
     
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
@@ -178,12 +168,12 @@ public class SessionScreen implements Screen {
         
         // creates the menu buttons TODO:remainder of buttons
         buildSettlementButton = new TextButton("Build Settlement",CatanGame.skin);
-        setupBuildSettlementButton(buildSettlementButton);
+        setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT, "Build Settlement");
         buildSettlementButton.pad(0, 10, 0, 10);
         menuTable.add(buildSettlementButton).padBottom(10).row();
         
         buildCityButton = new TextButton("Build City",CatanGame.skin);
-        setupBuildCityButton(buildCityButton);
+        setupBuildVillageButton(buildCityButton, VillageKind.CITY, "Build City");
         buildCityButton.pad(0, 10, 0, 10);
         menuTable.add(buildCityButton).padBottom(10).row();
         
@@ -250,11 +240,11 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(menuTable);
     }
 
-    private void setupBuildSettlementButton(TextButton buildSettlementButton) {
-        buildSettlementButton.addListener(new ClickListener() {
+    private void setupBuildVillageButton(TextButton buildButton, VillageKind kind, String buttonText) {
+        buildButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                buildSettlementButton.setChecked(false);
+                buildButton.setChecked(false);
              // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     // make the following loop go through requested valid build positions
@@ -263,33 +253,56 @@ public class SessionScreen implements Screen {
                         //TODO make a sprite that highlights the area
                     }
                     aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
-                    buildSettlementButton.setText("Cancel");
+                    villagePieceKind = kind;
+                    buildButton.setText("Cancel");
                 } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
                     validIntersections.clear();
-                    buildSettlementButton.setText("Build Settlement");
+                    buildButton.setText(buttonText);
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                 }
             }
         });
     }
     
-    private void setupBuildCityButton(TextButton buildCityButton) {
-        buildCityButton.addListener(new ClickListener() {
+    private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind, String buttonText) {
+        buildButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                buildSettlementButton.setChecked(false);
+                buildButton.setChecked(false);
              // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     // make the following loop go through requested valid build positions
-                    for (CoordinatePair<Integer,Integer> intersections : aSessionController.getIntersectionsAndEdges()) {
-                        validIntersections.add(intersections);
-                        //TODO make a sprite that highlights the area
+                    for (CoordinatePair<Integer,Integer> i : aSessionController.getIntersectionsAndEdges()) {
+                        
+                        Pair<Integer,Integer> e0 = new MutablePair<Integer,Integer>(i.getLeft(),i.getRight());
+                        Pair<Integer,Integer> e1 = new MutablePair<Integer,Integer>(i.getLeft(),i.getRight() - 2);
+                        Pair<Integer,Integer> e2 = new MutablePair<Integer,Integer>(i.getLeft() - 1,i.getRight() + 1);
+                        Pair<Integer,Integer> e3 = new MutablePair<Integer,Integer>(i.getLeft() + 1,i.getRight() + 1);
+                        
+                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r1 = new MutablePair<Pair<Integer, Integer>, Pair<Integer, Integer>>(e0,e1);
+                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r2 = new MutablePair<Pair<Integer, Integer>, Pair<Integer, Integer>>(e0,e2);
+                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r3 = new MutablePair<Pair<Integer, Integer>, Pair<Integer, Integer>>(e0,e3);
+                        
+                        validEdges.add(r1);
+                        validEdges.add(r2);
+                        validEdges.add(r3);
+                        
+                        for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                            if (eu.hasEndpoint(i) && eu.hasEndpoint(e1.getLeft(), e1.getRight())) { validEdges.remove(r1); }
+                            if (eu.hasEndpoint(i) && eu.hasEndpoint(e2.getLeft(), e2.getRight())) { validEdges.remove(r2); }
+                            if (eu.hasEndpoint(i) && eu.hasEndpoint(e3.getLeft(), e3.getRight())) { validEdges.remove(r3); }
+                        }
+                        
+                        //TODO remove edges that are in water
+                        
+                        //TODO make a sprite that highlights the areas
                     }
-                    aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
-                    buildCityButton.setText("Cancel");
-                } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
-                    validIntersections.clear();
-                    buildCityButton.setText("Build Settlement");
+                    aMode = SessionScreenModes.CHOOSEEDGEMODE;
+                    edgePieceKind = kind;
+                    buildButton.setText("Cancel");
+                } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
+                    
+                    buildButton.setText(buttonText);
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                 }
             }
@@ -338,8 +351,8 @@ public class SessionScreen implements Screen {
                             Gdx.input.getY() > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
                             Gdx.input.getY() < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
                         
-                        //TODO: call buildSettlement method in SessionController and delete following
-                        updateIntersection(validIntersection, PlayerColor.BLUE, VillageKind.SETTLEMENT);
+                        //TODO: call buildVillage method in SessionController and delete following
+                        updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
                         
                         aMode = SessionScreenModes.CHOOSEACTIONMODE;
                     }
@@ -976,6 +989,7 @@ public class SessionScreen implements Screen {
         return null;
     }
 
+    
     /**
      * removes polygon of village at given coordinates from the board
      *

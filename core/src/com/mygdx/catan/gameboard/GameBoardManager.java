@@ -29,6 +29,10 @@ public class GameBoardManager{
 		return aGameBoard.getIntersectionsAndEdges();
 	}
 	
+	public ArrayList<EdgeUnit> getRoadsAndShips() {
+	    return aGameBoard.getRoadsAndShips();
+	}
+	
 	public ArrayList<Hex> getHexes() {
 		return aGameBoard.getHexes();
 	}

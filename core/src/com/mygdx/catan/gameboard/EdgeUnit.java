@@ -30,6 +30,13 @@ public class EdgeUnit {
 	}
 	
 	/**
+	 * @return true if this EdgeUnit has end point with coordinates xPos and yPos
+	 * */
+	public boolean hasEndpoint(int xPos, int yPos) {
+	    return (xPos == aFirstCoordinate.getLeft() && yPos == aFirstCoordinate.getRight()) || (xPos == aSecondCoordinate.getLeft() && yPos == aSecondCoordinate.getRight());
+	}
+	
+	/**
 	 * moves this edge unit to new coordinates. If unit is not a ship, or the two given coordinates are not adjacent, unit is not moved
 	 * */
 	public void moveShip (CoordinatePair<Integer,Integer> newFirstCoordinate, CoordinatePair<Integer,Integer> newSecondCoordinate) {

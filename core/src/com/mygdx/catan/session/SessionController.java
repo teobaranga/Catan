@@ -51,6 +51,9 @@ public class SessionController {
         return aSessionManager.getRedDice();
     }
 
+    public ArrayList<EdgeUnit> getRoadsAndShips() {
+        return aGameBoardManager.getRoadsAndShips();
+    }
 
     public ArrayList<CoordinatePair<Integer, Integer>> getIntersectionsAndEdges() {
         return aGameBoardManager.getIntersectionsAndEdges();

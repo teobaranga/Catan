@@ -61,7 +61,7 @@ public class Player {
         return true;
     }
     public int getHighestHarbourLevel(ResourceKind resKind) {
-        CoordinatePair<Integer,Integer> pos;
+        CoordinatePair pos;
         HarbourKind hKind;
         int highest = 4;
         for (Village v: villages){

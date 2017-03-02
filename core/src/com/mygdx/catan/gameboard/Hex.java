@@ -5,7 +5,7 @@ import com.mygdx.catan.enums.TerrainKind;
 
 public class Hex {
 
-	private CoordinatePair<Integer,Integer> aCoordinates;
+	private CoordinatePair aCoordinates;
 	private TerrainKind aKind;
 	private int aDiceNumber;
 	
@@ -15,7 +15,7 @@ public class Hex {
 	 * @param its Terrain Kind
 	 * @param its dice number
 	 * */
-	public Hex(CoordinatePair<Integer,Integer> pCoordinates, TerrainKind pKind, int pDiceNumber) {
+	public Hex(CoordinatePair pCoordinates, TerrainKind pKind, int pDiceNumber) {
 		aCoordinates = pCoordinates;
 		aKind = pKind;
 		aDiceNumber = pDiceNumber;
@@ -41,7 +41,7 @@ public class Hex {
 	 * @param aIntersectionCoordinate a Pair<Integer,Integer> representing a pair of coordinates for an intersection
 	 * @return true if aIntersectionCoordinate is a vertex of this Hex, false otherwise
 	 * */
-	public boolean isAdjacent(CoordinatePair<Integer,Integer> aIntersectionCoordinate) {
+	public boolean isAdjacent(CoordinatePair aIntersectionCoordinate) {
 		int xHex = getLeftCoordinate();
 		int yHex = getRightCoordinate();
 		int xInter = aIntersectionCoordinate.getLeft();

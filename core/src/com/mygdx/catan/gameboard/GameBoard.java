@@ -1,34 +1,30 @@
 package com.mygdx.catan.gameboard;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Stack;
-
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
-import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.ProgressCardKind;
+import com.mygdx.catan.enums.TerrainKind;
+
+import java.util.*;
 
 public class GameBoard {
 
 	private ArrayList<Hex> hexes;
-	private ArrayList<CoordinatePair<Integer,Integer>> aIntersectionPositions;			// Villages will be available through the intersection positions
+	private ArrayList<CoordinatePair> aIntersectionPositions;			// Villages will be available through the intersection positions
 	private ArrayList<EdgeUnit> aRoadsAndShips;
 	private int aBarbarianPosition;
 	private Hex aRobberPosition;
 	private Hex aMerchantPosition;
 	private Player aMerchantOwner;
-	private Stack<ProgressCardKind> aProgressCardStack = new Stack<ProgressCardKind>();
+	private Stack<ProgressCardKind> aProgressCardStack = new Stack<>();
 	
 	private final int SIZE = GameRules.getGameRulesInstance().getSize();
 	
 	public GameBoard() throws Exception {
-		hexes = new ArrayList<Hex>();
-		aIntersectionPositions = new ArrayList<CoordinatePair<Integer, Integer>>();
+		hexes = new ArrayList<>();
+		aIntersectionPositions = new ArrayList<>();
 
 		HashMap<Integer,TerrainKind> aHexKindSetup = GameRules.getGameRulesInstance().getDefaultTerrainKindMap();
 		HashMap<Integer,Integer> aDiceNumberSetup = GameRules.getGameRulesInstance().getDefaultDiceNumberMap();
@@ -43,7 +39,7 @@ public class GameBoard {
             for (int col = 0; col < cols; col++) {
                 int x = -cols + 2 * col + 1;
                 int y = (row - half);
-                CoordinatePair<Integer, Integer> hexCoord = new CoordinatePair<Integer,Integer>(x,y,HarbourKind.NONE);
+                CoordinatePair hexCoord = CoordinatePair.of(x, y, HarbourKind.NONE);
                 
                 // gets the dice number and terrain kind from the hard coded maps in GameRules
                 Integer lDiceNumber = aDiceNumberSetup.get(hexCoord.hashCode());
@@ -65,31 +61,31 @@ public class GameBoard {
                 
                 if (y < 0) { // top half of board
                 // Creates the top, and top left points adjacent to current hex
-                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 - 1,HarbourKind.NONE));
-                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 - 2,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,HarbourKind.NONE));
                 // If the hex is the last column of a row, create the top right point
                     if (col == cols - 1) {
-                    	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x+1,3*y-1,HarbourKind.NONE));
+                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,HarbourKind.NONE));
                     }
                 } else if (y == 0) { // middle
                 // Creates the top, and top left points adjacent to current hex
-                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 - 1,HarbourKind.NONE));
-                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 - 2,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,HarbourKind.NONE));
                 // Creates the bottom, and bottom left points adjacent to current hex
-                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 + 1,HarbourKind.NONE));
-                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 + 2,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,HarbourKind.NONE));
                 // If the hex is the last column of a row, create the top right and bottom right points
                     if (col == cols - 1) { 
-                    	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x+1,3*y-1,HarbourKind.NONE));
-                    	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x+1,3*y+1,HarbourKind.NONE));
+                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,HarbourKind.NONE));
+                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,HarbourKind.NONE));
                     }
                 } else { // bottom half of board
                 // Creates the bottom, and bottom left points adjacent to current hex
-                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x-1,y*3 + 1,HarbourKind.NONE));
-                    aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x, y*3 + 2,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,HarbourKind.NONE));
                 // If the hex is the last column of a row, create the bottom right point
                     if (col == cols - 1) { 
-                    	aIntersectionPositions.add(new CoordinatePair<Integer, Integer>(x+1,3*y+1,HarbourKind.NONE));
+                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,HarbourKind.NONE));
                     }
                 }
             }	
@@ -116,7 +112,7 @@ public class GameBoard {
 		return hexes.iterator();
 	}
 	
-	public ArrayList<CoordinatePair<Integer,Integer>> getIntersectionsAndEdges() {
+	public ArrayList<CoordinatePair> getIntersectionsAndEdges() {
 		return aIntersectionPositions;
 	}
 	
@@ -147,33 +143,35 @@ public class GameBoard {
 	public ProgressCardKind popProgressCardStack() {
 		return aProgressCardStack.pop();
 	}
-	
-	/**
-	 * @param Hex for the new robber position
-	 * sets robber to newRobberPosition
-	 * */
-	public void setRobberPosition(Hex newRobberPosition) {
-		if (newRobberPosition != null) {
-			aRobberPosition = newRobberPosition;
-		}
-	}
-	
-	/**
+
+    /**
+     * Sets robber to newRobberPosition
+     *
+     * @param newRobberPosition Hex for the new robber position
+     */
+    public void setRobberPosition(Hex newRobberPosition) {
+        if (newRobberPosition != null) {
+            aRobberPosition = newRobberPosition;
+        }
+    }
+
+    /**
 	 * @return Hex: robber position. If null some error occured during Game Board setup.
 	 * */
 	public Hex getRobberPosition() {
 		return aRobberPosition;
 	}
-	
+
 	/**
-	 * @param Hex for the new merchant position
-	 * sets merchant to newMerchantPosition
-	 * */
+	 * Sets merchant to newMerchantPosition
+	 *
+	 * @param newMerchantPosition Hex for the new merchant position
+	 */
 	public void setMerchantPosition(Hex newMerchantPosition) {
 		if (newMerchantPosition != null) {
 			aMerchantPosition = newMerchantPosition;
 		}
-	} 
+	}
 
 	/**
 	 * @return Hex: robber position. If null Merchant not in play yet.
@@ -181,18 +179,19 @@ public class GameBoard {
 	public Hex getMerchantPosition() {
 		return aMerchantPosition;
 	}
-	
-	
+
 	/**
-	 * @param position of intersection
-	 * @param player whose edge unit needs to be adjacent to given intersection
+	 * @param intersection position of intersection
+	 * @param owner        player whose edge unit needs to be adjacent to given intersection
 	 * @return true if given player has an edge unit with end point at given intersection
-	 * */
-	public boolean isAdjacentToEdgeUnit(CoordinatePair<Integer,Integer> intersection, Player owner) {
+	 */
+	public boolean isAdjacentToEdgeUnit(CoordinatePair intersection, Player owner) {
 		for (EdgeUnit roadOrShip : aRoadsAndShips) {
-		    if (roadOrShip.hasEndpoint(intersection)) {
-		        if (roadOrShip.getOwner().equals(owner)) {return true;}
-		    }
+			if (roadOrShip.hasEndpoint(intersection)) {
+				if (roadOrShip.getOwner().equals(owner)) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}

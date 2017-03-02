@@ -7,11 +7,11 @@ import com.mygdx.catan.Player;
 public class EdgeUnit {
 
 	private EdgeUnitKind kind;
-	private CoordinatePair<Integer,Integer> aFirstCoordinate;
-	private CoordinatePair<Integer,Integer> aSecondCoordinate;
+	private CoordinatePair aFirstCoordinate;
+	private CoordinatePair aSecondCoordinate;
 	private Player owner;
 	
-	public EdgeUnit(CoordinatePair<Integer,Integer> pFirstCoordinate, CoordinatePair<Integer,Integer> pSecondCoordinate, EdgeUnitKind pKind, Player pOwner) {
+	public EdgeUnit(CoordinatePair pFirstCoordinate, CoordinatePair pSecondCoordinate, EdgeUnitKind pKind, Player pOwner) {
 		kind = pKind;
 		owner = pOwner;
 		aFirstCoordinate = pFirstCoordinate;
@@ -25,7 +25,7 @@ public class EdgeUnit {
 		return kind;
 	}
 	
-	public boolean hasEndpoint(CoordinatePair<Integer,Integer> intersection) {
+	public boolean hasEndpoint(CoordinatePair intersection) {
 		return intersection.equals(aFirstCoordinate) || intersection.equals(aSecondCoordinate);
 	}
 	
@@ -39,7 +39,7 @@ public class EdgeUnit {
 	/**
 	 * moves this edge unit to new coordinates. If unit is not a ship, or the two given coordinates are not adjacent, unit is not moved
 	 * */
-	public void moveShip (CoordinatePair<Integer,Integer> newFirstCoordinate, CoordinatePair<Integer,Integer> newSecondCoordinate) {
+	public void moveShip (CoordinatePair newFirstCoordinate, CoordinatePair newSecondCoordinate) {
 		
 		boolean areAdjacent = (Math.abs(newFirstCoordinate.getLeft() - newSecondCoordinate.getLeft()) + Math.abs(newFirstCoordinate.getRight() - newSecondCoordinate.getRight()) == 2); 
 		if (kind != EdgeUnitKind.SHIP || !areAdjacent) {return;}

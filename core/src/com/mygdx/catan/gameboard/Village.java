@@ -6,7 +6,7 @@ import com.mygdx.catan.enums.VillageKind;
 
 public class Village {
 
-	private CoordinatePair<Integer,Integer> position;
+	private CoordinatePair position;
 	private boolean cityWall;
 	private VillageKind villageKind;
 	private Player owner;
@@ -14,7 +14,7 @@ public class Village {
 	/**
 	 * @param the intersection where this Village will be built
 	 * */
-	public Village(Player pOwner, CoordinatePair<Integer,Integer> pPosition) {
+	public Village(Player pOwner, CoordinatePair pPosition) {
 		position = pPosition;
 		owner = pOwner;
 		cityWall = false;
@@ -24,7 +24,7 @@ public class Village {
 	/**
 	 * @return the CoordinatePair representing the position of this Village
 	 * */
-	public CoordinatePair<Integer,Integer> getPosition() {
+	public CoordinatePair getPosition() {
 		return position;
 	}
 	

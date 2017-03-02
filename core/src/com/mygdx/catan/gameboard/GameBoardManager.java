@@ -26,7 +26,7 @@ public class GameBoardManager{
 		}
 	}
 
-	public ArrayList<CoordinatePair<Integer,Integer>> getIntersectionsAndEdges() {
+	public ArrayList<CoordinatePair> getIntersectionsAndEdges() {
 		return aGameBoard.getIntersectionsAndEdges();
 	}
 	
@@ -92,7 +92,7 @@ public class GameBoardManager{
 	 * @param position of village
 	 * @return true if building the village was successful, false otherwise
 	 * */
-	public boolean buildSettlement(Player player, CoordinatePair<Integer,Integer> position) {
+	public boolean buildSettlement(Player player, CoordinatePair position) {
 		Village village = new Village(player,position);
 		position.putVillage(village);
 		player.addVillage(village);
@@ -106,7 +106,7 @@ public class GameBoardManager{
 	 * @param SecondPosition end point of road or ship
 	 * @param kind unit kind: ROAD or SHIP
 	 * */
-	public void buildEdgeUnit(Player player, CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition, EdgeUnitKind kind) {		
+	public void buildEdgeUnit(Player player, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind) {		
 		EdgeUnit edgeunit = new EdgeUnit(firstPosition, SecondPosition, kind, player);
 		player.addEdgeUnit(edgeunit);
 		aGameBoard.addRoadOrShip(edgeunit);
@@ -118,9 +118,9 @@ public class GameBoardManager{
 	public int getCityCount() {
 		int cityCount = 0;
 		
-		ArrayList<CoordinatePair<Integer,Integer>> edgesAndIntersections = aGameBoard.getIntersectionsAndEdges(); 
+		ArrayList<CoordinatePair> edgesAndIntersections = aGameBoard.getIntersectionsAndEdges(); 
 		
-		for (CoordinatePair<Integer,Integer> coordinate : edgesAndIntersections) {
+		for (CoordinatePair coordinate : edgesAndIntersections) {
 			if (coordinate.isOccupied()) {
 				Village v = coordinate.getOccupyingVillage();
 				if (v.getVillageKind().equals(VillageKind.CITY)) {
@@ -145,9 +145,9 @@ public class GameBoardManager{
 	 * @param hex to find adjacent intersections of
 	 * @return a list of adjacent intersections
 	 * */
-	public ArrayList<CoordinatePair<Integer,Integer>> getAdjacentIntersections(Hex hex) {
-		ArrayList<CoordinatePair<Integer,Integer>> adjacentIntersections = new ArrayList<CoordinatePair<Integer, Integer>>();
-	    for (CoordinatePair<Integer,Integer> intersection : aGameBoard.getIntersectionsAndEdges()) {
+	public ArrayList<CoordinatePair> getAdjacentIntersections(Hex hex) {
+		ArrayList<CoordinatePair> adjacentIntersections = new ArrayList<>();
+	    for (CoordinatePair intersection : aGameBoard.getIntersectionsAndEdges()) {
 	        if (hex.isAdjacent(intersection)) {
 	            adjacentIntersections.add(intersection);
 	        }
@@ -160,7 +160,7 @@ public class GameBoardManager{
 	 * @return a list of hexes whose dice number equals diceNumber
 	 * */
 	public ArrayList<Hex> getProducingHexes(int diceNumber) {
-		ArrayList<Hex> producingHexes = new ArrayList<Hex>();
+		ArrayList<Hex> producingHexes = new ArrayList<>();
 		for (Hex hex : aGameBoard.getHexes()) {
 		    if (hex.getDiceNumber() == diceNumber) {
 		        producingHexes.add(hex);
@@ -173,7 +173,7 @@ public class GameBoardManager{
      * @param intersection checks if this intersection is on land
      * @return true if on land
      * */
-	public boolean isOnLand (CoordinatePair<Integer, Integer> intersection){
+	public boolean isOnLand (CoordinatePair intersection){
 	    for (Hex h: aGameBoard.getHexes()) {
             for (Hex i : aGameBoard.getHexes()) {
                 for (Hex j:aGameBoard.getHexes()) {

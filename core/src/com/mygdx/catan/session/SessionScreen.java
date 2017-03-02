@@ -1,7 +1,8 @@
 package com.mygdx.catan.session;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -114,8 +115,8 @@ public class SessionScreen implements Screen {
     private SessionScreenModes aMode;
     
     /** The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE*/
-    private ArrayList<CoordinatePair<Integer,Integer>> validIntersections = new ArrayList<CoordinatePair<Integer,Integer>>();
-    private ArrayList<Pair<Pair<Integer,Integer>,Pair<Integer,Integer>>> validEdges = new ArrayList<Pair<Pair<Integer,Integer>,Pair<Integer,Integer>>>();
+    private ArrayList<CoordinatePair> validIntersections = new ArrayList<CoordinatePair>();
+    private ArrayList<Pair<Pair<Integer,Integer>,Pair<Integer,Integer>>> validEdges = new ArrayList<>();
     
     /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
     private VillageKind villagePieceKind;
@@ -124,7 +125,12 @@ public class SessionScreen implements Screen {
     /** Menu Buttons */
     private TextButton buildSettlementButton;
     private TextButton buildCityButton;
-    
+
+    /**
+     * Input adapter that handles general clicks to the screen that are not on buttons or
+     * any other of the stage actors. Used for choosing village positions, road positions, etc.
+     */
+    private InputAdapter inputAdapter;
     
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
@@ -137,6 +143,33 @@ public class SessionScreen implements Screen {
         
         // sets the initializing mode of the session screen (VIEWMODE). set to CHOOSEACTIONMODE for testing purposes 
         aMode = SessionScreenModes.CHOOSEACTIONMODE;
+
+        inputAdapter = new InputAdapter() {
+            @Override
+            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+                if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
+                    for (CoordinatePair validIntersection : validIntersections) {
+                        if (screenX > boardOrigin.getLeft() + validIntersection.getLeft() * BASE - 10 &&
+                                screenX < boardOrigin.getLeft() + validIntersection.getLeft() * BASE + 10 &&
+                                screenY > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
+                                screenY < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
+
+                            //TODO: call buildVillage method in SessionController and delete following
+                            updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
+
+                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
+
+                            buildSettlementButton.setText("Build Settlement");
+                            buildCityButton.setText("Build City");
+                            validIntersections.clear();
+
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        };
     }
 
     public void setSessionController(SessionController sc) {
@@ -149,7 +182,12 @@ public class SessionScreen implements Screen {
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         aSessionStage = new Stage();
-        Gdx.input.setInputProcessor(aSessionStage);
+
+        // Combine input (click handling) from the InputAdapter and the Stage
+        final InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(aSessionStage);
+        inputMultiplexer.addProcessor(inputAdapter);
+        Gdx.input.setInputProcessor(inputMultiplexer);
 
         // resource table
         Table contentTable = new Table(CatanGame.skin);
@@ -161,7 +199,6 @@ public class SessionScreen implements Screen {
             Table aTable = createResourceTable(entry.getKey());
             contentTable.add(aTable).pad(5);
         }
-
         
         // menu table
         Table menuTable = new Table(CatanGame.skin);
@@ -219,7 +256,7 @@ public class SessionScreen implements Screen {
 
         // for testing purposes, puts a settlement on every intersection of the board //TODO remove when done
         //int i = 0;
-        //for (CoordinatePair<Integer, Integer> coor : aSessionController.getIntersectionsAndEdges()) {
+        //for (CoordinatePair coor : aSessionController.getIntersectionsAndEdges()) {
         //    updateIntersection(coor, PlayerColor.values()[i++ % 5], VillageKind.values()[i%3]);
         //}
 
@@ -249,7 +286,7 @@ public class SessionScreen implements Screen {
              // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     // make the following loop go through requested valid build positions
-                    for (CoordinatePair<Integer,Integer> intersections : aSessionController.getIntersectionsAndEdges()) {
+                    for (CoordinatePair intersections : aSessionController.getIntersectionsAndEdges()) {
                         validIntersections.add(intersections);
                         //TODO make a sprite that highlights the area
                     }
@@ -273,16 +310,16 @@ public class SessionScreen implements Screen {
              // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     // make the following loop go through requested valid build positions
-                    for (CoordinatePair<Integer,Integer> i : aSessionController.getIntersectionsAndEdges()) {
+                    for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
                         
-                        Pair<Integer,Integer> e0 = new MutablePair<Integer,Integer>(i.getLeft(),i.getRight());
-                        Pair<Integer,Integer> e1 = new MutablePair<Integer,Integer>(i.getLeft(),i.getRight() - 2);
-                        Pair<Integer,Integer> e2 = new MutablePair<Integer,Integer>(i.getLeft() - 1,i.getRight() + 1);
-                        Pair<Integer,Integer> e3 = new MutablePair<Integer,Integer>(i.getLeft() + 1,i.getRight() + 1);
+                        Pair<Integer,Integer> e0 = new MutablePair(i.getLeft(),i.getRight());
+                        Pair<Integer,Integer> e1 = new MutablePair(i.getLeft(),i.getRight() - 2);
+                        Pair<Integer,Integer> e2 = new MutablePair(i.getLeft() - 1,i.getRight() + 1);
+                        Pair<Integer,Integer> e3 = new MutablePair(i.getLeft() + 1,i.getRight() + 1);
                         
-                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r1 = new MutablePair<Pair<Integer, Integer>, Pair<Integer, Integer>>(e0,e1);
-                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r2 = new MutablePair<Pair<Integer, Integer>, Pair<Integer, Integer>>(e0,e2);
-                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r3 = new MutablePair<Pair<Integer, Integer>, Pair<Integer, Integer>>(e0,e3);
+                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r1 = new MutablePair<>(e0, e1);
+                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r2 = new MutablePair<>(e0, e2);
+                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r3 = new MutablePair<>(e0, e3);
                         
                         validEdges.add(r1);
                         validEdges.add(r2);
@@ -342,31 +379,6 @@ public class SessionScreen implements Screen {
         aGame.batch.begin();
         aGame.batch.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         aGame.batch.end();
-
-        // 
-        if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
-            for (CoordinatePair<Integer,Integer> validIntersection : validIntersections) {
-                if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-                   
-                    if (Gdx.input.getX() > boardOrigin.getLeft() + validIntersection.getLeft() * BASE - 10 &&
-                            Gdx.input.getX() < boardOrigin.getLeft() + validIntersection.getLeft() * BASE + 10 &&
-                            Gdx.input.getY() > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
-                            Gdx.input.getY() < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
-                        
-                        //TODO: call buildVillage method in SessionController and delete following
-                        updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
-                        
-                        aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                    }
-                }
-            }
-            if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
-                buildSettlementButton.setText("Build Settlement");
-                buildCityButton.setText("Build City");
-                validIntersections.clear();
-            }
-        }
-        
         
         // Display the board hexes and game pieces and dice number tokens
         polyBatch.begin();
@@ -1034,7 +1046,7 @@ public class SessionScreen implements Screen {
      * @param color    of player who owns the new Village
      * @param kind     of new Village
      */
-    public void updateIntersection(CoordinatePair<Integer, Integer> position, PlayerColor color, VillageKind kind) {
+    public void updateIntersection(CoordinatePair position, PlayerColor color, VillageKind kind) {
 
         int offsetX = position.getLeft();
         int offsetY = position.getRight();
@@ -1069,7 +1081,7 @@ public class SessionScreen implements Screen {
      * @param kind             of new edge unit (SHIP or ROAD)
      * @param color            of player who owns the new edge unit
      */
-    public void updateEdge(CoordinatePair<Integer, Integer> firstCoordinate, CoordinatePair<Integer, Integer> secondCoordinate, EdgeUnitKind kind, PlayerColor color) {
+    public void updateEdge(CoordinatePair firstCoordinate, CoordinatePair secondCoordinate, EdgeUnitKind kind, PlayerColor color) {
         int xCorFirst = firstCoordinate.getLeft();
         int yCorFirst = firstCoordinate.getRight();
         int xCorSecond = secondCoordinate.getLeft();

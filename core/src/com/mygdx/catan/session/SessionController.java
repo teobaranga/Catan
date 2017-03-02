@@ -1,9 +1,10 @@
 package com.mygdx.catan.session;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.badlogic.ashley.signals.Listener;
+import com.badlogic.ashley.signals.Signal;
+import com.badlogic.gdx.Gdx;
 import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
@@ -14,14 +15,21 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
-import com.mygdx.catan.GameRules;
+import com.mygdx.catan.response.PlaceCityAndRoad;
+import com.mygdx.catan.response.ShowDice;
+import com.mygdx.catan.response.UpdateResourceBar;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
     private final SessionManager aSessionManager;
     private SessionScreen aSessionScreen;
     private PlayerColor aPlayerColor;
-    
+    private final Listener aSessionListener;
+
+
     public PlayerColor getPlayerColor() {
         return aPlayerColor;
     }
@@ -33,6 +41,38 @@ public class SessionController {
     public SessionController(GameBoardManager gbm, SessionManager sm) {
         aGameBoardManager = gbm;
         aSessionManager = sm;
+        aSessionListener = new Listener() {
+            @Override
+            public void receive(Signal signal, Object object) {
+                if (object instanceof PlaceCityAndRoad) {
+                    Gdx.app.postRunnable(() -> {
+                        CoordinatePair<Integer, Integer> cityPos = ((PlaceCityAndRoad) object).cityPos;
+                        CoordinatePair<Integer, Integer> edgeUnitPos1 = ((PlaceCityAndRoad) object).edgeUnitPos1;
+                        CoordinatePair<Integer, Integer> edgeUnitPos2 = ((PlaceCityAndRoad) object).edgeUnitPos2;
+                        boolean isShip = ((PlaceCityAndRoad) object).isShip;
+                        boolean fromPeer = ((PlaceCityAndRoad) object).fromPeer;
+                        PlayerColor aPlayerColor = ((PlaceCityAndRoad) object).aPlayerColor;
+                        placeCityAndRoads(cityPos, edgeUnitPos1, edgeUnitPos2, isShip, fromPeer, aPlayerColor);
+                    });
+                } else if (object instanceof ShowDice) {
+                    Gdx.app.postRunnable(() -> {
+                        aSessionScreen.showDice(getYellowDice(), getRedDice());
+                    });
+                } else if (object instanceof UpdateResourceBar) {
+                    Gdx.app.postRunnable(() -> {
+                        ResourceMap cost = ((UpdateResourceBar) object).cost;
+                        aSessionScreen.updateResourceBar(cost);
+                    });
+                }
+            }
+        };
+    }
+    public int getYellowDice(){
+        return aSessionManager.getYellowDice();
+    }
+
+    public int getRedDice(){
+        return aSessionManager.getRedDice();
     }
 
     public void setSessionScreen(SessionScreen s) {
@@ -41,14 +81,6 @@ public class SessionController {
 
     public ArrayList<Hex> getHexes() {
         return aGameBoardManager.getHexes();
-    }
-
-    public int getYellowDice() {
-        return aSessionManager.getYellowDice();
-    }
-
-    public int getRedDice() {
-        return aSessionManager.getRedDice();
     }
 
     public ArrayList<EdgeUnit> getRoadsAndShips() {
@@ -228,7 +260,7 @@ public class SessionController {
         }
         else {
             aSessionScreen.updateIntersection(position, owner, kind);
-            aSessionManager.updateResourceBar();
+            aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getSettlementCost());
         }
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
         // if method call is from a peer, the gui only needs to be notified of the new gameboard change.
@@ -243,14 +275,14 @@ public class SessionController {
      * Requests the GameBoardManager to build edge unit on given coordinates. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
      * Determines if new edge unit piece increases the players longest road, and takes appropriate action.
      *
-     * @param player         owner of edgeUnit
+     * @param owner          owner of edgeUnit
      * @param firstPosition  first end point of road or ship
      * @param SecondPosition second end point of road or ship
      * @param kind           edge unit kind: ROAD or SHIP
      * @param fromPeer       indicates whether the method was called from the owner of new settlement, or from a peer
      * @return true if building the unit was successful, false otherwise
      */
-    public boolean buildEdgeUnit(Player player, CoordinatePair<Integer, Integer> firstPosition, CoordinatePair<Integer, Integer> SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
+    public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair<Integer, Integer> firstPosition, CoordinatePair<Integer, Integer> SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
         
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)
 
@@ -270,20 +302,18 @@ public class SessionController {
     /**
      * Allows the user to place a city and an edge unit and then receive the resources near the city
      */
-    public void placeCityAndRoads(CoordinatePair<Integer, Integer> cityPos, CoordinatePair<Integer, Integer> edgeUnitPos1, CoordinatePair<Integer, Integer> edgeUnitPos2, boolean isShip, boolean fromPeer) {
-        Player cp = aSessionManager.getCurrentPlayer();
-
-        EdgeUnit eu;
+    public void placeCityAndRoads(CoordinatePair<Integer, Integer> cityPos, CoordinatePair<Integer, Integer> edgeUnitPos1, CoordinatePair<Integer, Integer> edgeUnitPos2, boolean isShip, boolean fromPeer, PlayerColor aPlayerColor) {
         if (isShip) {
-            eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, cp);
-            buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, fromPeer);
+            buildEdgeUnit(aPlayerColor, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, fromPeer);
         } else {
-            eu = new EdgeUnit(edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.ROAD, cp);
-            buildEdgeUnit(cp, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, fromPeer);
+            buildEdgeUnit(aPlayerColor, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.ROAD, fromPeer);
         }
 
-        Village v = new Village(cp, cityPos);
-        buildVillage(cityPos, VillageKind.SETTLEMENT, cp.getColor(), fromPeer);
+        buildVillage(cityPos, VillageKind.SETTLEMENT, aPlayerColor, fromPeer);
+
+        if(fromPeer){
+            return;
+        }
 
         List<Hex> neighbourHexes = new ArrayList<>();
         List<Hex> hexes = aGameBoardManager.getHexes();
@@ -321,7 +351,7 @@ public class SessionController {
                 // GOLDFIELDS ?
             }
         }
-        cp.addResources(cost);
+       // cp.addResources(cost); getPLayerByColor(aPlayerColor).addResources(cost);
     }
 
     /**

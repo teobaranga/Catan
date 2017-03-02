@@ -1,8 +1,7 @@
 package com.mygdx.catan.session;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -20,13 +19,23 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
-import com.mygdx.catan.enums.*;
+import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.enums.EdgeUnitKind;
+import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.SessionScreenModes;
+import com.mygdx.catan.enums.TerrainKind;
+import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
+
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SessionScreen implements Screen {
 
@@ -96,7 +105,6 @@ public class SessionScreen implements Screen {
     /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
 
-
     /** The map of resource tables */
     private Map<String, Label> resourceLabelMap;
     
@@ -114,12 +122,7 @@ public class SessionScreen implements Screen {
     /** Menu Buttons */
     private TextButton buildSettlementButton;
     private TextButton buildCityButton;
-
-    /**
-     * Input adapter that handles general clicks to the screen that are not on buttons or
-     * any other of the stage actors. Used for choosing village positions, road positions, etc.
-     */
-    private InputAdapter inputAdapter;
+    
     
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
@@ -132,33 +135,6 @@ public class SessionScreen implements Screen {
         
         // sets the initializing mode of the session screen (VIEWMODE). set to CHOOSEACTIONMODE for testing purposes 
         aMode = SessionScreenModes.CHOOSEACTIONMODE;
-
-        inputAdapter = new InputAdapter() {
-            @Override
-            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-                if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
-                    for (CoordinatePair<Integer, Integer> validIntersection : validIntersections) {
-                        if (screenX > boardOrigin.getLeft() + validIntersection.getLeft() * BASE - 10 &&
-                                screenX < boardOrigin.getLeft() + validIntersection.getLeft() * BASE + 10 &&
-                                screenY > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
-                                screenY < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
-
-                            //TODO: call buildVillage method in SessionController and delete following
-                            updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
-
-                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
-
-                            buildSettlementButton.setText("Build Settlement");
-                            buildCityButton.setText("Build City");
-                            validIntersections.clear();
-
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-        };
     }
 
     public void setSessionController(SessionController sc) {
@@ -171,12 +147,7 @@ public class SessionScreen implements Screen {
         bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         aSessionStage = new Stage();
-
-        // Combine input (click handling) from the InputAdapter and the Stage
-        final InputMultiplexer inputMultiplexer = new InputMultiplexer();
-        inputMultiplexer.addProcessor(aSessionStage);
-        inputMultiplexer.addProcessor(inputAdapter);
-        Gdx.input.setInputProcessor(inputMultiplexer);
+        Gdx.input.setInputProcessor(aSessionStage);
 
         // resource table
         Table contentTable = new Table(CatanGame.skin);
@@ -263,8 +234,6 @@ public class SessionScreen implements Screen {
         removeEdgeUnit(1, -1, 2, -2);
         createShip(0, 2, 0, 4, PlayerColor.RED);
 
-        // FOR TEST
-        showDice();
         aSessionStage.addActor(contentTable);
         aSessionStage.addActor(menuTable);
     }
@@ -371,7 +340,28 @@ public class SessionScreen implements Screen {
         aGame.batch.end();
 
         // 
-
+        if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
+            for (CoordinatePair<Integer,Integer> validIntersection : validIntersections) {
+                if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+                   
+                    if (Gdx.input.getX() > boardOrigin.getLeft() + validIntersection.getLeft() * BASE - 10 &&
+                            Gdx.input.getX() < boardOrigin.getLeft() + validIntersection.getLeft() * BASE + 10 &&
+                            Gdx.input.getY() > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
+                            Gdx.input.getY() < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
+                        
+                        //TODO: call buildVillage method in SessionController and delete following
+                        updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
+                        
+                        aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                    }
+                }
+            }
+            if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
+                buildSettlementButton.setText("Build Settlement");
+                buildCityButton.setText("Build City");
+                validIntersections.clear();
+            }
+        }
         
         
         // Display the board hexes and game pieces and dice number tokens
@@ -1105,14 +1095,10 @@ public class SessionScreen implements Screen {
         placeRobber(position.getLeftCoordinate(), position.getRightCoordinate());
     }
 
-    // TODO TEST 
-    public void showDice() {
-        int yellowDice = aSessionController.getYellowDice();
-        int redDice = aSessionController.getRedDice();
-
-        // FOR TEST
-        //int yellowDice = 5;
-        //int redDice = 1;
+    /**
+     *
+     */
+    public void showDice(int yellowDice, int redDice) {
 
         Table yellow = new Table();
         Table red = new Table();
@@ -1133,11 +1119,11 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(red);
     }
 
-    public void updateResourceBar(ArrayList<Integer> updates) {
-        Iterator<Integer> it = updates.iterator();
-        for (Map.Entry<String, Label> entry : resourceLabelMap.entrySet()) {
-            Label l = entry.getValue();
-            int newValue = it.next() + Integer.valueOf(l.getText().toString());
+    public void updateResourceBar(ResourceMap updates) {
+        for (Map.Entry<ResourceKind, Integer> entry : updates.entrySet()) {
+            String resourceName = entry.getKey().name().toLowerCase();
+            Label l = resourceLabelMap.get(resourceName);
+            int newValue = Integer.valueOf(l.getText().toString()) + entry.getValue();
             l.setText(newValue + "");
         }
     }

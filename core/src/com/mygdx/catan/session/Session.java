@@ -13,91 +13,91 @@ import java.util.Map;
 
 public class Session {
 
-    GamePhase currentPhase;
-    EventKind eventDice;
-    private int barbarianPosition = 7; //set      FIXME: currently this is in gameboard
-    private int redDice; //setters needed?
-    private int yellowDice; //setters needed?
-    private int VPsToWin; //set
-    private Player[] players;
-    private ResourceMap Bank;
+	GamePhase currentPhase;
+	EventKind eventDice;
+	private int barbarianPosition = 7; //set      FIXME: currently this is in gameboard
+	private int redDice; //setters needed?
+	private int yellowDice; //setters needed?
+	private int VPsToWin; //set
+	private Player[] players;
+	private ResourceMap Bank;
 
-    //TODO: change this to fit design, so far this is only placeholder!
-    public Session() {
-        this.Bank = new ResourceMap();
-    }
+	//TODO: change this to fit design, so far this is only placeholder!
+	public Session() {
+		this.Bank = new ResourceMap();
+	}
 
-    public static Session newInstance(Collection<Account> accounts, int VPsToWin) {
-        final Session session = new Session();
-        session.VPsToWin = VPsToWin;
+	public static Session newInstance(Collection<Account> accounts, int VPsToWin) {
+		final Session session = new Session();
+		session.VPsToWin = VPsToWin;
 
-        session.players = new Player[accounts.size()];
-        for (int i = 0; i < session.players.length; i++) {
-            final Account account = accounts.iterator().next();
-            session.players[i] = Player.newInstance(account, PlayerColor.values()[i]);
-            System.out.println("Created player: " + account.getUsername());
-        }
+		session.players = new Player[accounts.size()];
+		for (int i = 0; i < session.players.length; i++) {
+			final Account account = accounts.iterator().next();
+			session.players[i] = Player.newInstance(account, PlayerColor.values()[i]);
+			System.out.println("Created player: " + account.getUsername());
+		}
 
-        return session;
-    }
+		return session;
+	}
 
-    public GamePhase getCurrentPhase() {
-        return this.currentPhase;
-    }
+	public GamePhase getCurrentPhase() {
+		return this.currentPhase;
+	}
 
-    public EventKind getEventKind() {
-        return this.eventDice;
-    }
+	public EventKind getEventKind() {
+		return this.eventDice;
+	}
 
-    public void setVPsToWin(int victoryPoints) {
-        this.VPsToWin = victoryPoints;
-    }
+	public void setVPsToWin(int victoryPoints) {
+		this.VPsToWin = victoryPoints;
+	}
 
-    public int getVpsToWin() {
-        return this.VPsToWin;
-    }
+	public int getVpsToWin() {
+		return this.VPsToWin;
+	}
 
-    public int getBarbarianPosition() {
-        return this.barbarianPosition;
-    }
+	public int getBarbarianPosition() {
+		return this.barbarianPosition;
+	}
 
-    public void setBarbarianPosition(int barbarianPosition) {
-        this.barbarianPosition = barbarianPosition;
-    }
+	public void setBarbarianPosition(int barbarianPosition) {
+		this.barbarianPosition = barbarianPosition;
+	}
 
-    public int getRedDice() {
-        return this.redDice;
-    }
+	public int getRedDice() {
+		return this.redDice;
+	}
 
-    public int getYellowDice() {
-        return this.yellowDice;
-    }
+	public int getYellowDice() {
+		return this.yellowDice;
+	}
 
-    public int getNumberOfPlayers() {
-        return players.length;
-    }
+	public int getNumberOfPlayers() {
+		return players.length;
+	}
 
-    public Player[] getPlayers() {
-        return players;
-    }
+	public Player[] getPlayers() {
+		return players;
+	}
 
-    public void add(ResourceMap cost) {
-        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            Bank.put(entry.getKey(), Bank.get(entry.getKey()) + entry.getValue());
-        }
-    }
+	public void add(ResourceMap cost) {
+		for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
+			Bank.put(entry.getKey(), Bank.get(entry.getKey()) + entry.getValue());
+		}
+	}
 
-    public void remove(ResourceMap cost) {
-        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            Bank.put(entry.getKey(), Bank.get(entry.getKey()) - entry.getValue());
-        }
-    }
+	public void remove(ResourceMap cost) {
+		for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
+			Bank.put(entry.getKey(), Bank.get(entry.getKey()) - entry.getValue());
+		}
+	}
 
-    public ResourceMap adjustcost(ResourceMap cost) {
-        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            int diff = entry.getValue() - Bank.get(entry.getKey());
-            cost.put(entry.getKey(), (diff > 0) ? diff : entry.getValue());
-        }
-        return cost;
-    }
+	public ResourceMap adjustcost(ResourceMap cost) {
+		for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
+			int diff = entry.getValue() - Bank.get(entry.getKey());
+			cost.put(entry.getKey(), (diff > 0) ? diff : entry.getValue());
+		}
+		return cost;
+	}
 }

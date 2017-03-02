@@ -1,9 +1,7 @@
 package com.mygdx.catan.session;
 
-import com.mygdx.catan.account.Account;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
-import com.mygdx.catan.enums.PlayerColor;
 
 import java.util.ArrayList;
 
@@ -24,22 +22,6 @@ public class SessionManager {
         return aSession.getPlayers();
     }
 
-    public Player getCurrentPlayer() {
-        return Player.newInstance(new Account("dummy", "dummy"), PlayerColor.ORANGE);
-    }
-
-    public void showDice() {
-        for (SessionScreen sessionScreen : sessionScreens) {
-            sessionScreen.showDice();
-        }
-    }
-
-    //TODO FINISH
-    public void updateResourceBar() {
-        for (SessionScreen sessionScreen : sessionScreens) {
-
-        }
-    }
 
     /**
      *  Returns the current value of the yellow dice.

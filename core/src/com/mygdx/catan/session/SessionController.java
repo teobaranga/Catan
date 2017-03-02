@@ -1,13 +1,15 @@
 package com.mygdx.catan.session;
 
-import com.badlogic.ashley.signals.Listener;
-import com.badlogic.ashley.signals.Signal;
 import com.badlogic.gdx.Gdx;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
+import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
+import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.VillageKind;
@@ -29,7 +31,6 @@ public class SessionController {
     private PlayerColor aPlayerColor;
     private final Listener aSessionListener;
 
-
     public PlayerColor getPlayerColor() {
         return aPlayerColor;
     }
@@ -43,13 +44,16 @@ public class SessionController {
         aSessionManager = sm;
         aSessionListener = new Listener() {
             @Override
-            public void receive(Signal signal, Object object) {
+            public void received(Connection connection, Object object) {
                 if (object instanceof PlaceCityAndRoad) {
                     Gdx.app.postRunnable(() -> {
-                        CoordinatePair<Integer, Integer> cityPos = ((PlaceCityAndRoad) object).cityPos;
-                        CoordinatePair<Integer, Integer> edgeUnitPos1 = ((PlaceCityAndRoad) object).edgeUnitPos1;
-                        CoordinatePair<Integer, Integer> edgeUnitPos2 = ((PlaceCityAndRoad) object).edgeUnitPos2;
-                        boolean isShip = ((PlaceCityAndRoad) object).isShip;
+                        // ENTER CHOOSEINTERSECTIONMODE AND RETURN cityPos;
+                        CoordinatePair cityPos = new CoordinatePair(new Object(), new Object(), HarbourKind.NONE);
+                        // ENTER CHOOSEEDGEMODE AND RETURN edgeUnitPos1 edgeUnitPos2;
+                        CoordinatePair edgeUnitPos1 = new CoordinatePair(new Object(), new Object(), HarbourKind.NONE);
+                        CoordinatePair edgeUnitPos2 = new CoordinatePair(new Object(), new Object(), HarbourKind.NONE);
+                        // LET USER CHOOSE BTW SHIP AND ROAD (or force him to build a road ?)
+                        boolean isShip = false;
                         boolean fromPeer = ((PlaceCityAndRoad) object).fromPeer;
                         PlayerColor aPlayerColor = ((PlaceCityAndRoad) object).aPlayerColor;
                         placeCityAndRoads(cityPos, edgeUnitPos1, edgeUnitPos2, isShip, fromPeer, aPlayerColor);
@@ -66,7 +70,9 @@ public class SessionController {
                 }
             }
         };
+        CatanGame.client.addListener(aSessionListener);
     }
+
     public int getYellowDice(){
         return aSessionManager.getYellowDice();
     }

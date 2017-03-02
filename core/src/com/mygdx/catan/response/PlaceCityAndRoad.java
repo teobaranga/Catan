@@ -1,6 +1,5 @@
 package com.mygdx.catan.response;
 
-import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.enums.PlayerColor;
 
 /**
@@ -9,18 +8,10 @@ import com.mygdx.catan.enums.PlayerColor;
 
 public class PlaceCityAndRoad implements Response {
 
-    public CoordinatePair<Integer, Integer> cityPos;
-    public CoordinatePair<Integer, Integer> edgeUnitPos1;
-    public CoordinatePair<Integer, Integer> edgeUnitPos2;
-    public boolean isShip;
     public boolean fromPeer;
     public PlayerColor aPlayerColor;
 
-    public PlaceCityAndRoad(CoordinatePair<Integer, Integer> cityPos, CoordinatePair<Integer, Integer> edgeUnitPos1, CoordinatePair<Integer, Integer> edgeUnitPos2, boolean isShip, boolean fromPeer, PlayerColor aPlayerColor){
-        this.cityPos = cityPos;
-        this.edgeUnitPos1 = edgeUnitPos1;
-        this.edgeUnitPos2 = edgeUnitPos2;
-        this.isShip =isShip;
+    public PlaceCityAndRoad(boolean fromPeer, PlayerColor aPlayerColor){
         this.fromPeer = fromPeer;
         this.aPlayerColor = aPlayerColor;
     }

@@ -88,7 +88,7 @@ public class GameBoardManager{
 	
 	/**
 	 * builds a settlement for player at given position. Adds the settlement to the player's collection of settlements, and associates it to the given position 
-	 * @param owner of village
+	 * @param player of village
 	 * @param position of village
 	 * @return true if building the village was successful, false otherwise
 	 * */
@@ -101,10 +101,10 @@ public class GameBoardManager{
 	
 	/**
 	 * Builds the edge unit according to corresponding input. Adds the edge unit to the player's collection of edge units, as well as the gameboard's collection of edge units
-	 * @param owner of edgeUnit
-	 * @param first end point of road or ship
-	 * @param second end point of road or ship
-	 * @param edge unit kind: ROAD or SHIP
+	 * @param player of edgeUnit
+	 * @param firstPosition end point of road or ship
+	 * @param SecondPosition end point of road or ship
+	 * @param kind unit kind: ROAD or SHIP
 	 * */
 	public void buildEdgeUnit(Player player, CoordinatePair<Integer,Integer> firstPosition, CoordinatePair<Integer,Integer> SecondPosition, EdgeUnitKind kind) {		
 		EdgeUnit edgeunit = new EdgeUnit(firstPosition, SecondPosition, kind, player);
@@ -135,7 +135,7 @@ public class GameBoardManager{
 	/**
 	 * Places the robber on newPosition
 	 * 
-	 * @param new Hex to position robber on
+	 * @param newPosition Hex to position robber on
 	 * */
 	public void moveRobber(Hex newPosition) {
 	    aGameBoard.setRobberPosition(newPosition);
@@ -181,8 +181,8 @@ public class GameBoardManager{
                             ((h.getRightCoordinate() - 1) == (intersection.getRight())) &&
                             h.getKind().equals(TerrainKind.SEA) &&
 
-                            (i.getLeftCoordinate()) == (intersection.getLeft()) &&
-                            ((i.getRightCoordinate() + 2) == (intersection.getRight())) &&
+                            (i.getLeftCoordinate() + 1) == (intersection.getLeft()) &&
+                            ((i.getRightCoordinate() - 1) == (intersection.getRight())) &&
                             i.getKind().equals(TerrainKind.SEA) &&
 
                             ((j.getLeftCoordinate()) == (intersection.getLeft())) &&
@@ -190,12 +190,10 @@ public class GameBoardManager{
                             j.getKind().equals(TerrainKind.SEA)) {
                         return false;
                     }
-                    else {
-                        return true;
-                    }
                 }
             }
         }
+        return true;
     }
 
 }

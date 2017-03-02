@@ -53,6 +53,8 @@ public class SessionScreen implements Screen {
         colorMap.put("grain", Color.valueOf("FFFF66"));
         colorMap.put("wool", Color.valueOf("66FF66"));
         colorMap.put("coin", Color.valueOf("FF9A00"));
+        colorMap.put("cloth", Color.valueOf("CDCDFF"));
+        colorMap.put("paper", Color.valueOf("E6E6B9"));
     }
 
     private final CatanGame aGame;
@@ -159,6 +161,7 @@ public class SessionScreen implements Screen {
             Table aTable = createResourceTable(entry.getKey());
             contentTable.add(aTable).pad(5);
         }
+
         
         // menu table
         Table menuTable = new Table(CatanGame.skin);
@@ -320,6 +323,7 @@ public class SessionScreen implements Screen {
         resourceTable.row();
 
         Label l = new Label("0", CatanGame.skin);
+        l.setText("0");
         resourceTable.add(l);
         resourceLabelMap.put(type, l);
 
@@ -1121,9 +1125,10 @@ public class SessionScreen implements Screen {
 
     public void updateResourceBar(ResourceMap updates) {
         for (Map.Entry<ResourceKind, Integer> entry : updates.entrySet()) {
-            String resourceName = entry.getKey().name().toLowerCase();
+            String resourceName = entry.getKey().toString().toLowerCase();
             Label l = resourceLabelMap.get(resourceName);
-            int newValue = Integer.valueOf(l.getText().toString()) + entry.getValue();
+            int prev = Integer.valueOf(l.getText().toString());
+            int newValue = prev + entry.getValue();
             l.setText(newValue + "");
         }
     }

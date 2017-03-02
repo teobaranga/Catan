@@ -17,6 +17,7 @@ import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
+import com.mygdx.catan.screens.create.CreateScreen;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
@@ -167,6 +168,7 @@ public class CatanGame extends Game {
             case BROWSE_GAMES:
                 break;
             case CREATE_GAME:
+                setScreen(new CreateScreen(this, new MenuScreen(this)));
             case IN_GAME:
                 //this.setScreen(new CreateScreen(this, menuScreen));
                 SessionController sc = new SessionController(aGameBoardManager, aSessionManager);

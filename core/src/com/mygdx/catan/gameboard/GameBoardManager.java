@@ -4,6 +4,7 @@ import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ProgressCardKind;
+import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
 import java.util.ArrayList;
 
@@ -155,7 +156,7 @@ public class GameBoardManager{
 	}
 	
 	/**
-	 * @param result of dice roll
+	 * @param diceNumber of dice roll
 	 * @return a list of hexes whose dice number equals diceNumber
 	 * */
 	public ArrayList<Hex> getProducingHexes(int diceNumber) {
@@ -167,5 +168,34 @@ public class GameBoardManager{
 		}
 		return producingHexes;
 	}
+
+    /**
+     * @param intersection checks if this intersection is on land
+     * @return true if on land
+     * */
+	public boolean isOnLand (CoordinatePair<Integer, Integer> intersection){
+	    for (Hex h: aGameBoard.getHexes()) {
+            for (Hex i : aGameBoard.getHexes()) {
+                for (Hex j:aGameBoard.getHexes()) {
+                    if (((h.getLeftCoordinate() - 1) == (intersection.getLeft())) &&
+                            ((h.getRightCoordinate() - 1) == (intersection.getRight())) &&
+                            h.getKind().equals(TerrainKind.SEA) &&
+
+                            (i.getLeftCoordinate()) == (intersection.getLeft()) &&
+                            ((i.getRightCoordinate() + 2) == (intersection.getRight())) &&
+                            i.getKind().equals(TerrainKind.SEA) &&
+
+                            ((j.getLeftCoordinate()) == (intersection.getLeft())) &&
+                            ((j.getRightCoordinate() + 2) == (intersection.getRight())) &&
+                            j.getKind().equals(TerrainKind.SEA)) {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
 
 }

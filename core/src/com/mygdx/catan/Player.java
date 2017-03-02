@@ -44,7 +44,7 @@ public class Player {
     public void setTokenVictoryPoints(int tokenVictoryPoints) {
         this.tokenVictoryPoints = tokenVictoryPoints;
     }
-    
+
     /**
      * @param rm of rm is the resource map in question. need to see if player can pay for rm
      * @return true if player has enough resources for rm
@@ -154,6 +154,8 @@ public class Player {
     public ArrayList<EdgeUnit> getRoadsAndShips() {
         return roadsAndShips;
     }
+
+    public ArrayList<Village> getVillages() { return villages; }
 
     /**
      * adds given EdgeUnit to roadsAndShips. Its position and and type is assumed to be legal.

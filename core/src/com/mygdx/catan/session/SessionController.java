@@ -113,8 +113,26 @@ public class SessionController {
      * */
     public boolean requestBuildEdgeUnit(PlayerColor owner, EdgeUnitKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        
-        return false;
+        Player currentP = null;
+        ResourceMap cost = null;
+        for(Player p: aSessionManager.getPlayers()){
+            if (p.getColor().equals(owner)) {
+                currentP = p;
+            }
+        }
+        if (kind.equals(EdgeUnitKind.SHIP)) {
+            cost = GameRules.getGameRulesInstance().getShipCost();
+        }
+        else if (kind.equals(EdgeUnitKind.ROAD)) {
+            cost = GameRules.getGameRulesInstance().getRoadCost();
+        }
+        //check to make sure player has sufficient resources
+        if (currentP.hasEnoughResources(cost)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
     
     /**
@@ -123,13 +141,33 @@ public class SessionController {
      * */
     public ArrayList<CoordinatePair<Integer,Integer>> requestValidBuildIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        ArrayList<CoordinatePair<Integer, Integer>> validIntersections;
+        //get current player
+        Player currentP = null;
+        for(Player p: aSessionManager.getPlayers()){
+            if (p.getColor().equals(owner)) {
+                currentP = p;
+            }
+        }
+        //get list of currentp's villages
+        ArrayList<Village> listOfVillages = currentP.getVillages();
+
+        //get list of currentp's edge units
+        ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
+
+        ArrayList<CoordinatePair<Integer, Integer>> validIntersections = new ArrayList<>();
         for (CoordinatePair<Integer, Integer> i: aGameBoardManager.getIntersectionsAndEdges()) {
+            for (Village v: listOfVillages) {
+                for (EdgeUnit e: listOfEdgeUnits) {
+                    if ( !isAdjacent(i, v.getPosition()) && (!e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
+                        validIntersections.add(i);
+                    }
+                }
+            }
             //need to iterate through all players villages and make sure i is not adjacent
             //need to iterate through all players edge units and make sure i is on an edge unit
             //need to check it its on land
         }
-        return null;
+        return validIntersections;
     }
     
     /**
@@ -178,11 +216,25 @@ public class SessionController {
      * @return true if building the village was successful, false otherwise
      */
     public boolean buildVillage(CoordinatePair<Integer, Integer> position, VillageKind kind, PlayerColor owner, boolean fromPeer) {
+        Player currentP = null;
+        for(Player p: aSessionManager.getPlayers()){
+            if (p.getColor().equals(owner)) {
+                currentP = p;
+            }
+        }
+        aGameBoardManager.buildSettlement(currentP, position);
+        if (fromPeer) {
+            aSessionScreen.updateIntersection(position, owner, kind);
+        }
+        else {
+            aSessionScreen.updateIntersection(position, owner, kind);
+            aSessionManager.updateResourceBar();
+        }
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
         // if method call is from a peer, the gui only needs to be notified of the new gameboard change.
         // otherwise the gui will also need to be notified about resource changes
         //NOTE: if kind is for example city, then all you need to do is upgrade the settlement on that coordinate to a city
-        return false;
+        return true;
     }
     
     

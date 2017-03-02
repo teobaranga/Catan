@@ -5,10 +5,9 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -19,6 +18,8 @@ import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.request.LeaveGame;
 import com.mygdx.catan.request.MarkAsReady;
+import com.mygdx.catan.request.StartGame;
+import com.mygdx.catan.response.GameResponse;
 import com.mygdx.catan.response.MarkedAsReady;
 import com.mygdx.catan.response.PlayerJoined;
 import com.mygdx.catan.response.PlayerLeft;
@@ -36,7 +37,10 @@ public class LobbyScreen implements Screen {
     private Stage stage;
     private Texture bg;
 
+    /** The table that displays all the players currently in this lobby */
     private Table playersTable;
+
+    private TextButton startGameButton;
 
     public LobbyScreen(CatanGame game) {
         this.game = game;
@@ -45,9 +49,15 @@ public class LobbyScreen implements Screen {
             public void received(Connection connection, Object object) {
                 if (object instanceof MarkedAsReady) {
                     Gdx.app.postRunnable(() -> {
-                        final String username = ((MarkedAsReady) object).username;
+                        final MarkedAsReady markedAsReady = (MarkedAsReady) object;
+                        final String username = markedAsReady.getUsername();
                         System.out.println(username + " has been marked as ready.");
+
                         markPlayerAsReady(username);
+
+                        if (markedAsReady.isReadyToStart() && startGameButton != null) {
+                            startGameButton.setDisabled(false);
+                        }
                     });
                 } else if (object instanceof PlayerJoined) {
                     Gdx.app.postRunnable(() -> {
@@ -60,6 +70,14 @@ public class LobbyScreen implements Screen {
                         final String username = ((PlayerLeft) object).username;
                         System.out.printf("%s has left the game\n", username);
                         removePlayer(username);
+                    });
+                } else if (object instanceof GameResponse) {
+                    Gdx.app.postRunnable(() -> {
+                        // Update the current game with the one received from the server, which
+                        // contains the session
+                        GameManager.getInstance().setCurrentGame(((GameResponse) object).getGame());
+                        System.out.printf("Game started! Session: %s\n", GameManager.getInstance().getCurrentGame().session);
+                        game.switchScreen(ScreenKind.IN_GAME);
                     });
                 }
             }
@@ -128,9 +146,10 @@ public class LobbyScreen implements Screen {
 //        chatTable.pack();
 
         TextButton ready = new TextButton("Ready", CatanGame.skin);
-        ready.addListener(new ClickListener() {
+        ready.addListener(new ChangeListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void changed(ChangeEvent event, Actor actor) {
+                ready.setDisabled(true);
                 CatanGame.client.sendTCP(MarkAsReady.newInstance(CatanGame.account.getUsername()));
             }
         });
@@ -139,7 +158,28 @@ public class LobbyScreen implements Screen {
         contentTable.add(mapAndRules).width(400).height(400).expandX();
         contentTable.add(playersAndChatTable).width(400).height(400).expandX().fillX();
         contentTable.row();
-        contentTable.add(ready).height(50).width(400).colspan(2).padTop(20);
+
+        // In case the player is the admin, allow him/her to decide when to start the game
+        if (currentGame != null && CatanGame.account.equals(currentGame.getAdmin())) {
+            // Add the ready button on the left
+            contentTable.add(ready).height(50).width(400).padTop(20);
+
+            // Add the start game button on the right
+            startGameButton = new TextButton("Start Game", CatanGame.skin);
+            startGameButton.padLeft(20).padRight(20);
+            startGameButton.setDisabled(true);
+            startGameButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    // TODO start the game
+                    CatanGame.client.sendTCP(StartGame.newInstance(CatanGame.account.getUsername()));
+                }
+            });
+            contentTable.add(startGameButton).height(50).padTop(20).padRight(40).right();
+        } else {
+            // Add only the ready button, centered on its row
+            contentTable.add(ready).height(50).width(400).padTop(20).colspan(2);
+        }
 
 //        contentTable.pack();
         window.row();
@@ -188,6 +228,11 @@ public class LobbyScreen implements Screen {
         stage.dispose();
     }
 
+    /**
+     * Add a player to the players table
+     *
+     * @param username username of the player
+     */
     private void addPlayer(String username) {
         // Create a table that holds a label containing the player's name
         // The table seems a bit overkill but it's much easier to change its background

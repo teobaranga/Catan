@@ -17,7 +17,7 @@ public class SessionManager {
 
     //TODO: change this to fit design, so far this is only placeholder!
     public SessionManager(int numberOfPlayers) {
-        aSession = new Session(7, 0, 0, numberOfPlayers, 0);
+        aSession = new Session();
     }
 
     public Player[] getPlayers() {
@@ -25,7 +25,7 @@ public class SessionManager {
     }
 
     public Player getCurrentPlayer() {
-        return new Player(new Account("dummy", "dummy"), PlayerColor.ORANGE);
+        return Player.newInstance(new Account("dummy", "dummy"), PlayerColor.ORANGE);
     }
 
     public void showDice() {

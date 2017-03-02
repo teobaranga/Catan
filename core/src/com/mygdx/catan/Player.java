@@ -5,7 +5,6 @@ import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
-import com.mygdx.catan.CoordinatePair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +15,14 @@ public class Player {
     private ArrayList<EdgeUnit> roadsAndShips = new ArrayList<>();
     private ArrayList<Village> villages = new ArrayList<>();
     private int defenderOfCatanPoints;
-    private List<Player> collectionOfPlayers = new ArrayList<>();
 
     private int tokenVictoryPoints;
     private ResourceMap resourceMap = new ResourceMap();
 
-    public Player(Account playerAccount, PlayerColor pColor) {
-        color = pColor;
+    public static Player newInstance(Account account, PlayerColor color) {
+        final Player player = new Player();
+        player.color = color;
+        return player;
     }
 
     public int getDefenderOfCatanPoints() {

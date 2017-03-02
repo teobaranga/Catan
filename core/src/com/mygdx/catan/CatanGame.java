@@ -13,7 +13,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.account.AccountManager;
-import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
@@ -26,6 +26,7 @@ import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.session.SessionScreen;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class CatanGame extends Game {
@@ -47,12 +48,20 @@ public class CatanGame extends Game {
         Kryo kryo = client.getKryo();
 
         kryo.register(Account.class);
+        kryo.register(PlayerColor.class);
+        kryo.register(Player.class);
+        kryo.register(Player[].class);
+        kryo.register(ResourceKind.class);
+        kryo.register(ResourceMap.class);
+        kryo.register(EventKind.class);
+        kryo.register(GamePhase.class);
         kryo.register(com.mygdx.catan.game.Game.class);
         kryo.register(Session.class);
         kryo.register(LoginRequest.class);
         kryo.register(LoginResponse.class);
         kryo.register(JoinRandomGame.class);
         kryo.register(CreateGame.class);
+        kryo.register(StartGame.class);
         kryo.register(GameResponse.class);
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
@@ -61,6 +70,7 @@ public class CatanGame extends Game {
         kryo.register(PlayerJoined.class);
         kryo.register(PlayerLeft.class);
         kryo.register(LinkedHashMap.class);
+        kryo.register(ArrayList.class);
 
         client.start();
 

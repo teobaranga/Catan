@@ -44,7 +44,7 @@ public class AccountManager {
             input.close();
             return account;
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("Cached account not found");
             return null;
         }
     }

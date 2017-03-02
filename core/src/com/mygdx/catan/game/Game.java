@@ -13,9 +13,16 @@ public class Game {
      * Map of game accounts to their latest connection (by ID).
      * Needs to be kept up-to-date because the connection might change.
      */
-    public Map<Account, Integer> peers;
+    public final Map<Account, Integer> peers;
 
-    public Map<Account, Boolean> readyStatus;
+    /**
+     * Map of game accounts to their ready status. The accounts must be
+     * the same ones as in {@link #peers}.
+     */
+    private final Map<Account, Boolean> readyStatus;
+
+    /** The admin of the game, ie. the player who created this game */
+    private Account admin;
 
     public Session session;
 
@@ -43,6 +50,11 @@ public class Game {
     public void removePlayer(Account account) {
         peers.remove(account);
         readyStatus.remove(account);
+        // Update the admin in case the admin was removed
+        if (account == admin) {
+            admin = null;
+            getAdmin();
+        }
     }
 
     public void markAsReady(String username) {
@@ -65,9 +77,52 @@ public class Game {
         return session != null;
     }
 
+    /**
+     * Check if the game is ready to start, ie. if there are at least a few
+     * players in the game and they're all marked as ready.
+     *
+     * @return true if the game is ready to begin, false otherwise
+     */
+    public boolean isReadyToStart() {
+        int readyCount = 0;
+        for (Boolean ready : readyStatus.values()) {
+            System.out.println(ready);
+            if (ready) {
+                readyCount++;
+            } else {
+                return false;
+            }
+        }
+        return readyCount >= Config.MIN_PLAYERS;
+    }
+
+    /**
+     * Get the admin of this game.
+     *
+     * @return the admin, or null if the game has no players
+     */
+    public Account getAdmin() {
+        // Get the admin if already cached
+        if (admin != null)
+            return admin;
+        // No player, return null
+        if (peers.isEmpty())
+            return null;
+        // Update the admin to be the first account
+        final Account[] accounts = peers.keySet().toArray(new Account[Config.MAX_PLAYERS]);
+        admin = accounts[0];
+        return admin;
+    }
+
+    /**
+     * Get the account of a game member
+     *
+     * @param username username of the player
+     * @return the account of the player
+     */
     private Account getAccount(String username) {
         Account playerAccount = null;
-        for (Account account : readyStatus.keySet()) {
+        for (Account account : peers.keySet()) {
             if (account.getUsername().equals(username)) {
                 playerAccount = account;
             }

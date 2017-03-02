@@ -7,7 +7,14 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.mygdx.catan.Config;
+import com.mygdx.catan.GameRules;
+import com.mygdx.catan.Player;
+import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
+import com.mygdx.catan.enums.EventKind;
+import com.mygdx.catan.enums.GamePhase;
+import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
@@ -51,12 +58,20 @@ public class CatanServer {
         // Must be registered in the same order in the client
         Kryo kryo = server.getKryo();
         kryo.register(Account.class);
+        kryo.register(PlayerColor.class);
+        kryo.register(Player.class);
+        kryo.register(Player[].class);
+        kryo.register(ResourceKind.class);
+        kryo.register(ResourceMap.class);
+        kryo.register(EventKind.class);
+        kryo.register(GamePhase.class);
         kryo.register(Game.class);
         kryo.register(Session.class);
         kryo.register(LoginRequest.class);
         kryo.register(LoginResponse.class);
         kryo.register(JoinRandomGame.class);
         kryo.register(CreateGame.class);
+        kryo.register(StartGame.class);
         kryo.register(GameResponse.class);
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
@@ -95,7 +110,9 @@ public class CatanServer {
 
             @Override
             public void disconnected(Connection connection) {
-                disconnectFromGame(connection);
+                final String username = getUsername(connection);
+                if (username != null)
+                    received(connection, LeaveGame.newInstance(username));
             }
 
             @Override
@@ -123,10 +140,12 @@ public class CatanServer {
                         if (forwardedRequest instanceof MarkAsReady) {
                             forwardedResponse = markAsReady(forwardedRequest.username);
                         } else if (forwardedRequest instanceof JoinRandomGame) {
-                            forwardedResponse = PlayerJoined.newInstance(((JoinRandomGame) forwardedRequest).account.getUsername());
+                            forwardedResponse = PlayerJoined.newInstance(forwardedRequest.username);
                         } else if (forwardedRequest instanceof LeaveGame) {
                             disconnectFromGame(connection);
                             forwardedResponse = PlayerLeft.newInstance(forwardedRequest.username);
+                        } else if (forwardedRequest instanceof StartGame) {
+                            forwardedResponse = startGame(forwardedRequest.username);
                         }
 
                         for (Account peer : game.peers.keySet()) {
@@ -147,16 +166,15 @@ public class CatanServer {
     }
 
     private static LoginResponse attemptLogin(LoginRequest request) {
-        // Check if the account exists
-        boolean success = accounts.contains(request.account);
         // Reply to the client with the success status
         final LoginResponse response = new LoginResponse();
-        response.success = success;
+        // Check if the account exists
+        response.success = accounts.contains(request.account);
         return response;
     }
 
     private static GameResponse getRandomGame(Connection connection, Account account) {
-        final GameResponse response = new GameResponse();
+        Game randomGame = null;
         // Go through the games
         if (gamesMap != null) {
             for (Game game : gamesMap.values()) {
@@ -165,31 +183,30 @@ public class CatanServer {
                     // Add the player to the game
                     game.addPlayer(account, connection.getID());
                     gamesMap.put(account.getUsername(), game);
-                    response.game = game;
+                    randomGame = game;
                 }
             }
         }
-        return response;
+        return GameResponse.newInstance(randomGame);
     }
 
     private static GameResponse createNewGame(Connection connection, Account account) {
-        final GameResponse response = new GameResponse();
-
+        // Create the new game
         final Game game = new Game();
         game.addPlayer(account, connection.getID());
 
+        // Associate the player with this game
         gamesMap.put(account.getUsername(), game);
 
-        response.game = game;
-
-        return response;
+        // Return the game response
+        return GameResponse.newInstance(game);
     }
 
     private static MarkedAsReady markAsReady(String username) {
         final Game game = gamesMap.get(username);
         game.markAsReady(username);
 
-        return MarkedAsReady.newInstance(username);
+        return MarkedAsReady.newInstance(username, game.isReadyToStart());
     }
 
     /**
@@ -226,5 +243,30 @@ public class CatanServer {
             gamesMap.remove(username);
             System.out.printf("Removed game from %s\n", username);
         }
+    }
+
+    /**
+     * Start a game by creating a new session.
+     *
+     * @param username username of the admin player requesting to start the game
+     */
+    private static GameResponse startGame(String username) {
+        // Get the game
+        final Game game = gamesMap.get(username);
+        // Create its session
+        game.session = Session.newInstance(game.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
+        // Return the game response containing the game along with its session
+        return GameResponse.newInstance(game);
+    }
+
+    private static String getUsername(Connection connection) {
+        for (Game game : gamesMap.values()) {
+            for (Map.Entry<Account, Integer> accountIntegerEntry : game.peers.entrySet()) {
+                if (accountIntegerEntry.getValue() == connection.getID()) {
+                    return accountIntegerEntry.getKey().getUsername();
+                }
+            }
+        }
+        return null;
     }
 }

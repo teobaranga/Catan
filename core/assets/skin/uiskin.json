@@ -46,7 +46,8 @@
       down: default-round-down,
       up: default-round,
       font: default,
-      fontColor: white
+      fontColor: white,
+      disabled: default-scroll
     },
     toggle: {
       down: default-round-down,

@@ -184,7 +184,7 @@ public class MenuScreen implements Screen {
                         if (object instanceof GameResponse) {
                             Gdx.app.postRunnable(() -> {
                                 // No game found
-                                if (((GameResponse) object).game == null) {
+                                if (((GameResponse) object).getGame() == null) {
                                     // Inform the user
                                     messageLabel.setText("No games found, would you\nlike to create a new one?");
 
@@ -212,7 +212,7 @@ public class MenuScreen implements Screen {
                                     contentTable.add(no).left().padLeft(10).width(50).padTop(20);
                                 } else {
                                     // Set the current game
-                                    GameManager.getInstance().setCurrentGame(((GameResponse) object).game);
+                                    GameManager.getInstance().setCurrentGame(((GameResponse) object).getGame());
                                     // Remove the window
                                     window.close();
                                     // Bring the user to the lobby screen

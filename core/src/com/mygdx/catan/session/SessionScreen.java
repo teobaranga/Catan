@@ -4,19 +4,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
@@ -69,6 +69,8 @@ public class SessionScreen implements Screen {
     private SessionController aSessionController;
 
     private Stage aSessionStage;
+
+    private Stage gameBoardStage;
 
     /** The list of polygons representing the board hexes */
     private List<PolygonRegion> boardHexes;
@@ -215,11 +217,20 @@ public class SessionScreen implements Screen {
     @Override
     public void show() {
         aSessionStage = new Stage();
+        gameBoardStage = new Stage(new ScalingViewport(Scaling.stretch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), new OrthographicCamera()), polyBatch);
 
         // Combine input (click handling) from the InputAdapter and the Stage
         final InputMultiplexer inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(aSessionStage);
         inputMultiplexer.addProcessor(inputAdapter);
+        inputMultiplexer.addProcessor(new GestureDetector(new GestureDetector.GestureAdapter() {
+            @Override
+            public boolean pan(float x, float y, float deltaX, float deltaY) {
+                gameBoardStage.getCamera().translate(-deltaX, deltaY, 0);
+                gameBoardStage.getCamera().update();
+                return false;
+            }
+        }));
         Gdx.input.setInputProcessor(inputMultiplexer);
 
         // resource table
@@ -275,7 +286,9 @@ public class SessionScreen implements Screen {
         for (Hex hex : aSessionController.getHexes()) {
             offsetX = hex.getLeftCoordinate();
             offsetY = hex.getRightCoordinate();
-            boardHexes.add(gamePieces.createHexagon((offsetX * OFFX), -(offsetY * OFFY), LENGTH, BASE, hex.getKind()));
+            final PolygonRegion hexagon = gamePieces.createHexagon((offsetX * OFFX), -(offsetY * OFFY), LENGTH, BASE, hex.getKind());
+//            boardHexes.add(hexagon);
+            gameBoardStage.addActor(new PolygonActor(hexagon));
         }
         
         // places robber at initial robber position
@@ -428,6 +441,8 @@ public class SessionScreen implements Screen {
         }
         polyBatch.draw(robber, boardOrigin.getLeft(), boardOrigin.getRight());
         polyBatch.end();
+
+        gameBoardStage.draw();
 
         aSessionStage.act(delta);
         aSessionStage.draw();

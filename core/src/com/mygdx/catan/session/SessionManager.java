@@ -6,16 +6,24 @@ import com.mygdx.catan.ResourceMap;
 import java.util.ArrayList;
 
 public class SessionManager {
+
+    private static SessionManager instance;
     private Session aSession;
     
     //FIXME SessionScreens must be in SessionController
-    private ArrayList<SessionScreen> sessionScreens = new ArrayList<SessionScreen>();
+    private ArrayList<SessionScreen> sessionScreens = new ArrayList<>();
 
     public Session getSession() { return this.aSession; }
 
     //TODO: change this to fit design, so far this is only placeholder!
-    public SessionManager(int numberOfPlayers) {
+    private SessionManager() {
         aSession = new Session();
+    }
+
+    public static SessionManager getInstance() {
+        if (instance == null)
+            instance = new SessionManager();
+        return instance;
     }
 
     public Player[] getPlayers() {

@@ -14,13 +14,10 @@ import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.account.AccountManager;
 import com.mygdx.catan.enums.ScreenKind;
-import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.screens.create.CreateScreen;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
-import com.mygdx.catan.session.SessionController;
-import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.session.SessionScreen;
 
 import java.io.IOException;
@@ -57,8 +54,6 @@ public class CatanGame extends Game {
     }
 
     public SpriteBatch batch;
-    private GameBoardManager aGameBoardManager = new GameBoardManager();
-    private SessionManager aSessionManager = new SessionManager(4);
 
     @Override
     public void create() {
@@ -141,11 +136,7 @@ public class CatanGame extends Game {
                 setScreen(new CreateScreen(this, new MenuScreen(this)));
             case IN_GAME:
                 //this.setScreen(new CreateScreen(this, menuScreen));
-                SessionController sc = new SessionController(aGameBoardManager, aSessionManager);
-                SessionScreen screen = new SessionScreen(this);
-                sc.setSessionScreen(screen);
-                screen.setSessionController(sc);
-                setScreen(screen);
+                setScreen(new SessionScreen(this));
                 break;
             case LOBBY:
                 setScreen(new LobbyScreen(this));
@@ -155,13 +146,5 @@ public class CatanGame extends Game {
             default:
                 break;
         }
-    }
-
-    public GameBoardManager getGameBoardManager() {
-        return aGameBoardManager;
-    }
-
-    public SessionManager getSessionManager() {
-        return aSessionManager;
     }
 }

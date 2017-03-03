@@ -27,7 +27,7 @@ import java.util.List;
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
     private final SessionManager aSessionManager;
-    private SessionScreen aSessionScreen;
+    private final SessionScreen aSessionScreen;
     private PlayerColor aPlayerColor;
     private final Listener aSessionListener;
 
@@ -39,9 +39,10 @@ public class SessionController {
         aPlayerColor = pc;
     }
 
-    public SessionController(GameBoardManager gbm, SessionManager sm) {
-        aGameBoardManager = gbm;
-        aSessionManager = sm;
+    public SessionController(SessionScreen sessionScreen) {
+        aSessionScreen = sessionScreen;
+        aGameBoardManager = GameBoardManager.getInstance();
+        aSessionManager = SessionManager.getInstance();
         aSessionListener = new Listener() {
             @Override
             public void received(Connection connection, Object object) {
@@ -79,10 +80,6 @@ public class SessionController {
 
     public int getRedDice() {
         return aSessionManager.getRedDice();
-    }
-
-    public void setSessionScreen(SessionScreen s) {
-        aSessionScreen = s;
     }
 
     public ArrayList<Hex> getHexes() {

@@ -6,11 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
-import com.badlogic.gdx.graphics.g2d.PolygonSprite;
-import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -19,15 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.GameRules;
 import com.mygdx.catan.enums.TerrainKind;
-import com.mygdx.catan.gameboard.GameBoardManager;
-import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
-import com.mygdx.catan.session.SessionController;
-import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.ui.CatanWindow;
-
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.ArrayList;
@@ -68,7 +58,6 @@ public class CreateScreen implements Screen {
     private Pair<Integer, Integer>[] aHexPositions;
     private int[] aIntersectionPositions;
     private int[] aHexKindSetup;
-    SessionController sessionController;
     /**
      * The list of polygons representing the board hexes
      */
@@ -80,7 +69,6 @@ public class CreateScreen implements Screen {
     private MutablePair<Integer, Integer> boardOrigin;
 
     public CreateScreen(CatanGame pGame, Screen parentScreen) {
-        sessionController = new SessionController(new GameBoardManager(), new SessionManager(1));
         this.parentScreen = parentScreen;
         game = pGame;
         boardHexes = new ArrayList<>();
@@ -192,15 +180,6 @@ public class CreateScreen implements Screen {
 
         int offsetX, offsetY;
 
-        // draws hexagons according to coordinates stored in aHexPositions and hex kinds stored in aHexKindSetup
-        for (Hex hex : sessionController.getHexes()) {
-            offsetX = (hex.getLeftCoordinate());
-            offsetY = (hex.getRightCoordinate());
-            createHexagon(xCenter + (offsetX * OFFX), yCenter - (offsetY * OFFY), LENGTH, BASE, hex.getKind());
-        }
-
-
-
         contentTable.pack();
         window.row().fill().expand();
         contentTable.setSize(900, 600);
@@ -239,15 +218,6 @@ public class CreateScreen implements Screen {
         int yCenter = 52 * Gdx.graphics.getHeight() / 90;
 
         fontBatch.begin();
-        for (Hex hex : sessionController.getHexes()) {
-            Integer prob = GameRules.getGameRulesInstance().getDiceNumber(hex);
-            if (prob != 0 && prob != null) {
-                //FIXME: screen center coordinates do not work as expected? (fix centering of boardgame)
-                float xPos =  (float) (xCenter + (hex.getLeftCoordinate() * OFFX));
-                float yPos = (float) (yCenter - (hex.getRightCoordinate() * OFFY));
-                CatanGame.skin.getFont("default").draw(fontBatch, prob.toString(), xPos, yPos);
-            }
-        }
         fontBatch.end();
 
     }

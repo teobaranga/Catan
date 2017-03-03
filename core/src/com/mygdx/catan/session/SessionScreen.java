@@ -90,8 +90,6 @@ public class SessionScreen implements Screen {
 
     private Stage aSessionStage;
 
-    private Texture bg;
-
     /** The list of polygons representing the board hexes */
     private List<PolygonRegion> boardHexes;
 
@@ -115,7 +113,7 @@ public class SessionScreen implements Screen {
     private boolean initializing;
     
     /** The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE*/
-    private ArrayList<CoordinatePair> validIntersections = new ArrayList<CoordinatePair>();
+    private ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
     private ArrayList<Pair<CoordinatePair,CoordinatePair>> validEdges = new ArrayList<>();
     
     /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
@@ -165,7 +163,7 @@ public class SessionScreen implements Screen {
                                 //TODO: show a transparent version of settlement on validIntersection 
                                 for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
                                     if (aSessionController.isAdjacent(validIntersection, i) && !i.isOccupied()) {
-                                        validEdges.add(new MutablePair<CoordinatePair,CoordinatePair>(i,validIntersection));
+                                        validEdges.add(new MutablePair<>(i,validIntersection));
                                     }
                                 }
                                 initSettlementIntersection = validIntersection;
@@ -235,9 +233,6 @@ public class SessionScreen implements Screen {
 
     @Override
     public void show() {
-        bg = new Texture("BG.png");
-        bg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
         aSessionStage = new Stage();
 
         // Combine input (click handling) from the InputAdapter and the Stage
@@ -291,7 +286,7 @@ public class SessionScreen implements Screen {
 
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
-        aDesertTextureSolid = setupTextureSolid(Color.DARK_GRAY);
+        aDesertTextureSolid = setupTextureSolid(Color.GOLDENROD);
         aHillsTextureSolid = setupTextureSolid(colorMap.get("brick"));
         aForestTextureSolid = setupTextureSolid(colorMap.get("wood"));
         aMountainTextureSolid = setupTextureSolid(colorMap.get("ore"));
@@ -444,13 +439,9 @@ public class SessionScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        // Set the background color
+        Gdx.gl.glClearColor(0.24706f, 0.24706f, 0.24706f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        // Display the background
-        aGame.batch.begin();
-        aGame.batch.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        aGame.batch.end();
         
         // Display the board hexes and game pieces and dice number tokens
         polyBatch.begin();
@@ -506,7 +497,6 @@ public class SessionScreen implements Screen {
 
     @Override
     public void dispose() {
-        bg.dispose();
         aSessionStage.dispose();
     }
 

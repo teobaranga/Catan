@@ -1,5 +1,18 @@
 package com.mygdx.catan;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.mygdx.catan.account.Account;
+import com.mygdx.catan.enums.EventKind;
+import com.mygdx.catan.enums.GamePhase;
+import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.request.*;
+import com.mygdx.catan.response.*;
+import com.mygdx.catan.session.Session;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
 public class Config {
     /** TCP port used when connecting to the server */
     public static final int TCP = 54555;
@@ -18,4 +31,31 @@ public class Config {
 
     /** The IP of the server. All clients need to connect to this IP. */
     static final String IP = "localhost";
+
+    public static void registerKryoClasses(Kryo kryo) {
+        kryo.register(Account.class);
+        kryo.register(PlayerColor.class);
+        kryo.register(Player.class);
+        kryo.register(Player[].class);
+        kryo.register(ResourceKind.class);
+        kryo.register(ResourceMap.class);
+        kryo.register(EventKind.class);
+        kryo.register(GamePhase.class);
+        kryo.register(com.mygdx.catan.game.Game.class);
+        kryo.register(Session.class);
+        kryo.register(LoginRequest.class);
+        kryo.register(LoginResponse.class);
+        kryo.register(JoinRandomGame.class);
+        kryo.register(CreateGame.class);
+        kryo.register(StartGame.class);
+        kryo.register(GameResponse.class);
+        kryo.register(MarkAsReady.class);
+        kryo.register(MarkedAsReady.class);
+        kryo.register(ForwardedRequest.class);
+        kryo.register(LeaveGame.class);
+        kryo.register(PlayerJoined.class);
+        kryo.register(PlayerLeft.class);
+        kryo.register(LinkedHashMap.class);
+        kryo.register(ArrayList.class);
+    }
 }

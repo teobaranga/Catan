@@ -8,13 +8,7 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.mygdx.catan.Config;
 import com.mygdx.catan.GameRules;
-import com.mygdx.catan.Player;
-import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
-import com.mygdx.catan.enums.EventKind;
-import com.mygdx.catan.enums.GamePhase;
-import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
@@ -24,7 +18,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CatanServer {
 
@@ -57,30 +54,7 @@ public class CatanServer {
         // Register request & response classes (needed for networking)
         // Must be registered in the same order in the client
         Kryo kryo = server.getKryo();
-        kryo.register(Account.class);
-        kryo.register(PlayerColor.class);
-        kryo.register(Player.class);
-        kryo.register(Player[].class);
-        kryo.register(ResourceKind.class);
-        kryo.register(ResourceMap.class);
-        kryo.register(EventKind.class);
-        kryo.register(GamePhase.class);
-        kryo.register(Game.class);
-        kryo.register(Session.class);
-        kryo.register(LoginRequest.class);
-        kryo.register(LoginResponse.class);
-        kryo.register(JoinRandomGame.class);
-        kryo.register(CreateGame.class);
-        kryo.register(StartGame.class);
-        kryo.register(GameResponse.class);
-        kryo.register(MarkAsReady.class);
-        kryo.register(MarkedAsReady.class);
-        kryo.register(ForwardedRequest.class);
-        kryo.register(LeaveGame.class);
-        kryo.register(PlayerJoined.class);
-        kryo.register(PlayerLeft.class);
-        kryo.register(LinkedHashMap.class);
-        kryo.register(ArrayList.class);
+        Config.registerKryoClasses(kryo);
 
         // Create the default accounts if they don't exist
         File accountsDatabase = new File(ACCOUNTS_DB);

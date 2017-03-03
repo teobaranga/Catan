@@ -25,6 +25,7 @@ public class GameBoard {
 	public GameBoard() throws Exception {
 		hexes = new ArrayList<>();
 		aIntersectionPositions = new ArrayList<>();
+		aRoadsAndShips = new ArrayList<>();
 
 		HashMap<Integer,TerrainKind> aHexKindSetup = GameRules.getGameRulesInstance().getDefaultTerrainKindMap();
 		HashMap<Integer,Integer> aDiceNumberSetup = GameRules.getGameRulesInstance().getDefaultDiceNumberMap();

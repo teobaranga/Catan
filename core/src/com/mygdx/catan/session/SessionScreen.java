@@ -116,7 +116,7 @@ public class SessionScreen implements Screen {
     
     /** The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE*/
     private ArrayList<CoordinatePair> validIntersections = new ArrayList<CoordinatePair>();
-    private ArrayList<Pair<Pair<Integer,Integer>,Pair<Integer,Integer>>> validEdges = new ArrayList<>();
+    private ArrayList<Pair<CoordinatePair,CoordinatePair>> validEdges = new ArrayList<>();
     
     /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
     private VillageKind villagePieceKind;
@@ -125,6 +125,8 @@ public class SessionScreen implements Screen {
     /** Menu Buttons */
     private TextButton buildSettlementButton;
     private TextButton buildCityButton;
+    private TextButton buildRoadButton;
+    private TextButton buildShipButton;
 
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
@@ -165,6 +167,31 @@ public class SessionScreen implements Screen {
 
                             return true;
                         }
+                    }
+                } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
+                    for (Pair<CoordinatePair,CoordinatePair> validEdge : validEdges) {
+                        int xMin = Math.min(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
+                        int xMax = Math.max(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
+                        int yMin = Math.min(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
+                        int yMax = Math.max(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
+                        
+                        if (screenX > boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE - 10 &&
+                                screenX < boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE + 10 &&
+                                screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
+                                screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
+                            
+                            //TODO: call buildEdgePiece method in SessionController and delete following
+                            updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, PlayerColor.WHITE);
+                            
+                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                            
+                            buildRoadButton.setText("Build Road");
+                            buildShipButton.setText("Build Ship");
+                            
+                            validEdges.clear();
+                            
+                            return true;
+                        }        
                     }
                 }
                 return false;
@@ -217,6 +244,15 @@ public class SessionScreen implements Screen {
         buildCityButton.pad(0, 10, 0, 10);
         menuTable.add(buildCityButton).padBottom(10).row();
         
+        buildRoadButton = new TextButton("Build Road", CatanGame.skin);
+        setupBuildEdgeUnitButton(buildRoadButton, EdgeUnitKind.ROAD, "Build Road");
+        buildRoadButton.pad(0, 10, 0, 10);
+        menuTable.add(buildRoadButton).padBottom(10).row();
+        
+        buildShipButton = new TextButton("Build Ship", CatanGame.skin);
+        setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP, "Build Ship");
+        buildShipButton.pad(0, 10, 0, 10);
+        menuTable.add(buildShipButton).padBottom(10).row();
 
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
@@ -312,26 +348,33 @@ public class SessionScreen implements Screen {
                     // make the following loop go through requested valid build positions
                     for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
                         
-                        Pair<Integer,Integer> e0 = new MutablePair(i.getLeft(),i.getRight());
-                        Pair<Integer,Integer> e1 = new MutablePair(i.getLeft(),i.getRight() - 2);
-                        Pair<Integer,Integer> e2 = new MutablePair(i.getLeft() - 1,i.getRight() + 1);
-                        Pair<Integer,Integer> e3 = new MutablePair(i.getLeft() + 1,i.getRight() + 1);
-                        
-                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r1 = new MutablePair<>(e0, e1);
-                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r2 = new MutablePair<>(e0, e2);
-                        Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> r3 = new MutablePair<>(e0, e3);
-                        
-                        validEdges.add(r1);
-                        validEdges.add(r2);
-                        validEdges.add(r3);
-                        
-                        for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
-                            if (eu.hasEndpoint(i) && eu.hasEndpoint(e1.getLeft(), e1.getRight())) { validEdges.remove(r1); }
-                            if (eu.hasEndpoint(i) && eu.hasEndpoint(e2.getLeft(), e2.getRight())) { validEdges.remove(r2); }
-                            if (eu.hasEndpoint(i) && eu.hasEndpoint(e3.getLeft(), e3.getRight())) { validEdges.remove(r3); }
+                        for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
+                            if (kind == EdgeUnitKind.ROAD){
+                                if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i,j)) {
+                                    
+                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i,j);
+                                    validEdges.add(edge);
+                                    
+                                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                                            validEdges.remove(edge);
+                                        }
+                                    }
+                                }
+                            } else {
+                                if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i,j)) {
+                                    
+                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i,j);
+                                    validEdges.add(edge);
+                                    
+                                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                                            validEdges.remove(edge);
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        
-                        //TODO remove edges that are in water
                         
                         //TODO make a sprite that highlights the areas
                     }
@@ -339,7 +382,7 @@ public class SessionScreen implements Screen {
                     edgePieceKind = kind;
                     buildButton.setText("Cancel");
                 } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
-                    
+                    validEdges.clear();
                     buildButton.setText(buttonText);
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                 }

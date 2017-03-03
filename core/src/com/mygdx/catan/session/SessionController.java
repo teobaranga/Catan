@@ -110,8 +110,25 @@ public class SessionController {
      * @param b another intersection
      * @return true if a and b are adjacent
      * */
-    private boolean isAdjacent (CoordinatePair a, CoordinatePair b) {
-        return (Math.abs(a.getLeft() - b.getLeft()) + Math.abs(a.getRight() - b.getRight()) == 2);
+    public boolean isAdjacent (CoordinatePair a, CoordinatePair b) {
+        return (Math.abs(a.getLeft() - b.getLeft()) + Math.abs(a.getRight() - b.getRight()) == 2) && a.getRight() != b.getRight();
+    }
+    
+    /**
+     * @param intersection checks if this intersection is on land
+     * @return true if on land
+     * */
+    public boolean isOnLand(CoordinatePair intersection) {
+        return aGameBoardManager.isOnLand(intersection);
+    }
+    
+    /**
+     * @param first intersection
+     * @param second intersection
+     * @return true if the edge between the two intersections is on land (assumes the two intersections are adjacent)
+     * */
+    public boolean isOnLand(CoordinatePair firstIntersection, CoordinatePair secondIntersection) {
+        return aGameBoardManager.isOnLand(firstIntersection, secondIntersection);
     }
 
     
@@ -321,14 +338,7 @@ public class SessionController {
             return;
         }
 
-        List<Hex> neighbourHexes = new ArrayList<>();
-        List<Hex> hexes = aGameBoardManager.getHexes();
-
-        for (Hex h : hexes) {
-            if (h.isAdjacent(cityPos)) {
-                neighbourHexes.add(h);
-            }
-        }
+        List<Hex> neighbourHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
 
         ResourceMap cost = new ResourceMap();
         Integer curr;
@@ -355,6 +365,8 @@ public class SessionController {
                     cost.put(ResourceKind.WOOL, (curr == null ? 0 : curr) + 1);
                     break;
                 // GOLDFIELDS ?
+            default:
+                break;
             }
         }
        // cp.addResources(cost); getPLayerByColor(aPlayerColor).addResources(cost);

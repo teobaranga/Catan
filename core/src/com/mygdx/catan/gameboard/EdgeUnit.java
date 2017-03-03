@@ -41,7 +41,7 @@ public class EdgeUnit {
 	 * */
 	public void moveShip (CoordinatePair newFirstCoordinate, CoordinatePair newSecondCoordinate) {
 		
-		boolean areAdjacent = (Math.abs(newFirstCoordinate.getLeft() - newSecondCoordinate.getLeft()) + Math.abs(newFirstCoordinate.getRight() - newSecondCoordinate.getRight()) == 2); 
+		boolean areAdjacent = (Math.abs(newFirstCoordinate.getLeft() - newSecondCoordinate.getLeft()) + Math.abs(newFirstCoordinate.getRight() - newSecondCoordinate.getRight()) == 2 && newFirstCoordinate.getRight() != newSecondCoordinate.getRight()); 
 		if (kind != EdgeUnitKind.SHIP || !areAdjacent) {return;}
 		
 		aFirstCoordinate = newFirstCoordinate;

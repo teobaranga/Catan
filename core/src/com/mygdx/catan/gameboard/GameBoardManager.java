@@ -174,7 +174,7 @@ public class GameBoardManager{
      * @return true if on land
      * */
 	public boolean isOnLand (CoordinatePair intersection){
-	    for (Hex h: aGameBoard.getHexes()) {
+	    /*for (Hex h: aGameBoard.getHexes()) {
             for (Hex i : aGameBoard.getHexes()) {
                 for (Hex j:aGameBoard.getHexes()) {
                     if (((h.getLeftCoordinate() - 1) == (intersection.getLeft())) &&
@@ -193,7 +193,60 @@ public class GameBoardManager{
                 }
             }
         }
-        return true;
+        return true;*/
+	    int landHexes = 0;
+	    for (Hex h : getNeighbouringHexes(intersection)) {
+	        if (h.getKind() == TerrainKind.SEA) { landHexes++; }
+	    }
+	    System.out.println(landHexes);
+	    return landHexes < 3;
     }
+	
+	/**
+	 * @param first intersection
+	 * @param second intersection
+	 * @return true if the edge between the two intersections is on land (assumes the two intersections are adjacent)
+	 * */
+	public boolean isOnLand(CoordinatePair firstIntersection, CoordinatePair secondIntersection) {
+	    int landHexes = 0;
+	    for (Hex h : getNeighbouringHexes(firstIntersection, secondIntersection)) {
+	        if (h.getKind() == TerrainKind.SEA) { landHexes++; }
+	    }
+	    
+	    return landHexes < 2;
+	}
+	
+	/**
+	 * @param intersection i
+	 * @return all hexes adjacent to intersection i
+	 * */
+	public ArrayList<Hex> getNeighbouringHexes(CoordinatePair i) {
+	    ArrayList<Hex> nhexes = new ArrayList<Hex>();
+	    
+	    for (Hex h : aGameBoard.getHexes()) {
+	        if (h.isAdjacent(i)) {
+	            nhexes.add(h);
+	        }
+	    }
+	    
+	    return nhexes;
+	}
+	
+	/**
+	 * @param first intersection
+	 * @param second intersection
+	 * @return all hexes adjacent to both the first and second intersections
+	 * */
+	public ArrayList<Hex> getNeighbouringHexes(CoordinatePair firstIntersection, CoordinatePair secondIntersection) {
+	    ArrayList<Hex> nhexes = new ArrayList<Hex>();
+	    
+	    for (Hex h : aGameBoard.getHexes()) {
+	        if (h.isAdjacent(firstIntersection) && h.isAdjacent(secondIntersection)) {
+	            nhexes.add(h);
+	        }
+	    }
+	    
+	    return nhexes;
+	}
 
 }

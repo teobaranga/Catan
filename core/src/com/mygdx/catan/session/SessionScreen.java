@@ -295,7 +295,7 @@ public class SessionScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 initButton.setChecked(false);
                 initButton.setText("Initializing");
-                initialize();
+                initialize(false);
             }
         });
     }
@@ -656,13 +656,14 @@ public class SessionScreen implements Screen {
     /**
      * triggers initialization mode. All other actions are blocked until an intersection and an edge has been chosen
      * */
-    public void initialize() {
+    public void initialize(boolean firstInit) {
         aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
         initializing = true;
         for (CoordinatePair i : aSessionController.requestValidInitializationBuildIntersections()) {
             validIntersections.add(i);
         }
-        villagePieceKind = VillageKind.SETTLEMENT;
+        if (firstInit) {villagePieceKind = VillageKind.SETTLEMENT;}
+        else {villagePieceKind = VillageKind.CITY;}
         edgePieceKind = EdgeUnitKind.ROAD;
     }
     

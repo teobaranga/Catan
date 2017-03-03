@@ -61,7 +61,6 @@ public class SessionScreen implements Screen {
     private final CatanGame aGame;
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-    private final int SIZE = GameRules.getGameRulesInstance().getSize();      // number of tiles at longest diagonal
     private final int LENGTH = 40;                                            // length of an edge of a tile
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
     private final int OFFX = BASE;                                            // offset on the x axis
@@ -113,6 +112,7 @@ public class SessionScreen implements Screen {
     
     /** determines the current mode of the session screen */
     private SessionScreenModes aMode;
+    private boolean initializing;
     
     /** The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE*/
     private ArrayList<CoordinatePair> validIntersections = new ArrayList<CoordinatePair>();
@@ -121,12 +121,15 @@ public class SessionScreen implements Screen {
     /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
     private VillageKind villagePieceKind;
     private EdgeUnitKind edgePieceKind;
+    private CoordinatePair initSettlementIntersection;
     
     /** Menu Buttons */
     private TextButton buildSettlementButton;
     private TextButton buildCityButton;
     private TextButton buildRoadButton;
     private TextButton buildShipButton;
+    
+    private TextButton aInitButton;
 
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
@@ -141,6 +144,7 @@ public class SessionScreen implements Screen {
         edgeUnits = new ArrayList<>();
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new HashMap<>();
+        initializing = false;
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         
         // sets the initializing mode of the session screen (VIEWMODE). set to CHOOSEACTIONMODE for testing purposes 
@@ -156,11 +160,22 @@ public class SessionScreen implements Screen {
                                 screenY > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
                                 screenY < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
 
-                            //TODO: call buildVillage method in SessionController and delete following
-                            updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
-
-                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
-
+                            if (initializing) {
+                                aMode = SessionScreenModes.CHOOSEEDGEMODE;
+                                //TODO: show a transparent version of settlement on validIntersection 
+                                for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
+                                    if (aSessionController.isAdjacent(validIntersection, i) && !i.isOccupied()) {
+                                        validEdges.add(new MutablePair<CoordinatePair,CoordinatePair>(i,validIntersection));
+                                    }
+                                }
+                                initSettlementIntersection = validIntersection;
+                            } else {
+                                aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                                
+                                //TODO: call buildVillage method in SessionController and delete following
+                                updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
+                            }
+                            
                             buildSettlementButton.setText("Build Settlement");
                             buildCityButton.setText("Build City");
                             validIntersections.clear();
@@ -180,10 +195,25 @@ public class SessionScreen implements Screen {
                                 screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
                                 screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
                             
-                            //TODO: call buildEdgePiece method in SessionController and delete following
-                            updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, PlayerColor.WHITE);
+                           
                             
-                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                            if (initializing) {
+                                aMode = SessionScreenModes.VIEWMODE;
+                                if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
+                                    edgePieceKind = EdgeUnitKind.SHIP;
+                                }
+                                //TODO: call placeCityAndRoad method in SessionController and delete following
+                                updateIntersection(initSettlementIntersection, PlayerColor.ORANGE, villagePieceKind);
+                                updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, PlayerColor.ORANGE);
+                                
+                                initializing = false;
+                                aInitButton.setText("Done");
+                            } else {
+                                //TODO: call buildEdgePiece method in SessionController and delete following
+                                updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, PlayerColor.WHITE);
+                                
+                                aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                            }
                             
                             buildRoadButton.setText("Build Road");
                             buildShipButton.setText("Build Ship");
@@ -220,7 +250,7 @@ public class SessionScreen implements Screen {
         Table contentTable = new Table(CatanGame.skin);
         contentTable.setBackground("resTableBackground");
         contentTable.setSize(550, 120);
-        contentTable.setPosition(400, 20);
+        contentTable.setPosition(350, 10);
 
         for (Map.Entry<String, Color> entry : colorMap.entrySet()) {
             Table aTable = createResourceTable(entry.getKey());
@@ -231,28 +261,33 @@ public class SessionScreen implements Screen {
         Table menuTable = new Table(CatanGame.skin);
         menuTable.setBackground("resTableBackground");
         menuTable.setSize(200, 300);
-        menuTable.setPosition(20, 20);
+        menuTable.setPosition(10, 10);
         
         // creates the menu buttons TODO:remainder of buttons
         buildSettlementButton = new TextButton("Build Settlement",CatanGame.skin);
-        setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT, "Build Settlement");
+        setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT);
         buildSettlementButton.pad(0, 10, 0, 10);
         menuTable.add(buildSettlementButton).padBottom(10).row();
         
         buildCityButton = new TextButton("Build City",CatanGame.skin);
-        setupBuildVillageButton(buildCityButton, VillageKind.CITY, "Build City");
+        setupBuildVillageButton(buildCityButton, VillageKind.CITY);
         buildCityButton.pad(0, 10, 0, 10);
         menuTable.add(buildCityButton).padBottom(10).row();
         
         buildRoadButton = new TextButton("Build Road", CatanGame.skin);
-        setupBuildEdgeUnitButton(buildRoadButton, EdgeUnitKind.ROAD, "Build Road");
+        setupBuildEdgeUnitButton(buildRoadButton, EdgeUnitKind.ROAD);
         buildRoadButton.pad(0, 10, 0, 10);
         menuTable.add(buildRoadButton).padBottom(10).row();
         
         buildShipButton = new TextButton("Build Ship", CatanGame.skin);
-        setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP, "Build Ship");
+        setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP);
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
+        
+        //TODO: DELETE FOLLOWING TEST BUTTON
+        aInitButton = new TextButton("Init",CatanGame.skin);
+        setupInitButton(aInitButton);
+        menuTable.add(aInitButton);
 
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
@@ -290,31 +325,23 @@ public class SessionScreen implements Screen {
             updateRobberPosition(robberPos);
         }
 
-        // for testing purposes, puts a settlement on every intersection of the board //TODO remove when done
-        //int i = 0;
-        //for (CoordinatePair coor : aSessionController.getIntersectionsAndEdges()) {
-        //    updateIntersection(coor, PlayerColor.values()[i++ % 5], VillageKind.values()[i%3]);
-        //}
-
-        // for testing purposes, removes some arbitrary village //TODO remove when done
-        removeVillage(1, -1);
-        removeVillage(2, -2);
-        removeVillage(0, -2);
-        removeVillage(1, 1);
-        removeVillage(2, 2);
-        createRoad(1, -1, 2, -2, PlayerColor.WHITE);
-        createRoad(0, -2, 1, -1, PlayerColor.WHITE);
-        createRoad(1, 1, 2, 2, PlayerColor.RED);
-        createRoad(0, 2, 1, 1, PlayerColor.ORANGE);
-        createRoad(1, -1, 1, 1, PlayerColor.WHITE);
-        removeEdgeUnit(1, -1, 2, -2);
-        createShip(0, 2, 0, 4, PlayerColor.RED);
-
         aSessionStage.addActor(contentTable);
         aSessionStage.addActor(menuTable);
     }
 
-    private void setupBuildVillageButton(TextButton buildButton, VillageKind kind, String buttonText) {
+    
+    private void setupInitButton(TextButton initButton) {
+        initButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                initButton.setChecked(false);
+                initButton.setText("Initializing");
+                initialize();
+            }
+        });
+    }
+    
+    private void setupBuildVillageButton(TextButton buildButton, VillageKind kind) {
         buildButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -329,16 +356,17 @@ public class SessionScreen implements Screen {
                     aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
                     villagePieceKind = kind;
                     buildButton.setText("Cancel");
-                } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
+                } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE && !initializing) {
                     validIntersections.clear();
-                    buildButton.setText(buttonText);
+                    buildSettlementButton.setText("Build Settlement");
+                    buildCityButton.setText("Build City");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                 }
             }
         });
     }
     
-    private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind, String buttonText) {
+    private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind) {
         buildButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -381,9 +409,10 @@ public class SessionScreen implements Screen {
                     aMode = SessionScreenModes.CHOOSEEDGEMODE;
                     edgePieceKind = kind;
                     buildButton.setText("Cancel");
-                } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
+                } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE && !initializing) {
                     validEdges.clear();
-                    buildButton.setText(buttonText);
+                    buildRoadButton.setText("Build Road");
+                    buildShipButton.setText("Build Ship");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                 }
             }
@@ -1145,6 +1174,26 @@ public class SessionScreen implements Screen {
         }
     }
 
+    /**
+     * triggers initialization mode. All other actions are blocked until an intersection and an edge has been chosen
+     * */
+    public void initialize() {
+        aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+        initializing = true;
+        for (CoordinatePair i : aSessionController.requestValidInitializationBuildIntersections()) {
+            validIntersections.add(i);
+        }
+        villagePieceKind = VillageKind.SETTLEMENT;
+        edgePieceKind = EdgeUnitKind.ROAD;
+    }
+    
+    /**
+     * unlocks menu build bar. IMPORTANT: DO NOT GIVE TURN AT INITIALIZATION
+     * */
+    public void giveTurn() {
+        aMode = SessionScreenModes.CHOOSEACTIONMODE;
+    }
+    
     /**
      * moves the robber to given position
      *

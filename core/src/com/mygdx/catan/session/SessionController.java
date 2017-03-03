@@ -192,7 +192,7 @@ public class SessionController {
     
     /**
      * @param owner of requested valid intersections
-     * @return a list of all the intersections that are (1) connected to road owned by player and (2) not adjacent to another village and (3) on land
+     * @return a list of all the intersections that are (1) connected to road owned by player and (2) not adjacent to another village and (3) on land (3) unoccupied
      * */
     public ArrayList<CoordinatePair> requestValidBuildIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
@@ -211,6 +211,7 @@ public class SessionController {
 
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
         for (CoordinatePair i: aGameBoardManager.getIntersectionsAndEdges()) {
+            //FIXME: only verifies that i is not adjacent to a village owned by current player! we need it to verify this for all the villages
             for (Village v: listOfVillages) {
                 for (EdgeUnit e: listOfEdgeUnits) {
                     if ( !isAdjacent(i, v.getPosition()) && (!e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
@@ -222,6 +223,25 @@ public class SessionController {
             //need to iterate through all players edge units and make sure i is on an edge unit
             //need to check it its on land
         }
+        return validIntersections;
+    }
+    
+    /**
+     * Method to be called at initialization
+     * 
+     * @return a list of all the intersections that are (1) unoccupied and (2) not adjacent to another occupied intersection
+     * */
+    public ArrayList<CoordinatePair> requestValidInitializationBuildIntersections() {
+        ArrayList<CoordinatePair> validIntersections = new ArrayList<CoordinatePair>();
+        
+        for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
+            for (CoordinatePair j : aGameBoardManager.getIntersectionsAndEdges()) {
+                if (!i.isOccupied() && (!j.isOccupied() || !isAdjacent(i,j))) {
+                    validIntersections.add(i);
+                }
+            }
+        }
+        
         return validIntersections;
     }
     

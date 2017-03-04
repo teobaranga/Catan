@@ -21,7 +21,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.CatanRandom;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
@@ -34,11 +33,8 @@ import com.mygdx.catan.enums.SessionScreenModes;
 import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
-import com.mygdx.catan.request.RollDice;
-import com.mygdx.catan.request.RollTwoDice;
 import com.mygdx.catan.ui.TradeWindow;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -297,19 +293,10 @@ public class SessionScreen implements Screen {
         rollDiceButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                int yellowDice = CatanRandom.getInstance().nextDie();
-                int redDice = CatanRandom.getInstance().nextDie();
-
-                //TODO: FIRE FOLLOWING MSG TO SERVER.
-                Pair diceResults = new ImmutablePair<Integer, Integer>(yellowDice,redDice);
-                RollTwoDice diceResultsToSent = RollTwoDice.newInstance(diceResults,"Dummy");
-
-                Map<Player, ResourceMap> diceResourceMap =  aSessionController.rollDice(yellowDice + redDice);
-                //TODO: FIRE FOLLOWING MSG TO SERVER.
-                RollDice diceResourcesToSent = RollDice.newInstance(diceResourceMap,"Dummy");
-
+                Pair<Integer, Integer> diceResults = aSessionController.rollTwoDice();
+                Map<Player, ResourceMap> diceResourceMap =  aSessionController.rollDice(diceResults.getLeft() + diceResults.getRight());
                 updateResourceBar(aSessionController.getOwnresourcesUpdate(diceResourceMap));
-                showDice(yellowDice, redDice);
+                showDice(diceResults.getLeft(), diceResults.getRight());
             }
         });
         menuTable.add(rollDiceButton).padBottom(10).row();

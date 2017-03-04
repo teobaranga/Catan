@@ -474,7 +474,10 @@ public class SessionController {
     public Pair<Integer, Integer> rollTwoDice() {
         int roll1 = rand.nextInt(6) + 1;
         int roll2 = rand.nextInt(6) + 1;
-        return new ImmutablePair<Integer, Integer>(roll1, roll2);
+        Pair<Integer, Integer> diceResults = new ImmutablePair<Integer, Integer>(roll1, roll2);
+        //TODO: FIRE FOLLOWING MSG TO SERVER.
+        RollTwoDice diceResultsToSent = RollTwoDice.newInstance(diceResults,"Dummy");
+        return diceResults;
     }
 
     public Map<Player, ResourceMap> rollDice(int diceRoll) {
@@ -548,6 +551,8 @@ public class SessionController {
                 playerResources.put(villageOwner, ResAndComMap);
             }
         }
+        //TODO: FIRE FOLLOWING MSG TO SERVER.
+        RollDice diceResourcesToSent = RollDice.newInstance(playerResources,"Dummy");
         return playerResources;
     }
     // TODO: set GUI's mode to chooseActionMode for the player who's turn it is

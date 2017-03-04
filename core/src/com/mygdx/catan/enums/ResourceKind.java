@@ -10,5 +10,6 @@ public enum ResourceKind {
     BRICK,
     GRAIN,
     PAPER,
-    CLOTH
+    CLOTH,
+    COIN
 }

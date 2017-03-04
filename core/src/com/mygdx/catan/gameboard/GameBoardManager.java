@@ -165,6 +165,10 @@ public class GameBoardManager {
         return adjacentIntersections;
     }
 
+    public ArrayList<Village> getAdjacentVillages(Hex hex) {
+        throw new RuntimeException("getAdjacentVillages not yet implemented");
+    }
+
     /**
      * @param diceNumber of dice roll
      * @return a list of hexes whose dice number equals diceNumber

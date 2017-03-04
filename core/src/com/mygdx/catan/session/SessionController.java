@@ -11,17 +11,24 @@ import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.request.RollDice;
+import com.mygdx.catan.request.RollTwoDice;
 import com.mygdx.catan.response.PlaceCityAndRoad;
 import com.mygdx.catan.response.ShowDice;
 import com.mygdx.catan.response.UpdateResourceBar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
@@ -29,6 +36,7 @@ public class SessionController {
     private final SessionScreen aSessionScreen;
     private PlayerColor aPlayerColor;
     private final Listener aSessionListener;
+    public Random rand = new Random();
 
     public PlayerColor getPlayerColor() {
         return aPlayerColor;
@@ -72,6 +80,17 @@ public class SessionController {
                         ResourceMap cost = ((UpdateResourceBar) object).cost;
                         aSessionScreen.updateResourceBar(cost);
                     });
+                } else if (object instanceof RollTwoDice) {
+                    Gdx.app.postRunnable(() -> {
+                        int diceRollResult = ((RollTwoDice) object).getRollResult();
+                        // TODO: Update screen to reflect new roll?
+                    });
+                } else if (object instanceof RollDice) {
+                    Gdx.app.postRunnable(() -> {
+                        Map<Player, ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
+                        // TODO: Update screen to reflect resource updates
+                     });
+                    
                 }
             }
         };
@@ -406,4 +425,89 @@ public class SessionController {
         aSessionManager.removeFromBank(cost);
         return cost;
     }
+    
+    public int rollTwoDice() {
+        int low = 1;
+        int high = 6;
+        int redDie = rand.nextInt(high - low + 1) + low;
+        int yellowDie = rand.nextInt(high - low + 1) + low;
+        int diceResult = redDie + yellowDie;
+        return diceResult;
+    }
+
+    public Map<Player, ResourceMap> rollDice(int diceRoll) {
+        List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
+        Player currPlayer = aSessionManager.getCurrentPlayer();
+        HashMap<Player, ResourceMap> playerResources = new HashMap<>();
+        List<Hex> producingHexes = new ArrayList<>();
+        List<Player> noResourcesReceivedPlayers = Arrays.asList(getPlayers());
+        for (Hex h : hexes) {
+            int hexNumber = h.getDiceNumber();
+            Hex robberPosition = getRobberPosition();
+            if (hexNumber == diceRoll && h != robberPosition) {
+                producingHexes.add(h);
+            }
+        }
+
+        for (Hex ph : producingHexes) {
+            TerrainKind tKind = ph.getKind();
+            // TODO: implement adjacentVIllages
+            // Player[] noResourcesReceivedPlayers = getPlayers();
+            ArrayList<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(ph);
+            ArrayList<CoordinatePair> adjacentIntersections = aGameBoardManager
+                    .getAdjacentIntersections(ph);
+            for (CoordinatePair cp : adjacentIntersections) {
+                boolean isOccupied = cp.isOccupied();
+                if (isOccupied) {
+                    Village v = cp.getOccupyingVillage();
+                    adjacentVillages.add(v);
+                }
+            }
+            for (Village v : adjacentVillages) {
+                Player villageOwner = v.getOwner();
+                VillageKind vKind = v.getVillageKind();
+                ResourceMap ResAndComMap = new ResourceMap();
+
+                switch (tKind) {
+                case PASTURE:
+                    ResAndComMap.put(ResourceKind.WOOL, 1);
+                    if (vKind == VillageKind.CITY)
+                        ResAndComMap.put(ResourceKind.CLOTH, 1);
+                    break;
+                case FOREST:
+                    ResAndComMap.put(ResourceKind.WOOD, 1);
+                    if (vKind == VillageKind.CITY)
+                        ResAndComMap.put(ResourceKind.PAPER, 1);
+                    break;
+                case MOUNTAINS:
+                    ResAndComMap.put(ResourceKind.ORE, 1);
+                    if (vKind == VillageKind.CITY)
+                        ResAndComMap.put(ResourceKind.COIN, 1);
+                    break;
+                case HILLS:
+                    if (vKind == VillageKind.SETTLEMENT)
+                        ResAndComMap.put(ResourceKind.BRICK, 1);
+                    else
+                        ResAndComMap.put(ResourceKind.BRICK, 2);
+                    break;
+                case FIELDS:
+                    if (vKind == VillageKind.SETTLEMENT)
+                        ResAndComMap.put(ResourceKind.GRAIN, 1);
+                    else
+                        ResAndComMap.put(ResourceKind.GRAIN, 2);
+                    break;
+                /*
+                 * case DESERT: break; case GOLDFIELD: break; case SEA: break;
+                 * default: break;
+                 */
+                }
+                currPlayer.addResources(ResAndComMap);
+                noResourcesReceivedPlayers.remove(villageOwner);
+                playerResources.put(currPlayer, ResAndComMap);
+            }
+        }
+        return playerResources;
+    }
+    // TODO: set GUI's mode to chooseActionMode for the player who's turn it is
+
 }

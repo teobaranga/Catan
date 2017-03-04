@@ -2,6 +2,8 @@ package com.mygdx.catan.session;
 
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.account.Account;
+import com.mygdx.catan.enums.PlayerColor;
 
 import java.util.ArrayList;
 
@@ -9,13 +11,13 @@ public class SessionManager {
 
     private static SessionManager instance;
     private Session aSession;
-    
-    //FIXME SessionScreens must be in SessionController
+
+    // FIXME SessionScreens must be in SessionController
     private ArrayList<SessionScreen> sessionScreens = new ArrayList<>();
 
     public Session getSession() { return this.aSession; }
 
-    //TODO: change this to fit design, so far this is only placeholder!
+    // TODO: change this to fit design, so far this is only placeholder!
     private SessionManager() {
         aSession = new Session();
     }
@@ -25,14 +27,17 @@ public class SessionManager {
             instance = new SessionManager();
         return instance;
     }
+    
+    public Player getCurrentPlayer() {
+        return Player.newInstance(new Account("dummy", "dummy"), PlayerColor.ORANGE);
+    }
 
     public Player[] getPlayers() {
         return aSession.getPlayers();
     }
 
-
     /**
-     *  Returns the current value of the yellow dice.
+     * Returns the current value of the yellow dice.
      *
      * @return yellow dice value
      */
@@ -50,7 +55,7 @@ public class SessionManager {
      *
      * @param cost resources to be added to the bank
      */
-    public void addToBank(ResourceMap cost){
+    public void addToBank(ResourceMap cost) {
         aSession.add(cost);
     }
 
@@ -60,7 +65,7 @@ public class SessionManager {
      *
      * @param cost The resources to be removed from the bank
      */
-    public void removeFromBank(ResourceMap cost){
+    public void removeFromBank(ResourceMap cost) {
         aSession.remove(cost);
     }
 

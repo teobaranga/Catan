@@ -287,7 +287,6 @@ public class SessionScreen implements Screen {
             if (intersection.getHarbourKind() != HarbourKind.NONE) {
                 offsetX = intersection.getLeft();
                 offsetY = intersection.getRight();
-                System.out.println(offsetX + " " +offsetY);
                 boardHarbours.add(gamePieces.createHarbour(offsetX, offsetY, BASE, LENGTH, intersection.getHarbourKind()));
             }
         }

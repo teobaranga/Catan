@@ -285,7 +285,6 @@ public class GameRules {
 	    if (defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate)) == null) {
 	        return HarbourKind.NONE;
 	    } else {
-	        System.out.println(leftCoordinate + " " + rightCoordinate + ": " + getHashCodeofPair(leftCoordinate,rightCoordinate));
 	        return defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate));
 	    }
 	}

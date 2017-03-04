@@ -23,7 +23,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
-import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.HarbourKind;
@@ -293,10 +292,7 @@ public class SessionScreen implements Screen {
         rollDiceButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Pair<Integer, Integer> diceResults = aSessionController.rollTwoDice();
-                Map<Player, ResourceMap> diceResourceMap =  aSessionController.rollDice(diceResults.getLeft() + diceResults.getRight());
-                updateResourceBar(aSessionController.getOwnresourcesUpdate(diceResourceMap));
-                showDice(diceResults.getLeft(), diceResults.getRight());
+                aSessionController.rollDices();
             }
         });
         menuTable.add(rollDiceButton).padBottom(10).row();

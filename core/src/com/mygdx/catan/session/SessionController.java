@@ -475,12 +475,10 @@ public class SessionController {
         int roll1 = rand.nextInt(6) + 1;
         int roll2 = rand.nextInt(6) + 1;
         Pair<Integer, Integer> diceResults = new ImmutablePair<Integer, Integer>(roll1, roll2);
-        //TODO: FIRE FOLLOWING MSG TO SERVER.
-        RollTwoDice diceResultsToSent = RollTwoDice.newInstance(diceResults,"Dummy");
         return diceResults;
     }
 
-    public Map<Player, ResourceMap> rollDice(int diceRoll) {
+    public Map<Player, ResourceMap> getResourceUpdate(int diceRoll) {
         List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
         Player currPlayer = aSessionManager.getCurrentPlayer();
         HashMap<Player, ResourceMap> playerResources = new HashMap<>();
@@ -551,8 +549,7 @@ public class SessionController {
                 playerResources.put(villageOwner, ResAndComMap);
             }
         }
-        //TODO: FIRE FOLLOWING MSG TO SERVER.
-        RollDice diceResourcesToSent = RollDice.newInstance(playerResources,"Dummy");
+
         return playerResources;
     }
     // TODO: set GUI's mode to chooseActionMode for the player who's turn it is
@@ -564,5 +561,16 @@ public class SessionController {
             }
         }
         return new ResourceMap();
+    }
+
+    public void rollDices() {
+        Pair<Integer, Integer> diceResults = rollTwoDice();
+        //TODO: FIRE FOLLOWING MSG TO SERVER.
+        RollTwoDice diceResultsToSent = RollTwoDice.newInstance(diceResults,"Dummy");
+        Map<Player, ResourceMap> resourceUpdateMap = getResourceUpdate(diceResults.getLeft() + diceResults.getRight());
+        //TODO: FIRE FOLLOWING MSG TO SERVER.
+        RollDice diceResourcesToSent = RollDice.newInstance(resourceUpdateMap,"Dummy");
+        aSessionScreen.showDice(diceResults.getLeft(), diceResults.getRight());
+        aSessionScreen.updateResourceBar(getOwnresourcesUpdate(resourceUpdateMap));
     }
 }

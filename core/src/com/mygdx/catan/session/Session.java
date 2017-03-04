@@ -13,18 +13,21 @@ import java.util.Map;
 
 public class Session {
 
-	GamePhase currentPhase;
-	EventKind eventDice;
+	private GamePhase currentPhase;
+	private EventKind eventDice;
 	private int barbarianPosition = 7; //set      FIXME: currently this is in gameboard
 	private int redDice; //setters needed?
 	private int yellowDice; //setters needed?
 	private int VPsToWin; //set
+    /** Index of the current player */
+    private int playerIndex;
 	private Player[] players;
 	private ResourceMap Bank;
 
 	//TODO: change this to fit design, so far this is only placeholder!
 	public Session() {
 		this.Bank = new ResourceMap();
+		currentPhase = GamePhase.SETUP_PHASE_ONE;
 	}
 
 	public static Session newInstance(Collection<Account> accounts, int VPsToWin) {
@@ -41,8 +44,13 @@ public class Session {
 		return session;
 	}
 
-	public GamePhase getCurrentPhase() {
-		return this.currentPhase;
+	/** Get the index of the current player */
+    public int getPlayerIndex() {
+        return playerIndex;
+    }
+
+    public GamePhase getCurrentPhase() {
+		return currentPhase;
 	}
 
 	public EventKind getEventKind() {

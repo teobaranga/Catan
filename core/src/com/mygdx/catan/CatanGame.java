@@ -3,12 +3,8 @@ package com.mygdx.catan;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.account.Account;
@@ -58,7 +54,10 @@ public class CatanGame extends Game {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        createBasicSkin();
+
+        // Load the UI skin
+        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+
         // Load the current account if cached
         account = AccountManager.getLocalAccount();
         // The first screen that shows up when the game starts
@@ -75,54 +74,6 @@ public class CatanGame extends Game {
     public void dispose() {
         batch.dispose();
         skin.dispose();
-    }
-
-    private void createBasicSkin() {
-        // Create a font
-        BitmapFont font = new BitmapFont();
-        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
-        skin.add("default", font);
-
-        // Create a texture
-        Pixmap pixmap = new Pixmap(Gdx.graphics.getWidth() / 6, Gdx.graphics.getHeight() / 10, Pixmap.Format.RGB888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        skin.add("background", new Texture(pixmap));
-
-        // Create a button style
-        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
-        textButtonStyle.up = skin.newDrawable("background", Color.GRAY);
-        textButtonStyle.down = skin.newDrawable("background", Color.DARK_GRAY);
-        textButtonStyle.checked = skin.newDrawable("background", Color.DARK_GRAY);
-        textButtonStyle.over = skin.newDrawable("background", Color.LIGHT_GRAY);
-        textButtonStyle.font = skin.getFont("default");
-        skin.add("default", textButtonStyle);
-
-        // Create a window style
-        Window.WindowStyle windowStyle = new Window.WindowStyle();
-        windowStyle.background = skin.newDrawable("background", Color.DARK_GRAY);
-        // Dim background
-        windowStyle.stageBackground = skin.newDrawable("background", Color.valueOf("#00000099"));
-        windowStyle.titleFont = skin.getFont("default");
-        windowStyle.titleFontColor = Color.WHITE;
-        skin.add("default", windowStyle);
-
-        //create a label style
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.background = skin.newDrawable("background", (Color.CORAL));
-        labelStyle.font = skin.getFont("default");
-        labelStyle.fontColor = Color.WHITE;
-        skin.add("default", labelStyle);
-
-
-        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
-        textFieldStyle.background = skin.newDrawable("background", Color.WHITE);
-        textFieldStyle.font = skin.getFont("default");
-        textFieldStyle.fontColor = Color.YELLOW;
-        skin.add("default", textFieldStyle);
-
-        skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
     }
 
     public void switchScreen(ScreenKind pScreenKind) {

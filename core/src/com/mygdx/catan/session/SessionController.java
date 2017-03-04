@@ -41,15 +41,10 @@ public class SessionController {
     private final Listener aSessionListener;
     public Random rand = new Random();
 
-    public PlayerColor getPlayerColor() {
-        return aPlayerColor;
-    }
+    /** Flag indicating whether it's the turn of the player logged in */
+    private boolean myTurn;
 
-    public void setPlayerColor(PlayerColor pc) {
-        aPlayerColor = pc;
-    }
-
-    public SessionController(SessionScreen sessionScreen) {
+    SessionController(SessionScreen sessionScreen) {
         aSessionScreen = sessionScreen;
         aGameBoardManager = GameBoardManager.getInstance();
         aSessionManager = SessionManager.getInstance();
@@ -101,11 +96,55 @@ public class SessionController {
                             }
                         }
                      });
-                    
+
                 }
+                // TODO update the myTurn variable here
             }
         };
+        myTurn = aSessionManager.getCurrentPlayer().getAccount().equals(CatanGame.account);
+    }
+
+    /** Call this when the screen is shown */
+    void onScreenShown() {
         CatanGame.client.addListener(aSessionListener);
+    }
+
+    /** Call this when the screen is hidden */
+    void onScreenHidden() {
+        CatanGame.client.removeListener(aSessionListener);
+    }
+
+    /** Process a turn */
+    void turn() {
+        if (!myTurn) {
+            // TODO disable UI, the player can't really do anything at this moment
+            return;
+        }
+        switch (aSessionManager.getCurrentPhase()) {
+            case SETUP_PHASE_ONE:
+                // TODO Allow the player to roll the dice
+                break;
+            case SETUP_PHASE_TWO_CLOCKWISE:
+                // TODO Allow the player to place one settlement and one road
+                break;
+            case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
+                // TODO Allow the player to place on city and one road. The player also receives some resources here
+                break;
+            case TURNFIRSTPHASE:
+                break;
+            case TURNSECONDPHASE:
+                break;
+            case Completed:
+                break;
+        }
+    }
+
+    public PlayerColor getPlayerColor() {
+        return aPlayerColor;
+    }
+
+    public void setPlayerColor(PlayerColor pc) {
+        aPlayerColor = pc;
     }
 
     public int getYellowDice() {
@@ -338,7 +377,6 @@ public class SessionController {
         return true;
     }
 
-
     /**
      * Requests the GameBoardManager to build edge unit on given coordinates. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
      * Determines if new edge unit piece increases the players longest road, and takes appropriate action.
@@ -436,7 +474,7 @@ public class SessionController {
         aSessionManager.removeFromBank(cost);
         return cost;
     }
-    
+
     public Pair<Integer, Integer> rollTwoDice() {
         int roll1 = rand.nextInt(6) + 1;
         int roll2 = rand.nextInt(6) + 1;

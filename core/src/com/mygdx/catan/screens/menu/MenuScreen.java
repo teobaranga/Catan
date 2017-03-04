@@ -161,10 +161,8 @@ public class MenuScreen implements Screen {
                 aJoinRandomButton.setChecked(false);
 
                 // Setup the window
-                CatanWindow window = new CatanWindow("Join Game", CatanGame.skin);
-                window.setWidth(1f / 4f * Gdx.graphics.getWidth());
-                window.setHeight(1f / 4f * Gdx.graphics.getHeight());
-                window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
+                CatanWindow window = new CatanWindow("Join Game", CatanGame.skin,
+                        1f / 4f * Gdx.graphics.getWidth(), 1f / 4f * Gdx.graphics.getHeight());
 
                 final Table contentTable = new Table(CatanGame.skin);
 

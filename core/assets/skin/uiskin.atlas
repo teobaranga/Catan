@@ -1,18 +1,26 @@
+
 uiskin.png
-size: 256,128
+size: 1024,256
 format: RGBA8888
-filter: Linear,Linear
+filter: MipMapLinearNearest,MipMapLinearNearest
 repeat: none
+brick
+  rotate: false
+  xy: 2, 43
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
 check-off
   rotate: false
-  xy: 11, 5
+  xy: 652, 214
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 textfield
   rotate: false
-  xy: 11, 5
+  xy: 652, 214
   size: 14, 14
   split: 3, 3, 3, 3
   orig: 14, 14
@@ -20,14 +28,14 @@ textfield
   index: -1
 check-on
   rotate: false
-  xy: 125, 35
+  xy: 674, 236
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 cursor
   rotate: false
-  xy: 23, 1
+  xy: 668, 225
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -35,14 +43,14 @@ cursor
   index: -1
 default
   rotate: false
-  xy: 1, 50
+  xy: 2, 173
   size: 254, 77
   orig: 254, 77
   offset: 0, 0
   index: -1
 default-pane
   rotate: false
-  xy: 11, 1
+  xy: 31, 16
   size: 5, 3
   split: 1, 1, 1, 1
   orig: 5, 3
@@ -50,7 +58,7 @@ default-pane
   index: -1
 default-rect-pad
   rotate: false
-  xy: 11, 1
+  xy: 31, 16
   size: 5, 3
   split: 1, 1, 1, 1
   orig: 5, 3
@@ -58,7 +66,7 @@ default-rect-pad
   index: -1
 default-pane-noborder
   rotate: false
-  xy: 170, 44
+  xy: 258, 249
   size: 1, 1
   split: 0, 0, 0, 0
   orig: 1, 1
@@ -66,7 +74,7 @@ default-pane-noborder
   index: -1
 default-rect
   rotate: false
-  xy: 38, 25
+  xy: 690, 247
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -74,7 +82,7 @@ default-rect
   index: -1
 default-rect-down
   rotate: false
-  xy: 170, 46
+  xy: 674, 231
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -82,7 +90,7 @@ default-rect-down
   index: -1
 default-round
   rotate: false
-  xy: 112, 29
+  xy: 291, 100
   size: 12, 20
   split: 5, 5, 5, 4
   pad: 4, 4, 1, 1
@@ -91,7 +99,7 @@ default-round
   index: -1
 default-round-down
   rotate: false
-  xy: 99, 29
+  xy: 262, 78
   size: 12, 20
   split: 5, 5, 5, 4
   pad: 4, 4, 1, 1
@@ -100,7 +108,7 @@ default-round-down
   index: -1
 default-round-large
   rotate: false
-  xy: 57, 29
+  xy: 652, 230
   size: 20, 20
   split: 5, 5, 5, 4
   orig: 20, 20
@@ -108,7 +116,7 @@ default-round-large
   index: -1
 default-scroll
   rotate: false
-  xy: 78, 29
+  xy: 31, 21
   size: 20, 20
   split: 2, 2, 2, 2
   orig: 20, 20
@@ -116,7 +124,7 @@ default-scroll
   index: -1
 default-select
   rotate: false
-  xy: 29, 29
+  xy: 262, 100
   size: 27, 20
   split: 4, 14, 4, 4
   orig: 27, 20
@@ -124,7 +132,7 @@ default-select
   index: -1
 default-select-selection
   rotate: false
-  xy: 26, 16
+  xy: 53, 22
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -132,7 +140,7 @@ default-select-selection
   index: -1
 default-slider
   rotate: false
-  xy: 29, 20
+  xy: 2, 2
   size: 8, 8
   split: 2, 2, 2, 2
   orig: 8, 8
@@ -140,14 +148,14 @@ default-slider
   index: -1
 default-slider-knob
   rotate: false
-  xy: 1, 1
+  xy: 262, 58
   size: 9, 18
   orig: 9, 18
   offset: 0, 0
   index: -1
 default-splitpane
   rotate: false
-  xy: 17, 1
+  xy: 652, 209
   size: 5, 3
   split: 0, 5, 0, 0
   orig: 5, 3
@@ -155,7 +163,7 @@ default-splitpane
   index: -1
 default-splitpane-vertical
   rotate: false
-  xy: 125, 29
+  xy: 305, 115
   size: 3, 5
   split: 0, 0, 0, 5
   orig: 3, 5
@@ -163,37 +171,65 @@ default-splitpane-vertical
   index: -1
 default-window
   rotate: false
-  xy: 1, 20
+  xy: 2, 12
   size: 27, 29
   split: 4, 3, 20, 3
   orig: 27, 29
   offset: 0, 0
   index: -1
+ore
+  rotate: false
+  xy: 132, 43
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
 selection
   rotate: false
-  xy: 174, 48
+  xy: 276, 81
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
 tree-minus
   rotate: false
-  xy: 140, 35
+  xy: 53, 27
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 tree-plus
   rotate: false
-  xy: 155, 35
+  xy: 276, 84
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
+wheat
+  rotate: false
+  xy: 262, 122
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
 white
   rotate: false
-  xy: 129, 31
+  xy: 69, 38
   size: 3, 3
   orig: 3, 3
+  offset: 0, 0
+  index: -1
+wood
+  rotate: false
+  xy: 392, 122
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+wool
+  rotate: false
+  xy: 522, 122
+  size: 128, 128
+  orig: 128, 128
   offset: 0, 0
   index: -1

@@ -12,8 +12,8 @@ public class ResourceMap extends EnumMap<ResourceKind, Integer> {
     public ResourceMap() {
         super(ResourceKind.class);
         // To avoid null pointer exceptions 
-        for (ResourceKind kind: ResourceKind.values()) {
-        	this.put(kind, 0);
+        for (ResourceKind kind : ResourceKind.values()) {
+            this.put(kind, 0);
         }
     }
 }

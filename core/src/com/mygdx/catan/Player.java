@@ -11,6 +11,9 @@ import java.util.List;
 
 public class Player {
 
+    /** The account of this player */
+    private Account account;
+
     private PlayerColor color;
     private ArrayList<EdgeUnit> roadsAndShips = new ArrayList<>();
     private ArrayList<Village> villages = new ArrayList<>();
@@ -21,6 +24,7 @@ public class Player {
 
     public static Player newInstance(Account account, PlayerColor color) {
         final Player player = new Player();
+        player.account = account;
         player.color = color;
         return player;
     }
@@ -180,6 +184,11 @@ public class Player {
     }
 
     public ResourceMap getResourceMap() { return resourceMap;}
+
+    /** Get this player's account */
+    public Account getAccount() {
+        return account;
+    }
 
     @Override
     public boolean equals(Object other) {

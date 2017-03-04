@@ -11,11 +11,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
@@ -24,6 +27,7 @@ import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.ui.TradeWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -63,7 +67,7 @@ public class SessionScreen implements Screen {
 
     /** The batch onto which the game piece will be drawn */
     private PolygonSpriteBatch polyBatch; // To assign at the beginning
-    
+
     private Texture aRobberTextureSolid;
 
     private SessionController aSessionController;
@@ -72,7 +76,7 @@ public class SessionScreen implements Screen {
 
     /** The list of polygons representing the board hexes */
     private List<PolygonRegion> boardHexes;
-    
+
     /** The list of polygons representing the board harbours */
     private List<PolygonRegion> boardHarbours;
 
@@ -81,7 +85,7 @@ public class SessionScreen implements Screen {
 
     /** The List of EdgeUnits currently on the board */
     private List<PolygonRegion> edgeUnits;
-    
+
     /** The Robber */
     private PolygonRegion robber;
 
@@ -90,15 +94,15 @@ public class SessionScreen implements Screen {
 
     /** The map of resource tables */
     private Map<String, Label> resourceLabelMap;
-    
+
     /** determines the current mode of the session screen */
     private SessionScreenModes aMode;
     private boolean initializing;
-    
-    /** The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE*/
+
+    /** The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE */
     private ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
-    private ArrayList<Pair<CoordinatePair,CoordinatePair>> validEdges = new ArrayList<>();
-    
+    private ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
+
     /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
     private VillageKind villagePieceKind;
     private EdgeUnitKind edgePieceKind;
@@ -113,8 +117,11 @@ public class SessionScreen implements Screen {
     private TextButton buildCityButton;
     private TextButton buildRoadButton;
     private TextButton buildShipButton;
-    
+
     private TextButton aInitButton;
+
+    /** A table that keeps track of game messages, mostly used for debugging */
+    private ScrollPane gameLog;
 
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
@@ -123,7 +130,7 @@ public class SessionScreen implements Screen {
     private InputAdapter inputAdapter;
 
     private GamePieces gamePieces;
-    
+
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
         aSessionController = new SessionController(this);
@@ -137,7 +144,7 @@ public class SessionScreen implements Screen {
         gamePieces = new GamePieces();
         initializing = false;
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        
+
         // sets the initializing mode of the session screen (VIEWMODE). set to CHOOSEACTIONMODE for testing purposes 
         aMode = SessionScreenModes.CHOOSEACTIONMODE;
 
@@ -156,17 +163,17 @@ public class SessionScreen implements Screen {
                                 //TODO: show a transparent version of settlement on validIntersection 
                                 for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
                                     if (aSessionController.isAdjacent(validIntersection, i) && !i.isOccupied()) {
-                                        validEdges.add(new MutablePair<>(i,validIntersection));
+                                        validEdges.add(new MutablePair<>(i, validIntersection));
                                     }
                                 }
                                 initSettlementIntersection = validIntersection;
                             } else {
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                                
+
                                 //TODO: call buildVillage method in SessionController and delete following
                                 updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
                             }
-                            
+
                             buildSettlementButton.setText("Build Settlement");
                             buildCityButton.setText("Build City");
                             validIntersections.clear();
@@ -175,19 +182,18 @@ public class SessionScreen implements Screen {
                         }
                     }
                 } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
-                    for (Pair<CoordinatePair,CoordinatePair> validEdge : validEdges) {
+                    for (Pair<CoordinatePair, CoordinatePair> validEdge : validEdges) {
                         int xMin = Math.min(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
                         int xMax = Math.max(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
                         int yMin = Math.min(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
                         int yMax = Math.max(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
-                        
+
                         if (screenX > boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE - 10 &&
                                 screenX < boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE + 10 &&
                                 screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
                                 screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
-                            
-                           
-                            
+
+
                             if (initializing) {
                                 aMode = SessionScreenModes.VIEWMODE;
                                 if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
@@ -198,23 +204,23 @@ public class SessionScreen implements Screen {
                                 //TODO: call placeCityAndRoad method in SessionController and delete following
                                 updateIntersection(initSettlementIntersection, PlayerColor.ORANGE, villagePieceKind);
                                 updateEdge(initEdgePos1, initEdgePos2, edgePieceKind, PlayerColor.ORANGE);
-                                
+
                                 initializing = false;
                                 aInitButton.setText("Done");
                             } else {
                                 //TODO: call buildEdgePiece method in SessionController and delete following
                                 updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, PlayerColor.WHITE);
-                                
+
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
                             }
-                            
+
                             buildRoadButton.setText("Build Road");
                             buildShipButton.setText("Build Ship");
-                            
+
                             validEdges.clear();
-                            
+
                             return true;
-                        }        
+                        }
                     }
                 }
                 return false;
@@ -242,39 +248,70 @@ public class SessionScreen implements Screen {
             Table aTable = createResourceTable(entry.getKey());
             contentTable.add(aTable).pad(5);
         }
-        
+
         // menu table
         Table menuTable = new Table(CatanGame.skin);
         menuTable.setBackground("resTableBackground");
         menuTable.setSize(200, 300);
         menuTable.setPosition(10, 10);
-        
+
         // creates the menu buttons TODO:remainder of buttons
-        buildSettlementButton = new TextButton("Build Settlement",CatanGame.skin);
+        buildSettlementButton = new TextButton("Build Settlement", CatanGame.skin);
         setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT);
         buildSettlementButton.pad(0, 10, 0, 10);
         menuTable.add(buildSettlementButton).padBottom(10).row();
-        
-        buildCityButton = new TextButton("Build City",CatanGame.skin);
+
+        buildCityButton = new TextButton("Build City", CatanGame.skin);
         setupBuildVillageButton(buildCityButton, VillageKind.CITY);
         buildCityButton.pad(0, 10, 0, 10);
         menuTable.add(buildCityButton).padBottom(10).row();
-        
+
         buildRoadButton = new TextButton("Build Road", CatanGame.skin);
         setupBuildEdgeUnitButton(buildRoadButton, EdgeUnitKind.ROAD);
         buildRoadButton.pad(0, 10, 0, 10);
         menuTable.add(buildRoadButton).padBottom(10).row();
-        
+
         buildShipButton = new TextButton("Build Ship", CatanGame.skin);
         setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP);
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
-        
+
         //TODO: DELETE FOLLOWING TEST BUTTON
-        aInitButton = new TextButton("Init",CatanGame.skin);
+        aInitButton = new TextButton("Init", CatanGame.skin);
         setupInitButton(aInitButton);
-        menuTable.add(aInitButton);
-        
+        menuTable.add(aInitButton).padBottom(10).row();
+
+        // Add roll dice button
+        final TextButton rollDiceButton = new TextButton("Roll Dice", CatanGame.skin);
+        rollDiceButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // TODO trigger roll dice
+                // Depending on the stage of the game, either roll the 2 numbered dice
+                // or all three dices, including the event die
+            }
+        });
+        menuTable.add(rollDiceButton).padBottom(10).row();
+
+
+        // Add maritime trade button
+        final TextButton maritimeTradeButton = new TextButton("Maritime Trade", CatanGame.skin);
+        maritimeTradeButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                final ResourceMap tradeRatios = new ResourceMap();
+                tradeRatios.put(ResourceKind.ORE, 4);
+                // TODO fill the trade ratios according to the highest harbour levels
+                final TradeWindow tradeWindow = new TradeWindow("Maritime Trade", tradeRatios, CatanGame.skin, (offer, request, tradeRatio) -> {
+                    final ResourceMap resourceMap = new ResourceMap();
+                    resourceMap.put(request, 1);
+                    updateResourceBar(resourceMap);
+                });
+                aSessionStage.addActor(tradeWindow);
+            }
+        });
+        menuTable.add(maritimeTradeButton);
+
         //Creating the color filling for the robber piece
         aRobberTextureSolid = setupTextureSolid(Color.valueOf("666666"));
 
@@ -287,7 +324,7 @@ public class SessionScreen implements Screen {
             offsetY = hex.getRightCoordinate();
             boardHexes.add(gamePieces.createHexagon((offsetX * OFFX), -(offsetY * OFFY), LENGTH, BASE, hex.getKind()));
         }
-        
+
         // creates harbours of the board
         for (CoordinatePair intersection : aSessionController.getIntersectionsAndEdges()) {
             if (intersection.getHarbourKind() != HarbourKind.NONE) {
@@ -296,18 +333,34 @@ public class SessionScreen implements Screen {
                 boardHarbours.add(gamePieces.createHarbour(offsetX, offsetY, BASE, LENGTH, intersection.getHarbourKind()));
             }
         }
-        
+
         // places robber at initial robber position
         Hex robberPos = aSessionController.getRobberPosition();
         if (robberPos != null) {
             updateRobberPosition(robberPos);
         }
 
+        // Create the Game Log table
+        float pad = 10f;
+        float tableWidth = 350f;
+        float tableHeight = 300f;
+        final Table table = new Table(CatanGame.skin);
+        table.left().top();
+        gameLog = new ScrollPane(table);
+        gameLog.setOverscroll(false, false);
+        gameLog.setX(Gdx.graphics.getWidth() - tableWidth - pad);
+        gameLog.setY(pad);
+        gameLog.setWidth(tableWidth);
+        gameLog.setHeight(tableHeight);
+        gameLog.debugAll();
+
         aSessionStage.addActor(contentTable);
         aSessionStage.addActor(menuTable);
+        aSessionStage.addActor(gameLog);
+
+        aSessionController.onScreenShown();
     }
 
-    
     private void setupInitButton(TextButton initButton) {
         initButton.addListener(new ClickListener() {
             @Override
@@ -318,13 +371,13 @@ public class SessionScreen implements Screen {
             }
         });
     }
-    
+
     private void setupBuildVillageButton(TextButton buildButton, VillageKind kind) {
         buildButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 buildButton.setChecked(false);
-             // TODO: ask SessionController if there are enough resources
+                // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     // make the following loop go through requested valid build positions
                     for (CoordinatePair intersections : aSessionController.getIntersectionsAndEdges()) {
@@ -343,24 +396,24 @@ public class SessionScreen implements Screen {
             }
         });
     }
-    
+
     private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind) {
         buildButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 buildButton.setChecked(false);
-             // TODO: ask SessionController if there are enough resources
+                // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     // make the following loop go through requested valid build positions
                     for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
-                        
+
                         for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
-                            if (kind == EdgeUnitKind.ROAD){
-                                if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i,j)) {
-                                    
-                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i,j);
+                            if (kind == EdgeUnitKind.ROAD) {
+                                if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i, j)) {
+
+                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
                                     validEdges.add(edge);
-                                    
+
                                     for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
                                         if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
                                             validEdges.remove(edge);
@@ -368,11 +421,11 @@ public class SessionScreen implements Screen {
                                     }
                                 }
                             } else {
-                                if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i,j)) {
-                                    
-                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i,j);
+                                if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
+
+                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
                                     validEdges.add(edge);
-                                    
+
                                     for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
                                         if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
                                             validEdges.remove(edge);
@@ -381,7 +434,7 @@ public class SessionScreen implements Screen {
                                 }
                             }
                         }
-                        
+
                         //TODO make a sprite that highlights the areas
                     }
                     aMode = SessionScreenModes.CHOOSEEDGEMODE;
@@ -396,7 +449,7 @@ public class SessionScreen implements Screen {
             }
         });
     }
-    
+
     private Texture setupTextureSolid(Color color) {
         Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pix.setColor(color); // DE is red, AD is green and BE is blue.
@@ -425,7 +478,7 @@ public class SessionScreen implements Screen {
         // Set the background color
         Gdx.gl.glClearColor(0.24706f, 0.24706f, 0.24706f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        
+
         // Display the board hexes + harbours and game pieces and dice number tokens
         polyBatch.begin();
         for (PolygonRegion boardHex : boardHexes) {
@@ -443,7 +496,7 @@ public class SessionScreen implements Screen {
         for (Hex hex : aSessionController.getHexes()) {
             Integer prob = GameRules.getGameRulesInstance().getDiceNumber(hex);
             if (prob != 0 && prob != null) {
-                float xPos =  (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX - 7));
+                float xPos = (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX - 7));
                 float yPos = (float) (boardOrigin.getRight() - (hex.getRightCoordinate() * OFFY - 5));
                 CatanGame.skin.getFont("default").draw(polyBatch, prob.toString(), xPos, yPos);
             }
@@ -476,6 +529,7 @@ public class SessionScreen implements Screen {
 
     @Override
     public void hide() {
+        aSessionController.onScreenHidden();
         boardHexes.clear();
         Gdx.input.setInputProcessor(null);
         dispose();
@@ -488,17 +542,17 @@ public class SessionScreen implements Screen {
 
     /**
      * Places Robber on given coordinates
-     * 
+     *
      * @param xCor left coordinate
      * @param yCor right coordinate
-     * */
+     */
     private void placeRobber(int xCor, int yCor) {
-        
+
         float xPos = xCor * OFFX;
-        float yPos = - yCor * OFFY;
-        
+        float yPos = -yCor * OFFY;
+
         PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aRobberTextureSolid),
-                new float[]{     
+                new float[]{
                         (float) (xPos - BASE * 0.6), (float) (yPos - BASE * 0.5),     // Vertex 0            2
                         (float) (xPos + BASE * 0.6), yPos - BASE / 2,                 // Vertex 1                   
                         xPos, (float) (yPos + BASE * 0.8),                            // Vertex 2         0     1
@@ -506,10 +560,10 @@ public class SessionScreen implements Screen {
                 }, new short[]{
                 0, 1, 2         // Sets up triangulation according to vertices above
         });
-        
+
         robber = polyReg;
     }
-    
+
     /**
      * Set the coordinates of the board origin.
      * Currently the board origin is such that the board appears centered on screen.
@@ -522,7 +576,7 @@ public class SessionScreen implements Screen {
         // The offset calculations are a bit weird and unintuitive but it works
         //boardOrigin.setLeft(((int) (width / 2f)) - OFFX * SIZE * 2);
         //boardOrigin.setRight(((int) (height / 2f)) - OFFY * SIZE);
-        
+
         boardOrigin.setLeft(((int) (width / 2f)));
         boardOrigin.setRight(((int) (height / 2f)));
     }
@@ -538,7 +592,7 @@ public class SessionScreen implements Screen {
             float xV0 = pr.getVertices()[0];
             float yV0 = pr.getVertices()[1];
 
-            float xPos =(xCor * BASE);
+            float xPos = (xCor * BASE);
             float yPos = -1 * (yCor * LENGTH / 2);
 
             if ((float) xV0 == xPos - PIECEBASE / 2.0 && (float) yV0 == yPos - PIECEBASE / 2.0) {
@@ -548,28 +602,28 @@ public class SessionScreen implements Screen {
 
         return null;
     }
-    
+
     /**
-     * @param xCorFirst left coordinate of first intersection
-     * @param yCorFirst right coordinate of first intersection
+     * @param xCorFirst  left coordinate of first intersection
+     * @param yCorFirst  right coordinate of first intersection
      * @param xCorSecond left coordinate of second intersection
      * @param yCorSecond right coordinate of second intersection
      * @return PolygonRegion of edge piece which lies between (xCorFirst,yCorFirst) and (xCorSecond,yCorSecon), null if no game piece lies on that space
      */
     private PolygonRegion getEdgePiece(int xCorFirst, int yCorFirst, int xCorSecond, int yCorSecond) {
-        
+
         for (PolygonRegion pr : edgeUnits) {
             float xVM = pr.getVertices()[0];
             float yVM = pr.getVertices()[1];
-            
+
             float xCorM = (float) (Math.min(xCorFirst, xCorSecond) + (Math.max(xCorFirst, xCorSecond) - Math.min(xCorFirst, xCorSecond)) / 2.0);
             float yCorM = (float) (Math.min(yCorFirst, yCorSecond) + (Math.max(yCorFirst, yCorSecond) - Math.min(yCorFirst, yCorSecond)) / 2.0);
-            
+
             if (xVM == xCorM && yVM == yCorM) {
                 return pr;
             }
         }
-        
+
         return null;
     }
 
@@ -588,13 +642,13 @@ public class SessionScreen implements Screen {
         }
         return false;
     }
-    
+
     /**
      * removes polygon of edge unit at given coordinates from the board
      *
-     * @param xCorFirst left coordinate of first intersection
-     * @param yCorFirst right coordinate of first intersection
-     * * @param xCorSecond left coordinate of second intersection
+     * @param xCorFirst  left coordinate of first intersection
+     * @param yCorFirst  right coordinate of first intersection
+     * @param xCorSecond left coordinate of second intersection
      * @param yCorSecond right coordinate of second intersection
      * @return true if an edge unit was removed from the board
      */
@@ -656,7 +710,7 @@ public class SessionScreen implements Screen {
         int yCorFirst = firstCoordinate.getRight();
         int xCorSecond = secondCoordinate.getLeft();
         int yCorSecond = secondCoordinate.getRight();
-        
+
         // removes edge on given coordinate
         removeEdgeUnit(xCorFirst, yCorFirst, xCorSecond, yCorSecond);
 
@@ -677,7 +731,7 @@ public class SessionScreen implements Screen {
 
     /**
      * triggers initialization mode. All other actions are blocked until an intersection and an edge has been chosen
-     * */
+     */
     public void initialize(boolean firstInit) {
         aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
         initializing = true;
@@ -688,14 +742,14 @@ public class SessionScreen implements Screen {
         else {villagePieceKind = VillageKind.CITY;}
         edgePieceKind = EdgeUnitKind.ROAD;
     }
-    
+
     /**
      * unlocks menu build bar. IMPORTANT: DO NOT GIVE TURN AT INITIALIZATION
-     * */
+     */
     public void giveTurn() {
         aMode = SessionScreenModes.CHOOSEACTIONMODE;
     }
-    
+
     /**
      * moves the robber to given position
      *
@@ -739,6 +793,19 @@ public class SessionScreen implements Screen {
         }
     }
 
+    /**
+     * Add a message to the game log
+     *
+     * @param message message
+     */
+    private void addGameMessage(String message) {
+        final Table table = (Table) gameLog.getChildren().get(0);
+        table.add(new Label("hello", CatanGame.skin));
+        table.row();
+        gameLog.layout();
+        gameLog.scrollTo(0, 0, 0, 0);
+    }
+
     public CoordinatePair getInitSettlementIntersection() {
         return initSettlementIntersection;
     }
@@ -750,6 +817,4 @@ public class SessionScreen implements Screen {
     public CoordinatePair getInitEdgePos2() {
         return  initEdgePos2;
     }
-
-
 }

@@ -1,39 +1,57 @@
 package com.mygdx.catan.session;
 
+import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
-import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.GamePhase;
+import com.mygdx.catan.game.Game;
+import com.mygdx.catan.game.GameManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SessionManager {
 
     private static SessionManager instance;
     private Session aSession;
 
-    // FIXME SessionScreens must be in SessionController
-    private ArrayList<SessionScreen> sessionScreens = new ArrayList<>();
-
-    public Session getSession() { return this.aSession; }
-
-    // TODO: change this to fit design, so far this is only placeholder!
-    private SessionManager() {
-        aSession = new Session();
+    //TODO: change this to fit design, so far this is only placeholder!
+    private SessionManager(Session session) {
+        aSession = session;
     }
 
     public static SessionManager getInstance() {
-        if (instance == null)
-            instance = new SessionManager();
+        if (instance == null) {
+            final Game currentGame = GameManager.getInstance().getCurrentGame();
+            Session session;
+            if (currentGame == null || currentGame.session == null) {
+                // Create a dummy session, for testing purposes
+                List<Account> accounts = new ArrayList<>();
+                accounts.add(CatanGame.account);
+                session = Session.newInstance(accounts, GameRules.getGameRulesInstance().getVpToWin());
+            } else {
+                session = currentGame.session;
+            }
+            instance = new SessionManager(session);
+        }
         return instance;
     }
-    
-    public Player getCurrentPlayer() {
-        return Player.newInstance(new Account("dummy", "dummy"), PlayerColor.ORANGE);
-    }
+
+    public Session getSession() { return this.aSession; }
 
     public Player[] getPlayers() {
         return aSession.getPlayers();
+    }
+
+    /** Get the current player */
+    public Player getCurrentPlayer() {
+        return aSession.getPlayers()[aSession.getPlayerIndex()];
+    }
+
+    GamePhase getCurrentPhase() {
+        return aSession.getCurrentPhase();
     }
 
     /**

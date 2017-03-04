@@ -1,16 +1,18 @@
 package com.mygdx.catan.ui;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 
 public class CatanWindow extends Window {
+
+    private final float width, height;
+
+    TextButton closeButton;
 
     private WindowCloseListener windowCloseListener;
 
@@ -22,44 +24,55 @@ public class CatanWindow extends Window {
      */
     public CatanWindow(String title, Skin skin) {
         super(title, skin, title.isEmpty() ? "no-title" : "default");
+        width = 3f / 4f * Gdx.graphics.getWidth();
+        height = 3f / 4f * Gdx.graphics.getHeight();
+        init();
+    }
+
+    public CatanWindow(String title, Skin skin, float width, float height) {
+        super(title, skin, title.isEmpty() ? "no-title" : "default");
+        this.width = width;
+        this.height = height;
         init();
     }
 
     private void init() {
-        getTitleTable().getCells().get(0).expandY().fillY();
-        Skin skin = getSkin();
-        if (skin != null) {
-            // Skin shouldn't be null, always create this window with a style!
-            // Improve font rendering
-            BitmapFont font = skin.getFont("default");
-            font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        // Make the window around 3/4 of the screen
+        setWidth(width);
+        setHeight(height);
 
-            // Add the close button if the window has a title
-            if (getTitleLabel().getText().length != 0) {
-                // Add the close button
-                final TextButton closeButton = new TextButton("X", skin);
-                closeButton.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        closeButton.setChecked(false);
-                        close();
-                    }
-                });
-                getTitleTable().add(closeButton).height(getPadTop()).width(25);
-            }
-        }
-        setMovable(false);
-        setModal(true);
+        // Position window in the middle
+        setPosition(Gdx.graphics.getWidth() / 2 - getWidth() / 2, Gdx.graphics.getHeight() / 2 - getHeight() / 2);
 
         // Center title
         getTitleLabel().setAlignment(Align.center);
 
-        // Make the window around 3/4 of the screen
-        setWidth(3f / 4f * Gdx.graphics.getWidth());
-        setHeight(3f / 4f * Gdx.graphics.getHeight());
+        // Create the close button
+        if (getTitleLabel().getText().length != 0) {
+            closeButton = new TextButton("X", getSkin());
+            closeButton.setSize(20, 20);
+            closeButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    closeButton.setChecked(false);
+                    close();
+                }
+            });
+            getTitleTable().addActor(closeButton);
+            closeButton.setPosition(getWidth() - closeButton.getWidth() - 5, 0);
+        }
 
-        // Position window in the middle
-        setPosition(Gdx.graphics.getWidth() / 2 - getWidth() / 2, Gdx.graphics.getHeight() / 2 - getHeight() / 2);
+        getTitleTable().getCells().get(0).expandY().fillY();
+
+        setMovable(false);
+        setModal(true);
+    }
+
+    @Override
+    public void setSize(float width, float height) {
+        super.setSize(width, height);
+        // Correct the close button's position
+        closeButton.setPosition(getWidth() - closeButton.getWidth() - 5, 0);
     }
 
     /**

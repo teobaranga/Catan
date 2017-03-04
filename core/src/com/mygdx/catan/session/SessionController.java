@@ -9,7 +9,6 @@ import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.EdgeUnitKind;
-import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.VillageKind;
@@ -34,7 +33,7 @@ public class SessionController {
     public PlayerColor getPlayerColor() {
         return aPlayerColor;
     }
-    
+
     public void setPlayerColor(PlayerColor pc) {
         aPlayerColor = pc;
     }
@@ -48,16 +47,21 @@ public class SessionController {
             public void received(Connection connection, Object object) {
                 if (object instanceof PlaceCityAndRoad) {
                     Gdx.app.postRunnable(() -> {
-                        // ENTER CHOOSEINTERSECTIONMODE AND RETURN cityPos;
-                        CoordinatePair cityPos = CoordinatePair.of(0, 0, HarbourKind.NONE);
-                        // ENTER CHOOSEEDGEMODE AND RETURN edgeUnitPos1 edgeUnitPos2;
-                        CoordinatePair edgeUnitPos1 = CoordinatePair.of(0, 0, HarbourKind.NONE);
-                        CoordinatePair edgeUnitPos2 = CoordinatePair.of(0, 0, HarbourKind.NONE);
-                        // LET USER CHOOSE BTW SHIP AND ROAD (or force him to build a road ?)
+                        boolean isFirstInit = ((PlaceCityAndRoad) object).isFirstInit;
                         boolean isShip = false;
+                        aSessionScreen.initialize(isFirstInit);
+
+                        CoordinatePair cityPos = aSessionScreen.getInitSettlementIntersection();
+                        CoordinatePair edgeUnitPos1 = aSessionScreen.getInitEdgePos1();
+                        CoordinatePair edgeUnitPos2 = aSessionScreen.getInitEdgePos2();
+
+                        VillageKind villageKind = VillageKind.CITY;
+                        if (((PlaceCityAndRoad) object).isFirstInit) {
+                            villageKind = VillageKind.SETTLEMENT;
+                        }
                         boolean fromPeer = ((PlaceCityAndRoad) object).fromPeer;
                         PlayerColor aPlayerColor = ((PlaceCityAndRoad) object).aPlayerColor;
-                        placeCityAndRoads(cityPos, edgeUnitPos1, edgeUnitPos2, isShip, fromPeer, aPlayerColor);
+                        placeCityAndRoads(cityPos, edgeUnitPos1, edgeUnitPos2, isShip, fromPeer, aPlayerColor, villageKind);
                     });
                 } else if (object instanceof ShowDice) {
                     Gdx.app.postRunnable(() -> {
@@ -97,7 +101,7 @@ public class SessionController {
     public Player[] getPlayers() {
         return aSessionManager.getPlayers();
     }
-    
+
     public Hex getRobberPosition() {
         return aGameBoardManager.getRobberPosition();
     }
@@ -106,96 +110,92 @@ public class SessionController {
      * @param a one interesection
      * @param b another intersection
      * @return true if a and b are adjacent
-     * */
-    public boolean isAdjacent (CoordinatePair a, CoordinatePair b) {
+     */
+    public boolean isAdjacent(CoordinatePair a, CoordinatePair b) {
         return (Math.abs(a.getLeft() - b.getLeft()) + Math.abs(a.getRight() - b.getRight()) == 2) && a.getRight() != b.getRight();
     }
-    
+
     /**
      * @param intersection checks if this intersection is on land
      * @return true if on land
-     * */
+     */
     public boolean isOnLand(CoordinatePair intersection) {
         return aGameBoardManager.isOnLand(intersection);
     }
-    
+
     /**
-     * @param first intersection
-     * @param second intersection
+     * @param firstIntersection first  intersection
+     * @param secondIntersection second intersection
      * @return true if the edge between the two intersections is on land (assumes the two intersections are adjacent)
-     * */
+     */
     public boolean isOnLand(CoordinatePair firstIntersection, CoordinatePair secondIntersection) {
         return aGameBoardManager.isOnLand(firstIntersection, secondIntersection);
     }
 
-    
+
     /**
      * @param owner of request
-     * @param kind of village requested to be built
+     * @param kind  of village requested to be built
      * @return true if owner has the resources to build the requested village kind
-     * */
+     */
     public boolean requestBuildVillage(PlayerColor owner, VillageKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         Player currentP = null;
         ResourceMap cost = null;
-        for(Player p: aSessionManager.getPlayers()){
+        for (Player p : aSessionManager.getPlayers()) {
             if (p.getColor().equals(owner)) {
                 currentP = p;
             }
         }
         if (kind.equals(VillageKind.SETTLEMENT)) {
             cost = GameRules.getGameRulesInstance().getSettlementCost();
-        }
-        else if (kind.equals(VillageKind.CITY)) {
+        } else if (kind.equals(VillageKind.CITY)) {
             cost = GameRules.getGameRulesInstance().getCityCost();
         }
         //check to make sure player has sufficient resources
         if (currentP.hasEnoughResources(cost)) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
-    
+
     /**
      * @param owner of request
-     * @param kind of edge unit requested to be built
+     * @param kind  of edge unit requested to be built
      * @return true if owner has the resources to build the requested village kind
-     * */
+     */
     public boolean requestBuildEdgeUnit(PlayerColor owner, EdgeUnitKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         Player currentP = null;
         ResourceMap cost = null;
-        for(Player p: aSessionManager.getPlayers()){
+        for (Player p : aSessionManager.getPlayers()) {
             if (p.getColor().equals(owner)) {
                 currentP = p;
             }
         }
         if (kind.equals(EdgeUnitKind.SHIP)) {
             cost = GameRules.getGameRulesInstance().getShipCost();
-        }
-        else if (kind.equals(EdgeUnitKind.ROAD)) {
+        } else if (kind.equals(EdgeUnitKind.ROAD)) {
             cost = GameRules.getGameRulesInstance().getRoadCost();
         }
         //check to make sure player has sufficient resources
         if (currentP.hasEnoughResources(cost)) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
-    
+
     /**
      * @param owner of requested valid intersections
      * @return a list of all the intersections that are (1) connected to road owned by player and (2) not adjacent to another village and (3) on land (3) unoccupied
-     * */
+     */
     public ArrayList<CoordinatePair> requestValidBuildIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         //get current player
         Player currentP = null;
-        for(Player p: aSessionManager.getPlayers()){
+        for (Player p : aSessionManager.getPlayers()) {
             if (p.getColor().equals(owner)) {
                 currentP = p;
             }
@@ -207,11 +207,11 @@ public class SessionController {
         ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
 
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
-        for (CoordinatePair i: aGameBoardManager.getIntersectionsAndEdges()) {
+        for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
             //FIXME: only verifies that i is not adjacent to a village owned by current player! we need it to verify this for all the villages
-            for (Village v: listOfVillages) {
-                for (EdgeUnit e: listOfEdgeUnits) {
-                    if ( !isAdjacent(i, v.getPosition()) && (!e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
+            for (Village v : listOfVillages) {
+                for (EdgeUnit e : listOfEdgeUnits) {
+                    if (!isAdjacent(i, v.getPosition()) && (!e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
                         validIntersections.add(i);
                     }
                 }
@@ -222,74 +222,74 @@ public class SessionController {
         }
         return validIntersections;
     }
-    
+
     /**
      * Method to be called at initialization
-     * 
+     *
      * @return a list of all the intersections that are (1) unoccupied and (2) not adjacent to another occupied intersection
-     * */
+     */
     public ArrayList<CoordinatePair> requestValidInitializationBuildIntersections() {
         ArrayList<CoordinatePair> validIntersections = new ArrayList<CoordinatePair>();
-        
+
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
             for (CoordinatePair j : aGameBoardManager.getIntersectionsAndEdges()) {
-                if (!i.isOccupied() && (!j.isOccupied() || !isAdjacent(i,j))) {
+                if (!i.isOccupied() && (!j.isOccupied() || !isAdjacent(i, j))) {
                     validIntersections.add(i);
                 }
             }
         }
-        
+
         return validIntersections;
     }
-    
+
     /**
      * @param owner of requested valid intersections
      * @return a list of all the intersections that have an owner's settlement on it
-     * */
+     */
     public ArrayList<CoordinatePair> requestValidCityUpgradeIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        
+
         return null;
     }
-    
+
     /**
      * @param owner of requested valid intersections
      * @return a list of all the intersections that are (1) connected to a road or village owned by owner
-     * */
+     */
     public ArrayList<CoordinatePair> requestValidRoadEndpoints(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        
+
         // this method will essentially return all the endpoints where you can build a road at any edge 
         // starting at that endpoint (if we disregard the edges that are occupied). The GUI will make sure 
         // none of the edges that are occupied or in water can be chosen.
-        
+
         return null;
     }
-    
+
     /**
      * @param owner of requested valid intersections
      * @return a list of all the intersections that are (1) connected to a ship or harbour village owned by owner (2) something something pirate
-     * */
+     */
     public ArrayList<CoordinatePair> requestValidShipEndpoints(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        
+
         // same as above but with no edges that are in land can be chosen
-        
+
         return null;
     }
-    
+
     /**
      * Requests the GameBoardManager to build village on given coordinate. SessionScreen is notified of any boardgame changes.
      *
      * @param position of new settlement
-     * @param kind of village to build
+     * @param kind     of village to build
      * @param owner    of new settlement
      * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
      * @return true if building the village was successful, false otherwise
      */
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer) {
         Player currentP = null;
-        for(Player p: aSessionManager.getPlayers()){
+        for (Player p : aSessionManager.getPlayers()) {
             if (p.getColor().equals(owner)) {
                 currentP = p;
             }
@@ -297,8 +297,7 @@ public class SessionController {
         aGameBoardManager.buildSettlement(currentP, position);
         if (fromPeer) {
             aSessionScreen.updateIntersection(position, owner, kind);
-        }
-        else {
+        } else {
             aSessionScreen.updateIntersection(position, owner, kind);
             aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getSettlementCost());
         }
@@ -308,8 +307,7 @@ public class SessionController {
         //NOTE: if kind is for example city, then all you need to do is upgrade the settlement on that coordinate to a city
         return true;
     }
-    
-    
+
 
     /**
      * Requests the GameBoardManager to build edge unit on given coordinates. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
@@ -323,7 +321,7 @@ public class SessionController {
      * @return true if building the unit was successful, false otherwise
      */
     public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
-        
+
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)
 
         return false;
@@ -342,16 +340,16 @@ public class SessionController {
     /**
      * Allows the user to place a city and an edge unit and then receive the resources near the city
      */
-    public void placeCityAndRoads(CoordinatePair cityPos, CoordinatePair edgeUnitPos1, CoordinatePair edgeUnitPos2, boolean isShip, boolean fromPeer, PlayerColor aPlayerColor) {
+    public void placeCityAndRoads(CoordinatePair cityPos, CoordinatePair edgeUnitPos1, CoordinatePair edgeUnitPos2, boolean isShip, boolean fromPeer, PlayerColor aPlayerColor, VillageKind villageKind) {
         if (isShip) {
             buildEdgeUnit(aPlayerColor, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, fromPeer);
         } else {
             buildEdgeUnit(aPlayerColor, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.ROAD, fromPeer);
         }
 
-        buildVillage(cityPos, VillageKind.SETTLEMENT, aPlayerColor, fromPeer);
+        buildVillage(cityPos, villageKind, aPlayerColor, fromPeer);
 
-        if(fromPeer){
+        if (fromPeer) {
             return;
         }
 
@@ -382,11 +380,11 @@ public class SessionController {
                     cost.put(ResourceKind.WOOL, (curr == null ? 0 : curr) + 1);
                     break;
                 // GOLDFIELDS ?
-            default:
-                break;
+                default:
+                    break;
             }
         }
-       // cp.addResources(cost); getPLayerByColor(aPlayerColor).addResources(cost);
+        // cp.addResources(cost); getPLayerByColor(aPlayerColor).addResources(cost);
     }
 
     /**

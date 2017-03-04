@@ -102,8 +102,12 @@ public class SessionScreen implements Screen {
     /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
     private VillageKind villagePieceKind;
     private EdgeUnitKind edgePieceKind;
+
     private CoordinatePair initSettlementIntersection;
-    
+    private CoordinatePair initEdgePos1;
+    private CoordinatePair initEdgePos2;
+
+
     /** Menu Buttons */
     private TextButton buildSettlementButton;
     private TextButton buildCityButton;
@@ -189,9 +193,11 @@ public class SessionScreen implements Screen {
                                 if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
                                     edgePieceKind = EdgeUnitKind.SHIP;
                                 }
+                                initEdgePos1 = validEdge.getLeft();
+                                initEdgePos2 = validEdge.getRight();
                                 //TODO: call placeCityAndRoad method in SessionController and delete following
                                 updateIntersection(initSettlementIntersection, PlayerColor.ORANGE, villagePieceKind);
-                                updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, PlayerColor.ORANGE);
+                                updateEdge(initEdgePos1, initEdgePos2, edgePieceKind, PlayerColor.ORANGE);
                                 
                                 initializing = false;
                                 aInitButton.setText("Done");
@@ -732,4 +738,18 @@ public class SessionScreen implements Screen {
             l.setText(newValue + "");
         }
     }
+
+    public CoordinatePair getInitSettlementIntersection() {
+        return initSettlementIntersection;
+    }
+
+    public CoordinatePair getInitEdgePos1() {
+        return initEdgePos1;
+    }
+
+    public CoordinatePair getInitEdgePos2() {
+        return  initEdgePos2;
+    }
+
+
 }

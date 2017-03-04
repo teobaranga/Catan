@@ -166,7 +166,13 @@ public class GameBoardManager {
     }
 
     public ArrayList<Village> getAdjacentVillages(Hex hex) {
-        throw new RuntimeException("getAdjacentVillages not yet implemented");
+        ArrayList<Village> adjacentVillages = new ArrayList<>();
+        for (CoordinatePair pair : getAdjacentIntersections(hex)) {
+            if (pair.isOccupied()) {
+                adjacentVillages.add(pair.getOccupyingVillage());
+            }
+        }
+        return adjacentVillages;
     }
 
     /**

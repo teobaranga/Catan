@@ -21,13 +21,24 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.CatanRandom;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
+import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
-import com.mygdx.catan.enums.*;
+import com.mygdx.catan.enums.EdgeUnitKind;
+import com.mygdx.catan.enums.HarbourKind;
+import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.SessionScreenModes;
+import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.request.RollDice;
+import com.mygdx.catan.request.RollTwoDice;
 import com.mygdx.catan.ui.TradeWindow;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -286,9 +297,19 @@ public class SessionScreen implements Screen {
         rollDiceButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // TODO trigger roll dice
-                // Depending on the stage of the game, either roll the 2 numbered dice
-                // or all three dices, including the event die
+                int yellowDice = CatanRandom.getInstance().nextDie();
+                int redDice = CatanRandom.getInstance().nextDie();
+
+                //TODO: FIRE FOLLOWING MSG TO SERVER.
+                Pair diceResults = new ImmutablePair<Integer, Integer>(yellowDice,redDice);
+                RollTwoDice diceResultsToSent = RollTwoDice.newInstance(diceResults,"Dummy");
+
+                Map<Player, ResourceMap> diceResourceMap =  aSessionController.rollDice(yellowDice + redDice);
+                //TODO: FIRE FOLLOWING MSG TO SERVER.
+                RollDice diceResourcesToSent = RollDice.newInstance(diceResourceMap,"Dummy");
+
+                updateResourceBar(aSessionController.getOwnresourcesUpdate(diceResourceMap));
+                showDice(yellowDice, redDice);
             }
         });
         menuTable.add(rollDiceButton).padBottom(10).row();

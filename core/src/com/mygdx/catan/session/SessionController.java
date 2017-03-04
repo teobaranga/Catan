@@ -90,11 +90,7 @@ public class SessionController {
                 } else if (object instanceof RollDice) {
                     Gdx.app.postRunnable(() -> {
                         Map<Player, ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
-                        for (Map.Entry<Player, ResourceMap> entry : updatedPlayerResources.entrySet() ) {
-                            if(entry.getKey().getColor().equals(aPlayerColor)) {
-                                aSessionScreen.updateResourceBar(entry.getValue());
-                            }
-                        }
+                        aSessionScreen.updateResourceBar(getOwnresourcesUpdate(updatedPlayerResources));
                      });
 
                 }
@@ -556,4 +552,12 @@ public class SessionController {
     }
     // TODO: set GUI's mode to chooseActionMode for the player who's turn it is
 
+    public ResourceMap getOwnresourcesUpdate(Map<Player, ResourceMap> updatedPlayerResources) {
+        for (Map.Entry<Player, ResourceMap> entry : updatedPlayerResources.entrySet() ) {
+            if(entry.getKey().getColor().equals(aPlayerColor)) {
+                return entry.getValue();
+            }
+        }
+        return new ResourceMap();
+    }
 }

@@ -509,9 +509,9 @@ public class SessionController {
                  * default: break;
                  */
                 }
-                currPlayer.addResources(ResAndComMap);
+                villageOwner.addResources(ResAndComMap);
                 noResourcesReceivedPlayers.remove(villageOwner);
-                playerResources.put(currPlayer, ResAndComMap);
+                playerResources.put(villageOwner, ResAndComMap);
             }
         }
         return playerResources;

@@ -73,6 +73,14 @@ public class Session {
 		return this.yellowDice;
 	}
 
+    public void setRedDice(int redDice) {
+        this.redDice = redDice;
+    }
+
+    public void setYellowDice(int yellowDice) {
+        this.yellowDice = yellowDice;
+    }
+
 	public int getNumberOfPlayers() {
 		return players.length;
 	}

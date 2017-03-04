@@ -5,7 +5,10 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.mygdx.catan.GameRules;
+import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.TerrainKind;
 
 import java.util.HashMap;
@@ -398,6 +401,67 @@ class GamePieces {
         });
     }
 
+    
+    PolygonRegion createHarbour(int x, int y, int base, int length, HarbourKind kind) {
+        Texture aTexture = aSeaTextureSolid;
+        
+        switch (kind) {
+        case SPECIAL_BRICK:
+            aTexture = aHillsTextureSolid;
+            break;
+        case SPECIAL_GRAIN:
+            aTexture = aFieldsTextureSolid;
+            break;
+        case SPECIAL_ORE:
+            aTexture = aMountainTextureSolid;
+            break;
+        case SPECIAL_WOOD:
+            aTexture = aForestTextureSolid;
+            break;
+        case SPECIAL_WOOL:
+            aTexture = aPastureTextureSolid;
+            break;
+        default:
+            aTexture = setupTextureSolid(Color.WHITE);
+        }
+        
+        int dir = GameRules.getGameRulesInstance().getDefaultHarbourDirection(x, y, kind);
+        int diry = 1;
+        
+        int Xoffset, Yoffset;
+        if (dir == 0) {
+            diry = 0;
+            Xoffset = GameRules.getGameRulesInstance().getxHarbourOff(x, y, base);
+            Yoffset = GameRules.getGameRulesInstance().getyHarbourOff(x, y, length);
+            dir = 1;
+        } else {
+            Xoffset = GameRules.getGameRulesInstance().getxHarbourOff(x, y, base);
+            Yoffset = GameRules.getGameRulesInstance().getyHarbourOff(x, y, length/2);
+        }
+        
+       
+        
+        float[] v0 = new float[2], v1 = new float[2];
+        v0[0] = x*base;
+        v0[1] = -y*length/2;
+        v1[0] = x*base + Xoffset;
+        v1[1] = -(y*length/2 + Yoffset);
+        
+        return new PolygonRegion(new TextureRegion(aTexture),
+                new float[]{ 
+                        v0[0], v0[1],                                        // Vertex 0                2
+                        v1[0] + dir*length/8, v1[1] + diry*length/10,        // Vertex 1                1          (with rotation)  
+                        v1[0] - dir*length/8, v1[1] - diry*length/10,        // Vertex 2         0                
+                        
+
+
+                }, new short[]{
+                0, 1, 2         // Sets up triangulation according to vertices above
+        });
+        
+    }
+    
+    
     /**
      * Creates a ship according to given positions. Assumes the coordinates correspond to adjacent intersections
      *
@@ -536,6 +600,8 @@ class GamePieces {
                 6, 7, 5
         });
     }
+    
+    
 
     private Texture setupTextureSolid(Color color) {
         Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);

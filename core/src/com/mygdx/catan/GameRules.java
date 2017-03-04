@@ -3,6 +3,7 @@ package com.mygdx.catan;
 import java.util.EnumMap;
 import java.util.HashMap;
 
+import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.TerrainKind;
@@ -23,6 +24,7 @@ public class GameRules {
 	private EnumMap<ProgressCardKind, Integer> progressCardOccurences = new EnumMap<ProgressCardKind, Integer>(ProgressCardKind.class);
 	private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
 	private HashMap<Integer,Integer> defaultDiceNumberMap = new HashMap<Integer,Integer>();
+	private HashMap<Integer,HarbourKind> defaultHarbourMap = new HashMap<Integer,HarbourKind>();
 	
 	private int vpToWin = 13;
 	private int settlementVp = 1;
@@ -40,6 +42,7 @@ public class GameRules {
 		initializeProgressCardOccurences();
 		setupDefaultTerrainMap();
 		setupDefaultDiceMap();
+		setupDefaultHarbourMap();
 
 		setupSettlementCost();
 		setupRoadCost();
@@ -164,6 +167,28 @@ public class GameRules {
 	}
 	
 	/**
+     * hardcodes default harbour map (keys exactly as above) (assumes size <= 7)
+     * */
+	private void setupDefaultHarbourMap() {
+        defaultHarbourMap.put(getHashCodeofPair(-3,-11), HarbourKind.SPECIAL_BRICK);
+        defaultHarbourMap.put(getHashCodeofPair(-2,-10), HarbourKind.SPECIAL_BRICK);
+        defaultHarbourMap.put(getHashCodeofPair(0,-10), HarbourKind.GENERIC);
+        defaultHarbourMap.put(getHashCodeofPair(1,-11), HarbourKind.GENERIC);
+        defaultHarbourMap.put(getHashCodeofPair(2,-10), HarbourKind.SPECIAL_ORE);
+        defaultHarbourMap.put(getHashCodeofPair(2,-8), HarbourKind.SPECIAL_ORE);
+        defaultHarbourMap.put(getHashCodeofPair(-5,-7), HarbourKind.SPECIAL_WOOD);
+        defaultHarbourMap.put(getHashCodeofPair(-4,-8), HarbourKind.SPECIAL_WOOD);
+        defaultHarbourMap.put(getHashCodeofPair(-5,-5), HarbourKind.GENERIC);
+        defaultHarbourMap.put(getHashCodeofPair(-4,-4), HarbourKind.GENERIC);
+        defaultHarbourMap.put(getHashCodeofPair(3,-5), HarbourKind.SPECIAL_GRAIN);
+        defaultHarbourMap.put(getHashCodeofPair(4,-4), HarbourKind.SPECIAL_GRAIN);
+        defaultHarbourMap.put(getHashCodeofPair(-2,2), HarbourKind.SPECIAL_WOOL);
+        defaultHarbourMap.put(getHashCodeofPair(-1,1), HarbourKind.SPECIAL_WOOL);
+        defaultHarbourMap.put(getHashCodeofPair(1,1), HarbourKind.GENERIC);
+        defaultHarbourMap.put(getHashCodeofPair(2,2), HarbourKind.GENERIC);
+    }
+	
+	/**
 	 * initializes progress card occurences
 	 * */
 	private void initializeProgressCardOccurences() {
@@ -194,13 +219,14 @@ public class GameRules {
 		progressCardOccurences.put(ProgressCardKind.MERCHANT, 6);
 	}
 	
+	
 	/**
 	 * @param left coordinate
 	 * @param right coordinate
 	 * @return the hashCode of the CoordinatePair <x,y>
 	 * */
 	private int getHashCodeofPair(int x, int y) {
-		return x*10+y;
+		return (x+30)*10+(y+30);
 	}
 	
 	/**
@@ -254,7 +280,149 @@ public class GameRules {
 	public Integer getDiceNumber(Hex hex) {
 	    return defaultDiceNumberMap.get(getHashCodeofPair(hex.getLeftCoordinate(),hex.getRightCoordinate()));
 	}
+	
+	public HarbourKind getHarbourKind(int leftCoordinate, int rightCoordinate) {
+	    if (defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate)) == null) {
+	        return HarbourKind.NONE;
+	    } else {
+	        System.out.println(leftCoordinate + " " + rightCoordinate + ": " + getHashCodeofPair(leftCoordinate,rightCoordinate));
+	        return defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate));
+	    }
+	}
+	
+	/**
+	 * return the x offset for drawing the default harbour on <leftCoordinate,rightCoordinate> on the board
+	 * */
+	public int getxHarbourOff(int leftCoordinate, int rightCoordinate, int off) {
+	    if (defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate)) != null) {
+	        switch (defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate))) {
+            case GENERIC:
+                if (rightCoordinate == -11) {
+                    return -off;
+                } else if (rightCoordinate == -10) {
+                    return 0;
+                } else {
+                    if (leftCoordinate == -5 || leftCoordinate == 1) {
+                        return 0;
+                    } else {
+                        return -off;
+                    }
+                }
+            case NONE:
+                return 0;
+            case SPECIAL_BRICK:
+                if (leftCoordinate == -3) {
+                    return off;
+                } else {
+                    return 0;
+                }
+            case SPECIAL_GRAIN:
+                if (leftCoordinate == 3) {
+                    return off;
+                } else {
+                    return 0;
+                }
+            case SPECIAL_ORE:
+                return off/2;
+            case SPECIAL_WOOD:
+                if (leftCoordinate == -5) {
+                    return 0;
+                } else {
+                    return -off;
+                }
+            case SPECIAL_WOOL:
+                if (leftCoordinate == -2) {
+                    return off;
+                } else {
+                    return 0;
+                }
+            default:
+                return 0;
+	        
+	        }
+	    }
+	    
+	    return 0;
+	}
 
+	/**
+     * return the y offset for drawing the default harbour on <leftCoordinate,rightCoordinate> on the board
+     * */
+    public int getyHarbourOff(int leftCoordinate, int rightCoordinate, int off) {
+        if (defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate)) != null) {
+            switch (defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate))) {
+            case GENERIC:
+                if (rightCoordinate == -11) {
+                    return 0;
+                } else if (rightCoordinate == -10) {
+                    return -off;
+                } else {
+                    if (leftCoordinate == -5 || leftCoordinate == 1) {
+                        return off;
+                    } else {
+                        return 0;
+                    }
+                }
+            case NONE:
+                return 0;
+            case SPECIAL_BRICK:
+                if (leftCoordinate == -3) {
+                    return 0;
+                } else {
+                    return -off;
+                }
+            case SPECIAL_GRAIN:
+                if (leftCoordinate == 3) {
+                    return 0;
+                } else {
+                    return -off;
+                }
+            case SPECIAL_ORE:
+                if (rightCoordinate == -10) {
+                    return off/2;
+                } else {
+                    return -off/2;
+                }
+            case SPECIAL_WOOD:
+                if (leftCoordinate == -5) {
+                    return -off;
+                } else {
+                    return 0;
+                }
+            case SPECIAL_WOOL:
+                if (leftCoordinate == -2) {
+                    return 0;
+                } else {
+                    return off;
+                }
+            default:
+                return 0;
+            
+            }
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * highly arbitrary function that returns -1 if harbour needs to be turned on the gameboard, and 0 if it is vertical. Will only work for default board
+     * @return -1, 0 or 1
+     * */
+    public int getDefaultHarbourDirection(int leftCoordinate, int rightCoordinate, HarbourKind kind) {
+        int dir = 1;
+        
+        if (kind == HarbourKind.SPECIAL_WOOD 
+                || kind == HarbourKind.SPECIAL_WOOL 
+                || (leftCoordinate == 0 && rightCoordinate == -10) 
+                || (leftCoordinate == 1 && rightCoordinate == -11)) {
+            dir = -1;
+        }
+        
+        if (kind == HarbourKind.SPECIAL_ORE) {dir = 0;}
+        
+        return dir;
+    }
+	
 	/**
 	 * @return standard cost of things that can be built throughout the game
 	 */

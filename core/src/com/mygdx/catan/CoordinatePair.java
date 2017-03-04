@@ -46,8 +46,8 @@ public class CoordinatePair extends Pair<Integer, Integer> {
 
     @Override
     public int hashCode() {
-        return (getKey() == null ? 0 : getKey().hashCode() * 10) +
-                (getValue() == null ? 0 : getValue().hashCode());
+        return (getKey() == null ? 0 : (getKey().hashCode()+30) * 10) +
+                (getValue() == null ? 0 : (getValue().hashCode()+30));
     }
 
     public HarbourKind getHarbourKind() {

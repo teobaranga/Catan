@@ -62,26 +62,27 @@ public class GameBoard {
                 
                 if (y < 0) { // top half of board
                 // Creates the top, and top left points adjacent to current hex
-                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,HarbourKind.NONE));
-                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,y*3 - 1)));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,GameRules.getGameRulesInstance().getHarbourKind(x,y*3 - 2)));
                 // If the hex is the last column of a row, create the top right point
                     if (col == cols - 1) {
-                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,HarbourKind.NONE));
+                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y-1)));
                     }
                 } else if (y == 0) { // middle
                 // Creates the top, and top left points adjacent to current hex
-                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,HarbourKind.NONE));
-                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,3*y-1)));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,GameRules.getGameRulesInstance().getHarbourKind(x,3*y-2)));
                 // Creates the bottom, and bottom left points adjacent to current hex
-                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,HarbourKind.NONE));
-                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,3*y+1)));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,GameRules.getGameRulesInstance().getHarbourKind(x,3*y+2)));
                 // If the hex is the last column of a row, create the top right and bottom right points
                     if (col == cols - 1) { 
-                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,HarbourKind.NONE));
-                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,HarbourKind.NONE));
+                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y-1)));
+                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y+1)));
                     }
                 } else { // bottom half of board
                 // Creates the bottom, and bottom left points adjacent to current hex
+                    // FIXME: change to same HarbourKind as above once hashCode function has been fixed 
                     aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,HarbourKind.NONE));
                     aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,HarbourKind.NONE));
                 // If the hex is the last column of a row, create the bottom right point

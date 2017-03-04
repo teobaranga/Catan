@@ -72,6 +72,9 @@ public class SessionScreen implements Screen {
 
     /** The list of polygons representing the board hexes */
     private List<PolygonRegion> boardHexes;
+    
+    /** The list of polygons representing the board harbours */
+    private List<PolygonRegion> boardHarbours;
 
     /** The List of villages currently on the board */
     private List<PolygonRegion> villages;
@@ -121,6 +124,7 @@ public class SessionScreen implements Screen {
         aGame = pGame;
         aSessionController = new SessionController(this);
         boardHexes = new ArrayList<>();
+        boardHarbours = new ArrayList<>();
         villages = new ArrayList<>();
         edgeUnits = new ArrayList<>();
         boardOrigin = new MutablePair<>();
@@ -278,6 +282,16 @@ public class SessionScreen implements Screen {
             boardHexes.add(gamePieces.createHexagon((offsetX * OFFX), -(offsetY * OFFY), LENGTH, BASE, hex.getKind()));
         }
         
+        // creates harbours of the board
+        for (CoordinatePair intersection : aSessionController.getIntersectionsAndEdges()) {
+            if (intersection.getHarbourKind() != HarbourKind.NONE) {
+                offsetX = intersection.getLeft();
+                offsetY = intersection.getRight();
+                System.out.println(offsetX + " " +offsetY);
+                boardHarbours.add(gamePieces.createHarbour(offsetX, offsetY, BASE, LENGTH, intersection.getHarbourKind()));
+            }
+        }
+        
         // places robber at initial robber position
         Hex robberPos = aSessionController.getRobberPosition();
         if (robberPos != null) {
@@ -407,10 +421,13 @@ public class SessionScreen implements Screen {
         Gdx.gl.glClearColor(0.24706f, 0.24706f, 0.24706f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         
-        // Display the board hexes and game pieces and dice number tokens
+        // Display the board hexes + harbours and game pieces and dice number tokens
         polyBatch.begin();
         for (PolygonRegion boardHex : boardHexes) {
             polyBatch.draw(boardHex, boardOrigin.getLeft(), boardOrigin.getRight());
+        }
+        for (PolygonRegion harbour : boardHarbours) {
+            polyBatch.draw(harbour, boardOrigin.getLeft(), boardOrigin.getRight());
         }
         for (PolygonRegion edgeUnit : edgeUnits) {
             polyBatch.draw(edgeUnit, boardOrigin.getLeft(), boardOrigin.getRight());

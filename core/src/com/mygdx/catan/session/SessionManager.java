@@ -50,6 +50,16 @@ public class SessionManager {
      */
     public int getRedDice() { return aSession.getRedDice(); }
 
+
+    public void setRedDice(int redDice) {
+        aSession.setRedDice(redDice);
+    }
+
+    public void setYellowDice(int yellowDice) {
+        aSession.setYellowDice(yellowDice);
+    }
+
+
     /**
      * Adds resources to the Bank
      *

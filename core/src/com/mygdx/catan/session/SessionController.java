@@ -23,15 +23,15 @@ import com.mygdx.catan.response.PlaceCityAndRoad;
 import com.mygdx.catan.response.ShowDice;
 import com.mygdx.catan.response.UpdateResourceBar;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
@@ -86,12 +86,20 @@ public class SessionController {
                 } else if (object instanceof RollTwoDice) {
                     Gdx.app.postRunnable(() -> {
                         Pair<Integer, Integer> diceRollResult = ((RollTwoDice) object).getRollResult();
-                        // TODO: Update screen to reflect new roll?
+                        int yellowDice = diceRollResult.getLeft();
+                        int redDice = diceRollResult.getRight();
+                        aSessionManager.setYellowDice(yellowDice);
+                        aSessionManager.setRedDice(redDice);
+                        aSessionScreen.showDice(yellowDice, redDice);
                     });
                 } else if (object instanceof RollDice) {
                     Gdx.app.postRunnable(() -> {
                         Map<Player, ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
-                        // TODO: Update screen to reflect resource updates
+                        for (Map.Entry<Player, ResourceMap> entry : updatedPlayerResources.entrySet() ) {
+                            if(entry.getKey().getColor().equals(aPlayerColor)) {
+                                aSessionScreen.updateResourceBar(entry.getValue());
+                            }
+                        }
                      });
                     
                 }

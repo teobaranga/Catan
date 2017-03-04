@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
     private final SessionManager aSessionManager;
@@ -82,7 +85,7 @@ public class SessionController {
                     });
                 } else if (object instanceof RollTwoDice) {
                     Gdx.app.postRunnable(() -> {
-                        int diceRollResult = ((RollTwoDice) object).getRollResult();
+                        Pair<Integer, Integer> diceRollResult = ((RollTwoDice) object).getRollResult();
                         // TODO: Update screen to reflect new roll?
                     });
                 } else if (object instanceof RollDice) {
@@ -426,13 +429,10 @@ public class SessionController {
         return cost;
     }
     
-    public int rollTwoDice() {
-        int low = 1;
-        int high = 6;
-        int redDie = rand.nextInt(high - low + 1) + low;
-        int yellowDie = rand.nextInt(high - low + 1) + low;
-        int diceResult = redDie + yellowDie;
-        return diceResult;
+    public Pair<Integer, Integer> rollTwoDice() {
+        int roll1 = rand.nextInt(6) + 1;
+        int roll2 = rand.nextInt(6) + 1;
+        return new ImmutablePair<Integer, Integer>(roll1, roll2);
     }
 
     public Map<Player, ResourceMap> rollDice(int diceRoll) {

@@ -107,6 +107,7 @@ public class GameBoardManager {
         Village village = new Village(player, position);
         position.putVillage(village);
         player.addVillage(village);
+        player.decrementAvailableSettlements();
         return true;
     }
 
@@ -117,8 +118,13 @@ public class GameBoardManager {
      * @param position of settlement
      * @return true if upgrading the village was successful, false otherwise
      */
-    //TODO
     public boolean upgradeSettlement(Player player, CoordinatePair position) {
+        Village city = position.getOccupyingVillage();
+        city.setVillageKind(VillageKind.CITY);
+        position.putVillage(city);
+        player.addVillage(city);
+        player.decrementAvailableCities();
+        player.incrementAvailableSettlements();
         return true;
     }
 
@@ -134,6 +140,8 @@ public class GameBoardManager {
         EdgeUnit edgeunit = new EdgeUnit(firstPosition, SecondPosition, kind, player);
         player.addEdgeUnit(edgeunit);
         aGameBoard.addRoadOrShip(edgeunit);
+        if(kind == EdgeUnitKind.ROAD) { player.decrementAvailableRoads(); }
+        if(kind == EdgeUnitKind.SHIP) { player.decrementAvailableShips(); }
     }
 
     /**

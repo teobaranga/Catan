@@ -216,24 +216,29 @@ public class SessionController {
      */
     public boolean requestBuildVillage(PlayerColor owner, VillageKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        Player currentP = null;
-        ResourceMap cost = null;
-        for (Player p : aSessionManager.getPlayers()) {
-            if (p.getColor().equals(owner)) {
-                currentP = p;
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        boolean canBuild = false;
+
+        if (kind == VillageKind.SETTLEMENT) {
+            ResourceMap cost = GameRules.getGameRulesInstance().getSettlementCost();
+            boolean hasAvailSettlements = currentP.getAvailableSettlements() > 0;
+            if(currentP.hasEnoughResources(cost) && hasAvailSettlements) {
+                canBuild = true;
+            } else {
+                canBuild = false;
             }
         }
-        if (kind.equals(VillageKind.SETTLEMENT)) {
-            cost = GameRules.getGameRulesInstance().getSettlementCost();
-        } else if (kind.equals(VillageKind.CITY)) {
-            cost = GameRules.getGameRulesInstance().getCityCost();
+
+        if (kind == VillageKind.CITY) {
+            ResourceMap cost = GameRules.getGameRulesInstance().getCityCost();
+            boolean hasAvailCities = currentP.getAvailableCities() > 0;
+            if (currentP.hasEnoughResources(cost) && hasAvailCities) {
+                canBuild = true;
+            } else {
+                canBuild = false;
+            }
         }
-        //check to make sure player has sufficient resources
-        if (currentP.hasEnoughResources(cost)) {
-            return true;
-        } else {
-            return false;
-        }
+        return canBuild;
     }
 
     /**
@@ -243,24 +248,27 @@ public class SessionController {
      */
     public boolean requestBuildEdgeUnit(PlayerColor owner, EdgeUnitKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        Player currentP = null;
-        ResourceMap cost = null;
-        for (Player p : aSessionManager.getPlayers()) {
-            if (p.getColor().equals(owner)) {
-                currentP = p;
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        boolean hasAvailableShips = currentP.getAvailableShips() > 0;
+        boolean hasAvailableRoads = currentP.getAvailableRoads() > 0;
+        boolean canBuild = false;
+        if (kind == EdgeUnitKind.SHIP) {
+            ResourceMap cost = GameRules.getGameRulesInstance().getShipCost();
+            if (currentP.hasEnoughResources(cost) && hasAvailableShips) {
+                canBuild = true;
+            } else {
+                canBuild = false;
             }
         }
-        if (kind.equals(EdgeUnitKind.SHIP)) {
-            cost = GameRules.getGameRulesInstance().getShipCost();
-        } else if (kind.equals(EdgeUnitKind.ROAD)) {
-            cost = GameRules.getGameRulesInstance().getRoadCost();
+        if (kind == EdgeUnitKind.ROAD) {
+            ResourceMap cost = GameRules.getGameRulesInstance().getRoadCost();
+            if (currentP.hasEnoughResources(cost) && hasAvailableRoads) {
+                canBuild = true;
+            } else {
+                canBuild = false;
+            }
         }
-        //check to make sure player has sufficient resources
-        if (currentP.hasEnoughResources(cost)) {
-            return true;
-        } else {
-            return false;
-        }
+        return canBuild;
     }
 
     /**
@@ -394,10 +402,11 @@ public class SessionController {
      * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
      * @return true if building the village was successful, false otherwise
      */
+    //TODO: tell gui to display updated available tokens
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 
-        if (kind.equals(VillageKind.SETTLEMENT)) {
+        if (kind == VillageKind.SETTLEMENT) {
             aGameBoardManager.buildSettlement(currentP, position);
             aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
 
@@ -408,7 +417,7 @@ public class SessionController {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getSettlementCost());
             }
         }
-        else if (kind.equals(VillageKind.CITY)) {
+        else if (kind == VillageKind.CITY) {
             aGameBoardManager.upgradeSettlement(currentP, position);
             aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
 
@@ -437,19 +446,20 @@ public class SessionController {
      * @param fromPeer       indicates whether the method was called from the owner of new settlement, or from a peer
      * @return true if building the unit was successful, false otherwise
      */
+    //TODO: tell gui to display updated available tokens
     public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
         aGameBoardManager.buildEdgeUnit(currentP, firstPosition, SecondPosition, kind);
         aSessionScreen.updateEdge(firstPosition, SecondPosition, kind, owner);
 
-        if (kind.equals(EdgeUnitKind.ROAD)) {
+        if (kind == EdgeUnitKind.ROAD) {
             aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
             if (!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getRoadCost());
             }
         }
 
-        if (kind.equals(EdgeUnitKind.SHIP)) {
+        if (kind == EdgeUnitKind.SHIP) {
             aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
             if(!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getShipCost());

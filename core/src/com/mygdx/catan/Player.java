@@ -22,12 +22,36 @@ public class Player {
     private int tokenVictoryPoints;
     private ResourceMap resourceMap = new ResourceMap();
 
+    private int availableSettlements;
+    private int availableCities;
+    private int availableRoads;
+    private int availableShips;
+
     public static Player newInstance(Account account, PlayerColor color) {
         final Player player = new Player();
         player.account = account;
         player.color = color;
+        player.availableSettlements = 5;
+        player.availableCities = 4;
+        player.availableRoads = 15;
+        player.availableShips = 15;
+
         return player;
     }
+
+    public int getAvailableSettlements() { return availableSettlements; }
+    public int getAvailableCities() { return availableCities; }
+    public int getAvailableRoads() { return availableRoads; }
+    public int getAvailableShips() { return availableShips; }
+
+    public void decrementAvailableSettlements() { availableSettlements--; }
+    public void incrementAvailableSettlements() { availableSettlements++; }
+    public void decrementAvailableCities() { availableCities--; }
+    public void incrementAvailableCities() { availableCities++; }
+    public void decrementAvailableRoads() { availableRoads--; }
+    public void incrementAvailableRoads() { availableRoads++; }
+    public void decrementAvailableShips() { availableShips--; }
+    public void incrementAvailableShips() { availableShips++; }
 
     public int getDefenderOfCatanPoints() {
         return defenderOfCatanPoints;
@@ -71,32 +95,32 @@ public class Player {
         for (Village v: villages){
             pos = v.getPosition();
             hKind = pos.getHarbourKind();
-            if (hKind.equals(HarbourKind.SPECIAL_WOOD)) {
-                if (resKind.equals(ResourceKind.WOOD)) {
+            if (hKind == HarbourKind.SPECIAL_WOOD) {
+                if (resKind == ResourceKind.WOOD) {
                     return 2;
                 }
             }
-            else if (hKind.equals(HarbourKind.SPECIAL_BRICK)) {
-                if (resKind.equals(ResourceKind.BRICK)) {
+            else if (hKind == HarbourKind.SPECIAL_BRICK) {
+                if (resKind == ResourceKind.BRICK) {
                     return 2;
                 }
             }
-            else if (hKind.equals(HarbourKind.SPECIAL_ORE)) {
-                if (resKind.equals(ResourceKind.ORE)){
+            else if (hKind == HarbourKind.SPECIAL_ORE) {
+                if (resKind == ResourceKind.ORE){
                     return 2;
                 }
             }
-            else if (hKind.equals(HarbourKind.SPECIAL_GRAIN)) {
-                if (resKind.equals(ResourceKind.GRAIN)) {
+            else if (hKind == HarbourKind.SPECIAL_GRAIN) {
+                if (resKind == ResourceKind.GRAIN) {
                     return 2;
                 }
             }
-            else if (hKind.equals(HarbourKind.SPECIAL_WOOL)) {
-                if (resKind.equals(ResourceKind.WOOL)) {
+            else if (hKind == HarbourKind.SPECIAL_WOOL) {
+                if (resKind == ResourceKind.WOOL) {
                     return 2;
                 }
             }
-            else if(hKind.equals(HarbourKind.GENERIC)) {
+            else if(hKind == HarbourKind.GENERIC) {
                 highest = 3;
             }
             else if(highest != 3) {

@@ -23,7 +23,6 @@ import com.mygdx.catan.response.PlaceCityAndRoad;
 import com.mygdx.catan.response.ShowDice;
 import com.mygdx.catan.response.UpdateResourceBar;
 
-import com.sun.javafx.geom.Edge;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 

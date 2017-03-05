@@ -1,29 +1,44 @@
 package com.mygdx.catan.TradeAndTransaction;
 
+import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.account.Account;
 import com.mygdx.catan.session.Session;
+
+import java.lang.reflect.Array;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  * The transactionManager.
  */
 public class TransactionManager {
 
-    //session controller has a dependency on transaction manager aka other way around
-    private Session aSession;
+    private static HashMap<Session, TransactionManager> transactionManagerInstances;
 
-    private static TransactionManager instance = null;
-
-    public static TransactionManager getInstance() {
-        if (instance == null) {
-            instance = new TransactionManager();
-        }
-        return instance;
+    static {
+        transactionManagerInstances = new HashMap<>();
     }
 
-    //public TransactionManager(Session s) {
-        //aSession = s;
-    //}
+    private Session aSession;
+
+    private TransactionManager(Session session) {
+        aSession = session;
+    }
+
+    public static TransactionManager getInstance(Session session) {
+        if (!transactionManagerInstances.containsKey(session)) {
+            if (session == null) {
+                ArrayList<Account> accounts = new ArrayList<>();
+                accounts.add(CatanGame.account);
+                session = Session.newInstance(accounts, GameRules.getGameRulesInstance().getVpToWin());
+            }
+            transactionManagerInstances.put(session, new TransactionManager(session));
+        }
+        return transactionManagerInstances.get(session);
+    }
 
     /**
      * Adds resources to the player resourceMap.

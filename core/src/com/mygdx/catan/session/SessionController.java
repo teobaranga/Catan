@@ -47,7 +47,7 @@ public class SessionController {
         aGameBoardManager = GameBoardManager.getInstance();
         aSessionManager = SessionManager.getInstance();
         random = CatanRandom.getInstance();
-        aTransactionManager = TransactionManager.getInstance();
+        aTransactionManager = TransactionManager.getInstance(aSessionManager.getSession());
         
         // sets the color as the accounts associated Player object color
         for (Player p : aSessionManager.getPlayers()) {

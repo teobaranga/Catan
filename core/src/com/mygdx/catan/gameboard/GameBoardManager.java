@@ -227,13 +227,12 @@ public class GameBoardManager {
     }
 
     public boolean isOnSea(CoordinatePair intersection) {
-        int seaHexes = 0;
         for (Hex h : getNeighbouringHexes(intersection)) {
             if (h.getKind() == TerrainKind.SEA) {
-                seaHexes++;
+                return true;
             }
         }
-        return seaHexes >= 1;
+        return false;
     }
 
     /**

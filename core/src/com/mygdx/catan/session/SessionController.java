@@ -257,29 +257,19 @@ public class SessionController {
      * @return a list of all the intersections that are (1) connected to road owned by player and (2) not adjacent to another village and (3) on land (3) unoccupied
      */
     public ArrayList<CoordinatePair> requestValidBuildIntersections(PlayerColor owner) {
-        // does not change any state, gui does not need to be notified, method call cannot come from peer
-        //get current player based on color
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
-
-        //get list of buildings in play
         ArrayList<Village> buildingsInPlay = aGameBoardManager.getBuildingsInPlay();
-
-        //get list of currentp's edge units
         ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
 
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
             for (Village v: buildingsInPlay) {
                 for (EdgeUnit e : listOfEdgeUnits) {
-                    //i is not adjacent to another budiling & i is connected to an edge unit owned by a player & i is not occupied & i is on land
                     if (!isAdjacent(i, v.getPosition()) && (e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
                         validIntersections.add(i);
                     }
                 }
             }
-            //need to iterate through all villages and make sure i is not adjacent
-            //need to iterate through all players edge units and make sure i is on an edge unit
-            //need to check it its on land
         }
         return validIntersections;
     }

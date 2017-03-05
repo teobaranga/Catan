@@ -6,6 +6,7 @@ import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.session.SessionManager;
 
 import java.util.ArrayList;
 import static java.lang.Math.abs;
@@ -307,8 +308,7 @@ public class GameBoardManager {
         //for each hex in the neighboring hexes we will iterate through the attached coordinates to check if
         //the sum of the absolute value of the difference between the pair in question p and aPair is 2
         for (Hex h: neighboringHexes) {
-            attachedIntersections = getAttachedIntersections(h);
-            for (CoordinatePair aPair : attachedIntersections) {
+            for (CoordinatePair aPair : getAttachedIntersections(h)) {
                 if (abs(aPair.getLeft() - p.getLeft()) + (aPair.getRight() - p.getRight()) == 2) {
                     neighboringIntersections.add(aPair);
                 }
@@ -322,6 +322,14 @@ public class GameBoardManager {
      * @return all buildings: villages, cities and metropolis currently in play
      */
     public ArrayList<Village> getBuildingsInPlay() {
-        return null;
+        Player[] players = SessionManager.getInstance().getPlayers();
+        ArrayList<Village> buildingsInPlay = new ArrayList<>();
+
+        for (Player p: players) {
+            for (Village v: p.getVillages()) {
+                buildingsInPlay.add(v);
+            }
+        }
+        return buildingsInPlay;
     }
 }

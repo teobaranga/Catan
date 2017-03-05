@@ -9,6 +9,7 @@ import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.TradeAndTransaction.TransactionManager;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
@@ -27,12 +28,7 @@ import com.mygdx.catan.response.UpdateResourceBar;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
@@ -325,54 +321,25 @@ public class SessionController {
      * @param owner of requested valid intersections
      * @return a list of all the intersections that are (1) connected to a road or village owned by owner
      */
-    public ArrayList<CoordinatePair> requestValidRoadEndpoints(PlayerColor owner) {
+    public HashSet<CoordinatePair> requestValidRoadEndpoints(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        ArrayList<CoordinatePair> validRoadEndpoints = new ArrayList<>();
+        HashSet<CoordinatePair> validRoadEndpoints = new HashSet<>();
 
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 
         for (Village v: currentP.getVillages()) {
-            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(v.getPosition())) {
-                validRoadEndpoints.add(aPair);
+            if (!validRoadEndpoints.contains(v.getPosition())) {
+                validRoadEndpoints.add(v.getPosition());
             }
         }
         for (EdgeUnit eu: currentP.getRoadsAndShips()) {
-            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getAFirstCoordinate())) {
-                validRoadEndpoints.add(aPair);
+            if(!validRoadEndpoints.contains(eu.getAFirstCoordinate())) {
+                validRoadEndpoints.add(eu.getAFirstCoordinate());
+            }
+            if(!validRoadEndpoints.contains(eu.getASecondCoordinate())) {
+                validRoadEndpoints.add(eu.getASecondCoordinate());
             }
         }
-        for (EdgeUnit eu: currentP.getRoadsAndShips()) {
-            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getASecondCoordinate())) {
-                validRoadEndpoints.add(aPair);
-            }
-        }
-        /*for (Village v: listOfVillages) {
-            for (CoordinatePair aPair : aGameBoardManager.getNeighboringIntersections(v.getPosition())) {
-                for (EdgeUnit eu : listOfEdgeUnits) {
-                    //the edge unit formed by v and aPair is on land and aPair is not already part of an edgePoint
-                    if (isOnLand(v.getPosition(), aPair) && !eu.hasEndpoint(aPair)) {
-                        validRoadEndpoints.add(aPair);
-                    }
-                }
-            }
-        }
-        for (EdgeUnit eu: listOfEdgeUnits) {
-            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getAFirstCoordinate())) {
-                //the first coordinate of the edgeunit and aPair are on land and this edge unit does not have endpoint aPair
-                if(isOnLand(eu.getAFirstCoordinate(), aPair) && (!eu.hasEndpoint(aPair))) {
-                    validRoadEndpoints.add(aPair);
-                }
-            }
-        }
-        for (EdgeUnit eu: listOfEdgeUnits) {
-            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getASecondCoordinate())) {
-                //the second coordinate of the edgeunit and aPair are on land and this edge unit does not have endpoint aPair
-                if (isOnLand(eu.getASecondCoordinate(), aPair) && (!eu.hasEndpoint(aPair))) {
-                    validRoadEndpoints.add(aPair);
-                }
-            }
-        }*/
-
         // this method will essentially return all the endpoints where you can build a road at any edge 
         // starting at that endpoint (if we disregard the edges that are occupied). The GUI will make sure 
         // none of the edges that are occupied or in water can be chosen.
@@ -384,36 +351,26 @@ public class SessionController {
      * @return a list of all the intersections that are (1) connected to a ship or harbour village owned by owner (2) something something pirate
      */
     //TODO: implement pirate thing
-    public ArrayList<CoordinatePair> requestValidShipEndpoints(PlayerColor owner) {
+    public HashSet<CoordinatePair> requestValidShipEndpoints(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        ArrayList<CoordinatePair> validShipEndpoints = new ArrayList<>();
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
-        ArrayList<Village> listOfVillages = currentP.getVillages();
-        ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
+        HashSet<CoordinatePair> validShipEndpoints = new HashSet<>();
 
-        for (Village v: listOfVillages) {
-            for (CoordinatePair aPair : aGameBoardManager.getNeighboringIntersections(v.getPosition())) {
-                for (EdgeUnit eu : listOfEdgeUnits) {
-                    if (!isOnLand(v.getPosition(), aPair) && !eu.hasEndpoint(aPair)) {
-                        validShipEndpoints.add(aPair);
-                    }
-                }
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+
+        for (Village v: currentP.getVillages()) {
+            if (!validShipEndpoints.contains(v.getPosition())) {
+                validShipEndpoints.add(v.getPosition());
             }
         }
-        for (EdgeUnit eu: listOfEdgeUnits) {
-            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getAFirstCoordinate())) {
-                if(!isOnLand(eu.getAFirstCoordinate(), aPair) && (!eu.hasEndpoint(aPair))) {
-                    validShipEndpoints.add(aPair);
-                }
+        for (EdgeUnit eu: currentP.getRoadsAndShips()) {
+            if(!validShipEndpoints.contains(eu.getAFirstCoordinate())) {
+                validShipEndpoints.add(eu.getAFirstCoordinate());
+            }
+            if(!validShipEndpoints.contains(eu.getASecondCoordinate())) {
+                validShipEndpoints.add(eu.getASecondCoordinate());
             }
         }
-        for (EdgeUnit eu: listOfEdgeUnits) {
-            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getASecondCoordinate())) {
-                if (!isOnLand(eu.getASecondCoordinate(), aPair) && (!eu.hasEndpoint(aPair))) {
-                    validShipEndpoints.add(aPair);
-                }
-            }
-        }
+
         return validShipEndpoints;
         // same as above but with no edges that are in land can be chosen
     }
@@ -429,12 +386,27 @@ public class SessionController {
      */
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
-        aGameBoardManager.buildSettlement(currentP, position);
-        if (fromPeer) {
-            aSessionScreen.updateIntersection(position, owner, kind);
-        } else {
-            aSessionScreen.updateIntersection(position, owner, kind);
-            aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getSettlementCost());
+        if (kind.equals(VillageKind.SETTLEMENT)) {
+            aGameBoardManager.buildSettlement(currentP, position);
+            aSessionManager.getTransactionManager().payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
+
+            if (fromPeer) {
+                aSessionScreen.updateIntersection(position, owner, kind);
+            } else {
+                aSessionScreen.updateIntersection(position, owner, kind);
+                aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getSettlementCost());
+            }
+        }
+        else if (kind.equals(VillageKind.CITY)) {
+            aGameBoardManager.upgradeSettlement(currentP, position);
+            aSessionManager.getTransactionManager().payBankToPlayer(currentP, GameRules.getGameRulesInstance().getCityCost());
+
+            if (fromPeer) {
+                aSessionScreen.updateIntersection(position, owner, kind);
+            } else {
+                aSessionScreen.updateIntersection(position, owner, kind);
+                aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getCityCost());
+            }
         }
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
         // if method call is from a peer, the gui only needs to be notified of the new gameboard change.

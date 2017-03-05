@@ -111,6 +111,18 @@ public class GameBoardManager {
     }
 
     /**
+     * builds a settlement for player at given position. Adds the settlement to the player's collection of settlements, and associates it to the given position
+     *
+     * @param player   owner village
+     * @param position of settlement
+     * @return true if upgrading the village was successful, false otherwise
+     */
+    //TODO
+    public boolean upgradeSettlement(Player player, CoordinatePair position) {
+        return true;
+    }
+
+    /**
      * Builds the edge unit according to corresponding input. Adds the edge unit to the player's collection of edge units, as well as the gameboard's collection of edge units
      *
      * @param player         of edgeUnit

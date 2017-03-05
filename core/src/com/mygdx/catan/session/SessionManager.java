@@ -4,6 +4,7 @@ import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.TradeAndTransaction.TransactionManager;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.PlayerColor;
@@ -17,6 +18,7 @@ public class SessionManager {
 
     private static SessionManager instance;
     private Session aSession;
+    private TransactionManager aTransactionManager;
 
     //TODO: change this to fit design, so far this is only placeholder!
     private SessionManager(Session session) {
@@ -41,6 +43,8 @@ public class SessionManager {
     }
 
     public Session getSession() { return this.aSession; }
+
+    public TransactionManager getTransactionManager() { return this.aTransactionManager; }
 
     public Player[] getPlayers() {
         return aSession.getPlayers();

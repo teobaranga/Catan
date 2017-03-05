@@ -258,30 +258,26 @@ public class SessionController {
      */
     public ArrayList<CoordinatePair> requestValidBuildIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        //get current player
-        Player currentP = null;
-        for (Player p : aSessionManager.getPlayers()) {
-            if (p.getColor().equals(owner)) {
-                currentP = p;
-            }
-        }
-        //get list of currentp's villages
-        ArrayList<Village> listOfVillages = currentP.getVillages();
+        //get current player based on color
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+
+        //get list of buildings in play
+        ArrayList<Village> buildingsInPlay = aGameBoardManager.getBuildingsInPlay();
 
         //get list of currentp's edge units
         ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
 
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
-            //FIXME: only verifies that i is not adjacent to a village owned by current player! we need it to verify this for all the villages
-            for (Village v : listOfVillages) {
+            for (Village v: buildingsInPlay) {
                 for (EdgeUnit e : listOfEdgeUnits) {
-                    if (!isAdjacent(i, v.getPosition()) && (!e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
+                    //i is not adjacent to another budiling & i is connected to an edge unit owned by a player & i is not occupied & i is on land
+                    if (!isAdjacent(i, v.getPosition()) && (e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
                         validIntersections.add(i);
                     }
                 }
             }
-            //need to iterate through all players villages and make sure i is not adjacent
+            //need to iterate through all villages and make sure i is not adjacent
             //need to iterate through all players edge units and make sure i is on an edge unit
             //need to check it its on land
         }
@@ -294,7 +290,7 @@ public class SessionController {
      * @return a list of all the intersections that are (1) unoccupied and (2) not adjacent to another occupied intersection (3) is on land
      */
     public ArrayList<CoordinatePair> requestValidInitializationBuildIntersections() {
-        ArrayList<CoordinatePair> validIntersections = new ArrayList<CoordinatePair>();
+        ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
 
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
             for (CoordinatePair j : aGameBoardManager.getIntersectionsAndEdges()) {
@@ -313,8 +309,15 @@ public class SessionController {
      */
     public ArrayList<CoordinatePair> requestValidCityUpgradeIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-
-        return null;
+        ArrayList<CoordinatePair> validUpgradeIntersections = new ArrayList<>();
+        //get current player
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        //get list of currentp's villages
+        ArrayList<Village> listOfVillages = currentP.getVillages();
+        for (Village v: listOfVillages) {
+            validUpgradeIntersections.add(v.getPosition());
+        }
+        return validUpgradeIntersections;
     }
 
     /**
@@ -323,11 +326,15 @@ public class SessionController {
      */
     public ArrayList<CoordinatePair> requestValidRoadEndpoints(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        ArrayList<Village> listOfVillages = currentP.getVillages();
+        ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
+        for (Village v: listOfVillages) {
+            v.getPosition();
+        }
         // this method will essentially return all the endpoints where you can build a road at any edge 
         // starting at that endpoint (if we disregard the edges that are occupied). The GUI will make sure 
         // none of the edges that are occupied or in water can be chosen.
-
         return null;
     }
 

@@ -225,8 +225,8 @@ public class GameBoardManager {
     }
 
     /**
-     * @param first  intersection
-     * @param second intersection
+     * @param firstIntersection
+     * @param secondIntersection
      * @return true if the edge between the two intersections is on land (assumes the two intersections are adjacent)
      */
     public boolean isOnLand(CoordinatePair firstIntersection, CoordinatePair secondIntersection) {
@@ -242,7 +242,7 @@ public class GameBoardManager {
     }
 
     /**
-     * @param intersection i
+     * @param i intersection
      * @return all hexes adjacent to intersection i
      */
     public ArrayList<Hex> getNeighbouringHexes(CoordinatePair i) {
@@ -258,8 +258,8 @@ public class GameBoardManager {
     }
 
     /**
-     * @param first  intersection
-     * @param second intersection
+     * @param firstIntersection
+     * @param secondIntersection
      * @return all hexes adjacent to both the first and second intersections
      */
     public ArrayList<Hex> getNeighbouringHexes(CoordinatePair firstIntersection, CoordinatePair secondIntersection) {
@@ -272,5 +272,22 @@ public class GameBoardManager {
         }
 
         return nhexes;
+    }
+
+    /**
+     * @param p  intersection
+     * @return all neighboring intersections that are accessible by one edge units
+     */
+    public ArrayList<CoordinatePair> getNeighboringIntersections(CoordinatePair p) {
+
+        return null;
+    }
+
+    /**
+     *
+     * @return all buildings: villages, cities and metropolis currently in play
+     */
+    public ArrayList<Village> getBuildingsInPlay() {
+        return null;
     }
 }

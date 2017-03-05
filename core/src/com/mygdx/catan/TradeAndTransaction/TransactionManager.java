@@ -2,13 +2,19 @@ package com.mygdx.catan.TradeAndTransaction;
 
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
-import com.mygdx.catan.session.SessionController;
+import com.mygdx.catan.session.Session;
 
 /**
  * The transactionManager.
  */
 public class TransactionManager {
-    private SessionController sessionController;
+
+    //session controller has a dependency on transaction manager aka other way around
+    private Session aSession;
+
+    public TransactionManager(Session s) {
+        aSession = s;
+    }
 
     /**
      * Adds resources to the player resourceMap.
@@ -17,8 +23,9 @@ public class TransactionManager {
      * @param cost The ResourceMap involved in the Trade
      */
     public void payPlayerToBank(Player p, ResourceMap cost) {
+        //check the logic of this
         p.removeResources(cost);
-        sessionController.add(cost);
+        aSession.add(cost);
     }
 
     /**
@@ -28,7 +35,8 @@ public class TransactionManager {
      * @param cost The ResourceMap involved in the Trade
      */
     public void payBankToPlayer(Player p, ResourceMap cost) {
-        sessionController.remove(cost);
+        //check the logic of this
+        aSession.remove(cost);
         p.addResources(cost);
     }
 }

@@ -6,6 +6,7 @@ import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.GamePhase;
+import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
 
@@ -52,6 +53,16 @@ public class SessionManager {
 
     GamePhase getCurrentPhase() {
         return aSession.getCurrentPhase();
+    }
+
+    public Player getCurrentPlayerFromColor(PlayerColor c) {
+        Player currentP = null;
+        for (Player p : getPlayers()) {
+            if (p.getColor().equals(c)) {
+                currentP = p;
+            }
+        }
+        return currentP;
     }
 
     /**

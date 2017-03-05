@@ -280,17 +280,10 @@ public class GameBoardManager {
 
     public ArrayList<CoordinatePair> getAttachedIntersections(Hex h) {
         ArrayList<CoordinatePair> attachedIntersections = new ArrayList<>();
-        Integer xCoord = h.getLeftCoordinate();
-        Integer yCoord = h.getRightCoordinate();
 
         //find all coordinates that make the hex based on the relative coordinates
         for (CoordinatePair i: aGameBoard.getIntersectionsAndEdges()) {
-            if ((i.getLeft() == xCoord && i.getRight() == 3*yCoord-2) ||
-                    (i.getLeft() == xCoord + 1 && i.getRight() == 3 * yCoord - 1) ||
-                    (i.getLeft() == xCoord + 1 && i.getRight() == 3 * yCoord + 1) ||
-                    (i.getLeft() == xCoord && i.getRight() == 3 * yCoord + 2) ||
-                    (i.getLeft() == xCoord - 1 && i.getRight() == 3 * yCoord + 1) ||
-                    (i.getLeft() == xCoord - 1 && i.getRight() == 3 * yCoord - 1)) {
+            if (h.isAdjacent(i)) {
                 attachedIntersections.add(i);
             }
         }
@@ -311,7 +304,7 @@ public class GameBoardManager {
         //the sum of the absolute value of the difference between the pair in question p and aPair is 2
         for (Hex h: neighboringHexes) {
             for (CoordinatePair aPair : getAttachedIntersections(h)) {
-                if (abs(aPair.getLeft() - p.getLeft()) + (aPair.getRight() - p.getRight()) == 2) {
+                if (abs(aPair.getLeft() - p.getLeft()) + abs((aPair.getRight() - p.getRight())) == 2 && aPair.getRight() != p.getRight()) {
                     neighboringIntersections.add(aPair);
                 }
             }

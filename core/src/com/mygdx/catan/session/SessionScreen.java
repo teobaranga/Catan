@@ -195,8 +195,6 @@ public class SessionScreen implements Screen {
                                 initVillageIntersection = validIntersection;
                             } else {
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
-
-                                //TODO: call buildVillage method in SessionController and delete following
                                 aSessionController.buildVillage(validIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
                             }
 
@@ -226,11 +224,6 @@ public class SessionScreen implements Screen {
                                 if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
                                     edgePieceKind = EdgeUnitKind.SHIP;
                                 }
-                                
-                                //TODO: call placeCityAndRoad method in SessionController and delete following
-                                
-                                //updateIntersection(initVillageIntersection, aSessionController.getPlayerColor(), villagePieceKind);
-                                //updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, aSessionController.getPlayerColor());
                                 
                                 aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
                                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false);
@@ -413,17 +406,18 @@ public class SessionScreen implements Screen {
                 buildButton.setChecked(false);
                 // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
-                    // the following loop go through requested valid build positions
-                    for (CoordinatePair intersections : aSessionController.requestValidBuildIntersections(aSessionController.getPlayerColor())) {
-                        validIntersections.add(intersections);
-                        
-                        // Adds all valid positions as transparent sprites to highlight valid build positions
-                        if (kind == VillageKind.SETTLEMENT) {
-                            highlightedPositions.add(gamePieces.createSettlement(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                        } else {
-                            highlightedPositions.add(gamePieces.createCity(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                        }
-                    }
+                	if (kind == VillageKind.SETTLEMENT) {
+                		 for (CoordinatePair intersections : aSessionController.requestValidBuildIntersections(aSessionController.getPlayerColor())) {
+                             validIntersections.add(intersections);
+                             highlightedPositions.add(gamePieces.createSettlement(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                         }
+                	} else {
+                		for (CoordinatePair intersections : aSessionController.requestValidCityUpgradeIntersections(aSessionController.getPlayerColor())) {
+                            validIntersections.add(intersections);
+                			highlightedPositions.add(gamePieces.createCity(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                		}
+                	}
+                   
                     aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
                     villagePieceKind = kind;
                     buildButton.setText("Cancel");
@@ -445,7 +439,7 @@ public class SessionScreen implements Screen {
                 buildButton.setChecked(false);
                 // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
-                    // make the following loop go through requested valid build positions
+                    // the following loop go through requested valid build positions
                 	if (kind == EdgeUnitKind.ROAD) {
                 		for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
                 			for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {

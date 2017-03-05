@@ -186,7 +186,7 @@ public class SessionController {
      * @return true if a and b are adjacent
      */
     public boolean isAdjacent(CoordinatePair a, CoordinatePair b) {
-        return (Math.abs(a.getLeft() - b.getLeft()) + Math.abs(a.getRight() - b.getRight()) == 2) && a.getRight() != b.getRight();
+        return (Math.abs(a.getLeft() - b.getLeft()) + Math.abs(a.getRight() - b.getRight()) == 2 && a.getRight() != b.getRight());
     }
 
     /**
@@ -267,16 +267,19 @@ public class SessionController {
      */
     public ArrayList<CoordinatePair> requestValidBuildIntersections(PlayerColor owner) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
-        ArrayList<Village> buildingsInPlay = aGameBoardManager.getBuildingsInPlay();
         ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
 
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
-            for (Village v: buildingsInPlay) {
-                for (EdgeUnit e : listOfEdgeUnits) {
-                    if (!isAdjacent(i, v.getPosition()) && (e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
-                        validIntersections.add(i);
-                    }
+            boolean isAdjacentToSomeBuilding = false;
+        	for (Village v: aGameBoardManager.getBuildingsInPlay()) {
+        		if (isAdjacent(i,v.getPosition())) {
+        			isAdjacentToSomeBuilding = true;
+        		}
+            }
+            for (EdgeUnit e : listOfEdgeUnits) {
+            	if (!isAdjacentToSomeBuilding && (e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
+            		validIntersections.add(i);
                 }
             }
         }
@@ -292,11 +295,16 @@ public class SessionController {
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
 
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
-            for (CoordinatePair j : aGameBoardManager.getIntersectionsAndEdges()) {
-                if (!i.isOccupied() && (!j.isOccupied() || !isAdjacent(i, j)) && aGameBoardManager.isOnLand(i)) {
-                    validIntersections.add(i);
-                }
+        	boolean isAdjacentToSomeBuilding = false;
+        	for (Village v : aGameBoardManager.getBuildingsInPlay()) {
+            	if (isAdjacent(i, v.getPosition())){
+            		isAdjacentToSomeBuilding = true;
+            	}
             }
+            if (!i.isOccupied() && (!isAdjacentToSomeBuilding) && aGameBoardManager.isOnLand(i)) {
+            	validIntersections.add(i);
+            }
+            
         }
 
         return validIntersections;

@@ -23,13 +23,17 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
+import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.SessionScreenModes;
 import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.game.Game;
+import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.ui.TradeWindow;
@@ -131,6 +135,7 @@ public class SessionScreen implements Screen {
     
     /** A table that keeps track of current player */
     private Table currentPlayer;
+    private Label currentPlayerLabel;
 
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
@@ -220,6 +225,7 @@ public class SessionScreen implements Screen {
                             highlightedPositions.clear();
 
                             if (initializing) {
+                            	//TODO set to VIEW mode
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
                                 if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
                                     edgePieceKind = EdgeUnitKind.SHIP;
@@ -227,7 +233,7 @@ public class SessionScreen implements Screen {
                                 
                                 aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
                                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false);
-                                //TODO: call distribute resources
+                                //TODO: call distribute resources if village kind is city
 
                                 initializing = false;
                                 aInitButton.setText("Done");
@@ -279,9 +285,11 @@ public class SessionScreen implements Screen {
         
         // current player table
         currentPlayer = new Table(CatanGame.skin);
-        currentPlayer.add(new Label("Current Player",CatanGame.skin));
+        currentPlayerLabel = new Label("",CatanGame.skin);
+        currentPlayer.add(currentPlayerLabel);
         currentPlayer.setSize(200, 50);
         currentPlayer.setPosition(10, Gdx.graphics.getHeight() - 60);
+        updateCurrentPlayer(aSessionController.getCurrentPlayer());
 
         // creates the menu buttons
         buildSettlementButton = new TextButton("Build Settlement", CatanGame.skin);
@@ -827,8 +835,13 @@ public class SessionScreen implements Screen {
     /**
      * Updates the current player
      * */
-    public void updateCurrentPlayer(PlayerColor newCurrentPlayer) {
-        switch (newCurrentPlayer) {
+    public void updateCurrentPlayer(Player newCurrentPlayer) {
+        
+    	String currentPlayerName = newCurrentPlayer.getAccount().getUsername();
+    	currentPlayerLabel.setText("Current Player: "+currentPlayerName);
+    	
+    	// sets background color to current player's color
+    	switch (newCurrentPlayer.getColor()) {
         case BLUE:
             currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
             break;

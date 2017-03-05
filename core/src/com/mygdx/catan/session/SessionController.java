@@ -25,7 +25,6 @@ import com.mygdx.catan.response.PlaceCityAndRoad;
 import com.mygdx.catan.response.ShowDice;
 import com.mygdx.catan.response.UpdateResourceBar;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -99,8 +98,8 @@ public class SessionController {
                     });
                 } else if (object instanceof RollDice) {
                     Gdx.app.postRunnable(() -> {
-                        Map<Player, ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
-                        aSessionScreen.updateResourceBar(getOwnresourcesUpdate(updatedPlayerResources));
+                        //Map<Player, ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
+                        //aSessionScreen.updateResourceBar(getOwnresourcesUpdate(updatedPlayerResources));
                      });
 
                 }
@@ -154,6 +153,10 @@ public class SessionController {
         aPlayerColor = pc;
     }*/
 
+    public Player getCurrentPlayer() {
+    	return aSessionManager.getCurrentPlayer();
+    }
+    
     public int getYellowDice() {
         return aSessionManager.getYellowDice();
     }
@@ -560,6 +563,7 @@ public class SessionController {
         }
     }*/
 
+    
     public Map<Player, ResourceMap> getResourceUpdate(int diceRoll) {
         List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
         Player currPlayer = aSessionManager.getCurrentPlayer();
@@ -632,8 +636,12 @@ public class SessionController {
 
         return playerResources;
     }
+    
+    
+    
     // TODO: set GUI's mode to chooseActionMode for the player who's turn it is
 
+    
     public ResourceMap getOwnresourcesUpdate(Map<Player, ResourceMap> updatedPlayerResources) {
         for (Map.Entry<Player, ResourceMap> entry : updatedPlayerResources.entrySet() ) {
             if(entry.getKey().getColor().equals(aPlayerColor)) {

@@ -132,6 +132,9 @@ public class SessionScreen implements Screen {
 
     /** A table that keeps track of game messages, mostly used for debugging */
     private ScrollPane gameLog;
+    
+    /** A table that keeps track of current player */
+    private Table currentPlayer;
 
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
@@ -282,8 +285,14 @@ public class SessionScreen implements Screen {
         menuTable.setBackground("resTableBackground");
         menuTable.setSize(200, 300);
         menuTable.setPosition(10, 10);
+        
+        // current player table
+        currentPlayer = new Table(CatanGame.skin);
+        currentPlayer.add(new Label("Current Player",CatanGame.skin));
+        currentPlayer.setSize(200, 50);
+        currentPlayer.setPosition(10, Gdx.graphics.getHeight() - 60);
 
-        // creates the menu buttons TODO:remainder of buttons
+        // creates the menu buttons
         buildSettlementButton = new TextButton("Build Settlement", CatanGame.skin);
         setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT);
         buildSettlementButton.pad(0, 10, 0, 10);
@@ -382,6 +391,7 @@ public class SessionScreen implements Screen {
 
         aSessionStage.addActor(contentTable);
         aSessionStage.addActor(menuTable);
+        aSessionStage.addActor(currentPlayer);
         aSessionStage.addActor(gameLog);
 
         aSessionController.onScreenShown();
@@ -817,6 +827,31 @@ public class SessionScreen implements Screen {
     public void updateRobberPosition(Hex position) {
         placeRobber(position.getLeftCoordinate(), position.getRightCoordinate());
     }
+    
+    /**
+     * Updates the current player
+     * */
+    public void updateCurrentPlayer(PlayerColor newCurrentPlayer) {
+        switch (newCurrentPlayer) {
+        case BLUE:
+            currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
+            break;
+        case ORANGE:
+            currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.ORANGE));
+            break;
+        case RED:
+            currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.RED));
+            break;
+        case WHITE:
+            currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.WHITE));
+            break;
+        case YELLOW:
+            currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.YELLOW));
+            break;
+        default:
+            break;
+        }
+    }
 
     /**
      *
@@ -865,6 +900,9 @@ public class SessionScreen implements Screen {
         gameLog.scrollTo(0, 0, 0, 0);
     }
 
+    
+    
+    // FIXME: I have questions about the following three methods (-Aina) 
     public CoordinatePair getInitSettlementIntersection() {
         return initSettlementIntersection;
     }

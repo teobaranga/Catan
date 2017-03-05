@@ -6,9 +6,10 @@ import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
-import com.mygdx.catan.session.SessionManager;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import static java.lang.Math.abs;
 
 /**
@@ -52,27 +53,6 @@ public class GameBoardManager {
     }
 
     /**
-     * decreases the barbarian position by 1. Asserts that it is strictly positive
-     *
-     * @return true if barbarian position becomes 0, false otherwise.
-     */
-    public boolean decreaseBarbarianPosition() {
-        assert aGameBoard.getBarbarianPosition() > 0;
-
-        int bPos = aGameBoard.getBarbarianPosition() - 1;
-        aGameBoard.setBarbarianPosition(bPos);
-
-        return bPos == 0;
-    }
-
-    /**
-     * sets the barbarian position to 7
-     */
-    public void resetBarbarianPosition() {
-        aGameBoard.setBarbarianPosition(7);
-    }
-
-    /**
      * @return top of progress card stack, null if stack is empty
      */
     public ProgressCardKind drawProgressCard() {
@@ -107,6 +87,7 @@ public class GameBoardManager {
         Village village = new Village(player, position);
         position.putVillage(village);
         player.addVillage(village);
+        aGameBoard.addVillage(village);
         player.decrementAvailableSettlements();
         return true;
     }
@@ -323,15 +304,7 @@ public class GameBoardManager {
      *
      * @return all buildings: villages, cities and metropolis currently in play
      */
-    public ArrayList<Village> getBuildingsInPlay() {
-        Player[] players = SessionManager.getInstance().getPlayers();
-        ArrayList<Village> buildingsInPlay = new ArrayList<>();
-
-        for (Player p: players) {
-            for (Village v: p.getVillages()) {
-                buildingsInPlay.add(v);
-            }
-        }
-        return buildingsInPlay;
+    public List<Village> getBuildingsInPlay() {
+        return aGameBoard.getVillages();
     }
 }

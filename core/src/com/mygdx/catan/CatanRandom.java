@@ -1,9 +1,9 @@
 package com.mygdx.catan;
 
-import java.util.Random;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Random;
 
 public class CatanRandom {
     private Random rand;
@@ -29,7 +29,7 @@ public class CatanRandom {
     }
     
     public Pair<Integer, Integer> rollTwoDice() {
-        return new ImmutablePair<Integer, Integer>(nextDie(), nextDie());
+        return new ImmutablePair<>(nextDie(), nextDie());
     }
 
 }

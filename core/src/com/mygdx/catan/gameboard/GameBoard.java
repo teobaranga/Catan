@@ -14,11 +14,11 @@ public class GameBoard {
 	private ArrayList<Hex> hexes;
 	private ArrayList<CoordinatePair> aIntersectionPositions;			// Villages will be available through the intersection positions
 	private ArrayList<EdgeUnit> aRoadsAndShips;
-	private int aBarbarianPosition;
 	private Hex aRobberPosition;
 	private Hex aMerchantPosition;
 	private Player aMerchantOwner;
 	private Stack<ProgressCardKind> aProgressCardStack = new Stack<>();
+	private List<Village> villages;
 	
 	private final int SIZE = GameRules.getGameRulesInstance().getSize();
 	
@@ -26,6 +26,7 @@ public class GameBoard {
 		hexes = new ArrayList<>();
 		aIntersectionPositions = new ArrayList<>();
 		aRoadsAndShips = new ArrayList<>();
+		villages = new ArrayList<>();
 
 		HashMap<Integer,TerrainKind> aHexKindSetup = GameRules.getGameRulesInstance().getDefaultTerrainKindMap();
 		HashMap<Integer,Integer> aDiceNumberSetup = GameRules.getGameRulesInstance().getDefaultDiceNumberMap();
@@ -93,9 +94,6 @@ public class GameBoard {
             }	
         }
         
-        // Initializes barbarian position to 7
-        aBarbarianPosition = 7;
-        
         // Fills up the progress card stack and shuffles it
         for (ProgressCardKind kind : ProgressCardKind.values()) {
         	int occurence = GameRules.getGameRulesInstance().getProgressCardOccurence(kind);
@@ -120,14 +118,6 @@ public class GameBoard {
 	
 	public ArrayList<Hex> getHexes() {
 		return hexes;
-	}
-	
-	public void setBarbarianPosition(int newBarbarianPosition) {
-		aBarbarianPosition = newBarbarianPosition;
-	}
-	
-	public int getBarbarianPosition() {
-		return aBarbarianPosition;
 	}
 	
 	public void setMerchantOwner(Player newOwner) {
@@ -205,6 +195,14 @@ public class GameBoard {
 	public ArrayList<EdgeUnit> getRoadsAndShips() {
 		return aRoadsAndShips;
 	}
+
+	/** Add a village to the list of villages on the game board */
+	void addVillage(Village village) {
+	    villages.add(village);
+    }
+
+    /** Get the list of villages on the game board */
+    List<Village> getVillages() {
+	    return villages;
+    }
 }
-
-

@@ -4,47 +4,82 @@ import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
-import com.mygdx.catan.TradeAndTransaction.TransactionManager;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.game.Game;
-import com.mygdx.catan.game.GameManager;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SessionManager {
 
-    private static SessionManager instance;
-    private Session aSession;
-    private TransactionManager aTransactionManager;
+    private static HashMap<Session, SessionManager> sessionManagerInstances;
 
-    //TODO: change this to fit design, so far this is only placeholder!
-    private SessionManager(Session session) {
-        aSession = session;
+    static {
+        sessionManagerInstances = new HashMap<>();
     }
 
-    public static SessionManager getInstance() {
-        if (instance == null) {
-            final Game currentGame = GameManager.getInstance().getCurrentGame();
-            Session session;
-            if (currentGame == null || currentGame.session == null) {
+    /**
+     * The session associated with this session manager.
+     * Must be private at all times.
+     */
+    private final Session aSession;
+
+    /**
+     * Pair of player index to dice roll.
+     * Used in the initialization phase when we need to keep track of the
+     * player with the highest roll.
+     * Used by the server only.
+     */
+    private MutablePair<Integer, Integer> diceRolls;
+
+    /** Index of the last player to roll the dice */
+    private int diceRollPlayerIndex;
+
+    private SessionManager(Session session) {
+        aSession = session;
+        diceRolls = new MutablePair<>(0, 0);
+        resetDiceRoll();
+        resetBarbarianPosition();
+    }
+
+    /**
+     * Get the session manager instance associated with a specific session.
+     * If the session is null, then a dummy session will be created.
+     */
+    public static SessionManager getInstance(Session session) {
+        if (!sessionManagerInstances.containsKey(session)) {
+            if (session == null) {
                 // Create a dummy session, for testing purposes
                 List<Account> accounts = new ArrayList<>();
                 accounts.add(CatanGame.account);
                 session = Session.newInstance(accounts, GameRules.getGameRulesInstance().getVpToWin());
-            } else {
-                session = currentGame.session;
             }
-            instance = new SessionManager(session);
+            sessionManagerInstances.put(session, new SessionManager(session));
         }
-        return instance;
+        return sessionManagerInstances.get(session);
     }
 
-    public Session getSession() { return this.aSession; }
+    /** Get the session associated with this session manager */
+    public Session getSession() {
+        return aSession;
+    }
 
-    public TransactionManager getTransactionManager() { return this.aTransactionManager; }
+    /** Update the session with new values */
+    public void updateSession(Session session) {
+        if (aSession.currentPhase != session.currentPhase)
+            aSession.currentPhase = session.currentPhase;
+        if (aSession.barbarianPosition != session.barbarianPosition)
+            aSession.barbarianPosition = session.barbarianPosition;
+        if (aSession.redDie != session.redDie)
+            aSession.redDie = session.redDie;
+        if (aSession.yellowDie != session.yellowDie)
+            aSession.yellowDie = session.yellowDie;
+        if (aSession.playerIndex != session.playerIndex)
+            aSession.playerIndex = session.playerIndex;
+    }
 
     public Player[] getPlayers() {
         return aSession.getPlayers();
@@ -52,11 +87,11 @@ public class SessionManager {
 
     /** Get the current player */
     public Player getCurrentPlayer() {
-        return aSession.getPlayers()[aSession.getPlayerIndex()];
+        return aSession.getPlayers()[aSession.playerIndex];
     }
 
     GamePhase getCurrentPhase() {
-        return aSession.getCurrentPhase();
+        return aSession.currentPhase;
     }
 
     public Player getCurrentPlayerFromColor(PlayerColor c) {
@@ -74,24 +109,26 @@ public class SessionManager {
      *
      * @return yellow dice value
      */
-    public int getYellowDice() { return aSession.getYellowDice(); }
+    public int getYellowDie() {
+        return aSession.yellowDie;
+    }
+
+    public void setYellowDie(int yellowDie) {
+        aSession.yellowDie = yellowDie;
+    }
 
     /**
      * Returns the current value of the red dice.
      *
      * @return red dice value
      */
-    public int getRedDice() { return aSession.getRedDice(); }
-
-
-    public void setRedDice(int redDice) {
-        aSession.setRedDice(redDice);
+    public int getRedDie() {
+        return aSession.redDie;
     }
 
-    public void setYellowDice(int yellowDice) {
-        aSession.setYellowDice(yellowDice);
+    public void setRedDie(int redDie) {
+        aSession.redDie = redDie;
     }
-
 
     /**
      * Adds resources to the Bank
@@ -103,7 +140,6 @@ public class SessionManager {
     }
 
     /**
-     *
      * Remove resources from the bank.
      *
      * @param cost The resources to be removed from the bank
@@ -121,5 +157,66 @@ public class SessionManager {
     public ResourceMap checkMaxCostForBank(ResourceMap cost) {
         cost = aSession.adjustcost(cost);
         return cost;
+    }
+
+    /**
+     * Decreases the barbarian position by 1.
+     */
+    public void decreaseBarbarianPosition() {
+        aSession.barbarianPosition--;
+        // TODO needs to be reset back to the original position if below 0
+    }
+
+    /**
+     * Resets the barbarian position to 7
+     */
+    public void resetBarbarianPosition() {
+        aSession.barbarianPosition = 7;
+    }
+
+    /** Get a player's index by their username */
+    public int getPlayerIndex(String username) {
+        Player[] players = aSession.getPlayers();
+        for (int i = 0; i < players.length; i++) {
+            if (players[i].getUsername().equals(username))
+                return i;
+        }
+        // Should never happen
+        return -1;
+    }
+
+    /** Get the highest dice roll at the time of the call */
+    public int getHighestDiceRoll() {
+        return diceRolls.getRight();
+    }
+
+    /** Get the index of the player with the highest dice roll */
+    public int getHighestDiceRollPlayerIndex() {
+        return diceRolls.getLeft();
+    }
+
+    public void setHighestDiceRoll(int playerIndex, int diceRoll) {
+        diceRolls.setLeft(playerIndex);
+        diceRolls.setRight(diceRoll);
+    }
+
+    /** Update the number of players who rolled the dice */
+    public void updateDiceRollPlayersCount() {
+        diceRollPlayerIndex++;
+    }
+
+    /** Check if every player is done rolling the dice */
+    public boolean isRollDiceDone() {
+        return diceRollPlayerIndex >= getPlayers().length;
+    }
+
+    /** Reset the index of the last player that rolled the dice */
+    public void resetDiceRoll() {
+        diceRollPlayerIndex = 0;
+    }
+
+    /** Set the current player by their index */
+    public void setCurrentPlayerIndex(int index) {
+        aSession.playerIndex = index;
     }
 }

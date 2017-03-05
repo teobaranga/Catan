@@ -8,11 +8,14 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.mygdx.catan.Config;
 import com.mygdx.catan.GameRules;
+import com.mygdx.catan.Player;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
 import com.mygdx.catan.session.Session;
+import com.mygdx.catan.session.SessionManager;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +39,13 @@ public class CatanServer {
 
     private static List<Account> defaultAccounts;
     private static List<Account> accounts;
+
+    /**
+     * Map connecting a game with the starting player, which is
+     * the one who rolled the highest number during the initialization
+     * phase.
+     */
+    private static Map<Game, Player> startingPlayer;
 
     static {
         // Create the default accounts
@@ -120,6 +130,9 @@ public class CatanServer {
                             forwardedResponse = PlayerLeft.newInstance(forwardedRequest.username);
                         } else if (forwardedRequest instanceof StartGame) {
                             forwardedResponse = startGame(forwardedRequest.username);
+                        } else if (forwardedRequest instanceof RollTwoDice) {
+                            final RollTwoDice rollTwoDice = (RollTwoDice) forwardedRequest;
+                            forwardedResponse = handleDiceRoll(rollTwoDice.username, rollTwoDice.getRollResult());
                         }
 
                         for (Account peer : game.peers.keySet()) {
@@ -153,7 +166,7 @@ public class CatanServer {
         if (gamesMap != null) {
             for (Game game : gamesMap.values()) {
                 // If there's a game currently waiting for more players, that's the one to return
-                if (!game.inProgress() && game.getPlayerCount() < Config.MAX_PLAYERS) {
+                if (!game.isInProgress() && game.getPlayerCount() < Config.MAX_PLAYERS) {
                     // Add the player to the game
                     game.addPlayer(account, connection.getID());
                     gamesMap.put(account.getUsername(), game);
@@ -195,7 +208,7 @@ public class CatanServer {
 
         for (Game game : gamesMap.values()) {
             // Disconnect only from games at the lobby stage
-            if (!game.inProgress()) {
+            if (!game.isInProgress()) {
                 // Look for the player's connection ID
                 Account acc = null;
                 for (Map.Entry<Account, Integer> accountIntegerEntry : game.peers.entrySet()) {
@@ -231,6 +244,38 @@ public class CatanServer {
         game.session = Session.newInstance(game.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         // Return the game response containing the game along with its session
         return GameResponse.newInstance(game);
+    }
+
+    private static DiceRolled handleDiceRoll(String username, Pair<Integer, Integer> dice) {
+        final Game game = gamesMap.get(username);
+        if (!game.isInProgress())
+            return null;
+        switch (game.session.currentPhase) {
+            case SETUP_PHASE_ONE:
+                final SessionManager sessionManager = SessionManager.getInstance(game.session);
+                // Update the session manager with the index of the last player to roll the dice
+                final int playerIndex = sessionManager.getPlayerIndex(username);
+                sessionManager.updateDiceRollPlayersCount();
+                // Update the highest-roll player if necessary
+                // Compare the dice rolls
+                final int roll = dice.getLeft() + dice.getRight();
+                final int highestDiceRoll = sessionManager.getHighestDiceRoll();
+                if (roll > highestDiceRoll) {
+                    // Update the highest dice roll
+                    sessionManager.setHighestDiceRoll(playerIndex, roll);
+                }
+                if (sessionManager.isRollDiceDone()) {
+                    // All players are done rolling the dice
+                    // Set the session's current player to the one with the highest dice roll
+                    final int index = sessionManager.getHighestDiceRollPlayerIndex();
+                    sessionManager.setCurrentPlayerIndex(index);
+                    return DiceRolled.newInstance(username, roll, sessionManager.getSession());
+                } else {
+                    return DiceRolled.newInstance(username, roll);
+                }
+            default:
+                return null;
+        }
     }
 
     private static String getUsername(Connection connection) {

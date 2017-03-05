@@ -3,57 +3,54 @@ package com.mygdx.catan.session;
 import com.badlogic.gdx.Gdx;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.CatanRandom;
-import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.GameRules;
-import com.mygdx.catan.Player;
-import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.*;
 import com.mygdx.catan.TradeAndTransaction.TransactionManager;
-import com.mygdx.catan.enums.EdgeUnitKind;
-import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.enums.ResourceKind;
-import com.mygdx.catan.enums.TerrainKind;
-import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.enums.*;
+import com.mygdx.catan.game.Game;
+import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.request.RollDice;
 import com.mygdx.catan.request.RollTwoDice;
+import com.mygdx.catan.response.DiceRolled;
 import com.mygdx.catan.response.PlaceCityAndRoad;
 import com.mygdx.catan.response.ShowDice;
 import com.mygdx.catan.response.UpdateResourceBar;
-
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
     private final SessionManager aSessionManager;
     private final SessionScreen aSessionScreen;
-    private PlayerColor aPlayerColor;
     private final Listener aSessionListener;
     private final CatanRandom random;
     private final TransactionManager aTransactionManager;
+
+    private PlayerColor aPlayerColor;
 
     /** Flag indicating whether it's the turn of the player logged in */
     private boolean myTurn;
 
     SessionController(SessionScreen sessionScreen) {
+        final Game currentGame = GameManager.getInstance().getCurrentGame();
         aSessionScreen = sessionScreen;
         aGameBoardManager = GameBoardManager.getInstance();
-        aSessionManager = SessionManager.getInstance();
+        aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
         random = CatanRandom.getInstance();
         aTransactionManager = TransactionManager.getInstance(aSessionManager.getSession());
-        
+
         // sets the color as the accounts associated Player object color
         for (Player p : aSessionManager.getPlayers()) {
-        	if (p.getAccount().equals(CatanGame.account)) {
-        		aPlayerColor = p.getColor();
-        		break;
-        	}
+            if (p.getAccount().equals(CatanGame.account)) {
+                aPlayerColor = p.getColor();
+                break;
+            }
         }
 
         aSessionListener = new Listener() {
@@ -78,6 +75,17 @@ public class SessionController {
                         PlayerColor aPlayerColor = ((PlaceCityAndRoad) object).aPlayerColor;
                         //placeCityAndRoads(cityPos, edgeUnitPos1, edgeUnitPos2, isShip, fromPeer, aPlayerColor, villageKind);
                     });
+                } else if (object instanceof DiceRolled) {
+                    Gdx.app.postRunnable(() -> {
+                        final DiceRolled diceRolled = (DiceRolled) object;
+                        aSessionScreen.addGameMessage(diceRolled.getUsername() + " rolled a " + diceRolled.getDiceRoll());
+                        if (diceRolled.isLastRoll()) {
+                            // Update the session
+                            aSessionManager.updateSession(diceRolled.getSession());
+                            aSessionScreen.addGameMessage("The player with the highest roll is " + aSessionManager.getCurrentPlayer().getUsername());
+                            // TODO Move to the next phase of the game
+                        }
+                    });
                 } else if (object instanceof ShowDice) {
                     Gdx.app.postRunnable(() -> {
                         aSessionScreen.showDice(getYellowDice(), getRedDice());
@@ -92,15 +100,15 @@ public class SessionController {
                         Pair<Integer, Integer> diceRollResult = ((RollTwoDice) object).getRollResult();
                         int yellowDice = diceRollResult.getLeft();
                         int redDice = diceRollResult.getRight();
-                        aSessionManager.setYellowDice(yellowDice);
-                        aSessionManager.setRedDice(redDice);
+                        aSessionManager.setYellowDie(yellowDice);
+                        aSessionManager.setRedDie(redDice);
                         aSessionScreen.showDice(yellowDice, redDice);
                     });
                 } else if (object instanceof RollDice) {
                     Gdx.app.postRunnable(() -> {
                         List<ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
                         //aSessionScreen.updateResourceBar(getOwnresourcesUpdate(updatedPlayerResources));
-                     });
+                    });
 
                 }
                 // TODO update the myTurn variable here
@@ -123,11 +131,14 @@ public class SessionController {
     void turn() {
         if (!myTurn) {
             // TODO disable UI, the player can't really do anything at this moment
+            final Player currentPlayer = aSessionManager.getCurrentPlayer();
+            aSessionScreen.addGameMessage("Waiting for: " + currentPlayer.getUsername());
             return;
         }
         switch (aSessionManager.getCurrentPhase()) {
             case SETUP_PHASE_ONE:
                 // TODO Allow the player to roll the dice
+                aSessionScreen.addGameMessage("Please roll the dice");
                 break;
             case SETUP_PHASE_TWO_CLOCKWISE:
                 // TODO Allow the player to place one settlement and one road
@@ -156,13 +167,13 @@ public class SessionController {
     public Player getCurrentPlayer() {
     	return aSessionManager.getCurrentPlayer();
     }
-    
+
     public int getYellowDice() {
-        return aSessionManager.getYellowDice();
+        return aSessionManager.getYellowDie();
     }
 
     public int getRedDice() {
-        return aSessionManager.getRedDice();
+        return aSessionManager.getRedDie();
     }
 
     public ArrayList<Hex> getHexes() {
@@ -203,7 +214,7 @@ public class SessionController {
     }
 
     /**
-     * @param firstIntersection first  intersection
+     * @param firstIntersection  first  intersection
      * @param secondIntersection second intersection
      * @return true if the edge between the two intersections is on land (assumes the two intersections are adjacent)
      */
@@ -317,7 +328,6 @@ public class SessionController {
             if (!i.isOccupied() && (!isAdjacentToSomeBuilding) && aGameBoardManager.isOnLand(i)) {
             	validIntersections.add(i);
             }
-            
         }
 
         return validIntersections;
@@ -332,7 +342,7 @@ public class SessionController {
         ArrayList<CoordinatePair> validUpgradeIntersections = new ArrayList<>();
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
         ArrayList<Village> listOfVillages = currentP.getVillages();
-        for (Village v: listOfVillages) {
+        for (Village v : listOfVillages) {
             validUpgradeIntersections.add(v.getPosition());
         }
         return validUpgradeIntersections;
@@ -485,19 +495,18 @@ public class SessionController {
         return false;
     }
 
-    
     public List<ResourceMap> distributeInitialResources(CoordinatePair cityPos) {
         List<Hex> neighbouringHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
         List<ResourceMap> playerResources = new ArrayList<>();
         Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
         ResourceMap playerResourceMap = new ResourceMap();
-        
+
         int pastureCounter = 0;
         int forestCounter = 0;
         int mountainCounter = 0;
         int hillCounter = 0;
         int fieldCounter = 0;
-        
+
         for(Hex h : neighbouringHexes) {
             TerrainKind tKind = h.getKind();
             switch (tKind) {
@@ -520,26 +529,26 @@ public class SessionController {
                 break;
             case GOLDFIELD:
                 break;
-            case SEA: 
+            case SEA:
                 break;
             default:
                 break;
             }
         }
-        
+
         playerResourceMap.put(ResourceKind.WOOL, pastureCounter);
         playerResourceMap.put(ResourceKind.WOOD, forestCounter);
         playerResourceMap.put(ResourceKind.ORE, mountainCounter);
         playerResourceMap.put(ResourceKind.BRICK, hillCounter);
         playerResourceMap.put(ResourceKind.GRAIN, fieldCounter);
-        
+
         clientPlayer.addResources(playerResourceMap);
         playerResources.add(playerResourceMap);
-        aSessionScreen.updateResourceBar(playerResourceMap); 
-       
+        aSessionScreen.updateResourceBar(playerResourceMap);
+
         return playerResources;
     }
-    
+
     /**
      * Allows the user to place a city and an edge unit and then receive the resources near the city
      */
@@ -610,7 +619,12 @@ public class SessionController {
         return cost;
     }
 
-    public Pair<Integer, Integer> rollTwoDice() {
+    /**
+     * Get a pair of integers representing the roll of the red and yellow dice.
+     *
+     * @return a pair of integers, first one being the red die, second one being the yellow die
+     */
+    private Pair<Integer, Integer> rollTwoDice() {
         return random.rollTwoDice();
     }
     
@@ -618,7 +632,7 @@ public class SessionController {
         List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
         List<ResourceMap> playerResources = new ArrayList<>();
         List<Hex> producingHexes = new ArrayList<>();
-        
+
         int pastureCounter = 0;
         int forestCounter = 0;
         int mountainCounter = 0;
@@ -627,7 +641,7 @@ public class SessionController {
         int paperCounter = 0;
         int clothCounter = 0;
         int coinCounter = 0;
-        
+
         Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
         for (Hex h : hexes) {
             int hexNumber = h.getDiceNumber();
@@ -638,13 +652,13 @@ public class SessionController {
         }
 
         ResourceMap ResAndComMap = new ResourceMap();
-        
+
         for (Hex ph : producingHexes) {
             TerrainKind tKind = ph.getKind();
             ArrayList<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(ph);
             ArrayList<CoordinatePair> adjacentIntersections = aGameBoardManager
                     .getAdjacentIntersections(ph);
-            
+
             for (CoordinatePair cp : adjacentIntersections) {
                 boolean isOccupied = cp.isOccupied();
                 if (isOccupied && cp.getOccupyingVillage().getOwner().equals(clientPlayer)) { //with right color
@@ -691,10 +705,10 @@ public class SessionController {
 					break;
 				default:
 					break;
-                } 
+                }
             }
         }
-        
+
         ResAndComMap.put(ResourceKind.WOOL, pastureCounter);
         ResAndComMap.put(ResourceKind.CLOTH, clothCounter);
         ResAndComMap.put(ResourceKind.WOOD, forestCounter);
@@ -703,16 +717,16 @@ public class SessionController {
         ResAndComMap.put(ResourceKind.COIN, coinCounter);
         ResAndComMap.put(ResourceKind.BRICK, hillCounter);
         ResAndComMap.put(ResourceKind.GRAIN, fieldCounter);
-        
+
         clientPlayer.addResources(ResAndComMap);
         playerResources.add(ResAndComMap);
         aSessionScreen.updateResourceBar(ResAndComMap);
-        
+
         return playerResources;
     }
-    
-    
-    
+
+
+
     // TODO: set GUI's mode to chooseActionMode for the player who's turn it is
 
 
@@ -725,14 +739,27 @@ public class SessionController {
         return new ResourceMap();
     }*/
 
-    public void rollDices() {
-        Pair<Integer, Integer> diceResults = rollTwoDice();
-        //TODO: FIRE FOLLOWING MSG TO SERVER.
-        RollTwoDice diceResultsToSent = RollTwoDice.newInstance(diceResults,"Dummy");
-        List<ResourceMap> resourceUpdateMap = rollDice(diceResults.getLeft() + diceResults.getRight());
-        //TODO: FIRE FOLLOWING MSG TO SERVER.
-        RollDice diceResourcesToSent = RollDice.newInstance(resourceUpdateMap,"Dummy");
-        aSessionScreen.showDice(diceResults.getLeft(), diceResults.getRight());
-        //aSessionScreen.updateResourceBar(getOwnresourcesUpdate(resourceUpdateMap));
+    /**
+     * Roll the dice according to the phase of the game/session.
+     */
+    void rollDice() {
+        switch (aSessionManager.getCurrentPhase()) {
+            case SETUP_PHASE_ONE:
+                // We're at the phase where we have to determine who rolled the highest number
+                // Roll the dice
+                Pair<Integer, Integer> diceResults = rollTwoDice();
+                // Inform the server / other users of the roll
+                RollTwoDice request = RollTwoDice.newInstance(diceResults, CatanGame.account.getUsername());
+                CatanGame.client.sendTCP(request);
+                break;
+            default:
+                // FIXME This is not good, pretend it doesn't exist (-Teo)
+                Pair<Integer, Integer> roll = rollTwoDice();
+//                Map<Player, ResourceMap> resourceUpdateMap = getResourceUpdate(roll.getLeft() + roll.getRight());
+//                RollDice diceResourcesToSent = RollDice.newInstance(resourceUpdateMap, "Dummy");
+                aSessionScreen.showDice(roll.getLeft(), roll.getRight());
+//                aSessionScreen.updateResourceBar(getOwnresourcesUpdate(resourceUpdateMap));
+                break;
+        }
     }
 }

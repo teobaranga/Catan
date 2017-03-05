@@ -215,6 +215,11 @@ public class Player {
         return account;
     }
 
+    /** Get the player's username */
+    public String getUsername() {
+        return account.getUsername();
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == null) return false;

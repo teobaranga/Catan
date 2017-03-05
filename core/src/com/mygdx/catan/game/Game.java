@@ -12,6 +12,7 @@ public class Game {
     /**
      * Map of game accounts to their latest connection (by ID).
      * Needs to be kept up-to-date because the connection might change.
+     * Contains all players of a game.
      */
     public final Map<Account, Integer> peers;
 
@@ -73,7 +74,7 @@ public class Game {
      * Check if this game is in progress or not (this is the case only
      * when the game is at the looking for players stage)
      */
-    public boolean inProgress() {
+    public boolean isInProgress() {
         return session != null;
     }
 

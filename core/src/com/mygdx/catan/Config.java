@@ -9,6 +9,8 @@ import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
 import com.mygdx.catan.session.Session;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.objenesis.strategy.SerializingInstantiatorStrategy;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,6 +35,8 @@ public class Config {
     static final String IP = "localhost";
 
     public static void registerKryoClasses(Kryo kryo) {
+        kryo.setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new SerializingInstantiatorStrategy()));
+
         kryo.register(Account.class);
         kryo.register(PlayerColor.class);
         kryo.register(Player.class);
@@ -55,7 +59,10 @@ public class Config {
         kryo.register(LeaveGame.class);
         kryo.register(PlayerJoined.class);
         kryo.register(PlayerLeft.class);
+        kryo.register(RollTwoDice.class);
+        kryo.register(DiceRolled.class);
         kryo.register(LinkedHashMap.class);
         kryo.register(ArrayList.class);
+        kryo.register(ImmutablePair.class);
     }
 }

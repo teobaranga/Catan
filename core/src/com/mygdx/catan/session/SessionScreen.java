@@ -20,24 +20,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.GameRules;
-import com.mygdx.catan.Player;
-import com.mygdx.catan.ResourceMap;
-import com.mygdx.catan.account.Account;
-import com.mygdx.catan.enums.EdgeUnitKind;
-import com.mygdx.catan.enums.HarbourKind;
-import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.enums.ResourceKind;
-import com.mygdx.catan.enums.SessionScreenModes;
-import com.mygdx.catan.enums.VillageKind;
-import com.mygdx.catan.game.Game;
-import com.mygdx.catan.game.GameManager;
+import com.mygdx.catan.*;
+import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.ui.TradeWindow;
-
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -136,7 +123,7 @@ public class SessionScreen implements Screen {
     /** A table that keeps track of current player */
     private Table currentPlayer;
     private Label currentPlayerLabel;
-    
+
     /** labels that keeps track of available game pieces to build */
     private Label availableSettlements;
     private Label availableCities;
@@ -244,7 +231,7 @@ public class SessionScreen implements Screen {
                                 } else {
                                 	aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
                                 }
-                                
+
                                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false);
 
                                 initializing = false;
@@ -308,30 +295,30 @@ public class SessionScreen implements Screen {
         availableGamePiecesTable.setBackground("resTableBackground");
         availableGamePiecesTable.setSize(200, 200);
         availableGamePiecesTable.setPosition(Gdx.graphics.getWidth() - 210, 10);
-        
+
         Table aAvailSettlementTable = new Table(CatanGame.skin);
         availableSettlements = new Label("",CatanGame.skin);
         aAvailSettlementTable.add(availableSettlements);
         availableGamePiecesTable.add(aAvailSettlementTable).pad(5).row();
-        
+
         Table aAvailCityTable = new Table(CatanGame.skin);
         availableCities = new Label("",CatanGame.skin);
         aAvailCityTable.add(availableCities);
         availableGamePiecesTable.add(aAvailCityTable).pad(5).row();
-        
+
         Table aAvailRoadTable = new Table(CatanGame.skin);
         availableRoads = new Label("",CatanGame.skin);
         aAvailRoadTable.add(availableRoads);
         availableGamePiecesTable.add(aAvailRoadTable).pad(5).row();
-        
+
         Table aAvailShipTable = new Table(CatanGame.skin);
         availableShips = new Label("",CatanGame.skin);
         aAvailShipTable.add(availableShips);
         availableGamePiecesTable.add(aAvailShipTable).pad(5).row();
-        
+
         updateAvailableGamePieces(5,4,15,15);
-        
-        
+
+
         // creates the menu buttons
         buildSettlementButton = new TextButton("Build Settlement", CatanGame.skin);
         setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT);
@@ -363,7 +350,7 @@ public class SessionScreen implements Screen {
         rollDiceButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                aSessionController.rollDices();
+                aSessionController.rollDice();
             }
         });
         menuTable.add(rollDiceButton).padBottom(10).row();
@@ -427,7 +414,6 @@ public class SessionScreen implements Screen {
         gameLog.setY(pad);
         gameLog.setWidth(tableWidth);
         gameLog.setHeight(tableHeight);
-        gameLog.debugAll();
 
         aSessionStage.addActor(contentTable);
         aSessionStage.addActor(availableGamePiecesTable);
@@ -435,7 +421,11 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(currentPlayer);
         aSessionStage.addActor(gameLog);
 
+        // Notify the controller that the session screen is displayed
         aSessionController.onScreenShown();
+
+        // Begin the game
+        aSessionController.turn();
     }
 
     private void setupInitButton(TextButton initButton) {
@@ -467,7 +457,7 @@ public class SessionScreen implements Screen {
                 			highlightedPositions.add(gamePieces.createCity(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                 		}
                 	}
-                   
+
                     aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
                     villagePieceKind = kind;
                     buildButton.setText("Cancel");
@@ -494,7 +484,7 @@ public class SessionScreen implements Screen {
                 		for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
                 			for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
                 				if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i, j)) {
-                					
+
                 					Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
                 					validEdges.add(edge);
 
@@ -507,7 +497,7 @@ public class SessionScreen implements Screen {
                 			}
                 		}
                 	} else {
-                		for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) { 
+                		for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
                 			for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
                 				if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
 
@@ -523,7 +513,7 @@ public class SessionScreen implements Screen {
                 			}
                 		}
                 	}
-                    
+
                   // make a sprite that highlights the areas
                     if (kind == EdgeUnitKind.ROAD) {
                         for (Pair<CoordinatePair,CoordinatePair> edge : validEdges) {
@@ -878,10 +868,10 @@ public class SessionScreen implements Screen {
      * Updates the current player
      * */
     public void updateCurrentPlayer(Player newCurrentPlayer) {
-        
+
     	String currentPlayerName = newCurrentPlayer.getAccount().getUsername();
     	currentPlayerLabel.setText("Current Player: "+currentPlayerName);
-    	
+
     	// sets background color to current player's color
     	switch (newCurrentPlayer.getColor()) {
         case BLUE:
@@ -903,19 +893,20 @@ public class SessionScreen implements Screen {
             break;
         }
     }
-    
+
     /**
      * Updates the available game pieces
-     * @param new number of available settlements
-     * @param new number of available cities
-     * @param new number of available roads
-     * @param new number of available ships
-     * */
+     *
+     * @param newAvailSettlements number of available settlements
+     * @param newAvailCities      number of available cities
+     * @param newAvailRoads       number of available roads
+     * @param newAvailShips       number of available ships
+     */
     public void updateAvailableGamePieces(int newAvailSettlements, int newAvailCities, int newAvailRoads, int newAvailShips) {
-    	availableSettlements.setText("Available Settlements: "+newAvailSettlements);
-    	availableCities.setText("Available Cities: "+newAvailCities);
-    	availableRoads.setText("Available Roads: "+ newAvailRoads);
-    	availableShips.setText("Available Ships: "+newAvailShips);
+        availableSettlements.setText("Available Settlements: " + newAvailSettlements);
+        availableCities.setText("Available Cities: " + newAvailCities);
+        availableRoads.setText("Available Roads: " + newAvailRoads);
+        availableShips.setText("Available Ships: " + newAvailShips);
     }
 
     /**
@@ -957,9 +948,9 @@ public class SessionScreen implements Screen {
      *
      * @param message message
      */
-    private void addGameMessage(String message) {
+    void addGameMessage(String message) {
         final Table table = (Table) gameLog.getChildren().get(0);
-        table.add(new Label("hello", CatanGame.skin));
+        table.add(new Label(message, CatanGame.skin)).left();
         table.row();
         gameLog.layout();
         gameLog.scrollTo(0, 0, 0, 0);

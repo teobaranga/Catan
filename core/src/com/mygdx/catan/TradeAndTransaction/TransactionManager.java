@@ -12,9 +12,18 @@ public class TransactionManager {
     //session controller has a dependency on transaction manager aka other way around
     private Session aSession;
 
-    public TransactionManager(Session s) {
-        aSession = s;
+    private static TransactionManager instance = null;
+
+    public static TransactionManager getInstance() {
+        if (instance == null) {
+            instance = new TransactionManager();
+        }
+        return instance;
     }
+
+    //public TransactionManager(Session s) {
+        //aSession = s;
+    //}
 
     /**
      * Adds resources to the player resourceMap.

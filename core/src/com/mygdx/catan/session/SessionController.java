@@ -37,6 +37,7 @@ public class SessionController {
     private PlayerColor aPlayerColor;
     private final Listener aSessionListener;
     private final CatanRandom random;
+    private final TransactionManager aTransactionManager;
 
     /** Flag indicating whether it's the turn of the player logged in */
     private boolean myTurn;
@@ -46,6 +47,7 @@ public class SessionController {
         aGameBoardManager = GameBoardManager.getInstance();
         aSessionManager = SessionManager.getInstance();
         random = CatanRandom.getInstance();
+        aTransactionManager = TransactionManager.getInstance();
         
         // sets the color as the accounts associated Player object color
         for (Player p : aSessionManager.getPlayers()) {
@@ -397,7 +399,7 @@ public class SessionController {
 
         if (kind.equals(VillageKind.SETTLEMENT)) {
             aGameBoardManager.buildSettlement(currentP, position);
-            aSessionManager.getTransactionManager().payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
+            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
 
             if (fromPeer) {
                 aSessionScreen.updateIntersection(position, owner, kind);
@@ -408,7 +410,7 @@ public class SessionController {
         }
         else if (kind.equals(VillageKind.CITY)) {
             aGameBoardManager.upgradeSettlement(currentP, position);
-            aSessionManager.getTransactionManager().payBankToPlayer(currentP, GameRules.getGameRulesInstance().getCityCost());
+            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
 
             if (fromPeer) {
                 aSessionScreen.updateIntersection(position, owner, kind);
@@ -441,14 +443,14 @@ public class SessionController {
         aSessionScreen.updateEdge(firstPosition, SecondPosition, kind, owner);
 
         if (kind.equals(EdgeUnitKind.ROAD)) {
-            aSessionManager.getTransactionManager().payBankToPlayer(currentP, GameRules.getGameRulesInstance().getRoadCost());
+            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
             if (!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getRoadCost());
             }
         }
 
         if (kind.equals(EdgeUnitKind.SHIP)) {
-            aSessionManager.getTransactionManager().payBankToPlayer(currentP, GameRules.getGameRulesInstance().getShipCost());
+            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
             if(!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getShipCost());
             }

@@ -491,38 +491,52 @@ public class SessionController {
         List<ResourceMap> playerResources = new ArrayList<>();
         Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
         ResourceMap playerResourceMap = new ResourceMap();
+        
+        int pastureCounter = 0;
+        int forestCounter = 0;
+        int mountainCounter = 0;
+        int hillCounter = 0;
+        int fieldCounter = 0;
+        
         for(Hex h : neighbouringHexes) {
             TerrainKind tKind = h.getKind();
             switch (tKind) {
             case PASTURE:
-                playerResourceMap.put(ResourceKind.WOOL, 1);
+                pastureCounter++;
                 break;
             case FOREST:
-                playerResourceMap.put(ResourceKind.WOOD, 1);
-                break;
+            	forestCounter++;
+            	break;
             case MOUNTAINS:
-                playerResourceMap.put(ResourceKind.ORE, 1);
+                mountainCounter++;
                 break;
             case HILLS:
-                playerResourceMap.put(ResourceKind.BRICK, 1);
+                hillCounter++;
                 break;
             case FIELDS:
-                playerResourceMap.put(ResourceKind.GRAIN, 1);
+                fieldCounter++;
                 break;
-            /*case DESERT:
+            case DESERT:
                 break;
             case GOLDFIELD:
                 break;
             case SEA: 
                 break;
             default:
-                break;*/
-                
+                break;
             }
-            clientPlayer.addResources(playerResourceMap);
-            playerResources.add(playerResourceMap);
-            aSessionScreen.updateResourceBar(playerResourceMap);  
         }
+        
+        playerResourceMap.put(ResourceKind.WOOL, pastureCounter);
+        playerResourceMap.put(ResourceKind.WOOD, forestCounter);
+        playerResourceMap.put(ResourceKind.ORE, mountainCounter);
+        playerResourceMap.put(ResourceKind.BRICK, hillCounter);
+        playerResourceMap.put(ResourceKind.GRAIN, fieldCounter);
+        
+        clientPlayer.addResources(playerResourceMap);
+        playerResources.add(playerResourceMap);
+        aSessionScreen.updateResourceBar(playerResourceMap); 
+       
         return playerResources;
     }
     
@@ -614,11 +628,14 @@ public class SessionController {
             }
         }
 
+        ResourceMap ResAndComMap = new ResourceMap();
+        
         for (Hex ph : producingHexes) {
             TerrainKind tKind = ph.getKind();
             ArrayList<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(ph);
             ArrayList<CoordinatePair> adjacentIntersections = aGameBoardManager
                     .getAdjacentIntersections(ph);
+            
             for (CoordinatePair cp : adjacentIntersections) {
                 boolean isOccupied = cp.isOccupied();
                 if (isOccupied && cp.getOccupyingVillage().getOwner().equals(clientPlayer)) { //with right color
@@ -627,7 +644,6 @@ public class SessionController {
                 }
             }
             for (Village v : adjacentVillages) {
-                ResourceMap ResAndComMap = new ResourceMap();
                 VillageKind vKind = v.getVillageKind();
 
                 switch (tKind) {
@@ -658,16 +674,23 @@ public class SessionController {
                     else
                         ResAndComMap.put(ResourceKind.GRAIN, 2);
                     break;
-                /*
-                 * case DESERT: break; case GOLDFIELD: break; case SEA: break;
-                 * default: break;
-                 */
+				case DESERT:
+					break;
+				case GOLDFIELD:
+					break;
+				case SEA:
+					break;
+				default:
+					break;
                 }
-                clientPlayer.addResources(ResAndComMap);
-                playerResources.add(ResAndComMap);
-                aSessionScreen.updateResourceBar(ResAndComMap);
+               
             }
         }
+        
+        clientPlayer.addResources(ResAndComMap);
+        playerResources.add(ResAndComMap);
+        aSessionScreen.updateResourceBar(ResAndComMap);
+        
         return playerResources;
     }
     

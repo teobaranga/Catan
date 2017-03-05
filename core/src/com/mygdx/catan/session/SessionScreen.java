@@ -237,9 +237,15 @@ public class SessionScreen implements Screen {
                                     edgePieceKind = EdgeUnitKind.SHIP;
                                 }
                                 
-                                aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
+                                if (villagePieceKind == VillageKind.CITY) {
+                                    aSessionController.buildVillage(initVillageIntersection, VillageKind.SETTLEMENT, aSessionController.getPlayerColor(), false);
+                                    aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
+                                	aSessionController.distributeInitialResources(initVillageIntersection);
+                                } else {
+                                	aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
+                                }
+                                
                                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false);
-                                //TODO: call distribute resources if village kind is city
 
                                 initializing = false;
                                 aInitButton.setText("Done");
@@ -438,7 +444,7 @@ public class SessionScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 initButton.setChecked(false);
                 initButton.setText("Initializing");
-                initialize(true);
+                initialize(false);
             }
         });
     }

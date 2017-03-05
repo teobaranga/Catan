@@ -23,6 +23,7 @@ import com.mygdx.catan.response.PlaceCityAndRoad;
 import com.mygdx.catan.response.ShowDice;
 import com.mygdx.catan.response.UpdateResourceBar;
 
+import com.sun.javafx.geom.Edge;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -317,10 +318,23 @@ public class SessionController {
         ArrayList<CoordinatePair> validRoadEndpoints = new ArrayList<>();
 
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
-        ArrayList<Village> listOfVillages = currentP.getVillages();
-        ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
 
-        for (Village v: listOfVillages) {
+        for (Village v: currentP.getVillages()) {
+            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(v.getPosition())) {
+                validRoadEndpoints.add(aPair);
+            }
+        }
+        for (EdgeUnit eu: currentP.getRoadsAndShips()) {
+            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getAFirstCoordinate())) {
+                validRoadEndpoints.add(aPair);
+            }
+        }
+        for (EdgeUnit eu: currentP.getRoadsAndShips()) {
+            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getASecondCoordinate())) {
+                validRoadEndpoints.add(aPair);
+            }
+        }
+        /*for (Village v: listOfVillages) {
             for (CoordinatePair aPair : aGameBoardManager.getNeighboringIntersections(v.getPosition())) {
                 for (EdgeUnit eu : listOfEdgeUnits) {
                     //the edge unit formed by v and aPair is on land and aPair is not already part of an edgePoint
@@ -345,7 +359,7 @@ public class SessionController {
                     validRoadEndpoints.add(aPair);
                 }
             }
-        }
+        }*/
 
         // this method will essentially return all the endpoints where you can build a road at any edge 
         // starting at that endpoint (if we disregard the edges that are occupied). The GUI will make sure 
@@ -357,6 +371,7 @@ public class SessionController {
      * @param owner of requested valid intersections
      * @return a list of all the intersections that are (1) connected to a ship or harbour village owned by owner (2) something something pirate
      */
+    //TODO: implement pirate thing
     public ArrayList<CoordinatePair> requestValidShipEndpoints(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         ArrayList<CoordinatePair> validShipEndpoints = new ArrayList<>();

@@ -98,7 +98,7 @@ public class SessionController {
                     });
                 } else if (object instanceof RollDice) {
                     Gdx.app.postRunnable(() -> {
-                        //Map<Player, ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
+                        List<ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
                         //aSessionScreen.updateResourceBar(getOwnresourcesUpdate(updatedPlayerResources));
                      });
 
@@ -482,6 +482,47 @@ public class SessionController {
         return false;
     }
 
+    
+    public List<ResourceMap> distributeInitialResources(CoordinatePair cityPos) {
+        List<Hex> neighbouringHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
+        List<ResourceMap> playerResources = new ArrayList<>();
+        Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
+        ResourceMap playerResourceMap = new ResourceMap();
+        for(Hex h : neighbouringHexes) {
+            TerrainKind tKind = h.getKind();
+            switch (tKind) {
+            case PASTURE:
+                playerResourceMap.put(ResourceKind.WOOL, 1);
+                break;
+            case FOREST:
+                playerResourceMap.put(ResourceKind.WOOD, 1);
+                break;
+            case MOUNTAINS:
+                playerResourceMap.put(ResourceKind.ORE, 1);
+                break;
+            case HILLS:
+                playerResourceMap.put(ResourceKind.BRICK, 1);
+                break;
+            case FIELDS:
+                playerResourceMap.put(ResourceKind.GRAIN, 1);
+                break;
+            /*case DESERT:
+                break;
+            case GOLDFIELD:
+                break;
+            case SEA: 
+                break;
+            default:
+                break;*/
+                
+            }
+            clientPlayer.addResources(playerResourceMap);
+            playerResources.add(playerResourceMap);
+            aSessionScreen.updateResourceBar(playerResourceMap);  
+        }
+        return playerResources;
+    }
+    
     /**
      * Allows the user to place a city and an edge unit and then receive the resources near the city
      */
@@ -556,20 +597,12 @@ public class SessionController {
         return random.rollTwoDice();
     }
     
-    /*public Map<Player, ResourceMap> distributeResources(Player aPlayer) {
-        
-        switch(tKind) {
-        
-        }
-    }*/
-
-    
-    public Map<Player, ResourceMap> getResourceUpdate(int diceRoll) {
+    public List<ResourceMap> rollDice(int diceRoll) {
         List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
-        Player currPlayer = aSessionManager.getCurrentPlayer();
-        HashMap<Player, ResourceMap> playerResources = new HashMap<>();
+        List<ResourceMap> playerResources = new ArrayList<>();
+        //HashMap<Player, ResourceMap> playerResources = new HashMap<>();
         List<Hex> producingHexes = new ArrayList<>();
-        List<Player> noResourcesReceivedPlayers = Arrays.asList(getPlayers());
+        Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
         for (Hex h : hexes) {
             int hexNumber = h.getDiceNumber();
             Hex robberPosition = getRobberPosition();
@@ -585,15 +618,14 @@ public class SessionController {
                     .getAdjacentIntersections(ph);
             for (CoordinatePair cp : adjacentIntersections) {
                 boolean isOccupied = cp.isOccupied();
-                if (isOccupied) {
+                if (isOccupied && cp.getOccupyingVillage().getOwner().equals(clientPlayer)) { //with right color
                     Village v = cp.getOccupyingVillage();
                     adjacentVillages.add(v);
                 }
             }
             for (Village v : adjacentVillages) {
-                Player villageOwner = v.getOwner();
-                VillageKind vKind = v.getVillageKind();
                 ResourceMap ResAndComMap = new ResourceMap();
+                VillageKind vKind = v.getVillageKind();
 
                 switch (tKind) {
                 case PASTURE:
@@ -628,12 +660,11 @@ public class SessionController {
                  * default: break;
                  */
                 }
-                villageOwner.addResources(ResAndComMap);
-                noResourcesReceivedPlayers.remove(villageOwner);
-                playerResources.put(villageOwner, ResAndComMap);
+                clientPlayer.addResources(ResAndComMap);
+                playerResources.add(ResAndComMap);
+                aSessionScreen.updateResourceBar(ResAndComMap);
             }
         }
-
         return playerResources;
     }
     
@@ -641,24 +672,24 @@ public class SessionController {
     
     // TODO: set GUI's mode to chooseActionMode for the player who's turn it is
 
-    
-    public ResourceMap getOwnresourcesUpdate(Map<Player, ResourceMap> updatedPlayerResources) {
+
+    /*public ResourceMap getOwnresourcesUpdate(Map<Player,ResourceMap> updatedPlayerResources) {
         for (Map.Entry<Player, ResourceMap> entry : updatedPlayerResources.entrySet() ) {
             if(entry.getKey().getColor().equals(aPlayerColor)) {
                 return entry.getValue();
             }
         }
         return new ResourceMap();
-    }
+    }*/
 
     public void rollDices() {
         Pair<Integer, Integer> diceResults = rollTwoDice();
         //TODO: FIRE FOLLOWING MSG TO SERVER.
         RollTwoDice diceResultsToSent = RollTwoDice.newInstance(diceResults,"Dummy");
-        Map<Player, ResourceMap> resourceUpdateMap = getResourceUpdate(diceResults.getLeft() + diceResults.getRight());
+        List<ResourceMap> resourceUpdateMap = rollDice(diceResults.getLeft() + diceResults.getRight());
         //TODO: FIRE FOLLOWING MSG TO SERVER.
         RollDice diceResourcesToSent = RollDice.newInstance(resourceUpdateMap,"Dummy");
         aSessionScreen.showDice(diceResults.getLeft(), diceResults.getRight());
-        aSessionScreen.updateResourceBar(getOwnresourcesUpdate(resourceUpdateMap));
+        //aSessionScreen.updateResourceBar(getOwnresourcesUpdate(resourceUpdateMap));
     }
 }

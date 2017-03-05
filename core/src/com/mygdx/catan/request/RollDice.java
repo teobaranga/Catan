@@ -1,22 +1,22 @@
 package com.mygdx.catan.request;
 
-import java.util.Map;
+import java.util.List;
 
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 
 public class RollDice extends ForwardedRequest {
-    private Map<Player, ResourceMap> resourceUpdates;
+    private List<ResourceMap> resourceUpdates;
     
-    private RollDice(Map<Player, ResourceMap> updates) {
+    private RollDice(List<ResourceMap> updates) {
         resourceUpdates = updates;
     }
     
-    public Map<Player, ResourceMap> getResourceUpdates() {
+    public List<ResourceMap> getResourceUpdates() {
         return resourceUpdates;
     }
     
-    public static RollDice newInstance(Map<Player, ResourceMap> updates, String username) {
+    public static RollDice newInstance(List<ResourceMap> updates, String username) {
         RollDice request = new RollDice(updates);
         request.username = username;
         //should we include sender here?

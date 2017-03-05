@@ -405,7 +405,6 @@ public class SessionController {
      * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
      * @return true if building the village was successful, false otherwise
      */
-    //TODO: tell gui to display updated available tokens
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 
@@ -418,6 +417,7 @@ public class SessionController {
             } else {
                 aSessionScreen.updateIntersection(position, owner, kind);
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getSettlementCost());
+                aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
             }
         }
         else if (kind == VillageKind.CITY) {
@@ -429,6 +429,7 @@ public class SessionController {
             } else {
                 aSessionScreen.updateIntersection(position, owner, kind);
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getCityCost());
+                aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
             }
         }
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
@@ -449,7 +450,6 @@ public class SessionController {
      * @param fromPeer       indicates whether the method was called from the owner of new settlement, or from a peer
      * @return true if building the unit was successful, false otherwise
      */
-    //TODO: tell gui to display updated available tokens
     public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
         aGameBoardManager.buildEdgeUnit(currentP, firstPosition, SecondPosition, kind);
@@ -459,6 +459,7 @@ public class SessionController {
             aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
             if (!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getRoadCost());
+                aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
             }
         }
 
@@ -466,6 +467,7 @@ public class SessionController {
             aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
             if(!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getShipCost());
+                aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
             }
         }
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)

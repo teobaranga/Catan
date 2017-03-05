@@ -23,7 +23,7 @@
     },
     resTableBackground: {
       name: white,
-      color: {r: 0.976, g: 0.827, b: 0.647, a: 1}
+      color: {r: 0.204, g: 0.204, b: 0.204, a: 1}
     },
     readyBackground: {
       name: white,

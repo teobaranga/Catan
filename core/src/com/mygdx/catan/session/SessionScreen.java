@@ -136,6 +136,12 @@ public class SessionScreen implements Screen {
     /** A table that keeps track of current player */
     private Table currentPlayer;
     private Label currentPlayerLabel;
+    
+    /** labels that keeps track of available game pieces to build */
+    private Label availableSettlements;
+    private Label availableCities;
+    private Label availableRoads;
+    private Label availableShips;
 
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
@@ -291,6 +297,35 @@ public class SessionScreen implements Screen {
         currentPlayer.setPosition(10, Gdx.graphics.getHeight() - 60);
         updateCurrentPlayer(aSessionController.getCurrentPlayer());
 
+        // available game pieces table
+        Table availableGamePiecesTable = new Table(CatanGame.skin);
+        availableGamePiecesTable.setBackground("resTableBackground");
+        availableGamePiecesTable.setSize(200, 200);
+        availableGamePiecesTable.setPosition(Gdx.graphics.getWidth() - 210, 10);
+        
+        Table aAvailSettlementTable = new Table(CatanGame.skin);
+        availableSettlements = new Label("",CatanGame.skin);
+        aAvailSettlementTable.add(availableSettlements);
+        availableGamePiecesTable.add(aAvailSettlementTable).pad(5).row();
+        
+        Table aAvailCityTable = new Table(CatanGame.skin);
+        availableCities = new Label("",CatanGame.skin);
+        aAvailCityTable.add(availableCities);
+        availableGamePiecesTable.add(aAvailCityTable).pad(5).row();
+        
+        Table aAvailRoadTable = new Table(CatanGame.skin);
+        availableRoads = new Label("",CatanGame.skin);
+        aAvailRoadTable.add(availableRoads);
+        availableGamePiecesTable.add(aAvailRoadTable).pad(5).row();
+        
+        Table aAvailShipTable = new Table(CatanGame.skin);
+        availableShips = new Label("",CatanGame.skin);
+        aAvailShipTable.add(availableShips);
+        availableGamePiecesTable.add(aAvailShipTable).pad(5).row();
+        
+        updateAvailableGamePieces(5,4,15,15);
+        
+        
         // creates the menu buttons
         buildSettlementButton = new TextButton("Build Settlement", CatanGame.skin);
         setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT);
@@ -389,6 +424,7 @@ public class SessionScreen implements Screen {
         gameLog.debugAll();
 
         aSessionStage.addActor(contentTable);
+        aSessionStage.addActor(availableGamePiecesTable);
         aSessionStage.addActor(menuTable);
         aSessionStage.addActor(currentPlayer);
         aSessionStage.addActor(gameLog);
@@ -860,6 +896,20 @@ public class SessionScreen implements Screen {
         default:
             break;
         }
+    }
+    
+    /**
+     * Updates the available game pieces
+     * @param new number of available settlements
+     * @param new number of available cities
+     * @param new number of available roads
+     * @param new number of available ships
+     * */
+    public void updateAvailableGamePieces(int newAvailSettlements, int newAvailCities, int newAvailRoads, int newAvailShips) {
+    	availableSettlements.setText("Available Settlements: "+newAvailSettlements);
+    	availableCities.setText("Available Cities: "+newAvailCities);
+    	availableRoads.setText("Available Roads: "+ newAvailRoads);
+    	availableShips.setText("Available Ships: "+newAvailShips);
     }
 
     /**

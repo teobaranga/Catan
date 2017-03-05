@@ -116,11 +116,7 @@ public class SessionScreen implements Screen {
     /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
     private VillageKind villagePieceKind;
     private EdgeUnitKind edgePieceKind;
-
-    private CoordinatePair initSettlementIntersection;
-    private CoordinatePair initEdgePos1;
-    private CoordinatePair initEdgePos2;
-
+    private CoordinatePair initVillageIntersection;
 
     /** Menu Buttons */
     private TextButton buildSettlementButton;
@@ -179,9 +175,9 @@ public class SessionScreen implements Screen {
                                 aMode = SessionScreenModes.CHOOSEEDGEMODE;
                                 // show a transparent version of settlement on validIntersection 
                                 if (villagePieceKind == VillageKind.SETTLEMENT) {
-                                    highlightedPositions.add(gamePieces.createSettlement(validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                                    highlightedPositions.add(gamePieces.createSettlement(validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                                 } else {
-                                    highlightedPositions.add(gamePieces.createCity(validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                                    highlightedPositions.add(gamePieces.createCity(validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                                 }
                                 // finds all valid adjacent edges
                                 for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
@@ -189,19 +185,19 @@ public class SessionScreen implements Screen {
                                         validEdges.add(new MutablePair<>(i, validIntersection));
                                         // show a transparent version of valid adjacent roads
                                         if (aSessionController.isOnLand(i, validIntersection)) {
-                                            highlightedPositions.add(gamePieces.createRoad(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                                            highlightedPositions.add(gamePieces.createRoad(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                                         } else {
-                                            highlightedPositions.add(gamePieces.createShip(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                                            highlightedPositions.add(gamePieces.createShip(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                                         }
                                         
                                     }
                                 }
-                                initSettlementIntersection = validIntersection;
+                                initVillageIntersection = validIntersection;
                             } else {
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
 
                                 //TODO: call buildVillage method in SessionController and delete following
-                                updateIntersection(validIntersection, PlayerColor.ORANGE, villagePieceKind);
+                                aSessionController.buildVillage(validIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
                             }
 
                             buildSettlementButton.setText("Build Settlement");
@@ -226,22 +222,24 @@ public class SessionScreen implements Screen {
                             highlightedPositions.clear();
 
                             if (initializing) {
-                                aMode = SessionScreenModes.VIEWMODE;
+                                aMode = SessionScreenModes.CHOOSEACTIONMODE;
                                 if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
                                     edgePieceKind = EdgeUnitKind.SHIP;
                                 }
-                                initEdgePos1 = validEdge.getLeft();
-                                initEdgePos2 = validEdge.getRight();
+                                
                                 //TODO: call placeCityAndRoad method in SessionController and delete following
-                                updateIntersection(initSettlementIntersection, PlayerColor.ORANGE, villagePieceKind);
-                                updateEdge(initEdgePos1, initEdgePos2, edgePieceKind, PlayerColor.ORANGE);
+                                
+                                //updateIntersection(initVillageIntersection, aSessionController.getPlayerColor(), villagePieceKind);
+                                //updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, aSessionController.getPlayerColor());
+                                
+                                aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
+                                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false);
+                                //TODO: call distribute resources
 
                                 initializing = false;
                                 aInitButton.setText("Done");
                             } else {
-                                //TODO: call buildEdgePiece method in SessionController and delete following
-                                updateEdge(validEdge.getLeft(), validEdge.getRight(), edgePieceKind, PlayerColor.WHITE);
-
+                                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false);
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
                             }
 
@@ -415,15 +413,15 @@ public class SessionScreen implements Screen {
                 buildButton.setChecked(false);
                 // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
-                    // make the following loop go through requested valid build positions
-                    for (CoordinatePair intersections : aSessionController.getIntersectionsAndEdges()) {
+                    // the following loop go through requested valid build positions
+                    for (CoordinatePair intersections : aSessionController.requestValidBuildIntersections(aSessionController.getPlayerColor())) {
                         validIntersections.add(intersections);
                         
-                        //TODO set to right player color
+                        // Adds all valid positions as transparent sprites to highlight valid build positions
                         if (kind == VillageKind.SETTLEMENT) {
-                            highlightedPositions.add(gamePieces.createSettlement(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                            highlightedPositions.add(gamePieces.createSettlement(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                         } else {
-                            highlightedPositions.add(gamePieces.createCity(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                            highlightedPositions.add(gamePieces.createCity(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                         }
                     }
                     aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
@@ -448,44 +446,48 @@ public class SessionScreen implements Screen {
                 // TODO: ask SessionController if there are enough resources
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     // make the following loop go through requested valid build positions
-                    for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
+                	if (kind == EdgeUnitKind.ROAD) {
+                		for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
+                			for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
+                				if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i, j)) {
+                					
+                					Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
+                					validEdges.add(edge);
 
-                        for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
-                            if (kind == EdgeUnitKind.ROAD) {
-                                if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i, j)) {
+                					for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                						if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                							validEdges.remove(edge);
+                						}
+                					}
+                				}
+                			}
+                		}
+                	} else {
+                		for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) { 
+                			for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
+                				if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
 
-                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
-                                    validEdges.add(edge);
+                					Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
+                					validEdges.add(edge);
 
-                                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
-                                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
-                                            validEdges.remove(edge);
-                                        }
-                                    }
-                                }
-                            } else {
-                                if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
-
-                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
-                                    validEdges.add(edge);
-
-                                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
-                                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
-                                            validEdges.remove(edge);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                  //TODO make a sprite that highlights the areas
+                					for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                						if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                							validEdges.remove(edge);
+                						}
+                					}
+                				}
+                			}
+                		}
+                	}
+                    
+                  // make a sprite that highlights the areas
                     if (kind == EdgeUnitKind.ROAD) {
                         for (Pair<CoordinatePair,CoordinatePair> edge : validEdges) {
-                            highlightedPositions.add(gamePieces.createRoad(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.WHITE));
+                            highlightedPositions.add(gamePieces.createRoad(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                         } 
                     } else {
                         for (Pair<CoordinatePair,CoordinatePair> edge : validEdges) {
-                            highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.WHITE));
+                            highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                         } 
                     }
                     
@@ -802,9 +804,9 @@ public class SessionScreen implements Screen {
         for (CoordinatePair i : aSessionController.requestValidInitializationBuildIntersections()) {
             validIntersections.add(i);
             if (firstInit) {
-                highlightedPositions.add(gamePieces.createSettlement(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                highlightedPositions.add(gamePieces.createSettlement(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
             } else {
-                highlightedPositions.add(gamePieces.createCity(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                highlightedPositions.add(gamePieces.createCity(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
             }
         }
         if (firstInit) { villagePieceKind = VillageKind.SETTLEMENT;}
@@ -898,20 +900,5 @@ public class SessionScreen implements Screen {
         table.row();
         gameLog.layout();
         gameLog.scrollTo(0, 0, 0, 0);
-    }
-
-    
-    
-    // FIXME: I have questions about the following three methods (-Aina) 
-    public CoordinatePair getInitSettlementIntersection() {
-        return initSettlementIntersection;
-    }
-
-    public CoordinatePair getInitEdgePos1() {
-        return initEdgePos1;
-    }
-
-    public CoordinatePair getInitEdgePos2() {
-        return  initEdgePos2;
     }
 }

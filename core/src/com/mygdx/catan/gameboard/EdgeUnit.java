@@ -51,4 +51,12 @@ public class EdgeUnit {
 	public Player getOwner() {
 		return owner;
 	}
+
+	public CoordinatePair getAFirstCoordinate() {
+		return this.aFirstCoordinate;
+	}
+
+	public CoordinatePair getASecondCoordinate() {
+		return this.aSecondCoordinate;
+	}
 }

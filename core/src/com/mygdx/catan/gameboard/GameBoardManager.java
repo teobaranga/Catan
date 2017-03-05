@@ -8,6 +8,7 @@ import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.VillageKind;
 
 import java.util.ArrayList;
+import static java.lang.Math.abs;
 
 /**
  * Creates and mutates the state of the GameBoard.
@@ -274,13 +275,46 @@ public class GameBoardManager {
         return nhexes;
     }
 
+    public ArrayList<CoordinatePair> getAttachedIntersections(Hex h) {
+        ArrayList<CoordinatePair> attachedIntersections = new ArrayList<>();
+        Integer xCoord = h.getLeftCoordinate();
+        Integer yCoord = h.getRightCoordinate();
+
+        //find all coordinates that make the hex based on the relative coordinates
+        for (CoordinatePair i: aGameBoard.getIntersectionsAndEdges()) {
+            if ((i.getLeft() == xCoord && i.getRight() == 3*yCoord-2) ||
+                    (i.getLeft() == xCoord + 1 && i.getRight() == 3 * yCoord - 1) ||
+                    (i.getLeft() == xCoord + 1 && i.getRight() == 3 * yCoord + 1) ||
+                    (i.getLeft() == xCoord && i.getRight() == 3 * yCoord + 2) ||
+                    (i.getLeft() == xCoord - 1 && i.getRight() == 3 * yCoord + 1) ||
+                    (i.getLeft() == xCoord - 1 && i.getRight() == 3 * yCoord - 1)) {
+                attachedIntersections.add(i);
+            }
+        }
+        return attachedIntersections;
+    }
+
     /**
      * @param p  intersection
      * @return all neighboring intersections that are accessible by one edge units
      */
     public ArrayList<CoordinatePair> getNeighboringIntersections(CoordinatePair p) {
 
-        return null;
+        ArrayList<CoordinatePair> neighboringIntersections = new ArrayList<>();
+        ArrayList<Hex> neighboringHexes = getNeighbouringHexes(p);
+        ArrayList<CoordinatePair> attachedIntersections = new ArrayList<>();
+
+        //for each hex in the neighboring hexes we will iterate through the attached coordinates to check if
+        //the sum of the absolute value of the difference between the pair in question p and aPair is 2
+        for (Hex h: neighboringHexes) {
+            attachedIntersections = getAttachedIntersections(h);
+            for (CoordinatePair aPair : attachedIntersections) {
+                if (abs(aPair.getLeft() - p.getLeft()) + (aPair.getRight() - p.getRight()) == 2) {
+                    neighboringIntersections.add(aPair);
+                }
+            }
+        }
+        return neighboringIntersections;
     }
 
     /**

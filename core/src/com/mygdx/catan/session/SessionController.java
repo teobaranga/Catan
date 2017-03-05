@@ -326,12 +326,38 @@ public class SessionController {
      */
     public ArrayList<CoordinatePair> requestValidRoadEndpoints(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
+        ArrayList<CoordinatePair> validRoadEndpoints = new ArrayList<>();
+
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
         ArrayList<Village> listOfVillages = currentP.getVillages();
         ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
+
+        //TODO: figure out how to logically implement this
         for (Village v: listOfVillages) {
-            v.getPosition();
+            for(CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(v.getPosition())) {
+                //a Pair is not occupied and the edge unit formed by v and aPair is on land
+                if(isOnLand(v.getPosition(), aPair)) {
+                    validRoadEndpoints.add(aPair);
+                }
+            }
         }
+        for (EdgeUnit eu: listOfEdgeUnits) {
+            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getAFirstCoordinate())) {
+                //the first coordinate of the edgeunit and aPair are on land and this edge unit does not have endpoint aPair
+                if(isOnLand(eu.getAFirstCoordinate(), aPair) && (!eu.hasEndpoint(aPair))) {
+                    validRoadEndpoints.add(aPair);
+                }
+            }
+        }
+        for (EdgeUnit eu: listOfEdgeUnits) {
+            for (CoordinatePair aPair: aGameBoardManager.getNeighboringIntersections(eu.getASecondCoordinate())) {
+                //the second coordinate of the edgeunit and aPair are on land and this edge unit does not have endpoint aPair
+                if (isOnLand(eu.getASecondCoordinate(), aPair) && (!eu.hasEndpoint(aPair))) {
+                    validRoadEndpoints.add(aPair);
+                }
+            }
+        }
+
         // this method will essentially return all the endpoints where you can build a road at any edge 
         // starting at that endpoint (if we disregard the edges that are occupied). The GUI will make sure 
         // none of the edges that are occupied or in water can be chosen.

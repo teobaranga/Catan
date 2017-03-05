@@ -358,15 +358,15 @@ public class SessionController {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 
         for (Village v: currentP.getVillages()) {
-            if (!validShipEndpoints.contains(v.getPosition())) {
+            if (!validShipEndpoints.contains(v.getPosition()) && aGameBoardManager.isOnSea(v.getPosition())) {
                 validShipEndpoints.add(v.getPosition());
             }
         }
         for (EdgeUnit eu: currentP.getRoadsAndShips()) {
-            if(!validShipEndpoints.contains(eu.getAFirstCoordinate())) {
+            if(!validShipEndpoints.contains(eu.getAFirstCoordinate()) && aGameBoardManager.isOnSea(eu.getAFirstCoordinate())) {
                 validShipEndpoints.add(eu.getAFirstCoordinate());
             }
-            if(!validShipEndpoints.contains(eu.getASecondCoordinate())) {
+            if(!validShipEndpoints.contains(eu.getASecondCoordinate()) && aGameBoardManager.isOnSea(eu.getASecondCoordinate())) {
                 validShipEndpoints.add(eu.getASecondCoordinate());
             }
         }
@@ -386,6 +386,7 @@ public class SessionController {
      */
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+
         if (kind.equals(VillageKind.SETTLEMENT)) {
             aGameBoardManager.buildSettlement(currentP, position);
             aSessionManager.getTransactionManager().payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
@@ -429,22 +430,23 @@ public class SessionController {
     public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
         aGameBoardManager.buildEdgeUnit(currentP, firstPosition, SecondPosition, kind);
+        aSessionScreen.updateEdge(firstPosition, SecondPosition, kind, owner);
 
-        if (fromPeer) {
-            aSessionScreen.updateEdge(firstPosition, SecondPosition, kind, owner);
-        } else {
-            aSessionScreen.updateEdge(firstPosition, SecondPosition, kind, owner);
-            if (kind.equals(EdgeUnitKind.ROAD)) {
+        if (kind.equals(EdgeUnitKind.ROAD)) {
+            aSessionManager.getTransactionManager().payBankToPlayer(currentP, GameRules.getGameRulesInstance().getRoadCost());
+            if (!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getRoadCost());
-            }
-            else if (kind.equals(EdgeUnitKind.SHIP)) {
-                aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getShipCost());
             }
         }
 
+        if (kind.equals(EdgeUnitKind.SHIP)) {
+            aSessionManager.getTransactionManager().payBankToPlayer(currentP, GameRules.getGameRulesInstance().getShipCost());
+            if(!fromPeer) {
+                aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getShipCost());
+            }
+        }
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)
-
-        return false;
+        return true;
     }
 
     /**

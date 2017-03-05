@@ -208,26 +208,6 @@ public class GameBoardManager {
      * @return true if on land
      */
     public boolean isOnLand(CoordinatePair intersection) {
-        /*for (Hex h: aGameBoard.getHexes()) {
-            for (Hex i : aGameBoard.getHexes()) {
-                for (Hex j:aGameBoard.getHexes()) {
-                    if (((h.getLeftCoordinate() - 1) == (intersection.getLeft())) &&
-                            ((h.getRightCoordinate() - 1) == (intersection.getRight())) &&
-                            h.getKind().equals(TerrainKind.SEA) &&
-
-                            (i.getLeftCoordinate() + 1) == (intersection.getLeft()) &&
-                            ((i.getRightCoordinate() - 1) == (intersection.getRight())) &&
-                            i.getKind().equals(TerrainKind.SEA) &&
-
-                            ((j.getLeftCoordinate()) == (intersection.getLeft())) &&
-                            ((j.getRightCoordinate() + 2) == (intersection.getRight())) &&
-                            j.getKind().equals(TerrainKind.SEA)) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;*/
         int seaHexes = 0;
         ArrayList<Hex> neighbouringHexes = getNeighbouringHexes(intersection);
         for (Hex h : neighbouringHexes) {
@@ -236,6 +216,16 @@ public class GameBoardManager {
             }
         }
         return seaHexes < neighbouringHexes.size();
+    }
+
+    public boolean isOnSea(CoordinatePair intersection) {
+        int seaHexes = 0;
+        for (Hex h : getNeighbouringHexes(intersection)) {
+            if (h.getKind() == TerrainKind.SEA) {
+                seaHexes++;
+            }
+        }
+        return seaHexes >= 1;
     }
 
     /**

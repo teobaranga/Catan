@@ -291,14 +291,14 @@ public class SessionController {
     /**
      * Method to be called at initialization
      *
-     * @return a list of all the intersections that are (1) unoccupied and (2) not adjacent to another occupied intersection
+     * @return a list of all the intersections that are (1) unoccupied and (2) not adjacent to another occupied intersection (3) is on land
      */
     public ArrayList<CoordinatePair> requestValidInitializationBuildIntersections() {
         ArrayList<CoordinatePair> validIntersections = new ArrayList<CoordinatePair>();
 
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
             for (CoordinatePair j : aGameBoardManager.getIntersectionsAndEdges()) {
-                if (!i.isOccupied() && (!j.isOccupied() || !isAdjacent(i, j))) {
+                if (!i.isOccupied() && (!j.isOccupied() || !isAdjacent(i, j)) && aGameBoardManager.isOnLand(i)) {
                     validIntersections.add(i);
                 }
             }

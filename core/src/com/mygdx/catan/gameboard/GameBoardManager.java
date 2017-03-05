@@ -214,14 +214,14 @@ public class GameBoardManager {
             }
         }
         return true;*/
-        int landHexes = 0;
-        for (Hex h : getNeighbouringHexes(intersection)) {
+        int seaHexes = 0;
+        ArrayList<Hex> neighbouringHexes = getNeighbouringHexes(intersection);
+        for (Hex h : neighbouringHexes) {
             if (h.getKind() == TerrainKind.SEA) {
-                landHexes++;
+                seaHexes++;
             }
         }
-        System.out.println(landHexes);
-        return landHexes < 3;
+        return seaHexes < neighbouringHexes.size();
     }
 
     /**
@@ -231,13 +231,14 @@ public class GameBoardManager {
      */
     public boolean isOnLand(CoordinatePair firstIntersection, CoordinatePair secondIntersection) {
         int landHexes = 0;
-        for (Hex h : getNeighbouringHexes(firstIntersection, secondIntersection)) {
+        ArrayList<Hex> neighbouringHexes = getNeighbouringHexes(firstIntersection, secondIntersection);
+        for (Hex h : neighbouringHexes) {
             if (h.getKind() == TerrainKind.SEA) {
                 landHexes++;
             }
         }
 
-        return landHexes < 2;
+        return landHexes < neighbouringHexes.size();
     }
 
     /**

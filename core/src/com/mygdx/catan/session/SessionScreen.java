@@ -73,6 +73,7 @@ public class SessionScreen implements Screen {
 
     /** The batch onto which the game piece will be drawn */
     private PolygonSpriteBatch polyBatch; // To assign at the beginning
+    private PolygonSpriteBatch highlightBatch; // will have blending enabled
 
     private Texture aRobberTextureSolid;
 
@@ -91,6 +92,9 @@ public class SessionScreen implements Screen {
 
     /** The List of EdgeUnits currently on the board */
     private List<PolygonRegion> edgeUnits;
+    
+    /** The List of valid building regions on the board */
+    private List<PolygonRegion> highlightedPositions;
 
     /** The Robber */
     private PolygonRegion robber;
@@ -144,9 +148,11 @@ public class SessionScreen implements Screen {
         boardHarbours = new ArrayList<>();
         villages = new ArrayList<>();
         edgeUnits = new ArrayList<>();
+        highlightedPositions = new ArrayList<>();
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new HashMap<>();
         polyBatch = new PolygonSpriteBatch();
+        highlightBatch = new PolygonSpriteBatch();
         gamePieces = new GamePieces();
         initializing = false;
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -164,12 +170,27 @@ public class SessionScreen implements Screen {
                                 screenY > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
                                 screenY < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
 
+                            highlightedPositions.clear();
+                            
                             if (initializing) {
                                 aMode = SessionScreenModes.CHOOSEEDGEMODE;
-                                //TODO: show a transparent version of settlement on validIntersection 
+                                // show a transparent version of settlement on validIntersection 
+                                if (villagePieceKind == VillageKind.SETTLEMENT) {
+                                    highlightedPositions.add(gamePieces.createSettlement(validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                                } else {
+                                    highlightedPositions.add(gamePieces.createCity(validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                                }
+                                // finds all valid adjacent edges
                                 for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
                                     if (aSessionController.isAdjacent(validIntersection, i) && !i.isOccupied()) {
                                         validEdges.add(new MutablePair<>(i, validIntersection));
+                                        // show a transparent version of valid adjacent roads
+                                        if (aSessionController.isOnLand(i, validIntersection)) {
+                                            highlightedPositions.add(gamePieces.createRoad(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                                        } else {
+                                            highlightedPositions.add(gamePieces.createShip(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                                        }
+                                        
                                     }
                                 }
                                 initSettlementIntersection = validIntersection;
@@ -177,7 +198,7 @@ public class SessionScreen implements Screen {
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
 
                                 //TODO: call buildVillage method in SessionController and delete following
-                                updateIntersection(validIntersection, PlayerColor.BLUE, villagePieceKind);
+                                updateIntersection(validIntersection, PlayerColor.ORANGE, villagePieceKind);
                             }
 
                             buildSettlementButton.setText("Build Settlement");
@@ -199,6 +220,7 @@ public class SessionScreen implements Screen {
                                 screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
                                 screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
 
+                            highlightedPositions.clear();
 
                             if (initializing) {
                                 aMode = SessionScreenModes.VIEWMODE;
@@ -282,7 +304,7 @@ public class SessionScreen implements Screen {
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
 
-        //TODO: DELETE FOLLOWING TEST BUTTON
+        //TODO: DELETE FOLLOWING TWO TEST BUTTONS
         aInitButton = new TextButton("Init", CatanGame.skin);
         setupInitButton(aInitButton);
         menuTable.add(aInitButton).padBottom(10).row();
@@ -371,7 +393,7 @@ public class SessionScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 initButton.setChecked(false);
                 initButton.setText("Initializing");
-                initialize(false);
+                initialize(true);
             }
         });
     }
@@ -386,13 +408,20 @@ public class SessionScreen implements Screen {
                     // make the following loop go through requested valid build positions
                     for (CoordinatePair intersections : aSessionController.getIntersectionsAndEdges()) {
                         validIntersections.add(intersections);
-                        //TODO make a sprite that highlights the area
+                        
+                        //TODO set to right player color
+                        if (kind == VillageKind.SETTLEMENT) {
+                            highlightedPositions.add(gamePieces.createSettlement(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                        } else {
+                            highlightedPositions.add(gamePieces.createCity(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+                        }
                     }
                     aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
                     villagePieceKind = kind;
                     buildButton.setText("Cancel");
                 } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE && !initializing) {
                     validIntersections.clear();
+                    highlightedPositions.clear();
                     buildSettlementButton.setText("Build Settlement");
                     buildCityButton.setText("Build City");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
@@ -438,14 +467,25 @@ public class SessionScreen implements Screen {
                                 }
                             }
                         }
-
-                        //TODO make a sprite that highlights the areas
                     }
+                  //TODO make a sprite that highlights the areas
+                    if (kind == EdgeUnitKind.ROAD) {
+                        for (Pair<CoordinatePair,CoordinatePair> edge : validEdges) {
+                            highlightedPositions.add(gamePieces.createRoad(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.WHITE));
+                        } 
+                    } else {
+                        for (Pair<CoordinatePair,CoordinatePair> edge : validEdges) {
+                            highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.WHITE));
+                        } 
+                    }
+                    
+                    
                     aMode = SessionScreenModes.CHOOSEEDGEMODE;
                     edgePieceKind = kind;
                     buildButton.setText("Cancel");
                 } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE && !initializing) {
                     validEdges.clear();
+                    highlightedPositions.clear();
                     buildRoadButton.setText("Build Road");
                     buildShipButton.setText("Build Ship");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
@@ -485,6 +525,7 @@ public class SessionScreen implements Screen {
 
         // Display the board hexes + harbours and game pieces and dice number tokens
         polyBatch.begin();
+        
         for (PolygonRegion boardHex : boardHexes) {
             polyBatch.draw(boardHex, boardOrigin.getLeft(), boardOrigin.getRight());
         }
@@ -507,6 +548,15 @@ public class SessionScreen implements Screen {
         }
         polyBatch.draw(robber, boardOrigin.getLeft(), boardOrigin.getRight());
         polyBatch.end();
+        
+        // display highlighted positions
+        highlightBatch.begin();
+        highlightBatch.enableBlending();
+        highlightBatch.setBlendFunction(GL20.GL_DST_COLOR, GL20.GL_SRC_ALPHA);
+        for (PolygonRegion highlight : highlightedPositions) {
+            highlightBatch.draw(highlight, boardOrigin.getLeft(), boardOrigin.getRight());
+        }
+        highlightBatch.end();
 
         aSessionStage.act(delta);
         aSessionStage.draw();
@@ -741,8 +791,13 @@ public class SessionScreen implements Screen {
         initializing = true;
         for (CoordinatePair i : aSessionController.requestValidInitializationBuildIntersections()) {
             validIntersections.add(i);
+            if (firstInit) {
+                highlightedPositions.add(gamePieces.createSettlement(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+            } else {
+                highlightedPositions.add(gamePieces.createCity(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, PlayerColor.ORANGE));
+            }
         }
-        if (firstInit) {villagePieceKind = VillageKind.SETTLEMENT;}
+        if (firstInit) { villagePieceKind = VillageKind.SETTLEMENT;}
         else {villagePieceKind = VillageKind.CITY;}
         edgePieceKind = EdgeUnitKind.ROAD;
     }

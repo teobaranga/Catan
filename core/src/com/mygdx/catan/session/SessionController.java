@@ -48,6 +48,13 @@ public class SessionController {
         aSessionScreen = sessionScreen;
         aGameBoardManager = GameBoardManager.getInstance();
         aSessionManager = SessionManager.getInstance();
+        // sets the color as the accounts associated Player object color
+        for (Player p : aSessionManager.getPlayers()) {
+        	if (p.getAccount().equals(CatanGame.account)) {
+        		aPlayerColor = p.getColor();
+        		break;
+        	}
+        }
         aSessionListener = new Listener() {
             @Override
             public void received(Connection connection, Object object) {
@@ -57,9 +64,10 @@ public class SessionController {
                         boolean isShip = false;
                         aSessionScreen.initialize(isFirstInit);
 
-                        CoordinatePair cityPos = aSessionScreen.getInitSettlementIntersection();
-                        CoordinatePair edgeUnitPos1 = aSessionScreen.getInitEdgePos1();
-                        CoordinatePair edgeUnitPos2 = aSessionScreen.getInitEdgePos2();
+                        // FIXME: the following information will not be in the GUI at this time.
+                        // CoordinatePair cityPos = aSessionScreen.getInitSettlementIntersection();
+                        // CoordinatePair edgeUnitPos1 = aSessionScreen.getInitEdgePos1();
+                        // CoordinatePair edgeUnitPos2 = aSessionScreen.getInitEdgePos2();
 
                         VillageKind villageKind = VillageKind.CITY;
                         if (((PlaceCityAndRoad) object).isFirstInit) {
@@ -67,7 +75,7 @@ public class SessionController {
                         }
                         boolean fromPeer = ((PlaceCityAndRoad) object).fromPeer;
                         PlayerColor aPlayerColor = ((PlaceCityAndRoad) object).aPlayerColor;
-                        placeCityAndRoads(cityPos, edgeUnitPos1, edgeUnitPos2, isShip, fromPeer, aPlayerColor, villageKind);
+                        //placeCityAndRoads(cityPos, edgeUnitPos1, edgeUnitPos2, isShip, fromPeer, aPlayerColor, villageKind);
                     });
                 } else if (object instanceof ShowDice) {
                     Gdx.app.postRunnable(() -> {
@@ -139,9 +147,10 @@ public class SessionController {
         return aPlayerColor;
     }
 
+    /*
     public void setPlayerColor(PlayerColor pc) {
         aPlayerColor = pc;
-    }
+    }*/
 
     public int getYellowDice() {
         return aSessionManager.getYellowDice();

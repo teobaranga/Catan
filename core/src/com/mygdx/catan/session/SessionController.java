@@ -617,8 +617,17 @@ public class SessionController {
     public List<ResourceMap> rollDice(int diceRoll) {
         List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
         List<ResourceMap> playerResources = new ArrayList<>();
-        //HashMap<Player, ResourceMap> playerResources = new HashMap<>();
         List<Hex> producingHexes = new ArrayList<>();
+        
+        int pastureCounter = 0;
+        int forestCounter = 0;
+        int mountainCounter = 0;
+        int hillCounter = 0;
+        int fieldCounter = 0;
+        int paperCounter = 0;
+        int clothCounter = 0;
+        int coinCounter = 0;
+        
         Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
         for (Hex h : hexes) {
             int hexNumber = h.getDiceNumber();
@@ -648,31 +657,31 @@ public class SessionController {
 
                 switch (tKind) {
                 case PASTURE:
-                    ResAndComMap.put(ResourceKind.WOOL, 1);
+                    pastureCounter++;
                     if (vKind == VillageKind.CITY)
-                        ResAndComMap.put(ResourceKind.CLOTH, 1);
+                        clothCounter++;
                     break;
                 case FOREST:
-                    ResAndComMap.put(ResourceKind.WOOD, 1);
+                    forestCounter++;
                     if (vKind == VillageKind.CITY)
-                        ResAndComMap.put(ResourceKind.PAPER, 1);
+                        paperCounter++;
                     break;
                 case MOUNTAINS:
-                    ResAndComMap.put(ResourceKind.ORE, 1);
+                    mountainCounter++;
                     if (vKind == VillageKind.CITY)
-                        ResAndComMap.put(ResourceKind.COIN, 1);
+                        coinCounter++;
                     break;
                 case HILLS:
                     if (vKind == VillageKind.SETTLEMENT)
-                        ResAndComMap.put(ResourceKind.BRICK, 1);
+                        hillCounter++;
                     else
-                        ResAndComMap.put(ResourceKind.BRICK, 2);
+                        hillCounter+= 2;
                     break;
                 case FIELDS:
                     if (vKind == VillageKind.SETTLEMENT)
-                        ResAndComMap.put(ResourceKind.GRAIN, 1);
+                        fieldCounter++;
                     else
-                        ResAndComMap.put(ResourceKind.GRAIN, 2);
+                        fieldCounter+=2;
                     break;
 				case DESERT:
 					break;
@@ -682,10 +691,18 @@ public class SessionController {
 					break;
 				default:
 					break;
-                }
-               
+                } 
             }
         }
+        
+        ResAndComMap.put(ResourceKind.WOOL, pastureCounter);
+        ResAndComMap.put(ResourceKind.CLOTH, clothCounter);
+        ResAndComMap.put(ResourceKind.WOOD, forestCounter);
+        ResAndComMap.put(ResourceKind.PAPER, paperCounter);
+        ResAndComMap.put(ResourceKind.ORE, mountainCounter);
+        ResAndComMap.put(ResourceKind.COIN, coinCounter);
+        ResAndComMap.put(ResourceKind.BRICK, hillCounter);
+        ResAndComMap.put(ResourceKind.GRAIN, fieldCounter);
         
         clientPlayer.addResources(ResAndComMap);
         playerResources.add(ResAndComMap);

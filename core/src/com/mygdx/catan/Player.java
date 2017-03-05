@@ -8,6 +8,7 @@ import com.mygdx.catan.gameboard.Village;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Player {
 
@@ -131,11 +132,15 @@ public class Player {
     }
 
     public void addResources(ResourceMap cost) {
-
+        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
+            resourceMap.put(entry.getKey(), resourceMap.get(entry.getKey()) + entry.getValue());
+        }
     }
 
     public void removeResources(ResourceMap cost) {
-
+        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
+            resourceMap.put(entry.getKey(), resourceMap.get(entry.getKey()) - entry.getValue());
+        }
     }
 
     public int getProgressCardCount() {

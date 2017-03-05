@@ -410,7 +410,7 @@ public class SessionController {
 
         if (kind == VillageKind.SETTLEMENT) {
             aGameBoardManager.buildSettlement(currentP, position);
-            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
+
 
             if (fromPeer) {
                 aSessionScreen.updateIntersection(position, owner, kind);
@@ -418,11 +418,11 @@ public class SessionController {
                 aSessionScreen.updateIntersection(position, owner, kind);
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getSettlementCost());
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
+                aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
             }
         }
         else if (kind == VillageKind.CITY) {
             aGameBoardManager.upgradeSettlement(currentP, position);
-            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
 
             if (fromPeer) {
                 aSessionScreen.updateIntersection(position, owner, kind);
@@ -430,6 +430,7 @@ public class SessionController {
                 aSessionScreen.updateIntersection(position, owner, kind);
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getCityCost());
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
+                aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
             }
         }
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
@@ -456,18 +457,18 @@ public class SessionController {
         aSessionScreen.updateEdge(firstPosition, SecondPosition, kind, owner);
 
         if (kind == EdgeUnitKind.ROAD) {
-            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
             if (!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getRoadCost());
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
+                aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
             }
         }
 
         if (kind == EdgeUnitKind.SHIP) {
-            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
             if(!fromPeer) {
                 aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getShipCost());
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
+                aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
             }
         }
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)

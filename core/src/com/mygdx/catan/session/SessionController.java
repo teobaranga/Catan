@@ -549,6 +549,10 @@ public class SessionController {
         Pair<Integer, Integer> diceResults = new ImmutablePair<Integer, Integer>(roll1, roll2);
         return diceResults;
     }
+    
+    /*public Map<Player, ResourceMap> distributeResources(Player aPlayer) {
+        switch()
+    }*/
 
     public Map<Player, ResourceMap> getResourceUpdate(int diceRoll) {
         List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
@@ -566,8 +570,6 @@ public class SessionController {
 
         for (Hex ph : producingHexes) {
             TerrainKind tKind = ph.getKind();
-            // TODO: implement adjacentVIllages
-            // Player[] noResourcesReceivedPlayers = getPlayers();
             ArrayList<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(ph);
             ArrayList<CoordinatePair> adjacentIntersections = aGameBoardManager
                     .getAdjacentIntersections(ph);

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.CatanRandom;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
@@ -39,7 +40,7 @@ public class SessionController {
     private final SessionScreen aSessionScreen;
     private PlayerColor aPlayerColor;
     private final Listener aSessionListener;
-    public Random rand = new Random();
+    private final CatanRandom random;
 
     /** Flag indicating whether it's the turn of the player logged in */
     private boolean myTurn;
@@ -48,6 +49,7 @@ public class SessionController {
         aSessionScreen = sessionScreen;
         aGameBoardManager = GameBoardManager.getInstance();
         aSessionManager = SessionManager.getInstance();
+        random = CatanRandom.getInstance();
         aSessionListener = new Listener() {
             @Override
             public void received(Connection connection, Object object) {
@@ -543,14 +545,14 @@ public class SessionController {
     }
 
     public Pair<Integer, Integer> rollTwoDice() {
-        int roll1 = rand.nextInt(6) + 1;
-        int roll2 = rand.nextInt(6) + 1;
-        Pair<Integer, Integer> diceResults = new ImmutablePair<Integer, Integer>(roll1, roll2);
-        return diceResults;
+        return random.rollTwoDice();
     }
     
     /*public Map<Player, ResourceMap> distributeResources(Player aPlayer) {
-        switch()
+        
+        switch(tKind) {
+        
+        }
     }*/
 
     public Map<Player, ResourceMap> getResourceUpdate(int diceRoll) {

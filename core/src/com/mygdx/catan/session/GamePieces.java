@@ -609,4 +609,21 @@ class GamePieces {
         pix.fill();
         return new Texture(pix);
     }
+    
+    public Texture getPlayerColorTexture(PlayerColor pc) {
+        switch (pc) {
+        case BLUE:
+            return aBlueTextureSolid;
+        case ORANGE:
+            return aOrangeTextureSolid;
+        case RED:
+            return aRedTextureSolid;
+        case WHITE:
+            return aWhiteTextureSolid;
+        case YELLOW:
+            return aYellowTextureSolid;
+        default:
+            return null;
+        }
+    }
 }

@@ -909,8 +909,21 @@ public class SessionScreen implements Screen {
                 initialize(false);
                 break;
             case TURN_FIRST_PHASE:
+                buildSettlementButton.setDisabled(true);
+                buildCityButton.setDisabled(true);
+                buildRoadButton.setDisabled(true);
+                buildShipButton.setDisabled(true);
+                maritimeTradeButton.setDisabled(true);
+                rollDiceButton.setDisabled(false);
                 break;
+                
             case TURN_SECOND_PHASE:
+                buildSettlementButton.setDisabled(false);
+                buildCityButton.setDisabled(false);
+                buildRoadButton.setDisabled(false);
+                buildShipButton.setDisabled(false);
+                maritimeTradeButton.setDisabled(false);
+                rollDiceButton.setDisabled(true);
                 break;
             case Completed:
                 break;

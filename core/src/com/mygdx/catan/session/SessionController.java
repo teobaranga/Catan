@@ -12,9 +12,12 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.request.BuildEdge;
 import com.mygdx.catan.request.BuildIntersection;
 import com.mygdx.catan.request.RollTwoDice;
 import com.mygdx.catan.response.DiceRolled;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -84,17 +87,42 @@ public class SessionController {
                 	Gdx.app.postRunnable(() -> {
                 		final BuildIntersection intersectionBuilt = (BuildIntersection) object;
                 		aSessionScreen.addGameMessage(intersectionBuilt.username + " built a "+intersectionBuilt.getKind().toString().toLowerCase());
+                		Pair<Integer,Integer> positionCoordinates = intersectionBuilt.getPosition();
+                		CoordinatePair position = aGameBoardManager.getCoordinatePairFromCoordinates(positionCoordinates.getLeft(), positionCoordinates.getRight());
 
                 		switch (aSessionManager.getCurrentPhase()) {
 						case SETUP_PHASE_TWO_CLOCKWISE:
 						case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
-							buildVillage(intersectionBuilt.getPosition(), intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, true);
+							buildVillage(position, intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, true);
 							break;
 						case TURN_SECOND_PHASE:
-							buildVillage(intersectionBuilt.getPosition(), intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, false);
+							buildVillage(position, intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, false);
 							break;
 						default:
 							break;
+                		}
+                	});
+                } else if (object instanceof BuildEdge) {
+                	Gdx.app.postRunnable(() -> {
+                		final BuildEdge edgeBuilt = (BuildEdge) object;
+                		aSessionScreen.addGameMessage(edgeBuilt.username + " built a "+edgeBuilt.getKind().toString().toLowerCase());
+                		Pair<Integer,Integer> firstCor = edgeBuilt.getLeftPosition();
+                		Pair<Integer,Integer> secondCor = edgeBuilt.getRightPosition();
+                		
+                		CoordinatePair firstPos = aGameBoardManager.getCoordinatePairFromCoordinates(firstCor.getLeft(), firstCor.getRight());
+                		CoordinatePair secondPos = aGameBoardManager.getCoordinatePairFromCoordinates(secondCor.getLeft(), secondCor.getRight());
+                		
+                		switch(aSessionManager.getCurrentPhase()) {
+						case SETUP_PHASE_TWO_CLOCKWISE:
+						case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
+							buildEdgeUnit(edgeBuilt.getOwner(), firstPos, secondPos, edgeBuilt.getKind(), true, true);
+							break;
+						case TURN_SECOND_PHASE:
+							buildEdgeUnit(edgeBuilt.getOwner(), firstPos, secondPos, edgeBuilt.getKind(), true, false);
+							break;
+						default:
+							break;
+                		
                 		}
                 	});
                 }
@@ -418,7 +446,6 @@ public class SessionController {
         if (kind == VillageKind.SETTLEMENT) {
             aGameBoardManager.buildSettlement(currentP, position);
 
-
             if (fromPeer) {
                 aSessionScreen.updateIntersection(position, owner, kind);
             } else {
@@ -429,6 +456,10 @@ public class SessionController {
                 	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
                     aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
+                
+                // notify peers about board game change
+                BuildIntersection request = BuildIntersection.newInstance(new ImmutablePair<Integer,Integer>(position.getLeft(),position.getRight()), kind, owner,CatanGame.account.getUsername());
+                CatanGame.client.sendTCP(request);
             }
         } else if (kind == VillageKind.CITY) {
             aGameBoardManager.upgradeSettlement(currentP, position);
@@ -443,6 +474,10 @@ public class SessionController {
                 	 aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
                      aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
+                
+                // notify peers about board game change
+                BuildIntersection request = BuildIntersection.newInstance(new ImmutablePair<Integer,Integer>(position.getLeft(),position.getRight()), kind, owner,CatanGame.account.getUsername());
+                CatanGame.client.sendTCP(request);
             }
         }
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
@@ -464,10 +499,10 @@ public class SessionController {
      * @param init 			 indicated whether the method was called during initialization. If it was, player resource are not updated
      * @return true if building the unit was successful, false otherwise
      */
-    public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind, boolean fromPeer, boolean init) {
+    public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair secondPosition, EdgeUnitKind kind, boolean fromPeer, boolean init) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
-        aGameBoardManager.buildEdgeUnit(currentP, firstPosition, SecondPosition, kind);
-        aSessionScreen.updateEdge(firstPosition, SecondPosition, kind, owner);
+        aGameBoardManager.buildEdgeUnit(currentP, firstPosition, secondPosition, kind);
+        aSessionScreen.updateEdge(firstPosition, secondPosition, kind, owner);
 
         if (kind == EdgeUnitKind.ROAD) {
             if (!fromPeer) {
@@ -477,6 +512,10 @@ public class SessionController {
                 	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
                 	aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
+            
+                // notify peers about board game change
+                BuildEdge request = BuildEdge.newInstance(new ImmutablePair<Integer,Integer>(firstPosition.getLeft(),firstPosition.getRight()), new ImmutablePair<Integer,Integer>(secondPosition.getLeft(),secondPosition.getRight()), kind, owner,CatanGame.account.getUsername());
+                CatanGame.client.sendTCP(request);
             }
         }
 
@@ -488,6 +527,10 @@ public class SessionController {
                 	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
                     aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
+            
+                // notify peers about board game change
+                BuildEdge request = BuildEdge.newInstance(new ImmutablePair<Integer,Integer>(firstPosition.getLeft(),firstPosition.getRight()), new ImmutablePair<Integer,Integer>(secondPosition.getLeft(),secondPosition.getRight()), kind, owner,CatanGame.account.getUsername());
+                CatanGame.client.sendTCP(request);
             }
         }
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)

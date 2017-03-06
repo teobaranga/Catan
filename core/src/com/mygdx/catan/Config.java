@@ -2,10 +2,13 @@ package com.mygdx.catan;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.mygdx.catan.account.Account;
+import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.EventKind;
 import com.mygdx.catan.enums.GamePhase;
+import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
 import com.mygdx.catan.session.Session;
@@ -42,6 +45,8 @@ public class Config {
         kryo.register(Player.class);
         kryo.register(Player[].class);
         kryo.register(ResourceKind.class);
+        kryo.register(VillageKind.class);
+        kryo.register(EdgeUnitKind.class);
         kryo.register(ResourceMap.class);
         kryo.register(EventKind.class);
         kryo.register(GamePhase.class);
@@ -61,6 +66,8 @@ public class Config {
         kryo.register(PlayerLeft.class);
         kryo.register(RollTwoDice.class);
         kryo.register(DiceRolled.class);
+        kryo.register(BuildIntersection.class);
+        kryo.register(BuildEdge.class);
         kryo.register(LinkedHashMap.class);
         kryo.register(ArrayList.class);
         kryo.register(ImmutablePair.class);

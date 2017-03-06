@@ -479,7 +479,7 @@ public class SessionScreen implements Screen {
                 buildButton.setChecked(false);
                 // TODO: ask SessionController if there are enough resources
                 if (!aSessionController.requestBuildVillage(aSessionController.getPlayerColor(), kind)) {
-                    addGameMessage("Not enough resources for building the " + kind.name());
+                    addGameMessage("Not enough resources for building the " + kind.name().toLowerCase());
                     return;
                 }
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {

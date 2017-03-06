@@ -1,6 +1,7 @@
 package com.mygdx.catan.request;
 
-import com.mygdx.catan.CoordinatePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.VillageKind;
 
@@ -9,11 +10,11 @@ import com.mygdx.catan.enums.VillageKind;
  * */
 public class BuildIntersection extends ForwardedRequest {
 	
-	private CoordinatePair position;
+	private Pair<Integer,Integer> position;
 	private VillageKind kind;
 	private PlayerColor owner;
 	
-	public static BuildIntersection newInstance(CoordinatePair position, VillageKind kind, PlayerColor owner, String username) {
+	public static BuildIntersection newInstance(Pair<Integer,Integer> position, VillageKind kind, PlayerColor owner, String username) {
 		BuildIntersection request = new BuildIntersection();
 		request.position = position;
 		request.kind = kind;
@@ -23,7 +24,7 @@ public class BuildIntersection extends ForwardedRequest {
 		return request;
 	}
 	
-	public CoordinatePair getPosition() {
+	public Pair<Integer,Integer> getPosition() {
 		return position;
 	}
 	

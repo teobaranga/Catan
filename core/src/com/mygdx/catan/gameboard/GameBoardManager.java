@@ -306,4 +306,18 @@ public class GameBoardManager {
     public List<Village> getBuildingsInPlay() {
         return aGameBoard.getVillages();
     }
+    
+    /**
+     * @param leftCoordinate x coordinate of intersection 
+     * @param rightCoordinate y coordinate of intersection
+     * @return the intersection with coordinates <x,y>, null if such an intersection does not exist
+     * */
+    public CoordinatePair getCoordinatePairFromCoordinates(int leftCoordinate, int rightCoordinate) {
+    	for (CoordinatePair intersection : aGameBoard.getIntersectionsAndEdges()) {
+    		if (intersection.getLeft().equals(leftCoordinate) && intersection.getRight().equals(rightCoordinate)) {
+    			return intersection;
+    		}
+    	}
+    	return null;
+    }
 }

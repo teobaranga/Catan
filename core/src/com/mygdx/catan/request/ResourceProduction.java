@@ -5,10 +5,10 @@ import java.util.List;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 
-public class RollDice extends ForwardedRequest {
+public class ResourceProduction extends ForwardedRequest {
     private List<ResourceMap> resourceUpdates;
     
-    private RollDice(List<ResourceMap> updates) {
+    private ResourceProduction(List<ResourceMap> updates) {
         resourceUpdates = updates;
     }
     
@@ -16,8 +16,8 @@ public class RollDice extends ForwardedRequest {
         return resourceUpdates;
     }
     
-    public static RollDice newInstance(List<ResourceMap> updates, String username) {
-        RollDice request = new RollDice(updates);
+    public static ResourceProduction newInstance(List<ResourceMap> updates, String username) {
+        ResourceProduction request = new ResourceProduction(updates);
         request.username = username;
         //should we include sender here?
         request.universal = false;

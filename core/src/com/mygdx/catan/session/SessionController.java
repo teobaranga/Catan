@@ -28,6 +28,7 @@ public class SessionController {
     private final Listener aSessionListener;
     private final CatanRandom random;
     private final TransactionManager aTransactionManager;
+    private SessionScreenModes aMode;
 
     private PlayerColor aPlayerColor;
 
@@ -71,7 +72,7 @@ public class SessionController {
 	                        }
 							break;
 						case TURN_FIRST_PHASE:
-							rollDice(diceRolled.getDiceRoll().getLeft() + diceRolled.getDiceRoll().getRight());
+							resourceProduction(diceRolled.getDiceRoll().getLeft() + diceRolled.getDiceRoll().getRight());
 							// TODO Move to the TURN_SECOND_PHASE of the game
 							break;
 						default:
@@ -638,7 +639,7 @@ public class SessionController {
         return random.rollTwoDice();
     }
 
-    public List<ResourceMap> rollDice(int diceRoll) {
+    public List<ResourceMap> resourceProduction(int diceRoll) {
         List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
         List<ResourceMap> playerResources = new ArrayList<>();
         List<Hex> producingHexes = new ArrayList<>();
@@ -758,6 +759,7 @@ public class SessionController {
         switch (aSessionManager.getCurrentPhase()) {
             case TURN_FIRST_PHASE:
             	// We're at the phase where we the player rolls the dice and everyone gets appropriate resources
+                
             case SETUP_PHASE_ONE:
                 // We're at the phase where we have to determine who rolled the highest number
                 // Roll the dice

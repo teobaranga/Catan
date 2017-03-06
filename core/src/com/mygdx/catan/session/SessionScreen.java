@@ -24,6 +24,7 @@ import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.ui.TradeWindow;
+
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -58,7 +59,9 @@ public class SessionScreen implements Screen {
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
     private final int PIECEBASE = (int) (LENGTH * 0.4);
 
-    /** The batch onto which the game piece will be drawn */
+    /**
+     * The batch onto which the game piece will be drawn
+     */
     private PolygonSpriteBatch polyBatch; // To assign at the beginning
     private PolygonSpriteBatch highlightBatch; // will have blending enabled
 
@@ -68,44 +71,68 @@ public class SessionScreen implements Screen {
 
     private Stage aSessionStage;
 
-    /** The list of polygons representing the board hexes */
+    /**
+     * The list of polygons representing the board hexes
+     */
     private List<PolygonSprite> boardHexes;
 
-    /** The list of polygons representing the board harbours */
+    /**
+     * The list of polygons representing the board harbours
+     */
     private List<PolygonRegion> boardHarbours;
 
-    /** The List of villages currently on the board */
+    /**
+     * The List of villages currently on the board
+     */
     private List<PolygonRegion> villages;
 
-    /** The List of EdgeUnits currently on the board */
+    /**
+     * The List of EdgeUnits currently on the board
+     */
     private List<PolygonRegion> edgeUnits;
 
-    /** The List of valid building regions on the board */
+    /**
+     * The List of valid building regions on the board
+     */
     private List<PolygonRegion> highlightedPositions;
 
-    /** The Robber */
+    /**
+     * The Robber
+     */
     private PolygonRegion robber;
 
-    /** The origin of the the hex board */
+    /**
+     * The origin of the the hex board
+     */
     private MutablePair<Integer, Integer> boardOrigin;
 
-    /** The map of resource tables */
+    /**
+     * The map of resource tables
+     */
     private EnumMap<ResourceKind, Label> resourceLabelMap;
 
-    /** determines the current mode of the session screen */
+    /**
+     * determines the current mode of the session screen
+     */
     private SessionScreenModes aMode;
     private boolean initializing;
 
-    /** The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE */
+    /**
+     * The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE
+     */
     private ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
     private ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
 
-    /** determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter */
+    /**
+     * determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter
+     */
     private VillageKind villagePieceKind;
     private EdgeUnitKind edgePieceKind;
     private CoordinatePair initVillageIntersection;
 
-    /** Menu Buttons */
+    /**
+     * Menu Buttons
+     */
     private TextButton buildSettlementButton;
     private TextButton buildCityButton;
     private TextButton buildRoadButton;
@@ -115,14 +142,20 @@ public class SessionScreen implements Screen {
 
     private TextButton aInitButton;
 
-    /** A table that keeps track of game messages, mostly used for debugging */
+    /**
+     * A table that keeps track of game messages, mostly used for debugging
+     */
     private ScrollPane gameLog;
 
-    /** A table that keeps track of current player */
+    /**
+     * A table that keeps track of current player
+     */
     private Table currentPlayer;
     private Label currentPlayerLabel;
 
-    /** labels that keeps track of available game pieces to build */
+    /**
+     * labels that keeps track of available game pieces to build
+     */
     private Label availableSettlements;
     private Label availableCities;
     private Label availableRoads;
@@ -360,6 +393,7 @@ public class SessionScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 final ResourceMap tradeRatios = new ResourceMap();
+                aSessionController.getRatios(tradeRatios);
                 tradeRatios.put(ResourceKind.ORE, 4);
                 // TODO fill the trade ratios according to the highest harbour levels
                 final TradeWindow tradeWindow = new TradeWindow("Maritime Trade", tradeRatios, CatanGame.skin, (offer, request, tradeRatio) -> {
@@ -443,6 +477,10 @@ public class SessionScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
                 buildButton.setChecked(false);
                 // TODO: ask SessionController if there are enough resources
+                if (!aSessionController.requestBuildVillage(aSessionController.getPlayerColor(), kind)) {
+                    addGameMessage("Not enough resources for building the " + kind.name());
+                    return;
+                }
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     if (kind == VillageKind.SETTLEMENT) {
                         for (CoordinatePair intersections : aSessionController.requestValidBuildIntersections(aSessionController.getPlayerColor())) {
@@ -476,6 +514,10 @@ public class SessionScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
                 buildButton.setChecked(false);
                 // TODO: ask SessionController if there are enough resources
+                if(!aSessionController.requestBuildEdgeUnit(aSessionController.getPlayerColor(), kind)) {
+                    addGameMessage("Not enough resources for building the " + kind.name());
+                    return;
+                }
                 if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
                     // the following loop go through requested valid build positions
                     if (kind == EdgeUnitKind.ROAD) {
@@ -721,7 +763,6 @@ public class SessionScreen implements Screen {
                 return pr;
             }
         }
-
         return null;
     }
 

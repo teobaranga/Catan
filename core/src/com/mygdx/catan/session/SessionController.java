@@ -135,9 +135,11 @@ public class SessionController {
                 break;
             case SETUP_PHASE_TWO_CLOCKWISE:
                 // TODO Allow the player to place one settlement and one road
+                aSessionScreen.addGameMessage("Please choose a position for your settlement,\n then choose a neighbouring edge for the position of your road");
                 break;
             case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
                 // TODO Allow the player to place on city and one road. The player also receives some resources here
+                aSessionScreen.addGameMessage("Please choose a position for your city,\n then choose a neighbouring edge for the position of your road");
                 break;
             case TURN_FIRST_PHASE:
                 break;
@@ -772,6 +774,20 @@ public class SessionController {
                 //aSessionScreen.showDice(roll.getLeft(), roll.getRight());
 //                aSessionScreen.updateResourceBar(getOwnresourcesUpdate(resourceUpdateMap));
                 break;
+        }
+    }
+    //TODO: currently working on it (Yoh)
+    public void getRatios(ResourceMap ratios) {
+        for (Hex hex : aGameBoardManager.getHexes()) {
+            ArrayList<CoordinatePair> adjacentIntersections = aGameBoardManager
+                    .getAdjacentIntersections(hex);
+            for (CoordinatePair coordinatePair : adjacentIntersections) {
+                Village v = coordinatePair.getOccupyingVillage();
+                if (v.getOwner().getColor() == getPlayerColor()) {
+                    HarbourKind harbourKind = coordinatePair.getHarbourKind();
+                }
+            }
+
         }
     }
 }

@@ -94,6 +94,10 @@ public class SessionManager {
         return aSession.currentPhase;
     }
 
+    void setCurrentPhase(GamePhase phase) {
+        aSession.currentPhase = phase;
+    }
+
     public Player getCurrentPlayerFromColor(PlayerColor c) {
         Player currentP = null;
         for (Player p : getPlayers()) {
@@ -218,5 +222,10 @@ public class SessionManager {
     /** Set the current player by their index */
     public void setCurrentPlayerIndex(int index) {
         aSession.playerIndex = index;
+    }
+
+    /** Move the index of the current player to point to the next player */
+    public void nextPlayer() {
+        aSession.playerIndex = (aSession.playerIndex + 1) % aSession.getPlayers().length;
     }
 }

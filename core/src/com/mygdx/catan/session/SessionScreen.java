@@ -393,9 +393,10 @@ public class SessionScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 final ResourceMap tradeRatios = new ResourceMap();
-                aSessionController.getRatios(tradeRatios);
-                tradeRatios.put(ResourceKind.ORE, 4);
-                // TODO fill the trade ratios according to the highest harbour levels
+                Player clientPlayer = aSessionController.getCurrentPlayerFromColor(aSessionController.getPlayerColor());
+                for (ResourceKind resourceKind : ResourceKind.values()) {
+                    tradeRatios.put(resourceKind, clientPlayer.getHighestHarbourLevel(resourceKind));
+                }
                 final TradeWindow tradeWindow = new TradeWindow("Maritime Trade", tradeRatios, CatanGame.skin, (offer, request, tradeRatio) -> {
                     final ResourceMap resourceMap = new ResourceMap();
                     resourceMap.put(request, 1);

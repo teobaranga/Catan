@@ -776,18 +776,8 @@ public class SessionController {
                 break;
         }
     }
-    //TODO: currently working on it (Yoh)
-    public void getRatios(ResourceMap ratios) {
-        for (Hex hex : aGameBoardManager.getHexes()) {
-            ArrayList<CoordinatePair> adjacentIntersections = aGameBoardManager
-                    .getAdjacentIntersections(hex);
-            for (CoordinatePair coordinatePair : adjacentIntersections) {
-                Village v = coordinatePair.getOccupyingVillage();
-                if (v.getOwner().getColor() == getPlayerColor()) {
-                    HarbourKind harbourKind = coordinatePair.getHarbourKind();
-                }
-            }
 
-        }
+    public Player getCurrentPlayerFromColor(PlayerColor aPlayerColor) {
+        return aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
     }
 }

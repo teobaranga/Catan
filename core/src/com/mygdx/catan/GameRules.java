@@ -1,14 +1,10 @@
 package com.mygdx.catan;
 
+import com.mygdx.catan.enums.*;
+import com.mygdx.catan.gameboard.Hex;
+
 import java.util.EnumMap;
 import java.util.HashMap;
-
-import com.mygdx.catan.enums.HarbourKind;
-import com.mygdx.catan.enums.ProgressCardKind;
-import com.mygdx.catan.enums.ResourceKind;
-import com.mygdx.catan.enums.TerrainKind;
-import com.mygdx.catan.enums.VillageKind;
-import com.mygdx.catan.gameboard.Hex;
 
 /**
  * Singleton object describing the game rules
@@ -20,24 +16,24 @@ public class GameRules {
 	private ResourceMap shipCost = new ResourceMap();
 	private ResourceMap cityCost = new ResourceMap();
 	private ResourceMap cityWallCost = new ResourceMap();
-	
+
 	private EnumMap<ProgressCardKind, Integer> progressCardOccurences = new EnumMap<ProgressCardKind, Integer>(ProgressCardKind.class);
 	private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
 	private HashMap<Integer,Integer> defaultDiceNumberMap = new HashMap<Integer,Integer>();
 	private HashMap<Integer,HarbourKind> defaultHarbourMap = new HashMap<Integer,HarbourKind>();
-	
+
 	private int vpToWin = 13;
 	private int settlementVp = 1;
 	private int cityVp = 2;
 	private int metropolisVp = 2;
-	
+
 	private final int SIZE = 7;
 
 	// private int genericTradeRatio = 4;
 	// private int specialTradeRation = 3;
-	
+
 	private static GameRules aGameRules = new GameRules();
-	
+
 	private GameRules() {
 		initializeProgressCardOccurences();
 		setupDefaultTerrainMap();
@@ -79,7 +75,7 @@ public class GameRules {
 	private void setupCityWallCost(){
 		cityWallCost.put(ResourceKind.BRICK, 2);
 	}
-	
+
 	/**
 	 * hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
 	 * */
@@ -122,7 +118,7 @@ public class GameRules {
 		defaultTerrainKindMap.put(getHashCodeofPair(1,3), TerrainKind.MOUNTAINS);
 		defaultTerrainKindMap.put(getHashCodeofPair(3,3), TerrainKind.SEA);
 	}
-	
+
 	/**
 	 * hardcodes default dice number map (keys exactly as above) (assumes size <= 7)
 	 * */
@@ -165,7 +161,7 @@ public class GameRules {
 		defaultDiceNumberMap.put(getHashCodeofPair(1,3), 9);
 		defaultDiceNumberMap.put(getHashCodeofPair(3,3), 0);
 	}
-	
+
 	/**
      * hardcodes default harbour map (keys exactly as above) (assumes size <= 7)
      * */
@@ -187,7 +183,7 @@ public class GameRules {
         defaultHarbourMap.put(getHashCodeofPair(1,1), HarbourKind.GENERIC);
         defaultHarbourMap.put(getHashCodeofPair(2,2), HarbourKind.GENERIC);
     }
-	
+
 	/**
 	 * initializes progress card occurences
 	 * */
@@ -218,38 +214,38 @@ public class GameRules {
 		progressCardOccurences.put(ProgressCardKind.WEDDING, 2);
 		progressCardOccurences.put(ProgressCardKind.MERCHANT, 6);
 	}
-	
-	
+
+
 	/**
-	 * @param left coordinate
-	 * @param right coordinate
+	 * @param x left coordinate
+	 * @param y right coordinate
 	 * @return the hashCode of the CoordinatePair <x,y>
-	 * */
+	 */
 	private int getHashCodeofPair(int x, int y) {
-		return (x+30)*10+(y+30);
+		return (x + 30) * 10 + (y + 30);
 	}
-	
+
 	/**
 	 * @return singleton instance of GameRules
 	 * */
 	public static GameRules getGameRulesInstance() {
 		return aGameRules;
 	}
-	
+
 	public int getVillageVp(VillageKind pVillageKind) {
 		switch (pVillageKind) {
 		case CITY:
 			return cityVp;
-		case SCIENCEMETROPOLE:
+		case SCIENCE_METROPOLIS:
 			return metropolisVp;
 		case SETTLEMENT:
 			return settlementVp;
-		case TRADEMETROPLE:
+		case TRADE_METROPOLIS:
 			return metropolisVp;
 		default:
 			return 0;}
 	}
-	
+
 	public int getVpToWin() {
 		return vpToWin;
 	}
@@ -261,26 +257,26 @@ public class GameRules {
 	public int getProgressCardOccurence(ProgressCardKind pKind) {
 		return progressCardOccurences.get(pKind);
 	}
-	
+
 	/**
 	 * @return size of the gameboard: corresponds to the number of tiles on the longest diagonal
 	 * */
 	public int getSize() {
 		return SIZE;
 	}
-	
+
 	public HashMap<Integer,TerrainKind> getDefaultTerrainKindMap() {
 		return defaultTerrainKindMap;
 	}
-	
+
 	public HashMap<Integer,Integer> getDefaultDiceNumberMap() {
 		return defaultDiceNumberMap;
 	}
-	
+
 	public Integer getDiceNumber(Hex hex) {
 	    return defaultDiceNumberMap.get(getHashCodeofPair(hex.getLeftCoordinate(),hex.getRightCoordinate()));
 	}
-	
+
 	public HarbourKind getHarbourKind(int leftCoordinate, int rightCoordinate) {
 	    if (defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate)) == null) {
 	        return HarbourKind.NONE;
@@ -288,7 +284,7 @@ public class GameRules {
 	        return defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate));
 	    }
 	}
-	
+
 	/**
 	 * return the x offset for drawing the default harbour on <leftCoordinate,rightCoordinate> on the board
 	 * */
@@ -337,10 +333,10 @@ public class GameRules {
                 }
             default:
                 return 0;
-	        
+
 	        }
 	    }
-	    
+
 	    return 0;
 	}
 
@@ -396,32 +392,32 @@ public class GameRules {
                 }
             default:
                 return 0;
-            
+
             }
         }
-        
+
         return 0;
     }
-    
+
     /**
      * highly arbitrary function that returns -1 if harbour needs to be turned on the gameboard, and 0 if it is vertical. Will only work for default board
      * @return -1, 0 or 1
      * */
     public int getDefaultHarbourDirection(int leftCoordinate, int rightCoordinate, HarbourKind kind) {
         int dir = 1;
-        
-        if (kind == HarbourKind.SPECIAL_WOOD 
-                || kind == HarbourKind.SPECIAL_WOOL 
-                || (leftCoordinate == 0 && rightCoordinate == -10) 
+
+        if (kind == HarbourKind.SPECIAL_WOOD
+                || kind == HarbourKind.SPECIAL_WOOL
+                || (leftCoordinate == 0 && rightCoordinate == -10)
                 || (leftCoordinate == 1 && rightCoordinate == -11)) {
             dir = -1;
         }
-        
+
         if (kind == HarbourKind.SPECIAL_ORE) {dir = 0;}
-        
+
         return dir;
     }
-	
+
 	/**
 	 * @return standard cost of things that can be built throughout the game
 	 */

@@ -1,14 +1,17 @@
 package com.mygdx.catan.session;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
+import com.badlogic.gdx.graphics.g2d.PolygonRegionLoader;
+import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.TerrainKind;
 
 import java.util.HashMap;
@@ -38,14 +41,14 @@ class GamePieces {
         colorMap.put("paper", Color.valueOf("E6E6B9"));
     }
 
+    private final PolygonRegion sea, desert, hills, forest, mountains, pasture, fields, gold;
+
     private Texture aSeaTextureSolid;
-    private Texture aDesertTextureSolid;
     private Texture aHillsTextureSolid;
     private Texture aForestTextureSolid;
     private Texture aMountainTextureSolid;
     private Texture aPastureTextureSolid;
     private Texture aFieldsTextureSolid;
-    private Texture aGoldfieldTextureSolid;
 
     private Texture aOrangeTextureSolid;
     private Texture aRedTextureSolid;
@@ -57,13 +60,11 @@ class GamePieces {
     GamePieces() {
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
-        aDesertTextureSolid = setupTextureSolid(Color.GOLDENROD);
         aHillsTextureSolid = setupTextureSolid(colorMap.get("brick"));
         aForestTextureSolid = setupTextureSolid(colorMap.get("wood"));
         aMountainTextureSolid = setupTextureSolid(colorMap.get("ore"));
         aPastureTextureSolid = setupTextureSolid(colorMap.get("wool"));
         aFieldsTextureSolid = setupTextureSolid(colorMap.get("grain"));
-        aGoldfieldTextureSolid = setupTextureSolid(colorMap.get("coin"));
 
         //Creating the color filling for player pieces
         aOrangeTextureSolid = setupTextureSolid(Color.ORANGE);
@@ -71,62 +72,64 @@ class GamePieces {
         aWhiteTextureSolid = setupTextureSolid(Color.WHITE);
         aBlueTextureSolid = setupTextureSolid(Color.BLUE);
         aYellowTextureSolid = setupTextureSolid(Color.YELLOW);
+
+        PolygonRegionLoader polygonRegionLoader = new PolygonRegionLoader();
+        sea = polygonRegionLoader.load(CatanGame.skin.getRegion("sea"), Gdx.files.internal("hex.psh"));
+        desert = polygonRegionLoader.load(CatanGame.skin.getRegion("desert"), Gdx.files.internal("hex.psh"));
+        hills = polygonRegionLoader.load(CatanGame.skin.getRegion("hills"), Gdx.files.internal("hex.psh"));
+        forest = polygonRegionLoader.load(CatanGame.skin.getRegion("forest"), Gdx.files.internal("hex.psh"));
+        mountains = polygonRegionLoader.load(CatanGame.skin.getRegion("mountains"), Gdx.files.internal("hex.psh"));
+        pasture = polygonRegionLoader.load(CatanGame.skin.getRegion("pasture"), Gdx.files.internal("hex.psh"));
+        fields = polygonRegionLoader.load(CatanGame.skin.getRegion("fields"), Gdx.files.internal("hex.psh"));
+        gold = polygonRegionLoader.load(CatanGame.skin.getRegion("gold"), Gdx.files.internal("hex.psh"));
     }
 
     /**
      * Creates a hexagon according to given position and length
      *
-     * @param xPos   x position of hexagon center
-     * @param yPos   y position of hexagon center
-     * @param length length of the side of the hexagon
+     * @param xPos    x position of hexagon center
+     * @param yPos    y position of hexagon center
+     * @param xOrigin x coordinate of the bottom left corner of the hex's enclosing rectangle
+     * @param yOrigin y coordinate of the bottom left corner of the hex's enclosing rectangle
      */
-    PolygonRegion createHexagon(int xPos, int yPos, int length, int base, TerrainKind pTerrainKind) {
+    PolygonSprite createHexagon(int xPos, int yPos, int xOrigin, int yOrigin, TerrainKind pTerrainKind) {
 
-        Texture aTexture = aSeaTextureSolid;
+        PolygonRegion region = sea;
 
-        // sets aTexture to relevant texture according to ResourceKind
+        // sets region to relevant texture according to ResourceKind
         switch (pTerrainKind) {
             case HILLS:
-                aTexture = aHillsTextureSolid;
+                region = hills;
                 break;
             case FIELDS:
-                aTexture = aFieldsTextureSolid;
+                region = fields;
                 break;
             case FOREST:
-                aTexture = aForestTextureSolid;
+                region = forest;
                 break;
             case MOUNTAINS:
-                aTexture = aMountainTextureSolid;
+                region = mountains;
                 break;
             case PASTURE:
-                aTexture = aPastureTextureSolid;
+                region = pasture;
                 break;
             case SEA:
                 break;
             case DESERT:
-                aTexture = aDesertTextureSolid;
+                region = desert;
                 break;
             case GOLDFIELD:
-                aTexture = aGoldfieldTextureSolid;
+                region = gold;
                 break;
             default:
                 break;
         }
 
-        return new PolygonRegion(new TextureRegion(aTexture),
-                new float[]{      // Six vertices
-                        xPos - base, yPos - length / 2,             // Vertex 0                4
-                        xPos, yPos - length,                        // Vertex 1           5         3
-                        xPos + base, yPos - length / 2,             // Vertex 2
-                        xPos + base, yPos + length / 2,             // Vertex 3           0         2
-                        xPos, yPos + length,                        // Vertex 4                1
-                        xPos - base, yPos + length / 2              // Vertex 5
-                }, new short[]{
-                0, 1, 4,         // Sets up triangulation according to vertices above
-                0, 4, 5,
-                1, 2, 3,
-                1, 3, 4
-        });
+        final PolygonSprite polygonSprite = new PolygonSprite(region);
+        polygonSprite.setPosition(xOrigin + xPos - region.getRegion().getRegionWidth() / 2f,
+                yOrigin + yPos - region.getRegion().getRegionHeight() / 2f);
+        polygonSprite.setScale(80f / region.getRegion().getRegionHeight());
+        return polygonSprite;
     }
 
     /**
@@ -401,33 +404,33 @@ class GamePieces {
         });
     }
 
-    
+
     PolygonRegion createHarbour(int x, int y, int base, int length, HarbourKind kind) {
-        Texture aTexture = aSeaTextureSolid;
-        
+        Texture aTexture;
+
         switch (kind) {
-        case SPECIAL_BRICK:
-            aTexture = aHillsTextureSolid;
-            break;
-        case SPECIAL_GRAIN:
-            aTexture = aFieldsTextureSolid;
-            break;
-        case SPECIAL_ORE:
-            aTexture = aMountainTextureSolid;
-            break;
-        case SPECIAL_WOOD:
-            aTexture = aForestTextureSolid;
-            break;
-        case SPECIAL_WOOL:
-            aTexture = aPastureTextureSolid;
-            break;
-        default:
-            aTexture = setupTextureSolid(Color.WHITE);
+            case SPECIAL_BRICK:
+                aTexture = aHillsTextureSolid;
+                break;
+            case SPECIAL_GRAIN:
+                aTexture = aFieldsTextureSolid;
+                break;
+            case SPECIAL_ORE:
+                aTexture = aMountainTextureSolid;
+                break;
+            case SPECIAL_WOOD:
+                aTexture = aForestTextureSolid;
+                break;
+            case SPECIAL_WOOL:
+                aTexture = aPastureTextureSolid;
+                break;
+            default:
+                aTexture = setupTextureSolid(Color.WHITE);
         }
-        
+
         int dir = GameRules.getGameRulesInstance().getDefaultHarbourDirection(x, y, kind);
         int diry = 1;
-        
+
         int Xoffset, Yoffset;
         if (dir == 0) {
             diry = 0;
@@ -436,32 +439,30 @@ class GamePieces {
             dir = 1;
         } else {
             Xoffset = GameRules.getGameRulesInstance().getxHarbourOff(x, y, base);
-            Yoffset = GameRules.getGameRulesInstance().getyHarbourOff(x, y, length/2);
+            Yoffset = GameRules.getGameRulesInstance().getyHarbourOff(x, y, length / 2);
         }
-        
-       
-        
+
+
         float[] v0 = new float[2], v1 = new float[2];
-        v0[0] = x*base;
-        v0[1] = -y*length/2;
-        v1[0] = x*base + Xoffset;
-        v1[1] = -(y*length/2 + Yoffset);
-        
+        v0[0] = x * base;
+        v0[1] = -y * length / 2;
+        v1[0] = x * base + Xoffset;
+        v1[1] = -(y * length / 2 + Yoffset);
+
         return new PolygonRegion(new TextureRegion(aTexture),
-                new float[]{ 
+                new float[]{
                         v0[0], v0[1],                                        // Vertex 0                2
-                        v1[0] + dir*length/8, v1[1] + diry*length/10,        // Vertex 1                1          (with rotation)  
-                        v1[0] - dir*length/8, v1[1] - diry*length/10,        // Vertex 2         0                
-                        
+                        v1[0] + dir * length / 8, v1[1] + diry * length / 10,        // Vertex 1                1          (with rotation)
+                        v1[0] - dir * length / 8, v1[1] - diry * length / 10,        // Vertex 2         0
 
 
                 }, new short[]{
                 0, 1, 2         // Sets up triangulation according to vertices above
         });
-        
+
     }
-    
-    
+
+
     /**
      * Creates a ship according to given positions. Assumes the coordinates correspond to adjacent intersections
      *
@@ -600,8 +601,7 @@ class GamePieces {
                 6, 7, 5
         });
     }
-    
-    
+
 
     private Texture setupTextureSolid(Color color) {
         Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -609,21 +609,21 @@ class GamePieces {
         pix.fill();
         return new Texture(pix);
     }
-    
+
     public Texture getPlayerColorTexture(PlayerColor pc) {
         switch (pc) {
-        case BLUE:
-            return aBlueTextureSolid;
-        case ORANGE:
-            return aOrangeTextureSolid;
-        case RED:
-            return aRedTextureSolid;
-        case WHITE:
-            return aWhiteTextureSolid;
-        case YELLOW:
-            return aYellowTextureSolid;
-        default:
-            return null;
+            case BLUE:
+                return aBlueTextureSolid;
+            case ORANGE:
+                return aOrangeTextureSolid;
+            case RED:
+                return aRedTextureSolid;
+            case WHITE:
+                return aWhiteTextureSolid;
+            case YELLOW:
+                return aYellowTextureSolid;
+            default:
+                return null;
         }
     }
 }

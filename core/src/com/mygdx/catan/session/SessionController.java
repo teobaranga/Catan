@@ -55,17 +55,19 @@ public class SessionController {
             public void received(Connection connection, Object object) {
                 if (object instanceof DiceRolled) {
                     Gdx.app.postRunnable(() -> {
+                        // Inform the player of the dice roll
                         final DiceRolled diceRolled = (DiceRolled) object;
                         aSessionScreen.addGameMessage(diceRolled.getUsername() + " rolled a " + diceRolled.getDiceRoll());
                         aSessionScreen.showDice(diceRolled.getDiceRoll().getLeft(), diceRolled.getDiceRoll().getRight());
 
                         switch (aSessionManager.getCurrentPhase()) {
 						case SETUP_PHASE_ONE:
+                            aSessionManager.nextPlayer();
 							if (diceRolled.isLastRoll()) {
 	                            // Update the session
 	                            aSessionManager.updateSession(diceRolled.getSession());
 	                            aSessionScreen.addGameMessage("The player with the highest roll is " + aSessionManager.getCurrentPlayer().getUsername());
-	                            // TODO Move to the SETUP_PHASE_TWO_CLOCKWISE of the game
+                                aSessionManager.setCurrentPhase(GamePhase.SETUP_PHASE_TWO_CLOCKWISE);
 	                        }
 							break;
 						case TURN_FIRST_PHASE:
@@ -74,13 +76,14 @@ public class SessionController {
 							break;
 						default:
 							break;
-                        }                    
+                        }
+                        checkIfMyTurn();
                     });
                 } else if (object instanceof BuildIntersection) {
                 	Gdx.app.postRunnable(() -> {
                 		final BuildIntersection intersectionBuilt = (BuildIntersection) object;
                 		aSessionScreen.addGameMessage(intersectionBuilt.username + " built a "+intersectionBuilt.getKind().toString().toLowerCase());
-                		
+
                 		switch (aSessionManager.getCurrentPhase()) {
 						case SETUP_PHASE_TWO_CLOCKWISE:
 						case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
@@ -97,7 +100,13 @@ public class SessionController {
                 // TODO update the myTurn variable here
             }
         };
+    }
+
+    /** Update the myTurn variable */
+    void checkIfMyTurn() {
+        System.out.println(aSessionManager.getCurrentPlayer().getUsername());
         myTurn = aSessionManager.getCurrentPlayer().getAccount().equals(CatanGame.account);
+        turn();
     }
 
     /** Call this when the screen is shown */
@@ -111,13 +120,14 @@ public class SessionController {
     }
 
     /** Process a turn */
-    void turn() {
+    private void turn() {
         if (!myTurn) {
-            // TODO disable UI, the player can't really do anything at this moment
+            aSessionScreen.endTurn();
             final Player currentPlayer = aSessionManager.getCurrentPlayer();
             aSessionScreen.addGameMessage("Waiting for: " + currentPlayer.getUsername());
             return;
         }
+        aSessionScreen.enablePhase(aSessionManager.getCurrentPhase());
         switch (aSessionManager.getCurrentPhase()) {
             case SETUP_PHASE_ONE:
                 // TODO Allow the player to roll the dice
@@ -148,7 +158,7 @@ public class SessionController {
     }*/
 
     public Player getCurrentPlayer() {
-    	return aSessionManager.getCurrentPlayer();
+        return aSessionManager.getCurrentPlayer();
     }
 
     public int getYellowDice() {
@@ -219,7 +229,7 @@ public class SessionController {
         if (kind == VillageKind.SETTLEMENT) {
             ResourceMap cost = GameRules.getGameRulesInstance().getSettlementCost();
             boolean hasAvailSettlements = currentP.getAvailableSettlements() > 0;
-            if(currentP.hasEnoughResources(cost) && hasAvailSettlements) {
+            if (currentP.hasEnoughResources(cost) && hasAvailSettlements) {
                 canBuild = true;
             } else {
                 canBuild = false;
@@ -279,14 +289,14 @@ public class SessionController {
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
             boolean isAdjacentToSomeBuilding = false;
-        	for (Village v: aGameBoardManager.getBuildingsInPlay()) {
-        		if (isAdjacent(i,v.getPosition())) {
-        			isAdjacentToSomeBuilding = true;
-        		}
+            for (Village v : aGameBoardManager.getBuildingsInPlay()) {
+                if (isAdjacent(i, v.getPosition())) {
+                    isAdjacentToSomeBuilding = true;
+                }
             }
             for (EdgeUnit e : listOfEdgeUnits) {
-            	if (!isAdjacentToSomeBuilding && (e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
-            		validIntersections.add(i);
+                if (!isAdjacentToSomeBuilding && (e.hasEndpoint(i)) && !i.isOccupied() && aGameBoardManager.isOnLand(i)) {
+                    validIntersections.add(i);
                 }
             }
         }
@@ -302,14 +312,14 @@ public class SessionController {
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
 
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
-        	boolean isAdjacentToSomeBuilding = false;
-        	for (Village v : aGameBoardManager.getBuildingsInPlay()) {
-            	if (isAdjacent(i, v.getPosition())){
-            		isAdjacentToSomeBuilding = true;
-            	}
+            boolean isAdjacentToSomeBuilding = false;
+            for (Village v : aGameBoardManager.getBuildingsInPlay()) {
+                if (isAdjacent(i, v.getPosition())) {
+                    isAdjacentToSomeBuilding = true;
+                }
             }
             if (!i.isOccupied() && (!isAdjacentToSomeBuilding) && aGameBoardManager.isOnLand(i)) {
-            	validIntersections.add(i);
+                validIntersections.add(i);
             }
         }
 
@@ -341,16 +351,16 @@ public class SessionController {
 
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 
-        for (Village v: currentP.getVillages()) {
+        for (Village v : currentP.getVillages()) {
             if (!validRoadEndpoints.contains(v.getPosition())) {
                 validRoadEndpoints.add(v.getPosition());
             }
         }
-        for (EdgeUnit eu: currentP.getRoadsAndShips()) {
-            if(!validRoadEndpoints.contains(eu.getAFirstCoordinate())) {
+        for (EdgeUnit eu : currentP.getRoadsAndShips()) {
+            if (!validRoadEndpoints.contains(eu.getAFirstCoordinate())) {
                 validRoadEndpoints.add(eu.getAFirstCoordinate());
             }
-            if(!validRoadEndpoints.contains(eu.getASecondCoordinate())) {
+            if (!validRoadEndpoints.contains(eu.getASecondCoordinate())) {
                 validRoadEndpoints.add(eu.getASecondCoordinate());
             }
         }
@@ -371,16 +381,16 @@ public class SessionController {
 
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 
-        for (Village v: currentP.getVillages()) {
+        for (Village v : currentP.getVillages()) {
             if (!validShipEndpoints.contains(v.getPosition()) && aGameBoardManager.isOnSea(v.getPosition())) {
                 validShipEndpoints.add(v.getPosition());
             }
         }
-        for (EdgeUnit eu: currentP.getRoadsAndShips()) {
-            if(!validShipEndpoints.contains(eu.getAFirstCoordinate()) && aGameBoardManager.isOnSea(eu.getAFirstCoordinate())) {
+        for (EdgeUnit eu : currentP.getRoadsAndShips()) {
+            if (!validShipEndpoints.contains(eu.getAFirstCoordinate()) && aGameBoardManager.isOnSea(eu.getAFirstCoordinate())) {
                 validShipEndpoints.add(eu.getAFirstCoordinate());
             }
-            if(!validShipEndpoints.contains(eu.getASecondCoordinate()) && aGameBoardManager.isOnSea(eu.getASecondCoordinate())) {
+            if (!validShipEndpoints.contains(eu.getASecondCoordinate()) && aGameBoardManager.isOnSea(eu.getASecondCoordinate())) {
                 validShipEndpoints.add(eu.getASecondCoordinate());
             }
         }
@@ -417,8 +427,7 @@ public class SessionController {
                     aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
             }
-        }
-        else if (kind == VillageKind.CITY) {
+        } else if (kind == VillageKind.CITY) {
             aGameBoardManager.upgradeSettlement(currentP, position);
 
             if (fromPeer) {
@@ -469,7 +478,7 @@ public class SessionController {
         }
 
         if (kind == EdgeUnitKind.SHIP) {
-            if(!fromPeer) {
+            if (!fromPeer) {
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
@@ -504,32 +513,32 @@ public class SessionController {
         int hillCounter = 0;
         int fieldCounter = 0;
 
-        for(Hex h : neighbouringHexes) {
+        for (Hex h : neighbouringHexes) {
             TerrainKind tKind = h.getKind();
             switch (tKind) {
-            case PASTURE:
-                pastureCounter++;
-                break;
-            case FOREST:
-            	forestCounter++;
-            	break;
-            case MOUNTAINS:
-                mountainCounter++;
-                break;
-            case HILLS:
-                hillCounter++;
-                break;
-            case FIELDS:
-                fieldCounter++;
-                break;
-            case DESERT:
-                break;
-            case GOLDFIELD:
-                break;
-            case SEA:
-                break;
-            default:
-                break;
+                case PASTURE:
+                    pastureCounter++;
+                    break;
+                case FOREST:
+                    forestCounter++;
+                    break;
+                case MOUNTAINS:
+                    mountainCounter++;
+                    break;
+                case HILLS:
+                    hillCounter++;
+                    break;
+                case FIELDS:
+                    fieldCounter++;
+                    break;
+                case DESERT:
+                    break;
+                case GOLDFIELD:
+                    break;
+                case SEA:
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -541,11 +550,11 @@ public class SessionController {
 
         clientPlayer.addResources(playerResourceMap);
         playerResources.add(playerResourceMap);
-        aSessionScreen.updateResourceBar(clientPlayer.getResourceMap()); 
-       
+        aSessionScreen.updateResourceBar(clientPlayer.getResourceMap());
+
         return playerResources;
     }
-    
+
     /*
     /**
      * Allows the user to place a city and an edge unit and then receive the resources near the city
@@ -626,7 +635,7 @@ public class SessionController {
     private Pair<Integer, Integer> rollTwoDice() {
         return random.rollTwoDice();
     }
-    
+
     public List<ResourceMap> rollDice(int diceRoll) {
         List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
         List<ResourceMap> playerResources = new ArrayList<>();
@@ -669,41 +678,41 @@ public class SessionController {
                 VillageKind vKind = v.getVillageKind();
 
                 switch (tKind) {
-                case PASTURE:
-                    pastureCounter++;
-                    if (vKind == VillageKind.CITY)
-                        clothCounter++;
-                    break;
-                case FOREST:
-                    forestCounter++;
-                    if (vKind == VillageKind.CITY)
-                        paperCounter++;
-                    break;
-                case MOUNTAINS:
-                    mountainCounter++;
-                    if (vKind == VillageKind.CITY)
-                        coinCounter++;
-                    break;
-                case HILLS:
-                    if (vKind == VillageKind.SETTLEMENT)
-                        hillCounter++;
-                    else
-                        hillCounter+= 2;
-                    break;
-                case FIELDS:
-                    if (vKind == VillageKind.SETTLEMENT)
-                        fieldCounter++;
-                    else
-                        fieldCounter+=2;
-                    break;
-				case DESERT:
-					break;
-				case GOLDFIELD:
-					break;
-				case SEA:
-					break;
-				default:
-					break;
+                    case PASTURE:
+                        pastureCounter++;
+                        if (vKind == VillageKind.CITY)
+                            clothCounter++;
+                        break;
+                    case FOREST:
+                        forestCounter++;
+                        if (vKind == VillageKind.CITY)
+                            paperCounter++;
+                        break;
+                    case MOUNTAINS:
+                        mountainCounter++;
+                        if (vKind == VillageKind.CITY)
+                            coinCounter++;
+                        break;
+                    case HILLS:
+                        if (vKind == VillageKind.SETTLEMENT)
+                            hillCounter++;
+                        else
+                            hillCounter += 2;
+                        break;
+                    case FIELDS:
+                        if (vKind == VillageKind.SETTLEMENT)
+                            fieldCounter++;
+                        else
+                            fieldCounter += 2;
+                        break;
+                    case DESERT:
+                        break;
+                    case GOLDFIELD:
+                        break;
+                    case SEA:
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -721,12 +730,11 @@ public class SessionController {
         playerResources.add(ResAndComMap);
 
         aSessionScreen.updateResourceBar(clientPlayer.getResourceMap());
-        
+
        //TODO set phase of session to TURN_SECOND_PHASE
-        
+
         return playerResources;
     }
-
 
 
     // TODO: set GUI's mode to chooseActionMode for the player who's turn it is

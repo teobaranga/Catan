@@ -9,6 +9,7 @@ import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Session {
@@ -42,11 +43,14 @@ public class Session {
         final Session session = new Session();
         session.VPsToWin = VPsToWin;
 
+        final Iterator<Account> accountIterator = accounts.iterator();
         session.players = new Player[accounts.size()];
         for (int i = 0; i < session.players.length; i++) {
-            final Account account = accounts.iterator().next();
-            session.players[i] = Player.newInstance(account, PlayerColor.values()[i]);
-            System.out.println("Created player: " + account.getUsername());
+            if (accountIterator.hasNext()) {
+                final Account account = accountIterator.next();
+                session.players[i] = Player.newInstance(account, PlayerColor.values()[i]);
+                System.out.println("Created player: " + account.getUsername());
+            }
         }
 
         return session;

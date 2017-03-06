@@ -12,7 +12,7 @@ public class PlaceCityAndRoad implements Response {
     public PlayerColor aPlayerColor;
     public boolean isFirstInit;
 
-    public PlaceCityAndRoad(boolean fromPeer, PlayerColor aPlayerColor, boolean isFirstInit){
+    public PlaceCityAndRoad(boolean fromPeer, PlayerColor aPlayerColor, boolean isFirstInit) {
         this.fromPeer = fromPeer;
         this.aPlayerColor = aPlayerColor;
         this.isFirstInit = isFirstInit;

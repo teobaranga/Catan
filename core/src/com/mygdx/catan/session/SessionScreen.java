@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,19 +39,19 @@ public class SessionScreen implements Screen {
     /**
      * The map of resources to colors
      */
-    private static Map<String, Color> colorMap;
+    private static Map<ResourceKind, Color> colorMap;
 
     static {
         // TODO move this to the skin
         colorMap = new HashMap<>();
-        colorMap.put("wood", Color.valueOf("679861"));
-        colorMap.put("brick", Color.valueOf("CC6633"));
-        colorMap.put("ore", Color.valueOf("996633"));
-        colorMap.put("grain", Color.valueOf("FFFF66"));
-        colorMap.put("wool", Color.valueOf("66FF66"));
-        colorMap.put("coin", Color.valueOf("FF9A00"));
-        colorMap.put("cloth", Color.valueOf("CDCDFF"));
-        colorMap.put("paper", Color.valueOf("E6E6B9"));
+        colorMap.put(ResourceKind.WOOD, Color.valueOf("679861"));
+        colorMap.put(ResourceKind.BRICK, Color.valueOf("CC6633"));
+        colorMap.put(ResourceKind.ORE, Color.valueOf("996633"));
+        colorMap.put(ResourceKind.GRAIN, Color.valueOf("FFFF66"));
+        colorMap.put(ResourceKind.WOOL, Color.valueOf("66FF66"));
+        colorMap.put(ResourceKind.COIN, Color.valueOf("FF9A00"));
+        colorMap.put(ResourceKind.CLOTH, Color.valueOf("CDCDFF"));
+        colorMap.put(ResourceKind.PAPER, Color.valueOf("E6E6B9"));
     }
 
     private final CatanGame aGame;
@@ -94,7 +95,7 @@ public class SessionScreen implements Screen {
     private MutablePair<Integer, Integer> boardOrigin;
 
     /** The map of resource tables */
-    private Map<String, Label> resourceLabelMap;
+    private EnumMap<ResourceKind, Label> resourceLabelMap;
 
     /** determines the current mode of the session screen */
     private SessionScreenModes aMode;
@@ -147,7 +148,7 @@ public class SessionScreen implements Screen {
         edgeUnits = new ArrayList<>();
         highlightedPositions = new ArrayList<>();
         boardOrigin = new MutablePair<>();
-        resourceLabelMap = new HashMap<>();
+        resourceLabelMap = new EnumMap<ResourceKind,Label>(ResourceKind.class);
         polyBatch = new PolygonSpriteBatch();
         highlightBatch = new PolygonSpriteBatch();
         gamePieces = new GamePieces();
@@ -193,7 +194,7 @@ public class SessionScreen implements Screen {
                                 initVillageIntersection = validIntersection;
                             } else {
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                                aSessionController.buildVillage(validIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
+                                aSessionController.buildVillage(validIntersection, villagePieceKind, aSessionController.getPlayerColor(), false, initializing);
                             }
 
                             buildSettlementButton.setText("Build Settlement");
@@ -225,19 +226,19 @@ public class SessionScreen implements Screen {
                                 }
                                 
                                 if (villagePieceKind == VillageKind.CITY) {
-                                    aSessionController.buildVillage(initVillageIntersection, VillageKind.SETTLEMENT, aSessionController.getPlayerColor(), false);
-                                    aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
+                                    aSessionController.buildVillage(initVillageIntersection, VillageKind.SETTLEMENT, aSessionController.getPlayerColor(), false, initializing);
+                                    aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false, initializing);
                                 	aSessionController.distributeInitialResources(initVillageIntersection);
                                 } else {
-                                	aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false);
+                                	aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false,initializing);
                                 }
-
-                                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false);
+                              
+                                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false, initializing);
 
                                 initializing = false;
                                 aInitButton.setText("Done");
                             } else {
-                                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false);
+                                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false, initializing);
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
                             }
 
@@ -271,7 +272,7 @@ public class SessionScreen implements Screen {
         contentTable.setSize(550, 120);
         contentTable.setPosition(350, 10);
 
-        for (Map.Entry<String, Color> entry : colorMap.entrySet()) {
+        for (Map.Entry<ResourceKind, Color> entry : colorMap.entrySet()) {
             Table aTable = createResourceTable(entry.getKey());
             contentTable.add(aTable).pad(5);
         }
@@ -547,9 +548,9 @@ public class SessionScreen implements Screen {
         return new Texture(pix);
     }
 
-    private Table createResourceTable(String type) {
+    private Table createResourceTable(ResourceKind type) {
         Table resourceTable = new Table(CatanGame.skin);
-        resourceTable.add(new Label(type, CatanGame.skin));
+        resourceTable.add(new Label(type.toString().toLowerCase(), CatanGame.skin));
         resourceTable.row();
 
         Label l = new Label("0", CatanGame.skin);
@@ -935,10 +936,9 @@ public class SessionScreen implements Screen {
 
     public void updateResourceBar(ResourceMap updates) {
         for (Map.Entry<ResourceKind, Integer> entry : updates.entrySet()) {
-            String resourceName = entry.getKey().toString().toLowerCase();
-            Label l = resourceLabelMap.get(resourceName);
-            int prev = Integer.valueOf(l.getText().toString());
-            int newValue = prev + entry.getValue();
+            ResourceKind resourceKind = entry.getKey();
+            Label l = resourceLabelMap.get(resourceKind);
+            int newValue = entry.getValue();
             l.setText(newValue + "");
         }
     }

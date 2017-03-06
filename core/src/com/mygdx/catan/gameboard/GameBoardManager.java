@@ -286,7 +286,6 @@ public class GameBoardManager {
 
         ArrayList<CoordinatePair> neighboringIntersections = new ArrayList<>();
         ArrayList<Hex> neighboringHexes = getNeighbouringHexes(p);
-        ArrayList<CoordinatePair> attachedIntersections = new ArrayList<>();
 
         //for each hex in the neighboring hexes we will iterate through the attached coordinates to check if
         //the sum of the absolute value of the difference between the pair in question p and aPair is 2

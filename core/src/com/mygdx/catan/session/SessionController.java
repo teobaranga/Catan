@@ -12,12 +12,9 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
-import com.mygdx.catan.request.RollDice;
+import com.mygdx.catan.request.BuildIntersection;
 import com.mygdx.catan.request.RollTwoDice;
 import com.mygdx.catan.response.DiceRolled;
-import com.mygdx.catan.response.PlaceCityAndRoad;
-import com.mygdx.catan.response.ShowDice;
-import com.mygdx.catan.response.UpdateResourceBar;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -56,60 +53,46 @@ public class SessionController {
         aSessionListener = new Listener() {
             @Override
             public void received(Connection connection, Object object) {
-                if (object instanceof PlaceCityAndRoad) {
-                    Gdx.app.postRunnable(() -> {
-                        boolean isFirstInit = ((PlaceCityAndRoad) object).isFirstInit;
-                        boolean isShip = false;
-                        aSessionScreen.initialize(isFirstInit);
-
-                        // FIXME: the following information will not be in the GUI at this time.
-                        // CoordinatePair cityPos = aSessionScreen.getInitSettlementIntersection();
-                        // CoordinatePair edgeUnitPos1 = aSessionScreen.getInitEdgePos1();
-                        // CoordinatePair edgeUnitPos2 = aSessionScreen.getInitEdgePos2();
-
-                        VillageKind villageKind = VillageKind.CITY;
-                        if (((PlaceCityAndRoad) object).isFirstInit) {
-                            villageKind = VillageKind.SETTLEMENT;
-                        }
-                        boolean fromPeer = ((PlaceCityAndRoad) object).fromPeer;
-                        PlayerColor aPlayerColor = ((PlaceCityAndRoad) object).aPlayerColor;
-                        //placeCityAndRoads(cityPos, edgeUnitPos1, edgeUnitPos2, isShip, fromPeer, aPlayerColor, villageKind);
-                    });
-                } else if (object instanceof DiceRolled) {
+                if (object instanceof DiceRolled) {
                     Gdx.app.postRunnable(() -> {
                         final DiceRolled diceRolled = (DiceRolled) object;
                         aSessionScreen.addGameMessage(diceRolled.getUsername() + " rolled a " + diceRolled.getDiceRoll());
-                        if (diceRolled.isLastRoll()) {
-                            // Update the session
-                            aSessionManager.updateSession(diceRolled.getSession());
-                            aSessionScreen.addGameMessage("The player with the highest roll is " + aSessionManager.getCurrentPlayer().getUsername());
-                            // TODO Move to the next phase of the game
-                        }
-                    });
-                } else if (object instanceof ShowDice) {
-                    Gdx.app.postRunnable(() -> {
-                        aSessionScreen.showDice(getYellowDice(), getRedDice());
-                    });
-                } else if (object instanceof UpdateResourceBar) {
-                    Gdx.app.postRunnable(() -> {
-                        ResourceMap cost = ((UpdateResourceBar) object).cost;
-                        aSessionScreen.updateResourceBar(cost);
-                    });
-                } else if (object instanceof RollTwoDice) {
-                    Gdx.app.postRunnable(() -> {
-                        Pair<Integer, Integer> diceRollResult = ((RollTwoDice) object).getRollResult();
-                        int yellowDice = diceRollResult.getLeft();
-                        int redDice = diceRollResult.getRight();
-                        aSessionManager.setYellowDie(yellowDice);
-                        aSessionManager.setRedDie(redDice);
-                        aSessionScreen.showDice(yellowDice, redDice);
-                    });
-                } else if (object instanceof RollDice) {
-                    Gdx.app.postRunnable(() -> {
-                        List<ResourceMap> updatedPlayerResources = ((RollDice) object).getResourceUpdates();
-                        //aSessionScreen.updateResourceBar(getOwnresourcesUpdate(updatedPlayerResources));
-                    });
+                        aSessionScreen.showDice(diceRolled.getDiceRoll().getLeft(), diceRolled.getDiceRoll().getRight());
 
+                        switch (aSessionManager.getCurrentPhase()) {
+						case SETUP_PHASE_ONE:
+							if (diceRolled.isLastRoll()) {
+	                            // Update the session
+	                            aSessionManager.updateSession(diceRolled.getSession());
+	                            aSessionScreen.addGameMessage("The player with the highest roll is " + aSessionManager.getCurrentPlayer().getUsername());
+	                            // TODO Move to the SETUP_PHASE_TWO_CLOCKWISE of the game
+	                        }
+							break;
+						case TURN_FIRST_PHASE:
+							rollDice(diceRolled.getDiceRoll().getLeft() + diceRolled.getDiceRoll().getRight());
+							// TODO Move to the TURN_SECOND_PHASE of the game
+							break;
+						default:
+							break;
+                        }                    
+                    });
+                } else if (object instanceof BuildIntersection) {
+                	Gdx.app.postRunnable(() -> {
+                		final BuildIntersection intersectionBuilt = (BuildIntersection) object;
+                		aSessionScreen.addGameMessage(intersectionBuilt.username + " built a "+intersectionBuilt.getKind().toString().toLowerCase());
+                		
+                		switch (aSessionManager.getCurrentPhase()) {
+						case SETUP_PHASE_TWO_CLOCKWISE:
+						case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
+							buildVillage(intersectionBuilt.getPosition(), intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, true);
+							break;
+						case TURN_SECOND_PHASE:
+							buildVillage(intersectionBuilt.getPosition(), intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, false);
+							break;
+						default:
+							break;
+                		}
+                	});
                 }
                 // TODO update the myTurn variable here
             }
@@ -146,9 +129,9 @@ public class SessionController {
             case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
                 // TODO Allow the player to place on city and one road. The player also receives some resources here
                 break;
-            case TURNFIRSTPHASE:
+            case TURN_FIRST_PHASE:
                 break;
-            case TURNSECONDPHASE:
+            case TURN_SECOND_PHASE:
                 break;
             case Completed:
                 break;
@@ -413,9 +396,10 @@ public class SessionController {
      * @param kind     of village to build
      * @param owner    of new settlement
      * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
+     * @param init 			 indicated whether the method was called during initialization. If it was, player resource are not updated
      * @return true if building the village was successful, false otherwise
      */
-    public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer) {
+    public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer, boolean init) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 
         if (kind == VillageKind.SETTLEMENT) {
@@ -426,9 +410,12 @@ public class SessionController {
                 aSessionScreen.updateIntersection(position, owner, kind);
             } else {
                 aSessionScreen.updateIntersection(position, owner, kind);
-                aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getSettlementCost());
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
-                aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
+             // if piece was build during regular turn, appropriate resources are removed from the player
+                if (!init) {
+                	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
+                    aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                }
             }
         }
         else if (kind == VillageKind.CITY) {
@@ -438,9 +425,12 @@ public class SessionController {
                 aSessionScreen.updateIntersection(position, owner, kind);
             } else {
                 aSessionScreen.updateIntersection(position, owner, kind);
-                aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getCityCost());
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
-                aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
+             // if piece was build during regular turn, appropriate resources are removed from the player
+                if (!init) {
+                	 aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
+                     aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                }
             }
         }
         // changes state: of owner and gameboard. All validity checks have been done beforehand. 
@@ -459,26 +449,33 @@ public class SessionController {
      * @param SecondPosition second end point of road or ship
      * @param kind           edge unit kind: ROAD or SHIP
      * @param fromPeer       indicates whether the method was called from the owner of new settlement, or from a peer
+     * @param init 			 indicated whether the method was called during initialization. If it was, player resource are not updated
      * @return true if building the unit was successful, false otherwise
      */
-    public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind, boolean fromPeer) {
+    public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind, boolean fromPeer, boolean init) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
         aGameBoardManager.buildEdgeUnit(currentP, firstPosition, SecondPosition, kind);
         aSessionScreen.updateEdge(firstPosition, SecondPosition, kind, owner);
 
         if (kind == EdgeUnitKind.ROAD) {
             if (!fromPeer) {
-                aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getRoadCost());
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
-                aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
+                // if piece was build during regular turn, appropriate resources are removed from the player
+                if (!init) {
+                	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
+                	aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                }
             }
         }
 
         if (kind == EdgeUnitKind.SHIP) {
             if(!fromPeer) {
-                aSessionScreen.updateResourceBar(GameRules.getGameRulesInstance().getShipCost());
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
-                aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
+                // if piece was build during regular turn, appropriate resources are removed from the player
+                if (!init) {
+                	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
+                    aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                }
             }
         }
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)
@@ -544,14 +541,15 @@ public class SessionController {
 
         clientPlayer.addResources(playerResourceMap);
         playerResources.add(playerResourceMap);
-        aSessionScreen.updateResourceBar(playerResourceMap);
-
+        aSessionScreen.updateResourceBar(clientPlayer.getResourceMap()); 
+       
         return playerResources;
     }
-
+    
+    /*
     /**
      * Allows the user to place a city and an edge unit and then receive the resources near the city
-     */
+     *
     public void placeCityAndRoads(CoordinatePair cityPos, CoordinatePair edgeUnitPos1, CoordinatePair edgeUnitPos2, boolean isShip, boolean fromPeer, PlayerColor aPlayerColor, VillageKind villageKind) {
         if (isShip) {
             buildEdgeUnit(aPlayerColor, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, fromPeer);
@@ -598,6 +596,7 @@ public class SessionController {
         }
         // cp.addResources(cost); getPLayerByColor(aPlayerColor).addResources(cost);
     }
+    */
 
     /**
      * Adds resources to the bank.
@@ -720,8 +719,11 @@ public class SessionController {
 
         clientPlayer.addResources(ResAndComMap);
         playerResources.add(ResAndComMap);
-        aSessionScreen.updateResourceBar(ResAndComMap);
 
+        aSessionScreen.updateResourceBar(clientPlayer.getResourceMap());
+        
+       //TODO set phase of session to TURN_SECOND_PHASE
+        
         return playerResources;
     }
 
@@ -744,6 +746,8 @@ public class SessionController {
      */
     void rollDice() {
         switch (aSessionManager.getCurrentPhase()) {
+            case TURN_FIRST_PHASE:
+            	// We're at the phase where we the player rolls the dice and everyone gets appropriate resources
             case SETUP_PHASE_ONE:
                 // We're at the phase where we have to determine who rolled the highest number
                 // Roll the dice
@@ -754,10 +758,10 @@ public class SessionController {
                 break;
             default:
                 // FIXME This is not good, pretend it doesn't exist (-Teo)
-                Pair<Integer, Integer> roll = rollTwoDice();
+                //Pair<Integer, Integer> roll = rollTwoDice();
 //                Map<Player, ResourceMap> resourceUpdateMap = getResourceUpdate(roll.getLeft() + roll.getRight());
 //                RollDice diceResourcesToSent = RollDice.newInstance(resourceUpdateMap, "Dummy");
-                aSessionScreen.showDice(roll.getLeft(), roll.getRight());
+                //aSessionScreen.showDice(roll.getLeft(), roll.getRight());
 //                aSessionScreen.updateResourceBar(getOwnresourcesUpdate(resourceUpdateMap));
                 break;
         }

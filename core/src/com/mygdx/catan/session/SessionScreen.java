@@ -252,6 +252,7 @@ public class SessionScreen implements Screen {
                                 if (villagePieceKind == VillageKind.CITY)
                                     initializing = false;
 
+                                // End the turn
                                 aSessionController.endTurn();
                                 aInitButton.setText("Done");
                             } else {
@@ -380,6 +381,12 @@ public class SessionScreen implements Screen {
         // Add end turn button
         endTurnButton = new TextButton("End Turn", CatanGame.skin);
         endTurnButton.setColor(Color.YELLOW);
+        endTurnButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                aSessionController.endTurnNotify();
+            }
+        });
         turnTable.add(endTurnButton).padBottom(10).row(); 
         
         // Add maritime trade button
@@ -861,6 +868,7 @@ public class SessionScreen implements Screen {
                 buildRoadButton.setDisabled(true);
                 buildShipButton.setDisabled(true);
                 maritimeTradeButton.setDisabled(true);
+                endTurnButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -872,6 +880,7 @@ public class SessionScreen implements Screen {
                 buildShipButton.setDisabled(true);
                 maritimeTradeButton.setDisabled(true);
                 rollDiceButton.setDisabled(true);
+                endTurnButton.setDisabled(true);
 
                 initialize(true);
                 break;
@@ -883,6 +892,7 @@ public class SessionScreen implements Screen {
                 buildShipButton.setDisabled(true);
                 maritimeTradeButton.setDisabled(true);
                 rollDiceButton.setDisabled(true);
+                endTurnButton.setDisabled(true);
 
                 initialize(false);
                 break;
@@ -893,6 +903,7 @@ public class SessionScreen implements Screen {
                 buildRoadButton.setDisabled(true);
                 buildShipButton.setDisabled(true);
                 maritimeTradeButton.setDisabled(true);
+                endTurnButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -903,6 +914,7 @@ public class SessionScreen implements Screen {
                 buildRoadButton.setDisabled(false);
                 buildShipButton.setDisabled(false);
                 maritimeTradeButton.setDisabled(false);
+                endTurnButton.setDisabled(false);
 
                 rollDiceButton.setDisabled(true);
                 break;
@@ -921,6 +933,7 @@ public class SessionScreen implements Screen {
         buildShipButton.setDisabled(true);
         rollDiceButton.setDisabled(true);
         maritimeTradeButton.setDisabled(true);
+        endTurnButton.setDisabled(true);
     }
 
     /**

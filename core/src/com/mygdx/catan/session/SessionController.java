@@ -14,6 +14,7 @@ import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.request.BuildEdge;
 import com.mygdx.catan.request.BuildIntersection;
+import com.mygdx.catan.request.EndTurn;
 import com.mygdx.catan.request.RollTwoDice;
 import com.mygdx.catan.response.DiceRolled;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -23,9 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.mygdx.catan.enums.GamePhase.SETUP_PHASE_ONE;
-import static com.mygdx.catan.enums.GamePhase.SETUP_PHASE_TWO_CLOCKWISE;
-import static com.mygdx.catan.enums.GamePhase.SETUP_PHASE_TWO_COUNTERCLOCKWISE;
+import static com.mygdx.catan.enums.GamePhase.*;
 import static com.mygdx.catan.enums.ResourceKind.*;
 import static com.mygdx.catan.enums.VillageKind.CITY;
 
@@ -87,7 +86,7 @@ public class SessionController {
                                 break;
                             case TURN_FIRST_PHASE:
                                 resourceProduction(diceRolled.getDiceRoll().getLeft() + diceRolled.getDiceRoll().getRight());
-                                // TODO Move to the TURN_SECOND_PHASE of the game
+                                endPhase(TURN_FIRST_PHASE);
                                 break;
                             default:
                                 break;
@@ -137,8 +136,12 @@ public class SessionController {
 
                         }
                     });
+                } else if (object instanceof EndTurn) {
+                    Gdx.app.postRunnable(() -> {
+                        System.out.println(((EndTurn) object).username + " ended their turn");
+                        endTurn();
+                    });
                 }
-                // TODO update the myTurn variable here
             }
         };
     }
@@ -169,12 +172,20 @@ public class SessionController {
                 aSessionScreen.addGameMessage("Please choose a position for your city,\n then choose a neighbouring edge for the position of your road");
                 break;
             case TURN_FIRST_PHASE:
+                aSessionScreen.addGameMessage("You may now roll the dice to generate the production");
                 break;
             case TURN_SECOND_PHASE:
+                aSessionScreen.addGameMessage("You may now place new buildings and roads or engage in maritime trade");
                 break;
             case Completed:
                 break;
         }
+    }
+
+    /** Notify all the other players that the current player ended his/her turn. */
+    void endTurnNotify() {
+        endTurn();
+        CatanGame.client.sendTCP(EndTurn.newInstance());
     }
 
     /**
@@ -187,9 +198,22 @@ public class SessionController {
                 // End the clockwise phase if everyone placed their settlements
                 if (aSessionManager.isRoundCompleted()) {
                     endPhase(SETUP_PHASE_TWO_CLOCKWISE);
+                    // Return in order to avoid checking the turn twice
                     return;
                 }
                 break;
+            case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
+                // End the counter-clockwise phase if everyone placed their cities
+                if (aSessionManager.isRoundCompleted()) {
+                    endPhase(SETUP_PHASE_TWO_COUNTERCLOCKWISE);
+                    // Return in order to avoid checking the turn twice
+                    return;
+                }
+                break;
+            case TURN_SECOND_PHASE:
+                endPhase(TURN_SECOND_PHASE);
+                // Return in order to avoid checking the turn twice
+                return;
         }
         checkIfMyTurn();
     }
@@ -210,8 +234,16 @@ public class SessionController {
                 aSessionManager.nextPlayer();
                 break;
             case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
+                aSessionManager.setCurrentPhase(TURN_FIRST_PHASE);
                 aSessionManager.setClockwise();
+                // Come back to the same player
                 aSessionManager.nextPlayer();
+                break;
+            case TURN_FIRST_PHASE:
+                aSessionManager.setCurrentPhase(TURN_SECOND_PHASE);
+                break;
+            case TURN_SECOND_PHASE:
+                aSessionManager.setCurrentPhase(TURN_FIRST_PHASE);
                 break;
         }
         checkIfMyTurn();
@@ -815,6 +847,11 @@ public class SessionController {
 
     public Player getCurrentPlayerFromColor(PlayerColor aPlayerColor) {
         return aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
+    }
+
+    /** Get the resources of the local player */
+    public ResourceMap getLocalPlayerResources() {
+        return localPlayer.getResourceMap();
     }
 
     /** Call this when the screen is shown */

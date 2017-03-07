@@ -256,6 +256,9 @@ public class SessionManager {
      * Check if a round was just completed, ie. if every player had a chance to play.
      */
     public boolean isRoundCompleted() {
-        return aSession.playerIndex == aSession.firstPlayerIndex;
+        int lastPlayerIndex = aSession.firstPlayerIndex - 1;
+        if (lastPlayerIndex < 0)
+            lastPlayerIndex = aSession.getPlayers().length - 1;
+        return aSession.playerIndex == (aSession.clockwise ? aSession.firstPlayerIndex : lastPlayerIndex);
     }
 }

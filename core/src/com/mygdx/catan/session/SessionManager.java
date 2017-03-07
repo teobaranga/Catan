@@ -77,8 +77,12 @@ public class SessionManager {
             aSession.redDie = session.redDie;
         if (aSession.yellowDie != session.yellowDie)
             aSession.yellowDie = session.yellowDie;
+        if (aSession.firstPlayerIndex != session.firstPlayerIndex)
+            aSession.firstPlayerIndex = session.firstPlayerIndex;
         if (aSession.playerIndex != session.playerIndex)
             aSession.playerIndex = session.playerIndex;
+        if (aSession.clockwise != session.clockwise)
+            aSession.clockwise = session.clockwise;
     }
 
     public Player[] getPlayers() {
@@ -219,13 +223,39 @@ public class SessionManager {
         diceRollPlayerIndex = 0;
     }
 
-    /** Set the current player by their index */
-    public void setCurrentPlayerIndex(int index) {
+    /**
+     * Sets the first player by their index.
+     * Warning: this also sets the current player.
+     */
+    public void setFirstPlayer(int index) {
+        aSession.firstPlayerIndex = index;
         aSession.playerIndex = index;
     }
 
     /** Move the index of the current player to point to the next player */
-    public void nextPlayer() {
-        aSession.playerIndex = (aSession.playerIndex + 1) % aSession.getPlayers().length;
+    void nextPlayer() {
+        if (aSession.clockwise)
+            aSession.playerIndex = (aSession.playerIndex + 1) % aSession.getPlayers().length;
+        else {
+            int nextIndex = aSession.playerIndex - 1;
+            aSession.playerIndex = nextIndex < 0 ? aSession.getPlayers().length - 1 : nextIndex;
+        }
+    }
+
+    /** Set the direction of the next player to be clockwise */
+    public void setClockwise() {
+        aSession.clockwise = true;
+    }
+
+    /** Set the direction of the next player to be counter-clockwise */
+    public void setCounterClockwise() {
+        aSession.clockwise = false;
+    }
+
+    /**
+     * Check if a round was just completed, ie. if every player had a chance to play.
+     */
+    public boolean isRoundCompleted() {
+        return aSession.playerIndex == aSession.firstPlayerIndex;
     }
 }

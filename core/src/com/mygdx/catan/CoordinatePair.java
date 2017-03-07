@@ -50,6 +50,16 @@ public class CoordinatePair extends Pair<Integer, Integer> {
                 (getValue() == null ? 0 : (getValue().hashCode()+30));
     }
 
+    /**
+     * Check if this CoordinatePair is adjacent to another Coordinate pair.
+     *
+     * @param other the other CoordinatePair
+     */
+    public boolean isAdjacentTo(CoordinatePair other) {
+        return (Math.abs(getLeft() - other.getLeft()) + Math.abs(getRight() - other.getRight()) == 2 &&
+                !getRight().equals(other.getRight()));
+    }
+
     public HarbourKind getHarbourKind() {
         return aHarbourKind;
     }

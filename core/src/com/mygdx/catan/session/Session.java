@@ -27,16 +27,23 @@ public class Session {
     public int yellowDie;
     public int VPsToWin; //set
 
+    /** Index of the first player */
+    public int firstPlayerIndex;
+
     /** Index of the current player */
     public int playerIndex;
 
+    /** Flag indicating whether the next player is determined in a clockwise fashion. */
+    public boolean clockwise;
+
     private Player[] players;
-    private ResourceMap Bank;
+    private ResourceMap bank;
 
     //TODO: change this to fit design, so far this is only placeholder!
     public Session() {
-        this.Bank = new ResourceMap();
+        bank = new ResourceMap();
         currentPhase = GamePhase.SETUP_PHASE_ONE;
+        clockwise = true;
     }
 
     public static Session newInstance(Collection<Account> accounts, int VPsToWin) {
@@ -62,19 +69,19 @@ public class Session {
 
     public void add(ResourceMap cost) {
         for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            Bank.put(entry.getKey(), Bank.get(entry.getKey()) + entry.getValue());
+            bank.put(entry.getKey(), bank.get(entry.getKey()) + entry.getValue());
         }
     }
 
     public void remove(ResourceMap cost) {
         for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            Bank.put(entry.getKey(), Bank.get(entry.getKey()) - entry.getValue());
+            bank.put(entry.getKey(), bank.get(entry.getKey()) - entry.getValue());
         }
     }
 
     public ResourceMap adjustcost(ResourceMap cost) {
         for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            int diff = entry.getValue() - Bank.get(entry.getKey());
+            int diff = entry.getValue() - bank.get(entry.getKey());
             cost.put(entry.getKey(), (diff > 0) ? diff : entry.getValue());
         }
         return cost;

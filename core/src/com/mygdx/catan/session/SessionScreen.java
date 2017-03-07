@@ -175,9 +175,11 @@ public class SessionScreen implements Screen {
                                 screenY > boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) - 10 &&
                                 screenY < boardOrigin.getRight() + validIntersection.getRight() * (LENGTH / 2) + 10) {
 
+                            // The building position is valid, can clear the highlighted positions
                             highlightedPositions.clear();
 
                             if (initializing) {
+                                // Building place was picked, can now switch the mode to allow the player to pick a road place
                                 aMode = SessionScreenModes.CHOOSEEDGEMODE;
                                 // show a transparent version of settlement on validIntersection 
                                 if (villagePieceKind == VillageKind.SETTLEMENT) {
@@ -187,7 +189,7 @@ public class SessionScreen implements Screen {
                                 }
                                 // finds all valid adjacent edges
                                 for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
-                                    if (aSessionController.isAdjacent(validIntersection, i) && !i.isOccupied()) {
+                                    if (validIntersection.isAdjacentTo(i) && !i.isOccupied()) {
                                         validEdges.add(new MutablePair<>(i, validIntersection));
                                         // show a transparent version of valid adjacent roads
                                         if (aSessionController.isOnLand(i, validIntersection)) {
@@ -195,7 +197,6 @@ public class SessionScreen implements Screen {
                                         } else {
                                             highlightedPositions.add(gamePieces.createShip(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                                         }
-
                                     }
                                 }
                                 initVillageIntersection = validIntersection;
@@ -223,6 +224,9 @@ public class SessionScreen implements Screen {
                                 screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
                                 screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
 
+                            // TODO too many calls to controller, this whole thing should be somehow in the controller
+
+                            // The edge position is valid, can clear the highlighted positions
                             highlightedPositions.clear();
 
                             if (initializing) {
@@ -235,6 +239,7 @@ public class SessionScreen implements Screen {
                                 if (villagePieceKind == VillageKind.CITY) {
                                     aSessionController.buildVillage(initVillageIntersection, VillageKind.SETTLEMENT, aSessionController.getPlayerColor(), false, initializing);
                                     aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false, initializing);
+                                    // TODO these things should probably be combined
                                     aSessionController.distributeInitialResources(initVillageIntersection);
                                 } else {
                                     aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false, initializing);
@@ -242,7 +247,12 @@ public class SessionScreen implements Screen {
 
                                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false, initializing);
 
-                                initializing = false;
+
+                                // Stop the initialization phase only after the city was placed
+                                if (villagePieceKind == VillageKind.CITY)
+                                    initializing = false;
+
+                                aSessionController.endTurn();
                                 aInitButton.setText("Done");
                             } else {
                                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false, initializing);
@@ -949,7 +959,7 @@ public class SessionScreen implements Screen {
     /**
      * Updates the current player
      */
-    public void updateCurrentPlayer(Player newCurrentPlayer) {
+    void updateCurrentPlayer(Player newCurrentPlayer) {
 
         String currentPlayerName = newCurrentPlayer.getAccount().getUsername();
         currentPlayerLabel.setText("Current Player: " + currentPlayerName);

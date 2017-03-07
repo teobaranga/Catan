@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import static com.mygdx.catan.enums.GamePhase.SETUP_PHASE_ONE;
+import static com.mygdx.catan.enums.GamePhase.SETUP_PHASE_TWO_CLOCKWISE;
+import static com.mygdx.catan.enums.GamePhase.SETUP_PHASE_TWO_COUNTERCLOCKWISE;
 import static com.mygdx.catan.enums.ResourceKind.*;
 import static com.mygdx.catan.enums.VillageKind.CITY;
 
@@ -72,12 +75,14 @@ public class SessionController {
 
                         switch (aSessionManager.getCurrentPhase()) {
                             case SETUP_PHASE_ONE:
-                                aSessionManager.nextPlayer();
                                 if (diceRolled.isLastRoll()) {
-                                    // Update the session
+                                    // Update the session with the one received from the server
                                     aSessionManager.updateSession(diceRolled.getSession());
                                     aSessionScreen.addGameMessage("The player with the highest roll is " + aSessionManager.getCurrentPlayer().getUsername());
-                                    aSessionManager.setCurrentPhase(GamePhase.SETUP_PHASE_TWO_CLOCKWISE);
+                                    // Move on to the next phase
+                                    endPhase(SETUP_PHASE_ONE);
+                                } else {
+                                    endTurn();
                                 }
                                 break;
                             case TURN_FIRST_PHASE:
@@ -87,7 +92,6 @@ public class SessionController {
                             default:
                                 break;
                         }
-                        checkIfMyTurn();
                     });
                 } else if (object instanceof BuildIntersection) {
                     Gdx.app.postRunnable(() -> {
@@ -122,6 +126,8 @@ public class SessionController {
                             case SETUP_PHASE_TWO_CLOCKWISE:
                             case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
                                 buildEdgeUnit(edgeBuilt.getOwner(), firstPos, secondPos, edgeBuilt.getKind(), true, true);
+                                // In the setup phases, placing an edge/building ends the turn
+                                endTurn();
                                 break;
                             case TURN_SECOND_PHASE:
                                 buildEdgeUnit(edgeBuilt.getOwner(), firstPos, secondPos, edgeBuilt.getKind(), true, false);
@@ -139,27 +145,16 @@ public class SessionController {
 
     /** Update the myTurn variable */
     void checkIfMyTurn() {
-        System.out.println(aSessionManager.getCurrentPlayer().getUsername());
         myTurn = aSessionManager.getCurrentPlayer().getAccount().equals(CatanGame.account);
         turn();
     }
 
-    /** Call this when the screen is shown */
-    void onScreenShown() {
-        CatanGame.client.addListener(aSessionListener);
-    }
-
-    /** Call this when the screen is hidden */
-    void onScreenHidden() {
-        CatanGame.client.removeListener(aSessionListener);
-    }
-
     /** Process a turn */
     private void turn() {
+        final Player currentPlayer = aSessionManager.getCurrentPlayer();
+        aSessionScreen.updateCurrentPlayer(currentPlayer);
         if (!myTurn) {
             aSessionScreen.endTurn();
-            final Player currentPlayer = aSessionManager.getCurrentPlayer();
-            aSessionScreen.addGameMessage("Waiting for: " + currentPlayer.getUsername());
             return;
         }
         aSessionScreen.enablePhase(aSessionManager.getCurrentPhase());
@@ -180,6 +175,46 @@ public class SessionController {
             case Completed:
                 break;
         }
+    }
+
+    /**
+     * Ends the turn of the current player (may not be local player)
+     */
+    void endTurn() {
+        aSessionManager.nextPlayer();
+        switch (aSessionManager.getCurrentPhase()) {
+            case SETUP_PHASE_TWO_CLOCKWISE:
+                // End the clockwise phase if everyone placed their settlements
+                if (aSessionManager.isRoundCompleted()) {
+                    endPhase(SETUP_PHASE_TWO_CLOCKWISE);
+                    return;
+                }
+                break;
+        }
+        checkIfMyTurn();
+    }
+
+    /**
+     * End the specified phase
+     */
+    private void endPhase(GamePhase phase) {
+        System.out.println(phase + " ended");
+        switch (phase) {
+            case SETUP_PHASE_ONE:
+                aSessionManager.setCurrentPhase(SETUP_PHASE_TWO_CLOCKWISE);
+                break;
+            case SETUP_PHASE_TWO_CLOCKWISE:
+                aSessionManager.setCurrentPhase(SETUP_PHASE_TWO_COUNTERCLOCKWISE);
+                aSessionManager.setCounterClockwise();
+                // Come back to the same player
+                aSessionManager.nextPlayer();
+                break;
+            case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
+                aSessionManager.setClockwise();
+                aSessionManager.nextPlayer();
+                break;
+        }
+        checkIfMyTurn();
     }
 
     public PlayerColor getPlayerColor() {
@@ -541,9 +576,8 @@ public class SessionController {
         return false;
     }
 
-    public List<ResourceMap> distributeInitialResources(CoordinatePair cityPos) {
+    void distributeInitialResources(CoordinatePair cityPos) {
         List<Hex> neighbouringHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
-        List<ResourceMap> playerResources = new ArrayList<>();
         Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
         ResourceMap playerResourceMap = new ResourceMap();
 
@@ -589,10 +623,7 @@ public class SessionController {
         playerResourceMap.put(GRAIN, fieldCounter);
 
         clientPlayer.addResources(playerResourceMap);
-        playerResources.add(playerResourceMap);
         aSessionScreen.updateResourceBar(clientPlayer.getResourceMap());
-
-        return playerResources;
     }
 
     /*
@@ -784,5 +815,15 @@ public class SessionController {
 
     public Player getCurrentPlayerFromColor(PlayerColor aPlayerColor) {
         return aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
+    }
+
+    /** Call this when the screen is shown */
+    void onScreenShown() {
+        CatanGame.client.addListener(aSessionListener);
+    }
+
+    /** Call this when the screen is hidden */
+    void onScreenHidden() {
+        CatanGame.client.removeListener(aSessionListener);
     }
 }

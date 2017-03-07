@@ -268,7 +268,7 @@ public class CatanServer {
                     // All players are done rolling the dice
                     // Set the session's current player to the one with the highest dice roll
                     final int index = sessionManager.getHighestDiceRollPlayerIndex();
-                    sessionManager.setCurrentPlayerIndex(index);
+                    sessionManager.setFirstPlayer(index);
                     return DiceRolled.newInstance(username, dice, sessionManager.getSession());
                 } else {
                     return DiceRolled.newInstance(username, dice);

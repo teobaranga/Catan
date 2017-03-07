@@ -75,7 +75,10 @@ public class MenuScreen implements Screen {
                 window.setWidth(3f / 4f * Gdx.graphics.getWidth());
                 window.setHeight(3f / 4f * Gdx.graphics.getHeight());
                 window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
-                window.setWindowCloseListener(window::remove);
+                window.setWindowCloseListener(() -> {
+                    window.remove();
+                    aGame.clickSound.play(0.2F);
+                });
 
                 // Display the window
                 aMenuStage.addActor(window);
@@ -197,6 +200,7 @@ public class MenuScreen implements Screen {
                                         @Override
                                         public void clicked(InputEvent event, float x, float y) {
                                             // TODO handle creation of new game
+                                            aGame.clickSound.play(0.2F);
                                             final CreateGame createGame = new CreateGame();
                                             createGame.account = CatanGame.account;
                                             CatanGame.client.sendTCP(createGame);
@@ -206,6 +210,7 @@ public class MenuScreen implements Screen {
                                     no.addListener(new ClickListener() {
                                         @Override
                                         public void clicked(InputEvent event, float x, float y) {
+                                            aGame.clickSound.play(0.2F);
                                             window.close();
                                         }
                                     });
@@ -228,7 +233,10 @@ public class MenuScreen implements Screen {
 
                 CatanGame.client.addListener(listener);
 
-                window.setWindowCloseListener(() -> CatanGame.client.removeListener(listener));
+                window.setWindowCloseListener(() -> {
+                    aGame.clickSound.play(0.2F);
+                    CatanGame.client.removeListener(listener);
+                });
 
                 // Request to join a random game
                 CatanGame.client.sendTCP(JoinRandomGame.newInstance(CatanGame.account));

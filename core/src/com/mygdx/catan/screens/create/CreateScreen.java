@@ -94,7 +94,10 @@ public class CreateScreen implements Screen {
 
         // Create & add the window
         CatanWindow window = new CatanWindow(TITLE, game.skin);
-        window.setWindowCloseListener(() -> game.setScreen(parentScreen));
+        window.setWindowCloseListener(() -> {
+            game.clickSound.play(0.2F);
+            game.setScreen(parentScreen);
+        });
         window.debugAll();
 
         Table contentTable = new Table(game.skin);

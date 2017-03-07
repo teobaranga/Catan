@@ -81,7 +81,10 @@ public class LoginScreen implements Screen {
         window.setWidth(2f / 4f * Gdx.graphics.getWidth());
         window.setHeight(2f / 4f * Gdx.graphics.getHeight());
         window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
-        window.setWindowCloseListener(window::remove);
+        window.setWindowCloseListener(() -> {
+            aGame.clickSound.play(0.2F);
+            window.remove();
+        });
         aLoginStage.addActor(window);
 
         // Create the table holding the login elements
@@ -102,6 +105,7 @@ public class LoginScreen implements Screen {
         aLoginButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                aGame.clickSound.play(0.2F);
                 aLoginButton.setChecked(false);
                 // Clear the error message if there is one
                 errorMessageLabel.setText(null);

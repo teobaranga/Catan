@@ -16,27 +16,33 @@ public class Player {
     private Account account;
 
     private PlayerColor color;
-    private ArrayList<EdgeUnit> roadsAndShips = new ArrayList<>();
-    private ArrayList<Village> villages = new ArrayList<>();
+    private List<EdgeUnit> roadsAndShips;
+    private List<Village> villages;
     private int defenderOfCatanPoints;
 
     private int tokenVictoryPoints;
-    private ResourceMap resourceMap = new ResourceMap();
+    private ResourceMap resourceMap;
 
     private int availableSettlements;
     private int availableCities;
     private int availableRoads;
     private int availableShips;
 
+    public Player() {
+        roadsAndShips = new ArrayList<>();
+        villages = new ArrayList<>();
+        resourceMap = new ResourceMap();
+        // Set the default number of available pieces
+        availableSettlements = 5;
+        availableCities = 4;
+        availableRoads = 15;
+        availableShips = 15;
+    }
+
     public static Player newInstance(Account account, PlayerColor color) {
         final Player player = new Player();
         player.account = account;
         player.color = color;
-        player.availableSettlements = 5;
-        player.availableCities = 4;
-        player.availableRoads = 15;
-        player.availableShips = 15;
-
         return player;
     }
 
@@ -180,11 +186,11 @@ public class Player {
         throw new RuntimeException("chooseResource not yet implemented");
     }
 
-    public ArrayList<EdgeUnit> getRoadsAndShips() {
+    public List<EdgeUnit> getRoadsAndShips() {
         return roadsAndShips;
     }
 
-    public ArrayList<Village> getVillages() { return villages; }
+    public List<Village> getVillages() { return villages; }
 
     /**
      * adds given EdgeUnit to roadsAndShips. Its position and and type is assumed to be legal.

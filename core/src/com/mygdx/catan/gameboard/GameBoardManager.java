@@ -168,8 +168,8 @@ public class GameBoardManager {
         return adjacentIntersections;
     }
 
-    public ArrayList<Village> getAdjacentVillages(Hex hex) {
-        ArrayList<Village> adjacentVillages = new ArrayList<>();
+    public List<Village> getAdjacentVillages(Hex hex) {
+        List<Village> adjacentVillages = new ArrayList<>();
         for (CoordinatePair pair : getAdjacentIntersections(hex)) {
             if (pair.isOccupied()) {
                 adjacentVillages.add(pair.getOccupyingVillage());
@@ -182,8 +182,8 @@ public class GameBoardManager {
      * @param diceNumber of dice roll
      * @return a list of hexes whose dice number equals diceNumber
      */
-    public ArrayList<Hex> getProducingHexes(int diceNumber) {
-        ArrayList<Hex> producingHexes = new ArrayList<>();
+    public List<Hex> getProducingHexes(int diceNumber) {
+        List<Hex> producingHexes = new ArrayList<>();
         for (Hex hex : aGameBoard.getHexes()) {
             if (hex.getDiceNumber() == diceNumber) {
                 producingHexes.add(hex);

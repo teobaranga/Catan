@@ -16,13 +16,15 @@ import com.mygdx.catan.request.BuildEdge;
 import com.mygdx.catan.request.BuildIntersection;
 import com.mygdx.catan.request.RollTwoDice;
 import com.mygdx.catan.response.DiceRolled;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import static com.mygdx.catan.enums.ResourceKind.*;
+import static com.mygdx.catan.enums.VillageKind.CITY;
 
 public class SessionController {
     private final GameBoardManager aGameBoardManager;
@@ -32,7 +34,11 @@ public class SessionController {
     private final CatanRandom random;
     private final TransactionManager aTransactionManager;
 
+    /** The local player's color */
     private PlayerColor aPlayerColor;
+
+    /** The local player */
+    private Player localPlayer;
 
     /** Flag indicating whether it's the turn of the player logged in */
     private boolean myTurn;
@@ -48,6 +54,7 @@ public class SessionController {
         // sets the color as the accounts associated Player object color
         for (Player p : aSessionManager.getPlayers()) {
             if (p.getAccount().equals(CatanGame.account)) {
+                localPlayer = p;
                 aPlayerColor = p.getColor();
                 break;
             }
@@ -64,66 +71,66 @@ public class SessionController {
                         aSessionScreen.showDice(diceRolled.getDiceRoll().getLeft(), diceRolled.getDiceRoll().getRight());
 
                         switch (aSessionManager.getCurrentPhase()) {
-						case SETUP_PHASE_ONE:
-                            aSessionManager.nextPlayer();
-							if (diceRolled.isLastRoll()) {
-	                            // Update the session
-	                            aSessionManager.updateSession(diceRolled.getSession());
-	                            aSessionScreen.addGameMessage("The player with the highest roll is " + aSessionManager.getCurrentPlayer().getUsername());
-                                aSessionManager.setCurrentPhase(GamePhase.SETUP_PHASE_TWO_CLOCKWISE);
-	                        }
-							break;
-						case TURN_FIRST_PHASE:
-							resourceProduction(diceRolled.getDiceRoll().getLeft() + diceRolled.getDiceRoll().getRight());
-							// TODO Move to the TURN_SECOND_PHASE of the game
-							break;
-						default:
-							break;
+                            case SETUP_PHASE_ONE:
+                                aSessionManager.nextPlayer();
+                                if (diceRolled.isLastRoll()) {
+                                    // Update the session
+                                    aSessionManager.updateSession(diceRolled.getSession());
+                                    aSessionScreen.addGameMessage("The player with the highest roll is " + aSessionManager.getCurrentPlayer().getUsername());
+                                    aSessionManager.setCurrentPhase(GamePhase.SETUP_PHASE_TWO_CLOCKWISE);
+                                }
+                                break;
+                            case TURN_FIRST_PHASE:
+                                resourceProduction(diceRolled.getDiceRoll().getLeft() + diceRolled.getDiceRoll().getRight());
+                                // TODO Move to the TURN_SECOND_PHASE of the game
+                                break;
+                            default:
+                                break;
                         }
                         checkIfMyTurn();
                     });
                 } else if (object instanceof BuildIntersection) {
-                	Gdx.app.postRunnable(() -> {
-                		final BuildIntersection intersectionBuilt = (BuildIntersection) object;
-                		aSessionScreen.addGameMessage(intersectionBuilt.username + " built a "+intersectionBuilt.getKind().toString().toLowerCase());
-                		Pair<Integer,Integer> positionCoordinates = intersectionBuilt.getPosition();
-                		CoordinatePair position = aGameBoardManager.getCoordinatePairFromCoordinates(positionCoordinates.getLeft(), positionCoordinates.getRight());
+                    Gdx.app.postRunnable(() -> {
+                        final BuildIntersection intersectionBuilt = (BuildIntersection) object;
+                        aSessionScreen.addGameMessage(intersectionBuilt.username + " built a " + intersectionBuilt.getKind().toString().toLowerCase());
+                        Pair<Integer, Integer> positionCoordinates = intersectionBuilt.getPosition();
+                        CoordinatePair position = aGameBoardManager.getCoordinatePairFromCoordinates(positionCoordinates.getLeft(), positionCoordinates.getRight());
 
-                		switch (aSessionManager.getCurrentPhase()) {
-						case SETUP_PHASE_TWO_CLOCKWISE:
-						case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
-							buildVillage(position, intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, true);
-							break;
-						case TURN_SECOND_PHASE:
-							buildVillage(position, intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, false);
-							break;
-						default:
-							break;
-                		}
-                	});
+                        switch (aSessionManager.getCurrentPhase()) {
+                            case SETUP_PHASE_TWO_CLOCKWISE:
+                            case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
+                                buildVillage(position, intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, true);
+                                break;
+                            case TURN_SECOND_PHASE:
+                                buildVillage(position, intersectionBuilt.getKind(), intersectionBuilt.getOwner(), true, false);
+                                break;
+                            default:
+                                break;
+                        }
+                    });
                 } else if (object instanceof BuildEdge) {
-                	Gdx.app.postRunnable(() -> {
-                		final BuildEdge edgeBuilt = (BuildEdge) object;
-                		aSessionScreen.addGameMessage(edgeBuilt.username + " built a "+edgeBuilt.getKind().toString().toLowerCase());
-                		Pair<Integer,Integer> firstCor = edgeBuilt.getLeftPosition();
-                		Pair<Integer,Integer> secondCor = edgeBuilt.getRightPosition();
-                		
-                		CoordinatePair firstPos = aGameBoardManager.getCoordinatePairFromCoordinates(firstCor.getLeft(), firstCor.getRight());
-                		CoordinatePair secondPos = aGameBoardManager.getCoordinatePairFromCoordinates(secondCor.getLeft(), secondCor.getRight());
-                		
-                		switch(aSessionManager.getCurrentPhase()) {
-						case SETUP_PHASE_TWO_CLOCKWISE:
-						case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
-							buildEdgeUnit(edgeBuilt.getOwner(), firstPos, secondPos, edgeBuilt.getKind(), true, true);
-							break;
-						case TURN_SECOND_PHASE:
-							buildEdgeUnit(edgeBuilt.getOwner(), firstPos, secondPos, edgeBuilt.getKind(), true, false);
-							break;
-						default:
-							break;
-                		
-                		}
-                	});
+                    Gdx.app.postRunnable(() -> {
+                        final BuildEdge edgeBuilt = (BuildEdge) object;
+                        aSessionScreen.addGameMessage(edgeBuilt.username + " built a " + edgeBuilt.getKind().toString().toLowerCase());
+                        Pair<Integer, Integer> firstCor = edgeBuilt.getLeftPosition();
+                        Pair<Integer, Integer> secondCor = edgeBuilt.getRightPosition();
+
+                        CoordinatePair firstPos = aGameBoardManager.getCoordinatePairFromCoordinates(firstCor.getLeft(), firstCor.getRight());
+                        CoordinatePair secondPos = aGameBoardManager.getCoordinatePairFromCoordinates(secondCor.getLeft(), secondCor.getRight());
+
+                        switch (aSessionManager.getCurrentPhase()) {
+                            case SETUP_PHASE_TWO_CLOCKWISE:
+                            case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
+                                buildEdgeUnit(edgeBuilt.getOwner(), firstPos, secondPos, edgeBuilt.getKind(), true, true);
+                                break;
+                            case TURN_SECOND_PHASE:
+                                buildEdgeUnit(edgeBuilt.getOwner(), firstPos, secondPos, edgeBuilt.getKind(), true, false);
+                                break;
+                            default:
+                                break;
+
+                        }
+                    });
                 }
                 // TODO update the myTurn variable here
             }
@@ -188,14 +195,6 @@ public class SessionController {
         return aSessionManager.getCurrentPlayer();
     }
 
-    public int getYellowDice() {
-        return aSessionManager.getYellowDie();
-    }
-
-    public int getRedDice() {
-        return aSessionManager.getRedDie();
-    }
-
     public ArrayList<Hex> getHexes() {
         return aGameBoardManager.getHexes();
     }
@@ -242,7 +241,6 @@ public class SessionController {
         return aGameBoardManager.isOnLand(firstIntersection, secondIntersection);
     }
 
-
     /**
      * @param owner of request
      * @param kind  of village requested to be built
@@ -263,7 +261,7 @@ public class SessionController {
             }
         }
 
-        if (kind == VillageKind.CITY) {
+        if (kind == CITY) {
             ResourceMap cost = GameRules.getGameRulesInstance().getCityCost();
             boolean hasAvailCities = currentP.getAvailableCities() > 0;
             if (currentP.hasEnoughResources(cost) && hasAvailCities) {
@@ -311,7 +309,7 @@ public class SessionController {
      */
     public ArrayList<CoordinatePair> requestValidBuildIntersections(PlayerColor owner) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
-        ArrayList<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
+        List<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
 
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
         for (CoordinatePair i : aGameBoardManager.getIntersectionsAndEdges()) {
@@ -361,7 +359,7 @@ public class SessionController {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         ArrayList<CoordinatePair> validUpgradeIntersections = new ArrayList<>();
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
-        ArrayList<Village> listOfVillages = currentP.getVillages();
+        List<Village> listOfVillages = currentP.getVillages();
         for (Village v : listOfVillages) {
             validUpgradeIntersections.add(v.getPosition());
         }
@@ -433,7 +431,7 @@ public class SessionController {
      * @param kind     of village to build
      * @param owner    of new settlement
      * @param fromPeer indicates whether the method was called from the owner of new settlement, or from a peer
-     * @param init 			 indicated whether the method was called during initialization. If it was, player resource are not updated
+     * @param init     indicated whether the method was called during initialization. If it was, player resource are not updated
      * @return true if building the village was successful, false otherwise
      */
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer, boolean init) {
@@ -447,17 +445,17 @@ public class SessionController {
             } else {
                 aSessionScreen.updateIntersection(position, owner, kind);
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
-             // if piece was build during regular turn, appropriate resources are removed from the player
+                // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
-                	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
+                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
                     aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
-                
+
                 // notify peers about board game change
-                BuildIntersection request = BuildIntersection.newInstance(new ImmutablePair<Integer,Integer>(position.getLeft(),position.getRight()), kind, owner,CatanGame.account.getUsername());
+                BuildIntersection request = BuildIntersection.newInstance(new ImmutablePair<>(position.getLeft(), position.getRight()), kind, owner, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
             }
-        } else if (kind == VillageKind.CITY) {
+        } else if (kind == CITY) {
             aGameBoardManager.upgradeSettlement(currentP, position);
 
             if (fromPeer) {
@@ -465,14 +463,14 @@ public class SessionController {
             } else {
                 aSessionScreen.updateIntersection(position, owner, kind);
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
-             // if piece was build during regular turn, appropriate resources are removed from the player
+                // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
-                	 aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
-                     aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
+                    aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
-                
+
                 // notify peers about board game change
-                BuildIntersection request = BuildIntersection.newInstance(new ImmutablePair<Integer,Integer>(position.getLeft(),position.getRight()), kind, owner,CatanGame.account.getUsername());
+                BuildIntersection request = BuildIntersection.newInstance(new ImmutablePair<>(position.getLeft(), position.getRight()), kind, owner, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
             }
         }
@@ -492,7 +490,7 @@ public class SessionController {
      * @param secondPosition second end point of road or ship
      * @param kind           edge unit kind: ROAD or SHIP
      * @param fromPeer       indicates whether the method was called from the owner of new settlement, or from a peer
-     * @param init 			 indicated whether the method was called during initialization. If it was, player resource are not updated
+     * @param init           indicated whether the method was called during initialization. If it was, player resource are not updated
      * @return true if building the unit was successful, false otherwise
      */
     public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair secondPosition, EdgeUnitKind kind, boolean fromPeer, boolean init) {
@@ -505,12 +503,12 @@ public class SessionController {
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
-                	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
-                	aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
+                    aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
-            
+
                 // notify peers about board game change
-                BuildEdge request = BuildEdge.newInstance(new ImmutablePair<Integer,Integer>(firstPosition.getLeft(),firstPosition.getRight()), new ImmutablePair<Integer,Integer>(secondPosition.getLeft(),secondPosition.getRight()), kind, owner,CatanGame.account.getUsername());
+                BuildEdge request = BuildEdge.newInstance(new ImmutablePair<>(firstPosition.getLeft(), firstPosition.getRight()), new ImmutablePair<>(secondPosition.getLeft(), secondPosition.getRight()), kind, owner, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
             }
         }
@@ -520,12 +518,12 @@ public class SessionController {
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
-                	aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
+                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
                     aSessionScreen.updateResourceBar(currentP.getResourceMap());
                 }
-            
+
                 // notify peers about board game change
-                BuildEdge request = BuildEdge.newInstance(new ImmutablePair<Integer,Integer>(firstPosition.getLeft(),firstPosition.getRight()), new ImmutablePair<Integer,Integer>(secondPosition.getLeft(),secondPosition.getRight()), kind, owner,CatanGame.account.getUsername());
+                BuildEdge request = BuildEdge.newInstance(new ImmutablePair<>(firstPosition.getLeft(), firstPosition.getRight()), new ImmutablePair<>(secondPosition.getLeft(), secondPosition.getRight()), kind, owner, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
             }
         }
@@ -584,11 +582,11 @@ public class SessionController {
             }
         }
 
-        playerResourceMap.put(ResourceKind.WOOL, pastureCounter);
-        playerResourceMap.put(ResourceKind.WOOD, forestCounter);
-        playerResourceMap.put(ResourceKind.ORE, mountainCounter);
-        playerResourceMap.put(ResourceKind.BRICK, hillCounter);
-        playerResourceMap.put(ResourceKind.GRAIN, fieldCounter);
+        playerResourceMap.put(WOOL, pastureCounter);
+        playerResourceMap.put(WOOD, forestCounter);
+        playerResourceMap.put(ORE, mountainCounter);
+        playerResourceMap.put(BRICK, hillCounter);
+        playerResourceMap.put(GRAIN, fieldCounter);
 
         clientPlayer.addResources(playerResourceMap);
         playerResources.add(playerResourceMap);
@@ -678,80 +676,59 @@ public class SessionController {
         return random.rollTwoDice();
     }
 
-    public List<ResourceMap> resourceProduction(int diceRoll) {
-        List<Hex> hexes = aGameBoardManager.getProducingHexes(diceRoll);
-        List<ResourceMap> playerResources = new ArrayList<>();
-        List<Hex> producingHexes = new ArrayList<>();
+    /**
+     * Determine the resources generated for the current player from the dice roll.
+     *
+     * @param diceRoll sum of the red and yellow dice
+     */
+    private void resourceProduction(int diceRoll) {
+        // Get the hexes having a dice number equal to the dice roll
+        List<Hex> producingHexes = aGameBoardManager.getProducingHexes(diceRoll);
 
-        int pastureCounter = 0;
-        int forestCounter = 0;
-        int mountainCounter = 0;
-        int hillCounter = 0;
-        int fieldCounter = 0;
-        int paperCounter = 0;
-        int clothCounter = 0;
-        int coinCounter = 0;
+        // Create the map containing the resources and commodities that the player
+        // will receive as a result of this dice roll
+        ResourceMap resAndComMap = new ResourceMap();
 
-        Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
-        for (Hex h : hexes) {
-            int hexNumber = h.getDiceNumber();
-            Hex robberPosition = getRobberPosition();
-            if (hexNumber == diceRoll && h != robberPosition) {
-                producingHexes.add(h);
-            }
-        }
-
-        ResourceMap ResAndComMap = new ResourceMap();
-
+        // For each producing hex...
         for (Hex ph : producingHexes) {
-            TerrainKind tKind = ph.getKind();
-            ArrayList<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(ph);
-            ArrayList<CoordinatePair> adjacentIntersections = aGameBoardManager
-                    .getAdjacentIntersections(ph);
+            // Get the building surrounding it
+            List<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(ph);
 
-            for (CoordinatePair cp : adjacentIntersections) {
-                boolean isOccupied = cp.isOccupied();
-                if (isOccupied && cp.getOccupyingVillage().getOwner().equals(clientPlayer)) { //with right color
-                    Village v = cp.getOccupyingVillage();
-                    adjacentVillages.add(v);
-                }
-            }
+            // For each building...
             for (Village v : adjacentVillages) {
+                // Skip the building if it doesn't belong to the local player
+                if (!v.getOwner().equals(localPlayer))
+                    continue;
+
                 VillageKind vKind = v.getVillageKind();
 
-                switch (tKind) {
+                switch (ph.getKind()) {
                     case PASTURE:
-                        pastureCounter++;
-                        if (vKind == VillageKind.CITY)
-                            clothCounter++;
+                        resAndComMap.add(WOOL, 1);
+                        if (vKind == CITY)
+                            resAndComMap.add(CLOTH, 1);
                         break;
                     case FOREST:
-                        forestCounter++;
-                        if (vKind == VillageKind.CITY)
-                            paperCounter++;
+                        resAndComMap.add(WOOD, 1);
+                        if (vKind == CITY)
+                            resAndComMap.add(PAPER, 1);
                         break;
                     case MOUNTAINS:
-                        mountainCounter++;
-                        if (vKind == VillageKind.CITY)
-                            coinCounter++;
+                        resAndComMap.add(ORE, 1);
+                        if (vKind == CITY)
+                            resAndComMap.add(COIN, 1);
                         break;
                     case HILLS:
-                        if (vKind == VillageKind.SETTLEMENT)
-                            hillCounter++;
-                        else
-                            hillCounter += 2;
+                        resAndComMap.add(BRICK, 1);
+                        if (vKind == CITY)
+                            resAndComMap.add(BRICK, 1);
                         break;
                     case FIELDS:
-                        if (vKind == VillageKind.SETTLEMENT)
-                            fieldCounter++;
-                        else
-                            fieldCounter += 2;
-                        break;
-                    case DESERT:
+                        resAndComMap.add(GRAIN, 1);
+                        if (vKind == CITY)
+                            resAndComMap.add(GRAIN, 1);
                         break;
                     case GOLDFIELD:
-                        break;
-                    case SEA:
                         break;
                     default:
                         break;
@@ -759,23 +736,11 @@ public class SessionController {
             }
         }
 
-        ResAndComMap.put(ResourceKind.WOOL, pastureCounter);
-        ResAndComMap.put(ResourceKind.CLOTH, clothCounter);
-        ResAndComMap.put(ResourceKind.WOOD, forestCounter);
-        ResAndComMap.put(ResourceKind.PAPER, paperCounter);
-        ResAndComMap.put(ResourceKind.ORE, mountainCounter);
-        ResAndComMap.put(ResourceKind.COIN, coinCounter);
-        ResAndComMap.put(ResourceKind.BRICK, hillCounter);
-        ResAndComMap.put(ResourceKind.GRAIN, fieldCounter);
+        localPlayer.addResources(resAndComMap);
 
-        clientPlayer.addResources(ResAndComMap);
-        playerResources.add(ResAndComMap);
+        aSessionScreen.updateResourceBar(localPlayer.getResourceMap());
 
-        aSessionScreen.updateResourceBar(clientPlayer.getResourceMap());
-
-       //TODO set phase of session to TURN_SECOND_PHASE
-
-        return playerResources;
+        //TODO set phase of session to TURN_SECOND_PHASE
     }
 
 
@@ -797,8 +762,7 @@ public class SessionController {
     void rollDice() {
         switch (aSessionManager.getCurrentPhase()) {
             case TURN_FIRST_PHASE:
-            	// We're at the phase where we the player rolls the dice and everyone gets appropriate resources
-                
+                // We're at the phase where we the player rolls the dice and everyone gets appropriate resources
             case SETUP_PHASE_ONE:
                 // We're at the phase where we have to determine who rolled the highest number
                 // Roll the dice

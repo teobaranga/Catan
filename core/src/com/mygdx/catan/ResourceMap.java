@@ -13,7 +13,18 @@ public class ResourceMap extends EnumMap<ResourceKind, Integer> {
         super(ResourceKind.class);
         // To avoid null pointer exceptions 
         for (ResourceKind kind : ResourceKind.values()) {
-            this.put(kind, 0);
+            put(kind, 0);
         }
+    }
+
+    /**
+     * Add a number of resources to the specified resource kind. Can be negative
+     * in order to remove resources.
+     *
+     * @param resourceKind the resource type to which the number is added
+     * @param count        the number of resources to be added to the current
+     */
+    public void add(ResourceKind resourceKind, int count) {
+        put(resourceKind, get(resourceKind) + count);
     }
 }

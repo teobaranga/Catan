@@ -482,13 +482,13 @@ public class SessionScreen implements Screen {
         buildButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                buildButton.setChecked(false);
+                //buildButton.setChecked(false);
                 // TODO: ask SessionController if there are enough resources
                 if (!aSessionController.requestBuildVillage(aSessionController.getPlayerColor(), kind)) {
                     addGameMessage("Not enough resources for building the " + kind.name().toLowerCase());
                     return;
                 }
-                if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
+                if (aMode != SessionScreenModes.CHOOSEINTERSECTIONMODE) {
                     if (kind == VillageKind.SETTLEMENT) {
                         for (CoordinatePair intersections : aSessionController.requestValidBuildIntersections(aSessionController.getPlayerColor())) {
                             validIntersections.add(intersections);
@@ -519,13 +519,12 @@ public class SessionScreen implements Screen {
         buildButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                buildButton.setChecked(false);
                 // TODO: ask SessionController if there are enough resources
                 if(!aSessionController.requestBuildEdgeUnit(aSessionController.getPlayerColor(), kind)) {
-                    addGameMessage("Not enough resources for building the " + kind.name());
+                    addGameMessage("Not enough resources for building a " + kind.name().toLowerCase());
                     return;
                 }
-                if (aMode == SessionScreenModes.CHOOSEACTIONMODE) {
+                if (aMode != SessionScreenModes.CHOOSEEDGEMODE) {
                     // the following loop go through requested valid build positions
                     if (kind == EdgeUnitKind.ROAD) {
                         for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {

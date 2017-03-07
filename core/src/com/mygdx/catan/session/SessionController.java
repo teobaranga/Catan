@@ -351,8 +351,9 @@ public class SessionController {
         boolean hasAvailableShips = currentP.getAvailableShips() > 0;
         boolean hasAvailableRoads = currentP.getAvailableRoads() > 0;
         boolean canBuild = false;
+        ResourceMap cost = null;
         if (kind == EdgeUnitKind.SHIP) {
-            ResourceMap cost = GameRules.getGameRulesInstance().getShipCost();
+             cost = GameRules.getGameRulesInstance().getShipCost();
             if (currentP.hasEnoughResources(cost) && hasAvailableShips) {
                 canBuild = true;
             } else {
@@ -360,7 +361,7 @@ public class SessionController {
             }
         }
         if (kind == EdgeUnitKind.ROAD) {
-            ResourceMap cost = GameRules.getGameRulesInstance().getRoadCost();
+             cost = GameRules.getGameRulesInstance().getRoadCost();
             if (currentP.hasEnoughResources(cost) && hasAvailableRoads) {
                 canBuild = true;
             } else {

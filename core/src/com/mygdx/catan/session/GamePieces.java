@@ -43,6 +43,8 @@ class GamePieces {
 
     private final PolygonRegion sea, desert, hills, forest, mountains, pasture, fields, gold;
 
+    private final PolygonRegion robber;
+
     private Texture aSeaTextureSolid;
     private Texture aHillsTextureSolid;
     private Texture aForestTextureSolid;
@@ -74,6 +76,7 @@ class GamePieces {
         aYellowTextureSolid = setupTextureSolid(Color.YELLOW);
 
         PolygonRegionLoader polygonRegionLoader = new PolygonRegionLoader();
+
         sea = polygonRegionLoader.load(CatanGame.skin.getRegion("sea"), Gdx.files.internal("hex.psh"));
         desert = polygonRegionLoader.load(CatanGame.skin.getRegion("desert"), Gdx.files.internal("hex.psh"));
         hills = polygonRegionLoader.load(CatanGame.skin.getRegion("hills"), Gdx.files.internal("hex.psh"));
@@ -82,6 +85,8 @@ class GamePieces {
         pasture = polygonRegionLoader.load(CatanGame.skin.getRegion("pasture"), Gdx.files.internal("hex.psh"));
         fields = polygonRegionLoader.load(CatanGame.skin.getRegion("fields"), Gdx.files.internal("hex.psh"));
         gold = polygonRegionLoader.load(CatanGame.skin.getRegion("gold"), Gdx.files.internal("hex.psh"));
+
+        robber = polygonRegionLoader.load(CatanGame.skin.getRegion("robber"), Gdx.files.internal("robber.psh"));
     }
 
     /**
@@ -129,6 +134,12 @@ class GamePieces {
         polygonSprite.setPosition(xOrigin + xPos - region.getRegion().getRegionWidth() / 2f,
                 yOrigin + yPos - region.getRegion().getRegionHeight() / 2f);
         polygonSprite.setScale(80f / region.getRegion().getRegionHeight());
+        return polygonSprite;
+    }
+
+    PolygonSprite createRobber() {
+        final PolygonSprite polygonSprite = new PolygonSprite(robber);
+        polygonSprite.setScale(0.4f);
         return polygonSprite;
     }
 

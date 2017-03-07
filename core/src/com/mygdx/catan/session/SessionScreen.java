@@ -6,12 +6,9 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -24,7 +21,6 @@ import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.ui.TradeWindow;
-
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -59,61 +55,39 @@ public class SessionScreen implements Screen {
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
     private final int PIECEBASE = (int) (LENGTH * 0.4);
 
-    /**
-     * The batch onto which the game piece will be drawn
-     */
+    /** The batch onto which the game piece will be drawn */
     private PolygonSpriteBatch polyBatch; // To assign at the beginning
     private PolygonSpriteBatch highlightBatch; // will have blending enabled
-
-    private Texture aRobberTextureSolid;
 
     private SessionController aSessionController;
 
     private Stage aSessionStage;
 
-    /**
-     * The list of polygons representing the board hexes
-     */
+    /** The list of polygons representing the board hexes */
     private List<PolygonSprite> boardHexes;
 
-    /**
-     * The list of polygons representing the board harbours
-     */
+    /** The list of polygons representing the board harbours */
     private List<PolygonRegion> boardHarbours;
 
-    /**
-     * The List of villages currently on the board
-     */
+    /** The List of villages currently on the board */
     private List<PolygonRegion> villages;
 
-    /**
-     * The List of EdgeUnits currently on the board
-     */
+    /** The List of EdgeUnits currently on the board */
     private List<PolygonRegion> edgeUnits;
 
-    /**
-     * The List of valid building regions on the board
-     */
+    /** The List of valid building regions on the board */
     private List<PolygonRegion> highlightedPositions;
 
-    /**
-     * The Robber
-     */
-    private PolygonRegion robber;
+    /** The Robber */
+    private PolygonSprite robberSprite;
 
-    /**
-     * The origin of the the hex board
-     */
+    /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
 
-    /**
-     * The map of resource tables
-     */
+    /** The map of resource tables */
     private EnumMap<ResourceKind, Label> resourceLabelMap;
 
-    /**
-     * determines the current mode of the session screen
-     */
+    /** Determines the current mode of the session screen */
     private SessionScreenModes aMode;
     private boolean initializing;
 
@@ -184,6 +158,7 @@ public class SessionScreen implements Screen {
         polyBatch = new PolygonSpriteBatch();
         highlightBatch = new PolygonSpriteBatch();
         gamePieces = new GamePieces();
+        robberSprite = gamePieces.createRobber();
         initializing = false;
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -356,7 +331,6 @@ public class SessionScreen implements Screen {
 
         updateAvailableGamePieces(5, 4, 15, 15);
 
-
         // creates the menu buttons
         buildSettlementButton = new TextButton("Build Settlement", CatanGame.skin);
         setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT);
@@ -418,9 +392,6 @@ public class SessionScreen implements Screen {
         });
         menuTable.add(maritimeTradeButton);
 
-        //Creating the color filling for the robber piece
-        aRobberTextureSolid = setupTextureSolid(Color.valueOf("666666"));
-
         // sets center of board
         int offsetX, offsetY;
 
@@ -443,7 +414,7 @@ public class SessionScreen implements Screen {
         // places robber at initial robber position
         Hex robberPos = aSessionController.getRobberPosition();
         if (robberPos != null) {
-            updateRobberPosition(robberPos);
+            placeRobber(robberPos.getLeftCoordinate(), robberPos.getRightCoordinate());
         }
 
         // Create the Game Log table
@@ -538,7 +509,7 @@ public class SessionScreen implements Screen {
                             for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
                                 if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i, j)) {
 
-                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
+                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
                                     validEdges.add(edge);
 
                                     for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
@@ -554,7 +525,7 @@ public class SessionScreen implements Screen {
                             for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
                                 if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
 
-                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<CoordinatePair, CoordinatePair>(i, j);
+                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
                                     validEdges.add(edge);
 
                                     for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
@@ -591,13 +562,6 @@ public class SessionScreen implements Screen {
                 }
             }
         });
-    }
-
-    private Texture setupTextureSolid(Color color) {
-        Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pix.setColor(color); // DE is red, AD is green and BE is blue.
-        pix.fill();
-        return new Texture(pix);
     }
 
     private Table createResourceTable(ResourceKind type) {
@@ -645,7 +609,8 @@ public class SessionScreen implements Screen {
                 CatanGame.skin.getFont("default").draw(polyBatch, prob.toString(), xPos, yPos);
             }
         }
-        polyBatch.draw(robber, boardOrigin.getLeft(), boardOrigin.getRight());
+        robberSprite.draw(polyBatch);
+
         polyBatch.end();
 
         // display highlighted positions
@@ -704,17 +669,8 @@ public class SessionScreen implements Screen {
         float xPos = xCor * OFFX;
         float yPos = -yCor * OFFY;
 
-        PolygonRegion polyReg = new PolygonRegion(new TextureRegion(aRobberTextureSolid),
-                new float[]{
-                        (float) (xPos - BASE * 0.6), (float) (yPos - BASE * 0.5),     // Vertex 0            2
-                        (float) (xPos + BASE * 0.6), yPos - BASE / 2,                 // Vertex 1                   
-                        xPos, (float) (yPos + BASE * 0.8),                            // Vertex 2         0     1
-
-                }, new short[]{
-                0, 1, 2         // Sets up triangulation according to vertices above
-        });
-
-        robber = polyReg;
+        robberSprite.setPosition(boardOrigin.getLeft() + xPos - robberSprite.getWidth() / 2f,
+                boardOrigin.getRight() + yPos - robberSprite.getHeight() / 2f);
     }
 
     /**
@@ -748,7 +704,7 @@ public class SessionScreen implements Screen {
             float xPos = (xCor * BASE);
             float yPos = -1 * (yCor * LENGTH / 2);
 
-            if ((float) xV0 == xPos - PIECEBASE / 2.0 && (float) yV0 == yPos - PIECEBASE / 2.0) {
+            if (xV0 == xPos - PIECEBASE / 2.0 && yV0 == yPos - PIECEBASE / 2.0) {
                 return pr;
             }
         }
@@ -921,20 +877,23 @@ public class SessionScreen implements Screen {
                 initialize(false);
                 break;
             case TURN_FIRST_PHASE:
+                // Allow the player only to roll the dice (or play the Alchemist, in future updates)
                 buildSettlementButton.setDisabled(true);
                 buildCityButton.setDisabled(true);
                 buildRoadButton.setDisabled(true);
                 buildShipButton.setDisabled(true);
                 maritimeTradeButton.setDisabled(true);
+
                 rollDiceButton.setDisabled(false);
                 break;
-                
             case TURN_SECOND_PHASE:
+                // Prevent the player from rolling the dice
                 buildSettlementButton.setDisabled(false);
                 buildCityButton.setDisabled(false);
                 buildRoadButton.setDisabled(false);
                 buildShipButton.setDisabled(false);
                 maritimeTradeButton.setDisabled(false);
+
                 rollDiceButton.setDisabled(true);
                 break;
             case Completed:
@@ -985,15 +944,6 @@ public class SessionScreen implements Screen {
      */
     public void giveTurn() {
         aMode = SessionScreenModes.CHOOSEACTIONMODE;
-    }
-
-    /**
-     * moves the robber to given position
-     *
-     * @param position new hex that the robber will be moved to
-     */
-    public void updateRobberPosition(Hex position) {
-        placeRobber(position.getLeftCoordinate(), position.getRightCoordinate());
     }
 
     /**

@@ -6,21 +6,21 @@ filter: MipMapLinearNearest,MipMapLinearNearest
 repeat: none
 brick
   rotate: false
-  xy: 776, 882
+  xy: 776, 894
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 check-off
   rotate: false
-  xy: 776, 606
+  xy: 906, 977
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 textfield
   rotate: false
-  xy: 776, 606
+  xy: 906, 977
   size: 14, 14
   split: 3, 3, 3, 3
   orig: 14, 14
@@ -28,14 +28,14 @@ textfield
   index: -1
 check-on
   rotate: false
-  xy: 258, 191
+  xy: 935, 1008
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 cursor
   rotate: false
-  xy: 2, 2
+  xy: 776, 607
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -43,14 +43,14 @@ cursor
   index: -1
 default
   rotate: false
-  xy: 2, 159
+  xy: 2, 171
   size: 254, 77
   orig: 254, 77
   offset: 0, 0
   index: -1
 default-pane
   rotate: false
-  xy: 540, 361
+  xy: 132, 144
   size: 5, 3
   split: 1, 1, 1, 1
   orig: 5, 3
@@ -58,7 +58,7 @@ default-pane
   index: -1
 default-rect-pad
   rotate: false
-  xy: 540, 361
+  xy: 132, 144
   size: 5, 3
   split: 1, 1, 1, 1
   orig: 5, 3
@@ -66,7 +66,7 @@ default-rect-pad
   index: -1
 default-pane-noborder
   rotate: false
-  xy: 792, 619
+  xy: 922, 990
   size: 1, 1
   split: 0, 0, 0, 0
   orig: 1, 1
@@ -74,7 +74,7 @@ default-pane-noborder
   index: -1
 default-rect
   rotate: false
-  xy: 132, 132
+  xy: 258, 223
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -82,7 +82,7 @@ default-rect
   index: -1
 default-rect-down
   rotate: false
-  xy: 16, 24
+  xy: 790, 629
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -90,7 +90,7 @@ default-rect-down
   index: -1
 default-round
   rotate: false
-  xy: 132, 137
+  xy: 258, 228
   size: 12, 20
   split: 5, 5, 5, 4
   pad: 4, 4, 1, 1
@@ -99,7 +99,7 @@ default-round
   index: -1
 default-round-down
   rotate: false
-  xy: 2, 7
+  xy: 776, 612
   size: 12, 20
   split: 5, 5, 5, 4
   pad: 4, 4, 1, 1
@@ -108,7 +108,7 @@ default-round-down
   index: -1
 default-round-large
   rotate: false
-  xy: 518, 344
+  xy: 2, 19
   size: 20, 20
   split: 5, 5, 5, 4
   orig: 20, 20
@@ -116,7 +116,7 @@ default-round-large
   index: -1
 default-scroll
   rotate: false
-  xy: 648, 474
+  xy: 132, 149
   size: 20, 20
   split: 2, 2, 2, 2
   orig: 20, 20
@@ -124,7 +124,7 @@ default-scroll
   index: -1
 default-select
   rotate: false
-  xy: 906, 990
+  xy: 648, 486
   size: 27, 20
   split: 4, 14, 4, 4
   orig: 27, 20
@@ -132,7 +132,7 @@ default-select
   index: -1
 default-select-selection
   rotate: false
-  xy: 146, 154
+  xy: 272, 245
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -140,7 +140,7 @@ default-select-selection
   index: -1
 default-slider
   rotate: false
-  xy: 518, 334
+  xy: 2, 9
   size: 8, 8
   split: 2, 2, 2, 2
   orig: 8, 8
@@ -148,14 +148,14 @@ default-slider
   index: -1
 default-slider-knob
   rotate: false
-  xy: 935, 992
+  xy: 24, 21
   size: 9, 18
   orig: 9, 18
   offset: 0, 0
   index: -1
 default-splitpane
   rotate: false
-  xy: 670, 491
+  xy: 154, 166
   size: 5, 3
   split: 0, 5, 0, 0
   orig: 5, 3
@@ -163,7 +163,7 @@ default-splitpane
   index: -1
 default-splitpane-vertical
   rotate: false
-  xy: 648, 467
+  xy: 2, 2
   size: 3, 5
   split: 0, 0, 0, 5
   orig: 3, 5
@@ -171,7 +171,7 @@ default-splitpane-vertical
   index: -1
 default-window
   rotate: false
-  xy: 258, 207
+  xy: 906, 993
   size: 27, 29
   split: 4, 3, 20, 3
   orig: 27, 29
@@ -179,112 +179,119 @@ default-window
   index: -1
 desert
   rotate: false
-  xy: 2, 754
+  xy: 2, 766
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 fields
   rotate: false
-  xy: 2, 496
+  xy: 2, 508
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 forest
   rotate: false
-  xy: 260, 754
+  xy: 260, 766
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 gold
   rotate: false
-  xy: 2, 238
+  xy: 2, 250
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 hills
   rotate: false
-  xy: 260, 496
+  xy: 260, 508
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 mountains
   rotate: false
-  xy: 518, 754
+  xy: 518, 766
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 ore
   rotate: false
-  xy: 518, 366
+  xy: 518, 378
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 pasture
   rotate: false
-  xy: 260, 238
+  xy: 260, 250
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
+robber
+  rotate: false
+  xy: 2, 41
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
 sea
   rotate: false
-  xy: 518, 496
+  xy: 518, 508
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 selection
   rotate: false
-  xy: 258, 188
+  xy: 935, 1005
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
 tree-minus
   rotate: false
-  xy: 287, 222
+  xy: 648, 470
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 tree-plus
   rotate: false
-  xy: 906, 974
+  xy: 677, 492
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 wheat
   rotate: false
-  xy: 2, 29
+  xy: 776, 764
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 white
   rotate: false
-  xy: 776, 601
+  xy: 906, 972
   size: 3, 3
   orig: 3, 3
   offset: 0, 0
   index: -1
 wood
   rotate: false
-  xy: 776, 752
+  xy: 776, 634
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 wool
   rotate: false
-  xy: 776, 622
+  xy: 518, 248
   size: 128, 128
   orig: 128, 128
   offset: 0, 0

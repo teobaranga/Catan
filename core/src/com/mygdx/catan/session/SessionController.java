@@ -31,7 +31,6 @@ public class SessionController {
     private final Listener aSessionListener;
     private final CatanRandom random;
     private final TransactionManager aTransactionManager;
-    private SessionScreenModes aMode;
 
     private PlayerColor aPlayerColor;
 
@@ -159,15 +158,12 @@ public class SessionController {
         aSessionScreen.enablePhase(aSessionManager.getCurrentPhase());
         switch (aSessionManager.getCurrentPhase()) {
             case SETUP_PHASE_ONE:
-                // TODO Allow the player to roll the dice
                 aSessionScreen.addGameMessage("Please roll the dice");
                 break;
             case SETUP_PHASE_TWO_CLOCKWISE:
-                // TODO Allow the player to place one settlement and one road
                 aSessionScreen.addGameMessage("Please choose a position for your settlement,\n then choose a neighbouring edge for the position of your road");
                 break;
             case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
-                // TODO Allow the player to place on city and one road. The player also receives some resources here
                 aSessionScreen.addGameMessage("Please choose a position for your city,\n then choose a neighbouring edge for the position of your road");
                 break;
             case TURN_FIRST_PHASE:
@@ -493,7 +489,7 @@ public class SessionController {
      *
      * @param owner          owner of edgeUnit
      * @param firstPosition  first end point of road or ship
-     * @param SecondPosition second end point of road or ship
+     * @param secondPosition second end point of road or ship
      * @param kind           edge unit kind: ROAD or SHIP
      * @param fromPeer       indicates whether the method was called from the owner of new settlement, or from a peer
      * @param init 			 indicated whether the method was called during initialization. If it was, player resource are not updated

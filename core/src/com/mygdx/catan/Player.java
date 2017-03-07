@@ -86,7 +86,7 @@ public class Player {
      * */
     public boolean hasEnoughResources(ResourceMap rm) {
         for (ResourceKind key: rm.keySet()){
-            if(resourceMap.containsKey(key) && resourceMap.get(key) >= 1) {
+            if(resourceMap.containsKey(key) && resourceMap.get(key) >= rm.get(key)) {
                 continue;
             }
             else{

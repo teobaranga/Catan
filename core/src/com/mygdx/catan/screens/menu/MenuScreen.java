@@ -34,7 +34,7 @@ public class MenuScreen implements Screen {
 
     public MenuScreen(CatanGame pGame) {
         aGame = pGame;
-        aGame.menuMusic.play();
+        //aGame.menuMusic.play();
     }
 
     @Override

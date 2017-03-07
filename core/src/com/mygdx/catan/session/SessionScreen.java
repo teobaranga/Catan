@@ -400,9 +400,15 @@ public class SessionScreen implements Screen {
                     tradeRatios.put(resourceKind, clientPlayer.getHighestHarbourLevel(resourceKind));
                 }
                 final TradeWindow tradeWindow = new TradeWindow("Maritime Trade", tradeRatios, CatanGame.skin, (offer, request, tradeRatio) -> {
-                    final ResourceMap resourceMap = new ResourceMap();
-                    resourceMap.put(request, 1);
-                    updateResourceBar(resourceMap);
+                    final ResourceMap addResourceMap = new ResourceMap();
+                    final ResourceMap removeResourceMap = new ResourceMap();
+                    removeResourceMap.put(offer, tradeRatio);
+                    if (clientPlayer.hasEnoughResources(removeResourceMap)) {
+                        addResourceMap.put(request, 1);
+                        clientPlayer.removeResources(removeResourceMap);
+                        clientPlayer.addResources(addResourceMap);
+                        updateResourceBar(clientPlayer.getResourceMap());
+                    }
                 });
                 aSessionStage.addActor(tradeWindow);
             }

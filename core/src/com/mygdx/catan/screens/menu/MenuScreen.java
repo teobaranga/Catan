@@ -34,6 +34,7 @@ public class MenuScreen implements Screen {
 
     public MenuScreen(CatanGame pGame) {
         aGame = pGame;
+        aGame.menuMusic.play();
     }
 
     @Override
@@ -140,6 +141,7 @@ public class MenuScreen implements Screen {
         pTextButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                aGame.clickSound.play(0.2F);
                 pTextButton.setChecked(false);
                 aGame.switchScreen(pScreenkind);
             }
@@ -160,6 +162,7 @@ public class MenuScreen implements Screen {
                 // Reset the checked state of the button
                 aJoinRandomButton.setChecked(false);
 
+                aGame.clickSound.play(0.2F);
                 // Setup the window
                 CatanWindow window = new CatanWindow("Join Game", CatanGame.skin,
                         1f / 4f * Gdx.graphics.getWidth(), 1f / 4f * Gdx.graphics.getHeight());

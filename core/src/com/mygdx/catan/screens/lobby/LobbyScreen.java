@@ -102,6 +102,7 @@ public class LobbyScreen implements Screen {
         CatanWindow window = new CatanWindow(TITLE + " : " + CatanGame.client.getRemoteAddressTCP(), CatanGame.skin);
         // TODO: Closing the lobby window should bring the user back to the MainMenu
         window.setWindowCloseListener(() -> {
+            game.clickSound.play(0.2F);
             game.switchScreen(ScreenKind.MAIN_MENU);
             CatanGame.client.sendTCP(LeaveGame.newInstance(CatanGame.account.getUsername()));
         });
@@ -172,6 +173,7 @@ public class LobbyScreen implements Screen {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     // TODO start the game
+                    game.menuMusic.stop();
                     CatanGame.client.sendTCP(StartGame.newInstance(CatanGame.account.getUsername()));
                 }
             });

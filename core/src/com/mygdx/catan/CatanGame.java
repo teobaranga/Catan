@@ -3,6 +3,8 @@ package com.mygdx.catan;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.esotericsoftware.kryo.Kryo;
@@ -51,12 +53,20 @@ public class CatanGame extends Game {
 
     public SpriteBatch batch;
 
+    public Music menuMusic;
+
+    public Sound clickSound;
+
     @Override
     public void create() {
         batch = new SpriteBatch();
 
         // Load the UI skin
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic.mp3"));
+        menuMusic.setLooping(true);
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("buttonClick.mp3"));
 
         // Load the current account if cached
         account = AccountManager.getLocalAccount();

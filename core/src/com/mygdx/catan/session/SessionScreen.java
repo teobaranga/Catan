@@ -139,7 +139,9 @@ public class SessionScreen implements Screen {
     private TextButton buildShipButton;
     private TextButton rollDiceButton;
     private TextButton maritimeTradeButton;
-
+    
+    private TextButton endTurnButton;
+    
     private TextButton aInitButton;
 
     /**
@@ -312,7 +314,12 @@ public class SessionScreen implements Screen {
         menuTable.setBackground("resTableBackground");
         menuTable.setSize(200, 300);
         menuTable.setPosition(10, 10);
-
+        
+        //end turn table 
+        Table turnTable = new Table(CatanGame.skin);
+        turnTable.setSize(200, 50);
+        turnTable.setPosition(Gdx.graphics.getWidth() - 210, Gdx.graphics.getHeight()-60);
+        
         // current player table
         currentPlayer = new Table(CatanGame.skin);
         currentPlayerLabel = new Label("", CatanGame.skin);
@@ -386,7 +393,11 @@ public class SessionScreen implements Screen {
         });
         menuTable.add(rollDiceButton).padBottom(10).row();
 
-
+        // Add end turn button
+        endTurnButton = new TextButton("End Turn", CatanGame.skin);
+        endTurnButton.setColor(Color.YELLOW);
+        turnTable.add(endTurnButton).padBottom(10).row(); 
+        
         // Add maritime trade button
         maritimeTradeButton = new TextButton("Maritime Trade", CatanGame.skin);
         maritimeTradeButton.addListener(new ChangeListener() {
@@ -451,6 +462,7 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(contentTable);
         aSessionStage.addActor(availableGamePiecesTable);
         aSessionStage.addActor(menuTable);
+        aSessionStage.addActor(turnTable);
         aSessionStage.addActor(currentPlayer);
         aSessionStage.addActor(gameLog);
 

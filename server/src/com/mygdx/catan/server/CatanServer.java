@@ -8,7 +8,6 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.mygdx.catan.Config;
 import com.mygdx.catan.GameRules;
-import com.mygdx.catan.Player;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.request.*;
@@ -22,9 +21,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CatanServer {
 
@@ -39,13 +38,6 @@ public class CatanServer {
 
     private static List<Account> defaultAccounts;
     private static List<Account> accounts;
-
-    /**
-     * Map connecting a game with the starting player, which is
-     * the one who rolled the highest number during the initialization
-     * phase.
-     */
-    private static Map<Game, Player> startingPlayer;
 
     static {
         // Create the default accounts
@@ -81,7 +73,7 @@ public class CatanServer {
         input.close();
 
         // Load the games TODO complete this
-        gamesMap = new HashMap<>();
+        gamesMap = new ConcurrentHashMap<>();
 
         // Start the server
         server.start();

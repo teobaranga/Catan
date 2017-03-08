@@ -133,7 +133,7 @@ class GamePieces {
         final PolygonSprite polygonSprite = new PolygonSprite(region);
         polygonSprite.setPosition(xOrigin + xPos - region.getRegion().getRegionWidth() / 2f,
                 yOrigin + yPos - region.getRegion().getRegionHeight() / 2f);
-        polygonSprite.setScale(80f / region.getRegion().getRegionHeight());
+        polygonSprite.setScale(2.0f*SessionScreen.LENGTH / region.getRegion().getRegionHeight());
         return polygonSprite;
     }
 

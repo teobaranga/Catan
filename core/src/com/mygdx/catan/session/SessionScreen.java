@@ -49,7 +49,7 @@ public class SessionScreen implements Screen {
     private final CatanGame aGame;
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-    private final int LENGTH = 40;                                            // length of an edge of a tile
+    public static final int LENGTH = 40;                                            // length of an edge of a tile
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
     private final int OFFX = BASE;                                            // offset on the x axis
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
@@ -116,7 +116,7 @@ public class SessionScreen implements Screen {
     
     private TextButton endTurnButton;
     
-    private TextButton aInitButton;
+    //private TextButton aInitButton;
 
     /**
      * A table that keeps track of game messages, mostly used for debugging
@@ -254,7 +254,7 @@ public class SessionScreen implements Screen {
 
                                 // End the turn
                                 aSessionController.endTurn();
-                                aInitButton.setText("Done");
+                                //aInitButton.setText("Done");
                             } else {
                                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false, initializing);
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
@@ -288,7 +288,7 @@ public class SessionScreen implements Screen {
         Table contentTable = new Table(CatanGame.skin);
         contentTable.setBackground("resTableBackground");
         contentTable.setSize(550, 120);
-        contentTable.setPosition(350, 10);
+        contentTable.setPosition(Gdx.graphics.getWidth()/2 - 275, 10);
 
         for (Map.Entry<ResourceKind, Color> entry : colorMap.entrySet()) {
             Table aTable = createResourceTable(entry.getKey());
@@ -362,11 +362,11 @@ public class SessionScreen implements Screen {
         setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP);
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
-
+/*
         //TODO: DELETE FOLLOWING TWO TEST BUTTONS
         aInitButton = new TextButton("Init", CatanGame.skin);
         setupInitButton(aInitButton);
-        menuTable.add(aInitButton).padBottom(10).row();
+        menuTable.add(aInitButton).padBottom(10).row();*/
 
         // Add roll dice button
         rollDiceButton = new TextButton("Roll Dice", CatanGame.skin);
@@ -441,7 +441,7 @@ public class SessionScreen implements Screen {
         gameLog = new ScrollPane(table);
         gameLog.setOverscroll(false, false);
         gameLog.setX(Gdx.graphics.getWidth() - tableWidth - pad);
-        gameLog.setY(pad);
+        gameLog.setY(Gdx.graphics.getHeight() / 2 - tableHeight/2);
         gameLog.setWidth(tableWidth);
         gameLog.setHeight(tableHeight);
 
@@ -1026,8 +1026,8 @@ public class SessionScreen implements Screen {
         yellow.setSize(60, 60);
         red.setSize(60, 60);
 
-        yellow.setPosition(1050, 600);
-        red.setPosition(1120, 600);
+        yellow.setPosition(Gdx.graphics.getWidth() - 70, Gdx.graphics.getHeight() - 140);
+        red.setPosition(Gdx.graphics.getWidth() - 140, Gdx.graphics.getHeight() - 140);
 
         yellow.add(new Label("" + yellowDice, CatanGame.skin));
         red.add(new Label("" + redDice, CatanGame.skin));

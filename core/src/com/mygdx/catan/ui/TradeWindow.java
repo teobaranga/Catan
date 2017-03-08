@@ -11,8 +11,11 @@ public class TradeWindow extends CatanWindow {
 
     private static final String tradeRatio = "%d : 1";
 
-    private final ImageButton oreOffer, woolOffer, brickOffer, wheatOffer, woodOffer;
-    private final ImageButton oreRequest, woolRequest, brickRequest, wheatRequest, woodRequest;
+    private final ImageButton oreOffer, woolOffer, brickOffer, wheatOffer, woodOffer, clothOffer, coinOffer, paperOffer;
+    private final ImageButton oreRequest, woolRequest, brickRequest, wheatRequest, woodRequest, clothRequest, coinRequest, paperRequest;
+    private final Label oreLabel, woolLabel, brickLabel, wheatLabel, woodLabel, clothLabel, coinLabel, paperLabel;
+
+    private final ButtonGroup<ImageButton> offerGroup, requestGroup;
 
     private final TextButton tradeButton;
 
@@ -20,37 +23,50 @@ public class TradeWindow extends CatanWindow {
 
     private ResourceKind offer, request;
 
+    /** The listener to be notified when a trade has been completed */
+    private TradeListener tradeListener;
+
+    private ResourceMap tradeRatios;
+
     /**
      * Create a new trade window
      *
      * @param title       Title of the window
+     * @param skin        The skin used to theme this window
      * @param tradeRatios Map of resources to integers representing the trade ratios. Since the
      *                    ratio is always x:1, only one integer is necessary to represent how many
      *                    units of a certain resource are needed in exchange for any other.
-     * @param skin        The skin used to theme this window
-     * @param listener    The listener to be notified when a trade has been completed
      */
-    public TradeWindow(String title, ResourceMap tradeRatios, Skin skin, TradeListener listener) {
+    public TradeWindow(String title, Skin skin, ResourceMap tradeRatios) {
         super(title, skin);
 
         // Create the listener for the offer buttons
         ChangeListener offerListener = new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (actor == oreOffer) {
-                    offer = ResourceKind.ORE;
-                } else if (actor == woolOffer) {
-                    offer = ResourceKind.WOOL;
-                } else if (actor == brickOffer) {
-                    offer = ResourceKind.BRICK;
-                } else if (actor == wheatOffer) {
-                    offer = ResourceKind.GRAIN;
-                } else if (actor == woodOffer) {
-                    offer = ResourceKind.WOOD;
+                if (((ImageButton) actor).isChecked()) {
+                    if (actor == oreOffer) {
+                        offer = ResourceKind.ORE;
+                    } else if (actor == woolOffer) {
+                        offer = ResourceKind.WOOL;
+                    } else if (actor == brickOffer) {
+                        offer = ResourceKind.BRICK;
+                    } else if (actor == wheatOffer) {
+                        offer = ResourceKind.GRAIN;
+                    } else if (actor == woodOffer) {
+                        offer = ResourceKind.WOOD;
+                    } else if (actor == clothOffer) {
+                        offer = ResourceKind.CLOTH;
+                    } else if (actor == coinOffer) {
+                        offer = ResourceKind.COIN;
+                    } else if (actor == paperOffer) {
+                        offer = ResourceKind.PAPER;
+                    }
+                    System.out.println("offer picked " + offerPicked + " " + requestPicked);
+                    offerPicked = true;
+                    if (requestPicked)
+                        tradeButton.setDisabled(false);
                 }
-                offerPicked = true;
-                if (requestPicked)
-                    tradeButton.setDisabled(false);
             }
         };
 
@@ -58,20 +74,29 @@ public class TradeWindow extends CatanWindow {
         ChangeListener requestListener = new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (actor == oreRequest) {
-                    request = ResourceKind.ORE;
-                } else if (actor == woolRequest) {
-                    request = ResourceKind.WOOL;
-                } else if (actor == brickRequest) {
-                    request = ResourceKind.BRICK;
-                } else if (actor == wheatRequest) {
-                    request = ResourceKind.GRAIN;
-                } else if (actor == woodRequest) {
-                    request = ResourceKind.WOOD;
+                if (((ImageButton) actor).isChecked()) {
+                    if (actor == oreRequest) {
+                        request = ResourceKind.ORE;
+                    } else if (actor == woolRequest) {
+                        request = ResourceKind.WOOL;
+                    } else if (actor == brickRequest) {
+                        request = ResourceKind.BRICK;
+                    } else if (actor == wheatRequest) {
+                        request = ResourceKind.GRAIN;
+                    } else if (actor == woodRequest) {
+                        request = ResourceKind.WOOD;
+                    } else if (actor == clothRequest) {
+                        request = ResourceKind.CLOTH;
+                    } else if (actor == coinRequest) {
+                        request = ResourceKind.COIN;
+                    } else if (actor == paperRequest) {
+                        request = ResourceKind.PAPER;
+                    }
+                    System.out.println("request picked " + offerPicked + " " + requestPicked);
+                    requestPicked = true;
+                    if (offerPicked)
+                        tradeButton.setDisabled(false);
                 }
-                requestPicked = true;
-                if (offerPicked)
-                    tradeButton.setDisabled(false);
             }
         };
 
@@ -84,19 +109,18 @@ public class TradeWindow extends CatanWindow {
         brickOffer = new ImageButton(skin, "brick");
         wheatOffer = new ImageButton(skin, "wheat");
         woodOffer = new ImageButton(skin, "wood");
+        clothOffer = new ImageButton(skin, "cloth");
+        coinOffer = new ImageButton(skin, "coin");
+        paperOffer = new ImageButton(skin, "paper");
 
         oreOffer.addListener(offerListener);
-        woodOffer.addListener(offerListener);
+        woolOffer.addListener(offerListener);
         brickOffer.addListener(offerListener);
         wheatOffer.addListener(offerListener);
         woodOffer.addListener(offerListener);
-
-        // Disable the types of resources that the player doesn't have enough of for a trade
-        oreOffer.setDisabled(tradeRatios.get(ResourceKind.ORE) == 0);
-        woolOffer.setDisabled(tradeRatios.get(ResourceKind.WOOL) == 0);
-        brickOffer.setDisabled(tradeRatios.get(ResourceKind.BRICK) == 0);
-        wheatOffer.setDisabled(tradeRatios.get(ResourceKind.GRAIN) == 0);
-        woodOffer.setDisabled(tradeRatios.get(ResourceKind.WOOD) == 0);
+        clothOffer.addListener(offerListener);
+        coinOffer.addListener(offerListener);
+        paperOffer.addListener(offerListener);
 
         // Create the buttons used to pick the type of resource the player would like to receive
         oreRequest = new ImageButton(skin, "ore");
@@ -104,21 +128,27 @@ public class TradeWindow extends CatanWindow {
         brickRequest = new ImageButton(skin, "brick");
         wheatRequest = new ImageButton(skin, "wheat");
         woodRequest = new ImageButton(skin, "wood");
+        clothRequest = new ImageButton(skin, "cloth");
+        coinRequest = new ImageButton(skin, "coin");
+        paperRequest = new ImageButton(skin, "paper");
 
         oreRequest.addListener(requestListener);
         woolRequest.addListener(requestListener);
         brickRequest.addListener(requestListener);
         wheatRequest.addListener(requestListener);
         woodRequest.addListener(requestListener);
+        clothRequest.addListener(requestListener);
+        coinRequest.addListener(requestListener);
+        paperRequest.addListener(requestListener);
 
         // Create a group for the offer buttons so that only one resource type can be selected at any given time
-        final ButtonGroup<ImageButton> offerGroup = new ButtonGroup<>(oreOffer, woolOffer, brickOffer, wheatOffer, woodOffer);
+        offerGroup = new ButtonGroup<>(oreOffer, woolOffer, brickOffer, wheatOffer, woodOffer, clothOffer, coinOffer, paperOffer);
         offerGroup.setMinCheckCount(1);
         offerGroup.setMaxCheckCount(1);
         offerGroup.setUncheckLast(true);
 
         // Create a group for the request buttons so that only one resource type can be selected at any given time
-        final ButtonGroup<ImageButton> requestGroup = new ButtonGroup<>(oreRequest, woolRequest, brickRequest, wheatRequest, woodRequest);
+        requestGroup = new ButtonGroup<>(oreRequest, woolRequest, brickRequest, wheatRequest, woodRequest, clothRequest, coinRequest, paperRequest);
         requestGroup.setMinCheckCount(1);
         requestGroup.setMaxCheckCount(1);
         requestGroup.setUncheckLast(true);
@@ -135,6 +165,9 @@ public class TradeWindow extends CatanWindow {
         contentTable.add(new Label("Brick", skin));
         contentTable.add(new Label("Wheat", skin));
         contentTable.add(new Label("Wood", skin));
+        contentTable.add(new Label("Cloth", skin));
+        contentTable.add(new Label("Coin", skin));
+        contentTable.add(new Label("Paper", skin));
 
         contentTable.row();
 
@@ -145,37 +178,22 @@ public class TradeWindow extends CatanWindow {
         contentTable.add(brickOffer).width(100).height(100);
         contentTable.add(wheatOffer).width(100).height(100);
         contentTable.add(woodOffer).width(100).height(100);
+        contentTable.add(clothOffer).width(100).height(100);
+        contentTable.add(coinOffer).width(100).height(100);
+        contentTable.add(paperOffer).width(100).height(100);
 
         contentTable.row();
 
         contentTable.add(new Label("Trade Ratio:", skin)).padRight(20).padBottom(20);
 
-        // Display the trade ratio, if there is a valid one
-        if (oreOffer.isDisabled()) {
-            contentTable.add();
-        } else {
-            contentTable.add(new Label(String.format(tradeRatio, tradeRatios.get(ResourceKind.ORE)), skin)).top();
-        }
-        if (woolOffer.isDisabled()) {
-            contentTable.add();
-        } else {
-            contentTable.add(new Label(String.format(tradeRatio, tradeRatios.get(ResourceKind.WOOL)), skin)).top();
-        }
-        if (brickOffer.isDisabled()) {
-            contentTable.add();
-        } else {
-            contentTable.add(new Label(String.format(tradeRatio, tradeRatios.get(ResourceKind.BRICK)), skin)).top();
-        }
-        if (wheatOffer.isDisabled()) {
-            contentTable.add();
-        } else {
-            contentTable.add(new Label(String.format(tradeRatio, tradeRatios.get(ResourceKind.GRAIN)), skin)).top();
-        }
-        if (woodOffer.isDisabled()) {
-            contentTable.add();
-        } else {
-            contentTable.add(new Label(String.format(tradeRatio, tradeRatios.get(ResourceKind.WOOD)), skin)).top();
-        }
+        contentTable.add(oreLabel = new Label("", skin)).top();
+        contentTable.add(woolLabel = new Label("", skin)).top();
+        contentTable.add(brickLabel = new Label("", skin)).top();
+        contentTable.add(wheatLabel = new Label("", skin)).top();
+        contentTable.add(woodLabel = new Label("", skin)).top();
+        contentTable.add(clothLabel = new Label("", skin)).top();
+        contentTable.add(coinLabel = new Label("", skin)).top();
+        contentTable.add(paperLabel = new Label("", skin)).top();
 
         contentTable.row();
 
@@ -186,6 +204,9 @@ public class TradeWindow extends CatanWindow {
         contentTable.add(brickRequest).width(100).height(100);
         contentTable.add(wheatRequest).width(100).height(100);
         contentTable.add(woodRequest).width(100).height(100);
+        contentTable.add(clothRequest).width(100).height(100);
+        contentTable.add(coinRequest).width(100).height(100);
+        contentTable.add(paperRequest).width(100).height(100);
 
         contentTable.row();
 
@@ -193,12 +214,12 @@ public class TradeWindow extends CatanWindow {
         tradeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                listener.onTrade(offer, request, tradeRatios.get(offer));
+                if (tradeListener != null)
+                    tradeListener.onTrade(offer, request, TradeWindow.this.tradeRatios.get(offer));
             }
         });
         tradeButton.pad(10);
-        tradeButton.setDisabled(true);
-        contentTable.add(tradeButton).colspan(6).right().padTop(30);
+        contentTable.add(tradeButton).colspan(9).right().padTop(30);
 
         add(contentTable);
 
@@ -207,6 +228,44 @@ public class TradeWindow extends CatanWindow {
         // Re-position window in the middle
         setPosition((int) (Gdx.graphics.getWidth() / 2 - getWidth() / 2),
                 (int) (Gdx.graphics.getHeight() / 2 - getHeight() / 2));
+
+        updateTradeRatios(tradeRatios);
+    }
+
+    public void setTradeListener(TradeListener tradeListener) {
+        this.tradeListener = tradeListener;
+    }
+
+    public void updateTradeRatios(ResourceMap tradeRatios) {
+        this.tradeRatios = tradeRatios;
+
+        // Disable the types of resources that the player doesn't have enough of for a trade
+        oreOffer.setDisabled(tradeRatios.get(ResourceKind.ORE) == 0);
+        woolOffer.setDisabled(tradeRatios.get(ResourceKind.WOOL) == 0);
+        brickOffer.setDisabled(tradeRatios.get(ResourceKind.BRICK) == 0);
+        wheatOffer.setDisabled(tradeRatios.get(ResourceKind.GRAIN) == 0);
+        woodOffer.setDisabled(tradeRatios.get(ResourceKind.WOOD) == 0);
+        clothOffer.setDisabled(tradeRatios.get(ResourceKind.CLOTH) == 0);
+        coinOffer.setDisabled(tradeRatios.get(ResourceKind.COIN) == 0);
+        paperOffer.setDisabled(tradeRatios.get(ResourceKind.PAPER) == 0);
+
+
+        // Display the trade ratio, if there is a valid one
+        oreLabel.setText(oreOffer.isDisabled() ? "X" : String.format(tradeRatio, tradeRatios.get(ResourceKind.ORE)));
+        woolLabel.setText(woolOffer.isDisabled() ? "X" : String.format(tradeRatio, tradeRatios.get(ResourceKind.WOOL)));
+        brickLabel.setText(brickOffer.isDisabled() ? "X" : String.format(tradeRatio, tradeRatios.get(ResourceKind.BRICK)));
+        wheatLabel.setText(wheatOffer.isDisabled() ? "X" : String.format(tradeRatio, tradeRatios.get(ResourceKind.GRAIN)));
+        woodLabel.setText(woodOffer.isDisabled() ? "X" : String.format(tradeRatio, tradeRatios.get(ResourceKind.WOOD)));
+        clothLabel.setText(clothOffer.isDisabled() ? "X" : String.format(tradeRatio, tradeRatios.get(ResourceKind.CLOTH)));
+        coinLabel.setText(coinOffer.isDisabled() ? "X" : String.format(tradeRatio, tradeRatios.get(ResourceKind.COIN)));
+        paperLabel.setText(paperOffer.isDisabled() ? "X" : String.format(tradeRatio, tradeRatios.get(ResourceKind.PAPER)));
+
+        // Reset everything
+        offerGroup.uncheckAll();
+        requestGroup.uncheckAll();
+        offerPicked = false;
+        requestPicked = false;
+        tradeButton.setDisabled(true);
     }
 
     public interface TradeListener {

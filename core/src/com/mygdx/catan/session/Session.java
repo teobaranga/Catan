@@ -41,7 +41,16 @@ public class Session {
 
     //TODO: change this to fit design, so far this is only placeholder!
     public Session() {
+        // Add the initial bank resources
         bank = new ResourceMap();
+        bank.add(ResourceKind.WOOD, 19);
+        bank.add(ResourceKind.WOOL, 19);
+        bank.add(ResourceKind.GRAIN, 19);
+        bank.add(ResourceKind.BRICK, 19);
+        bank.add(ResourceKind.ORE, 19);
+        bank.add(ResourceKind.COIN, 12);
+        bank.add(ResourceKind.PAPER, 12);
+        bank.add(ResourceKind.CLOTH, 12);
         currentPhase = GamePhase.SETUP_PHASE_ONE;
         clockwise = true;
     }
@@ -67,16 +76,18 @@ public class Session {
         return players;
     }
 
-    public void add(ResourceMap cost) {
-        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            bank.put(entry.getKey(), bank.get(entry.getKey()) + entry.getValue());
-        }
+    /**
+     * Add resources to the bank.
+     */
+    public void addResources(ResourceMap cost) {
+        bank.add(cost);
     }
 
-    public void remove(ResourceMap cost) {
-        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            bank.put(entry.getKey(), bank.get(entry.getKey()) - entry.getValue());
-        }
+    /**
+     * Remove resources from the bank.
+     */
+    public void removeResources(ResourceMap cost) {
+        bank.remove(cost);
     }
 
     public ResourceMap adjustcost(ResourceMap cost) {

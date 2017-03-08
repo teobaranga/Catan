@@ -12,7 +12,7 @@ public class CatanWindow extends Window {
 
     private final float width, height;
 
-    TextButton closeButton;
+    private TextButton closeButton;
 
     private WindowCloseListener windowCloseListener;
 

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.*;
+import com.mygdx.catan.TradeAndTransaction.TradeManager;
 import com.mygdx.catan.TradeAndTransaction.TransactionManager;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.game.Game;
@@ -29,12 +30,18 @@ import static com.mygdx.catan.enums.ResourceKind.*;
 import static com.mygdx.catan.enums.VillageKind.CITY;
 
 public class SessionController {
+
     private final GameBoardManager aGameBoardManager;
     private final SessionManager aSessionManager;
-    private final SessionScreen aSessionScreen;
-    private final Listener aSessionListener;
-    private final CatanRandom random;
     private final TransactionManager aTransactionManager;
+    private final TradeManager tradeManager;
+
+    private final SessionScreen aSessionScreen;
+
+    private final Listener aSessionListener;
+
+    /** The random number generator for dice rolls */
+    private final CatanRandom random;
 
     /** The local player's color */
     private PlayerColor aPlayerColor;
@@ -47,11 +54,15 @@ public class SessionController {
 
     SessionController(SessionScreen sessionScreen) {
         final Game currentGame = GameManager.getInstance().getCurrentGame();
-        aSessionScreen = sessionScreen;
+
         aGameBoardManager = GameBoardManager.getInstance();
         aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
+        aTransactionManager = TransactionManager.getInstance(aSessionManager);
+        tradeManager = TradeManager.getInstance(aTransactionManager);
+
+        aSessionScreen = sessionScreen;
+
         random = CatanRandom.getInstance();
-        aTransactionManager = TransactionManager.getInstance(aSessionManager.getSession());
 
         // sets the color as the accounts associated Player object color
         for (Player p : aSessionManager.getPlayers()) {
@@ -516,7 +527,7 @@ public class SessionController {
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
-                    aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                    aSessionScreen.updateResourceBar(currentP.getResources());
                 }
 
                 // notify peers about board game change
@@ -534,7 +545,7 @@ public class SessionController {
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
-                    aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                    aSessionScreen.updateResourceBar(currentP.getResources());
                 }
 
                 // notify peers about board game change
@@ -572,7 +583,7 @@ public class SessionController {
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
-                    aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                    aSessionScreen.updateResourceBar(currentP.getResources());
                 }
 
                 // notify peers about board game change
@@ -587,7 +598,7 @@ public class SessionController {
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
-                    aSessionScreen.updateResourceBar(currentP.getResourceMap());
+                    aSessionScreen.updateResourceBar(currentP.getResources());
                 }
 
                 // notify peers about board game change
@@ -656,7 +667,7 @@ public class SessionController {
         playerResourceMap.put(GRAIN, fieldCounter);
 
         clientPlayer.addResources(playerResourceMap);
-        aSessionScreen.updateResourceBar(clientPlayer.getResourceMap());
+        aSessionScreen.updateResourceBar(clientPlayer.getResources());
     }
 
     /*
@@ -802,14 +813,8 @@ public class SessionController {
 
         localPlayer.addResources(resAndComMap);
 
-        aSessionScreen.updateResourceBar(localPlayer.getResourceMap());
-
-        //TODO set phase of session to TURN_SECOND_PHASE
+        aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
-
-
-    // TODO: set GUI's mode to chooseActionMode for the player who's turn it is
-
 
     /*public ResourceMap getOwnresourcesUpdate(Map<Player,ResourceMap> updatedPlayerResources) {
         for (Map.Entry<Player, ResourceMap> entry : updatedPlayerResources.entrySet() ) {
@@ -846,13 +851,37 @@ public class SessionController {
         }
     }
 
-    public Player getCurrentPlayerFromColor(PlayerColor aPlayerColor) {
-        return aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
+    /**
+     * Perform maritime trade
+     *
+     * @param offer      type of resource that the player is offering
+     * @param request    type of resource that the player is requesting
+     * @param tradeRatio the number of units of the offered resource necessary to receive one requested resource
+     */
+    void maritimeTrade(ResourceKind offer, ResourceKind request, int tradeRatio) {
+        tradeManager.maritimeTrade(offer, request, tradeRatio, localPlayer);
+        aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
 
-    /** Get the resources of the local player */
-    public ResourceMap getLocalPlayerResources() {
-        return localPlayer.getResourceMap();
+    /**
+     * Get the trade ratios used when doing maritime trade.
+     * The values of the map represent how many units of that resource are necessary
+     * in order to get any other resource in exchange. If the value is zero, the
+     * player does not have enough resources to perform trade for that resource.
+     */
+    ResourceMap getTradeRatios() {
+        final ResourceMap tradeRatios = new ResourceMap();
+        for (ResourceKind resourceKind : ResourceKind.values()) {
+            // Get the min number of resources of this type that the player
+            // needs to give in order to receive any other resource
+            int ratio = localPlayer.getHighestHarbourLevel(resourceKind);
+            if (localPlayer.hasEnoughOfResource(resourceKind, ratio)) {
+                tradeRatios.put(resourceKind, ratio);
+            } else {
+                tradeRatios.put(resourceKind, 0);
+            }
+        }
+        return tradeRatios;
     }
 
     /** Call this when the screen is shown */

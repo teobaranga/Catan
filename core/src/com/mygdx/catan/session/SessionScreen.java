@@ -394,28 +394,13 @@ public class SessionScreen implements Screen {
         maritimeTradeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                final ResourceMap tradeRatios = new ResourceMap();
-                Player clientPlayer = aSessionController.getCurrentPlayerFromColor(aSessionController.getPlayerColor());
-                for (ResourceKind resourceKind : ResourceKind.values()) {
-                    int ratio = clientPlayer.getHighestHarbourLevel(resourceKind);
-                    ResourceMap ratioprice = new ResourceMap();
-                    ratioprice.put(resourceKind, ratio);
-                    if (clientPlayer.hasEnoughResources(ratioprice)) {
-                        tradeRatios.put(resourceKind, clientPlayer.getHighestHarbourLevel(resourceKind));
-                    } else {
-                        tradeRatios.put(resourceKind, 0);
-                    }
-                }
-                final TradeWindow tradeWindow = new TradeWindow("Maritime Trade", tradeRatios, CatanGame.skin, (offer, request, tradeRatio) -> {
-                    final ResourceMap addResourceMap = new ResourceMap();
-                    final ResourceMap removeResourceMap = new ResourceMap();
-                    removeResourceMap.put(offer, tradeRatio);
-                    if (clientPlayer.hasEnoughResources(removeResourceMap)) {
-                        addResourceMap.put(request, 1);
-                        clientPlayer.removeResources(removeResourceMap);
-                        clientPlayer.addResources(addResourceMap);
-                        updateResourceBar(clientPlayer.getResourceMap());
-                    }
+                // Generate the trade ratios
+                final ResourceMap tradeRatios = aSessionController.getTradeRatios();
+                // Create the window
+                final TradeWindow tradeWindow = new TradeWindow("Maritime Trade", CatanGame.skin, tradeRatios);
+                tradeWindow.setTradeListener((offer, request, tradeRatio) -> {
+                    aSessionController.maritimeTrade(offer, request, tradeRatio);
+                    tradeWindow.updateTradeRatios(aSessionController.getTradeRatios());
                 });
                 aSessionStage.addActor(tradeWindow);
             }

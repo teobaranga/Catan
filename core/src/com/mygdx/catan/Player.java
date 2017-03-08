@@ -8,7 +8,6 @@ import com.mygdx.catan.gameboard.Village;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Player {
 
@@ -81,72 +80,77 @@ public class Player {
     }
 
     /**
+     * Check if the player has enough resources.
+     *
      * @param rm of rm is the resource map in question. need to see if player can pay for rm
      * @return true if player has enough resources for rm
-     * */
+     */
     public boolean hasEnoughResources(ResourceMap rm) {
-        for (ResourceKind key: rm.keySet()){
-            if(resourceMap.containsKey(key) && resourceMap.get(key) >= rm.get(key)) {
-                continue;
-            }
-            else{
+        for (ResourceKind key : rm.keySet()) {
+            if (resourceMap.get(key) < rm.get(key)) {
                 return false;
             }
         }
         return true;
     }
+
+    /**
+     * Check if the player has enough of a specific resource/commodity
+     * @param resourceKind type of resource/commodity
+     * @param count count of that resource
+     */
+    public boolean hasEnoughOfResource(ResourceKind resourceKind, int count) {
+        return resourceMap.get(resourceKind) >= count;
+    }
+
     public int getHighestHarbourLevel(ResourceKind resKind) {
         CoordinatePair pos;
         HarbourKind hKind;
         int highest = 4;
-        for (Village v: villages){
+        for (Village v : villages) {
             pos = v.getPosition();
             hKind = pos.getHarbourKind();
             if (hKind == HarbourKind.SPECIAL_WOOD) {
                 if (resKind == ResourceKind.WOOD) {
                     return 2;
                 }
-            }
-            else if (hKind == HarbourKind.SPECIAL_BRICK) {
+            } else if (hKind == HarbourKind.SPECIAL_BRICK) {
                 if (resKind == ResourceKind.BRICK) {
                     return 2;
                 }
-            }
-            else if (hKind == HarbourKind.SPECIAL_ORE) {
-                if (resKind == ResourceKind.ORE){
+            } else if (hKind == HarbourKind.SPECIAL_ORE) {
+                if (resKind == ResourceKind.ORE) {
                     return 2;
                 }
-            }
-            else if (hKind == HarbourKind.SPECIAL_GRAIN) {
+            } else if (hKind == HarbourKind.SPECIAL_GRAIN) {
                 if (resKind == ResourceKind.GRAIN) {
                     return 2;
                 }
-            }
-            else if (hKind == HarbourKind.SPECIAL_WOOL) {
+            } else if (hKind == HarbourKind.SPECIAL_WOOL) {
                 if (resKind == ResourceKind.WOOL) {
                     return 2;
                 }
-            }
-            else if(hKind == HarbourKind.GENERIC) {
+            } else if (hKind == HarbourKind.GENERIC) {
                 highest = 3;
-            }
-            else if(highest != 3) {
+            } else if (highest != 3) {
                 highest = 4;
             }
         }
         return highest;
     }
 
+    /**
+     * Add resources to this player
+     */
     public void addResources(ResourceMap cost) {
-        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            resourceMap.put(entry.getKey(), resourceMap.get(entry.getKey()) + entry.getValue());
-        }
+        resourceMap.add(cost);
     }
 
+    /**
+     * Remove resources from this player
+     */
     public void removeResources(ResourceMap cost) {
-        for (Map.Entry<ResourceKind, Integer> entry : cost.entrySet()) {
-            resourceMap.put(entry.getKey(), resourceMap.get(entry.getKey()) - entry.getValue());
-        }
+        resourceMap.remove(cost);
     }
 
     public int getProgressCardCount() {
@@ -214,7 +218,7 @@ public class Player {
         return color;
     }
 
-    public ResourceMap getResourceMap() { return resourceMap;}
+    public ResourceMap getResources() { return resourceMap;}
 
     /** Get this player's account */
     public Account getAccount() {

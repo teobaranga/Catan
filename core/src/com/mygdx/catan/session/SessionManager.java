@@ -144,7 +144,7 @@ public class SessionManager {
      * @param cost resources to be added to the bank
      */
     public void addToBank(ResourceMap cost) {
-        aSession.add(cost);
+        aSession.addResources(cost);
     }
 
     /**
@@ -153,7 +153,7 @@ public class SessionManager {
      * @param cost The resources to be removed from the bank
      */
     public void removeFromBank(ResourceMap cost) {
-        aSession.remove(cost);
+        aSession.removeResources(cost);
     }
 
     /**

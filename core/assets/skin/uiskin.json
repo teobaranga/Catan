@@ -93,6 +93,27 @@
       checked: default-round-down,
       disabled: default-scroll,
       imageUp: wood
+    },
+    cloth: {
+      up: default-round,
+      down: default-round-down,
+      checked: default-round-down,
+      disabled: default-scroll,
+      imageUp: cloth
+    },
+    coin: {
+      up: default-round,
+      down: default-round-down,
+      checked: default-round-down,
+      disabled: default-scroll,
+      imageUp: coin
+    },
+    paper: {
+      up: default-round,
+      down: default-round-down,
+      checked: default-round-down,
+      disabled: default-scroll,
+      imageUp: paper
     }
   },
   com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {

@@ -471,7 +471,6 @@ public class SessionScreen implements Screen {
         initButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                initButton.setChecked(false);
                 initButton.setText("Initializing");
                 initialize(false);
             }
@@ -482,7 +481,9 @@ public class SessionScreen implements Screen {
         buildButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+
                 //buildButton.setChecked(false);
+
                 // TODO: ask SessionController if there are enough resources
                 if (!aSessionController.requestBuildVillage(aSessionController.getPlayerColor(), kind)) {
                     addGameMessage("Not enough resources for building the " + kind.name().toLowerCase());

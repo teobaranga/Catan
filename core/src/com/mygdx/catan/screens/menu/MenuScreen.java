@@ -30,11 +30,12 @@ public class MenuScreen implements Screen {
     private TextButton aCreateGameButton;
     private TextButton aBrowseGamesButton;
     private TextButton aResumeGameButton;
+    private TextButton aStopMusicButton;
     private Table aMenuTable;
 
     public MenuScreen(CatanGame pGame) {
         aGame = pGame;
-        //aGame.menuMusic.play();
+        aGame.menuMusic.play();
     }
 
     @Override
@@ -90,6 +91,23 @@ public class MenuScreen implements Screen {
         aResumeGameButton = new TextButton("Resume Game", CatanGame.skin);
         aResumeGameButton.pad(30, 20, 30, 20);
         setupButton(aResumeGameButton, ScreenKind.LOBBY);
+
+        aStopMusicButton = new TextButton("Stop\nMusic", CatanGame.skin);
+        aStopMusicButton.pad(20, 20, 20, 20);
+        aStopMusicButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (aGame.menuMusic.isPlaying()) {
+                    aGame.menuMusic.pause();
+                    aStopMusicButton.setText("Play\nMusic");
+                } else {
+                    aGame.menuMusic.play();
+                    aStopMusicButton.setText("Stop\nMusic");
+                }
+            }
+        });
+        aMenuTable.add(aStopMusicButton).padLeft(300).padRight(25).left();
+
 
         aMenuTable.pack();
 

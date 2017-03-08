@@ -93,17 +93,19 @@ public class GameBoardManager {
     }
 
     /**
-     * builds a settlement for player at given position. Adds the settlement to the player's collection of settlements, and associates it to the given position
+     * upgrades a settlement to a city for player at given position.
      *
      * @param player   owner village
-     * @param position of settlement
+     * @param position of settlement to upgrade
      * @return true if upgrading the village was successful, false otherwise
      */
     public boolean upgradeSettlement(Player player, CoordinatePair position) {
-        Village city = position.getOccupyingVillage();
-        city.setVillageKind(VillageKind.CITY);
-        position.putVillage(city);
-        player.addVillage(city);
+        Village settlement = position.getOccupyingVillage();
+        //TODO: upgrade to metropolis if already a city?
+        
+        //note: settlement is already associated to player and position, and list of villages in aGameBoard, and therefore only needs to be upgraded to city
+        settlement.setVillageKind(VillageKind.CITY);
+        
         player.decrementAvailableCities();
         player.incrementAvailableSettlements();
         return true;

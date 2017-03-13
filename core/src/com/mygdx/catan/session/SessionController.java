@@ -620,6 +620,19 @@ public class SessionController {
         return false;
     }
 
+    
+    public void buildInitialVillageAndRoad(CoordinatePair villagePos, CoordinatePair firstEdgePos, CoordinatePair secondEdgePos, VillageKind kind, EdgeUnitKind edgeKind) {
+    	 if (kind == VillageKind.CITY) {
+             buildVillage(villagePos, VillageKind.SETTLEMENT, getPlayerColor(), false, true);
+             buildVillage(villagePos, VillageKind.CITY, getPlayerColor(), false, true);
+             distributeInitialResources(villagePos);
+         } else {
+             buildVillage(villagePos, kind, getPlayerColor(), false, true);
+         }
+
+         buildEdgeUnit(getPlayerColor(), firstEdgePos, secondEdgePos, edgeKind, false, true);
+    }
+    
     void distributeInitialResources(CoordinatePair cityPos) {
         List<Hex> neighbouringHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
         Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);

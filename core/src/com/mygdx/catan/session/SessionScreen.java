@@ -49,7 +49,7 @@ public class SessionScreen implements Screen {
     private final CatanGame aGame;
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-    public static final int LENGTH = 40;                                            // length of an edge of a tile
+    public static final int LENGTH = 60;                                            // length of an edge of a tile
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
     private final int OFFX = BASE;                                            // offset on the x axis
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
@@ -224,29 +224,16 @@ public class SessionScreen implements Screen {
                                 screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
                                 screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
 
-                            // TODO too many calls to controller, this whole thing should be somehow in the controller
-
                             // The edge position is valid, can clear the highlighted positions
                             highlightedPositions.clear();
 
                             if (initializing) {
-                                //TODO set to VIEW mode
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
                                 if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
                                     edgePieceKind = EdgeUnitKind.SHIP;
                                 }
-
-                                if (villagePieceKind == VillageKind.CITY) {
-                                    aSessionController.buildVillage(initVillageIntersection, VillageKind.SETTLEMENT, aSessionController.getPlayerColor(), false, initializing);
-                                    aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false, initializing);
-                                    // TODO these things should probably be combined
-                                    aSessionController.distributeInitialResources(initVillageIntersection);
-                                } else {
-                                    aSessionController.buildVillage(initVillageIntersection, villagePieceKind, aSessionController.getPlayerColor(), false, initializing);
-                                }
-
-                                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false, initializing);
-
+                                
+                                aSessionController.buildInitialVillageAndRoad(initVillageIntersection, validEdge.getLeft(), validEdge.getRight(), villagePieceKind, edgePieceKind);
 
                                 // Stop the initialization phase only after the city was placed
                                 if (villagePieceKind == VillageKind.CITY)
@@ -254,7 +241,6 @@ public class SessionScreen implements Screen {
 
                                 // End the turn
                                 aSessionController.endTurn();
-                                //aInitButton.setText("Done");
                             } else {
                                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false, initializing);
                                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
@@ -362,11 +348,6 @@ public class SessionScreen implements Screen {
         setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP);
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
-/*
-        //TODO: DELETE FOLLOWING TWO TEST BUTTONS
-        aInitButton = new TextButton("Init", CatanGame.skin);
-        setupInitButton(aInitButton);
-        menuTable.add(aInitButton).padBottom(10).row();*/
 
         // Add roll dice button
         rollDiceButton = new TextButton("Roll Dice", CatanGame.skin);
@@ -459,24 +440,11 @@ public class SessionScreen implements Screen {
         aSessionController.checkIfMyTurn();
     }
 
-    private void setupInitButton(TextButton initButton) {
-        initButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                initButton.setText("Initializing");
-                initialize(false);
-            }
-        });
-    }
-
     private void setupBuildVillageButton(TextButton buildButton, VillageKind kind) {
         buildButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
 
-                //buildButton.setChecked(false);
-
-                // TODO: ask SessionController if there are enough resources
                 if (!aSessionController.requestBuildVillage(aSessionController.getPlayerColor(), kind)) {
                     addGameMessage("Not enough resources for building the " + kind.name().toLowerCase());
                     return;
@@ -512,7 +480,6 @@ public class SessionScreen implements Screen {
         buildButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // TODO: ask SessionController if there are enough resources
                 if(!aSessionController.requestBuildEdgeUnit(aSessionController.getPlayerColor(), kind)) {
                     addGameMessage("Not enough resources for building a " + kind.name().toLowerCase());
                     return;

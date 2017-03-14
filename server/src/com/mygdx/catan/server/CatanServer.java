@@ -25,19 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CatanServer {
+class CatanServer {
 
     /** Name of the file storing the game accounts */
     private static final String ACCOUNTS_DB = "accounts.bin";
 
-    /**
-     * Map connecting any given account (by name) to its game.
-     * For the moment, a player is limited to only one game.
-     */
-    private static Map<String, Game> gamesMap;
-
-    private static List<Account> defaultAccounts;
-    private static List<Account> accounts;
+    private static final List<Account> defaultAccounts;
 
     static {
         // Create the default accounts
@@ -50,8 +43,18 @@ public class CatanServer {
         defaultAccounts.add(new Account("teo test", null));
     }
 
-    public static void main(String[] args) throws IOException {
-        Server server = new Server();
+    private final Server server;
+
+    /**
+     * Map connecting any given account (by name) to its game.
+     * For the moment, a player is limited to only one game.
+     */
+    private final Map<String, Game> gamesMap;
+
+    private final List<Account> accounts;
+
+    CatanServer() throws IOException {
+        server = new Server();
 
         // Register request & response classes (needed for networking)
         // Must be registered in the same order in the client
@@ -144,7 +147,7 @@ public class CatanServer {
         });
     }
 
-    private static LoginResponse attemptLogin(LoginRequest request) {
+    private LoginResponse attemptLogin(LoginRequest request) {
         // Reply to the client with the success status
         final LoginResponse response = new LoginResponse();
         // Check if the account exists
@@ -152,7 +155,7 @@ public class CatanServer {
         return response;
     }
 
-    private static GameResponse getRandomGame(Connection connection, Account account) {
+    private GameResponse getRandomGame(Connection connection, Account account) {
         Game randomGame = null;
         // Go through the games
         if (gamesMap != null) {
@@ -169,7 +172,7 @@ public class CatanServer {
         return GameResponse.newInstance(randomGame);
     }
 
-    private static GameResponse createNewGame(Connection connection, Account account) {
+    private GameResponse createNewGame(Connection connection, Account account) {
         // Create the new game
         final Game game = new Game();
         game.addPlayer(account, connection.getID());
@@ -181,7 +184,7 @@ public class CatanServer {
         return GameResponse.newInstance(game);
     }
 
-    private static MarkedAsReady markAsReady(String username) {
+    private MarkedAsReady markAsReady(String username) {
         final Game game = gamesMap.get(username);
         game.markAsReady(username);
 
@@ -194,7 +197,7 @@ public class CatanServer {
      *
      * @param connection connection of the player
      */
-    private static void disconnectFromGame(Connection connection) {
+    private void disconnectFromGame(Connection connection) {
         // Username of the disconnected player
         String username = null;
 
@@ -229,7 +232,7 @@ public class CatanServer {
      *
      * @param username username of the admin player requesting to start the game
      */
-    private static GameResponse startGame(String username) {
+    private GameResponse startGame(String username) {
         // Get the game
         final Game game = gamesMap.get(username);
         // Create its session
@@ -238,7 +241,7 @@ public class CatanServer {
         return GameResponse.newInstance(game);
     }
 
-    private static DiceRolled handleDiceRoll(String username, Pair<Integer, Integer> dice) {
+    private DiceRolled handleDiceRoll(String username, Pair<Integer, Integer> dice) {
         final Game game = gamesMap.get(username);
         if (!game.isInProgress())
             return null;
@@ -270,7 +273,7 @@ public class CatanServer {
         }
     }
 
-    private static String getUsername(Connection connection) {
+    private String getUsername(Connection connection) {
         for (Game game : gamesMap.values()) {
             for (Map.Entry<Account, Integer> accountIntegerEntry : game.peers.entrySet()) {
                 if (accountIntegerEntry.getValue() == connection.getID()) {
@@ -279,5 +282,9 @@ public class CatanServer {
             }
         }
         return null;
+    }
+
+    void stop() {
+        server.stop();
     }
 }

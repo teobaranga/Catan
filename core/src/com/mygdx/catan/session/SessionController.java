@@ -502,6 +502,41 @@ public class SessionController {
         return validShipEndpoints;
         // same as above but with no edges that are in land can be chosen
     }
+    
+    /**
+     * @param owner of requested valid intersections
+     * @return a list of all ships that the owner may move
+     * */
+    public ArrayList<EdgeUnit> requestValidShips(PlayerColor owner) {
+    	
+    	Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+    	ArrayList<EdgeUnit> validShips = new ArrayList<EdgeUnit>();
+    	
+    	
+    	for (EdgeUnit eu : currentP.getRoadsAndShips()) {
+    		boolean isMoveable = (eu.getKind() == EdgeUnitKind.SHIP);
+    		
+    		// verifies that eu is not in between two other edge units
+    		if (isMoveable) {
+    			for (EdgeUnit firstAdjacentEu : currentP.getRoadsAndShips()) {
+        			for (EdgeUnit secondAdjacentEu : currentP.getRoadsAndShips()) {
+            			if (!firstAdjacentEu.equals(secondAdjacentEu) && (eu.isAdjacent(firstAdjacentEu) && eu.isAdjacent(secondAdjacentEu))) {
+            				isMoveable = false;
+            				/*
+            				System.out.println("<"+eu.getAFirstCoordinate().getLeft()+","+eu.getAFirstCoordinate().getRight() +"> "+ "<"+eu.getASecondCoordinate().getLeft()+","+eu.getASecondCoordinate().getRight()+"> "+"is not moveable");
+            				System.out.println("adjacent to <"+firstAdjacentEu.getAFirstCoordinate().getLeft()+","+firstAdjacentEu.getAFirstCoordinate().getRight() +"> "+ "<"+firstAdjacentEu.getASecondCoordinate().getLeft()+","+firstAdjacentEu.getASecondCoordinate().getRight()+"> ");
+            				System.out.println("adjacent to <"+secondAdjacentEu.getAFirstCoordinate().getLeft()+","+secondAdjacentEu.getAFirstCoordinate().getRight() +"> "+ "<"+secondAdjacentEu.getASecondCoordinate().getLeft()+","+secondAdjacentEu.getASecondCoordinate().getRight()+"> ");
+            			    */
+            			}
+            		}
+        		}
+    		}
+    		
+    		if (isMoveable) { validShips.add(eu); }
+    	}
+    	
+    	return validShips;
+    }
 
     /**
      * Requests the GameBoardManager to build village on given coordinate. SessionScreen is notified of any boardgame changes.
@@ -618,6 +653,37 @@ public class SessionController {
     public boolean moveRobber(Hex newPosition, boolean fromPeer) {
         //TODO: as described above
         return false;
+    }
+    
+    
+    /**
+     * Finds the owner's ship at <firstOriginPos,secondOriginPos> and updates its coordinates to <newFirstPos,newSecondPos>, assets that EdgeUnit at origin positions is a ship
+     * @param firstOriginPos  first coordinate of ship to move
+     * @param secondOriginPos second coordinate of ship to move
+     * @param newFirstPos     first coordinate of new ship position
+     * @param newSecondPos    second coordinate of new ship position
+     * @param owner           of ship
+     * @fromPeer              indicates whether the method was called from the owner of new settlement, or from a peer
+     * @return true if successful
+     * */
+    public boolean moveShip(CoordinatePair firstOriginPos, CoordinatePair secondOriginPos, CoordinatePair newFirstPos, CoordinatePair newSecondPos, PlayerColor owner, boolean fromPeer) {
+    	Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+    	EdgeUnit shipToMove = null;
+    	
+    	for (EdgeUnit eu : currentP.getRoadsAndShips()) {
+    		if (eu.hasEndpoint(firstOriginPos) && eu.hasEndpoint(secondOriginPos)) {
+    			shipToMove = eu;
+    		}
+    	}
+    	
+    	if (shipToMove == null) {
+    		return false;
+    	} else {
+    		shipToMove.moveShip(newFirstPos, newSecondPos);
+    		aSessionScreen.updateEdge(newFirstPos, newSecondPos, EdgeUnitKind.SHIP, owner);
+    		//TODO: tell other peers if fromPeer is false
+    		return true;
+    	}
     }
 
     

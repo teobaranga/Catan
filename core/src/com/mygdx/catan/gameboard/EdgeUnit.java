@@ -25,6 +25,14 @@ public class EdgeUnit {
 		return kind;
 	}
 	
+	/**
+	 * @param other EdgeUnit 
+	 * @return true iff other and this EdgeUnit share an endpoint
+	 * */
+	public boolean isAdjacent(EdgeUnit other) {
+		return (!this.equals(other) && (this.hasEndpoint(other.getAFirstCoordinate()) || this.hasEndpoint(other.getASecondCoordinate())));
+	}
+	
 	public boolean hasEndpoint(CoordinatePair intersection) {
 		return intersection.equals(aFirstCoordinate) || intersection.equals(aSecondCoordinate);
 	}
@@ -58,5 +66,16 @@ public class EdgeUnit {
 
 	public CoordinatePair getASecondCoordinate() {
 		return this.aSecondCoordinate;
+	}
+	
+	@Override 
+	public boolean equals(Object other) {
+		if (other == null) return false;
+		if (other == this) return true;
+	    if (!(other instanceof EdgeUnit))return false;
+	    
+	    EdgeUnit otherEdgeUnit = (EdgeUnit) other;
+	    
+	    return (this.hasEndpoint(otherEdgeUnit.getAFirstCoordinate()) && this.hasEndpoint(otherEdgeUnit.getASecondCoordinate()));
 	}
 }

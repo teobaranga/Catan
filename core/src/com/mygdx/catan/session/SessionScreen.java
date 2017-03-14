@@ -103,6 +103,7 @@ public class SessionScreen implements Screen {
     private VillageKind villagePieceKind;
     private EdgeUnitKind edgePieceKind;
     private CoordinatePair initVillageIntersection;
+    private Pair<CoordinatePair, CoordinatePair> shipToMove;
 
     /**
      * Menu Buttons
@@ -113,7 +114,8 @@ public class SessionScreen implements Screen {
     private TextButton buildShipButton;
     private TextButton rollDiceButton;
     private TextButton maritimeTradeButton;
-
+    private TextButton moveShipButton;
+    
     private TextButton endTurnButton;
 
     //private TextButton aInitButton;
@@ -260,10 +262,109 @@ public class SessionScreen implements Screen {
                             return true;
                         }
                     }
+                } else if (aMode == SessionScreenModes.CHOOSESHIPMODE) {
+                	for (Pair<CoordinatePair, CoordinatePair> validShip : validEdges) {
+                        int xMin = Math.min(validShip.getLeft().getLeft(), validShip.getRight().getLeft());
+                        int xMax = Math.max(validShip.getLeft().getLeft(), validShip.getRight().getLeft());
+                        int yMin = Math.min(validShip.getLeft().getRight(), validShip.getRight().getRight());
+                        int yMax = Math.max(validShip.getLeft().getRight(), validShip.getRight().getRight());
+
+                        if (screenX > boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE - 10 &&
+                                screenX < boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE + 10 &&
+                                screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
+                                screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
+
+                            // The edge position is valid, can clear the highlighted positions
+                            highlightedPositions.clear();
+                            validEdges.clear();
+                            
+                            shipToMove = validShip;
+                            // player is now prompted to choose a new position for the validShip
+                            // sets the valid edge position and highlights them
+                            setValidMoveShipPositions(validShip);
+                            
+                            // validShip is removed from GUI game board
+                            removeEdgeUnit(validShip.getLeft().getLeft(), validShip.getLeft().getRight(), validShip.getRight().getLeft(), validShip.getRight().getRight());
+                            
+                            // mode is set to choose edge
+                            aMode = SessionScreenModes.CHOOSEUPDATEEDGEMODE;
+
+                            return true;
+                        }
+                    }
+                } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
+                	for (Pair<CoordinatePair, CoordinatePair> validEdge : validEdges) {
+                        int xMin = Math.min(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
+                        int xMax = Math.max(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
+                        int yMin = Math.min(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
+                        int yMax = Math.max(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
+
+                        if (screenX > boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE - 10 &&
+                                screenX < boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE + 10 &&
+                                screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
+                                screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
+
+                            // The edge position is valid, can clear the highlighted positions
+                            highlightedPositions.clear();
+                            validEdges.clear();
+                            
+                            aSessionController.moveShip(shipToMove.getLeft(), shipToMove.getRight(), validEdge.getLeft(), validEdge.getRight(), aSessionController.getPlayerColor(), false);
+                            
+                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                            moveShipButton.setText("Move Ship");
+
+                            return true;
+                        }
+                    }
                 }
                 return false;
             }
         };
+    }
+    
+    public void setValidMoveShipPositions(Pair<CoordinatePair, CoordinatePair> validShip) {
+    	HashSet<CoordinatePair> validShipEndpoints = aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor());
+    	
+    	// removes the end point at the intersection not connected to ships other than validShip
+    	for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
+    		if (i.equals(validShip.getLeft()) || i.equals(validShip.getRight())) {
+    			boolean hasOtherEndpoint = false;
+    			for (CoordinatePair j : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
+        			if (aSessionController.isAdjacent(i, j) && !(j.equals(validShip.getLeft()) || j.equals(validShip.getRight()))) {
+        				hasOtherEndpoint = true;
+        				break;
+        			}
+        		}
+    			if (!hasOtherEndpoint) {
+    				validShipEndpoints.remove(i);
+    			}
+    		}
+    	}
+    	
+    	
+    	for (CoordinatePair i : validShipEndpoints) {
+            for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
+                if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
+
+                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
+                    validEdges.add(edge);
+
+                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                            validEdges.remove(edge);
+                        }
+                    }
+                }
+            }
+        }
+    	
+    	// add the valid ship position to validEdges
+    	validEdges.add(validShip);
+    	
+    	// highlights valid edge positions
+    	for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
+            highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+        }
     }
 
     @Override
@@ -368,6 +469,11 @@ public class SessionScreen implements Screen {
         setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP);
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
+        
+        moveShipButton = new TextButton("Move Ship", CatanGame.skin);
+        setupMoveShipButton(moveShipButton);
+        moveShipButton.pad(0, 10, 0, 10);
+        menuTable.add(moveShipButton).padBottom(10).row();
 
         // Add roll dice button
         rollDiceButton = new TextButton("Roll Dice", CatanGame.skin);
@@ -498,7 +604,7 @@ public class SessionScreen implements Screen {
             }
         });
     }
-
+    
     private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind) {
         buildButton.addListener(new ChangeListener() {
             @Override
@@ -567,6 +673,39 @@ public class SessionScreen implements Screen {
                 }
             }
         });
+    }
+    
+    private void setupMoveShipButton(TextButton moveButton) {
+    	moveButton.addListener(new ChangeListener() {
+
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				
+				if(aMode != SessionScreenModes.CHOOSESHIPMODE && aMode != SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
+					// loop through all valip ships to move
+					for (EdgeUnit eu : aSessionController.requestValidShips(aSessionController.getPlayerColor())) {
+						// add its endpoints as a pair of coordinate to validedges
+						Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(eu.getAFirstCoordinate(),eu.getASecondCoordinate());
+						validEdges.add(edge);
+					}
+					// create a highlighted piece and add to highlightedpositions
+					for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
+	                    highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+	                }
+					
+					aMode = SessionScreenModes.CHOOSESHIPMODE;
+                    moveButton.setText("Cancel");
+					
+				} else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE || aMode == SessionScreenModes.CHOOSESHIPMODE) {
+					validEdges.clear();
+                    highlightedPositions.clear();
+                    //TODO: put the game piece back
+                    moveButton.setText("Move Ship");
+                    aMode = SessionScreenModes.CHOOSEACTIONMODE;
+				}
+			}
+    		
+    	});
     }
 
     private Table createResourceTable(ResourceKind type) {

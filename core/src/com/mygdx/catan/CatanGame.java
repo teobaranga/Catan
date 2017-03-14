@@ -64,9 +64,9 @@ public class CatanGame extends Game {
         // Load the UI skin
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 
-        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic.mp3"));
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("sound/buttonClick.mp3"));
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("sound/menuMusic.mp3"));
         menuMusic.setLooping(true);
-        clickSound = Gdx.audio.newSound(Gdx.files.internal("buttonClick.mp3"));
 
         // Load the current account if cached
         account = AccountManager.getLocalAccount();
@@ -96,7 +96,7 @@ public class CatanGame extends Game {
             case CREATE_GAME:
                 setScreen(new CreateScreen(this, new MenuScreen(this)));
             case IN_GAME:
-                //this.setScreen(new CreateScreen(this, menuScreen));
+                menuMusic.stop();
                 setScreen(new SessionScreen(this));
                 break;
             case LOBBY:

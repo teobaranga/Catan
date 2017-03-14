@@ -175,7 +175,6 @@ public class LobbyScreen implements Screen {
                 public void changed(ChangeEvent event, Actor actor) {
                     // TODO start the game
                     game.clickSound.play(0.2F);
-                    game.menuMusic.stop();
                     CatanGame.client.sendTCP(StartGame.newInstance(CatanGame.account.getUsername()));
                 }
             });

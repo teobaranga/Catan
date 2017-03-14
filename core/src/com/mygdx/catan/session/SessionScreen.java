@@ -113,9 +113,9 @@ public class SessionScreen implements Screen {
     private TextButton buildShipButton;
     private TextButton rollDiceButton;
     private TextButton maritimeTradeButton;
-    
+
     private TextButton endTurnButton;
-    
+
     //private TextButton aInitButton;
 
     /**
@@ -128,6 +128,12 @@ public class SessionScreen implements Screen {
      */
     private Table currentPlayer;
     private Label currentPlayerLabel;
+
+    /**
+     * Three tables that keep track of the players' VPs.
+     */
+    private Table[] playersVP;
+    private Label[] playersVPLabel;
 
     /**
      * labels that keeps track of available game pieces to build
@@ -232,7 +238,7 @@ public class SessionScreen implements Screen {
                                 if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
                                     edgePieceKind = EdgeUnitKind.SHIP;
                                 }
-                                
+
                                 aSessionController.buildInitialVillageAndRoad(initVillageIntersection, validEdge.getLeft(), validEdge.getRight(), villagePieceKind, edgePieceKind);
 
                                 // Stop the initialization phase only after the city was placed
@@ -286,12 +292,12 @@ public class SessionScreen implements Screen {
         menuTable.setBackground("resTableBackground");
         menuTable.setSize(200, 300);
         menuTable.setPosition(10, 10);
-        
+
         //end turn table 
         Table turnTable = new Table(CatanGame.skin);
         turnTable.setSize(200, 50);
         turnTable.setPosition(Gdx.graphics.getWidth() - 210, Gdx.graphics.getHeight()-60);
-        
+
         // current player table
         currentPlayer = new Table(CatanGame.skin);
         currentPlayerLabel = new Label("", CatanGame.skin);
@@ -299,6 +305,20 @@ public class SessionScreen implements Screen {
         currentPlayer.setSize(200, 50);
         currentPlayer.setPosition(10, Gdx.graphics.getHeight() - 60);
         updateCurrentPlayer(aSessionController.getCurrentPlayer());
+
+        // current VPs' table
+        playersVPLabel = new Label[3];
+        playersVP = new Table[3];
+        for (int i = 0; i < playersVPLabel.length; i++) {
+            playersVPLabel[i] = new Label("", CatanGame.skin);
+            Table currentVpTable = new Table(CatanGame.skin);
+            currentVpTable.add(playersVPLabel[i]);
+            currentVpTable.setSize(200,40);
+            currentVpTable.setPosition(10, Gdx.graphics.getHeight() - 130 - 40 * i);
+            playersVP[i] = currentVpTable;
+        }
+        updateVpTables();
+
 
         // available game pieces table
         Table availableGamePiecesTable = new Table(CatanGame.skin);
@@ -368,8 +388,8 @@ public class SessionScreen implements Screen {
                 aSessionController.endTurnNotify();
             }
         });
-        turnTable.add(endTurnButton).padBottom(10).row(); 
-        
+        turnTable.add(endTurnButton).padBottom(10).row();
+
         // Add maritime trade button
         maritimeTradeButton = new TextButton("Maritime Trade", CatanGame.skin);
         maritimeTradeButton.addListener(new ChangeListener() {
@@ -431,6 +451,9 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(menuTable);
         aSessionStage.addActor(turnTable);
         aSessionStage.addActor(currentPlayer);
+        for (int i = 0; i < playersVP.length; i++) {
+            aSessionStage.addActor(playersVP[i]);
+        }
         aSessionStage.addActor(gameLog);
 
         // Notify the controller that the session screen is displayed
@@ -935,34 +958,54 @@ public class SessionScreen implements Screen {
     }
 
     /**
+     * Sets Table background Color given Player's Color
+     */
+    void setPlayerTableColor(Table table, PlayerColor playerColor) {
+        // sets background color to current player's color
+        switch (playerColor) {
+            case BLUE:
+                table.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
+                break;
+            case ORANGE:
+                table.setBackground(CatanGame.skin.newDrawable("white", Color.ORANGE));
+                break;
+            case RED:
+                table.setBackground(CatanGame.skin.newDrawable("white", Color.RED));
+                break;
+            case WHITE:
+                table.setBackground(CatanGame.skin.newDrawable("white", Color.WHITE));
+                break;
+            case YELLOW:
+                table.setBackground(CatanGame.skin.newDrawable("white", Color.YELLOW));
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    /**
      * Updates the current player
      */
     void updateCurrentPlayer(Player newCurrentPlayer) {
 
         String currentPlayerName = newCurrentPlayer.getAccount().getUsername();
         currentPlayerLabel.setText("Current Player: " + currentPlayerName);
+        setPlayerTableColor(currentPlayer, newCurrentPlayer.getColor());
+    }
 
-        // sets background color to current player's color
-        switch (newCurrentPlayer.getColor()) {
-            case BLUE:
-                currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
-                break;
-            case ORANGE:
-                currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.ORANGE));
-                break;
-            case RED:
-                currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.RED));
-                break;
-            case WHITE:
-                currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.WHITE));
-                break;
-            case YELLOW:
-                currentPlayer.setBackground(CatanGame.skin.newDrawable("white", Color.YELLOW));
-                break;
-            default:
-                break;
+    /**
+     * Updates the players' VP
+     */
+    void updateVpTables(){
+        Player[] players = aSessionController.getPlayers();
+        for (int i = 0; i < playersVPLabel.length && i < players.length; i++) {
+            playersVPLabel[i].setText(players[i].getUsername() + ": " +players[i].getTokenVictoryPoints());
+            setPlayerTableColor(playersVP[i], players[i].getColor());
         }
     }
+
+
 
     /**
      * Updates the available game pieces

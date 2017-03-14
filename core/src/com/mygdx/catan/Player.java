@@ -32,6 +32,7 @@ public class Player {
         villages = new ArrayList<>();
         resourceMap = new ResourceMap();
         // Set the default number of available pieces
+        tokenVictoryPoints = 0;
         availableSettlements = 5;
         availableCities = 4;
         availableRoads = 15;

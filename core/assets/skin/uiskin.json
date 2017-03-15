@@ -37,35 +37,35 @@
       name: white,
       color: {r: 0.49020, g: 0.79216, b: 0.36078, a: 1}
     },
-    wood: {
+    wood-color: {
       name: white,
       color: wood
     },
-    brick: {
+    brick-color: {
       name: white,
       color: brick
     },
-    ore: {
+    ore-color: {
       name: white,
       color: ore
     },
-    grain: {
+    grain-color: {
       name: white,
       color: grain
     },
-    wool: {
+    wool-color: {
       name: white,
       color: wool
     },
-    coin: {
+    coin-color: {
       name: white,
       color: coin
     },
-    cloth: {
+    cloth-color: {
       name: white,
       color: cloth
     },
-    paper: {
+    paper-color: {
       name: white,
       color: paper
     }

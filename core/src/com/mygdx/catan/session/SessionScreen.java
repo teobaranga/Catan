@@ -680,10 +680,17 @@ public class SessionScreen implements Screen {
                     aMode = SessionScreenModes.CHOOSESHIPMODE;
                     moveButton.setText("Cancel");
 
-                } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE || aMode == SessionScreenModes.CHOOSESHIPMODE) {
+                } else if (aMode == SessionScreenModes.CHOOSESHIPMODE) {
                     validEdges.clear();
                     highlightedPositions.clear();
-                    //TODO: put the game piece back
+                    moveButton.setText("Move Ship");
+                    aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
+                    // put the chosen ship game piece back in GUI
+                    updateEdge(shipToMove.getLeft(), shipToMove.getRight(), EdgeUnitKind.SHIP, aSessionController.getPlayerColor());
+                    
+                    validEdges.clear();
+                    highlightedPositions.clear();
                     moveButton.setText("Move Ship");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                 }

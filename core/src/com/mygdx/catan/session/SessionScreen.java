@@ -993,6 +993,7 @@ public class SessionScreen implements Screen {
                 buildShipButton.setDisabled(true);
                 maritimeTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
+                moveShipButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1005,6 +1006,7 @@ public class SessionScreen implements Screen {
                 maritimeTradeButton.setDisabled(true);
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
+                moveShipButton.setDisabled(true);
 
                 initialize(true);
                 break;
@@ -1017,6 +1019,7 @@ public class SessionScreen implements Screen {
                 maritimeTradeButton.setDisabled(true);
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
+                moveShipButton.setDisabled(true);
 
                 initialize(false);
                 break;
@@ -1028,6 +1031,7 @@ public class SessionScreen implements Screen {
                 buildShipButton.setDisabled(true);
                 maritimeTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
+                moveShipButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1039,6 +1043,7 @@ public class SessionScreen implements Screen {
                 buildShipButton.setDisabled(false);
                 maritimeTradeButton.setDisabled(false);
                 endTurnButton.setDisabled(false);
+                moveShipButton.setDisabled(false);
 
                 rollDiceButton.setDisabled(true);
                 break;

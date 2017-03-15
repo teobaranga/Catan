@@ -697,7 +697,7 @@ public class SessionScreen implements Screen {
         final String resName = type.toString().toLowerCase();
 
         Table resourceTable = new Table(CatanGame.skin);
-        resourceTable.setBackground(CatanGame.skin.getDrawable(resName));
+        resourceTable.setBackground(CatanGame.skin.getDrawable(resName + "-color"));
 
         // Display the resource name
         resourceTable.add(new Label(resName, CatanGame.skin));

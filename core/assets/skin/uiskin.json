@@ -14,7 +14,15 @@
     green: {a: 1, b: 0, g: 1, r: 0},
     white: {a: 1, b: 1, g: 1, r: 1},
     red: {a: 1, b: 0, g: 0, r: 1},
-    black: {a: 1, b: 0, g: 0, r: 0}
+    black: {a: 1, b: 0, g: 0, r: 0},
+    wood: {hex: #679861},
+    brick: {hex: #CC6633},
+    ore: {hex: #996633},
+    grain: {hex: #FFFF66},
+    wool: {hex: #66FF66},
+    coin: {hex: #FF9A00},
+    cloth: {hex: #CDCDFF},
+    paper: {hex: #E6E6B9}
   },
   com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
     dialogDim: {
@@ -28,6 +36,38 @@
     readyBackground: {
       name: white,
       color: {r: 0.49020, g: 0.79216, b: 0.36078, a: 1}
+    },
+    wood: {
+      name: white,
+      color: wood
+    },
+    brick: {
+      name: white,
+      color: brick
+    },
+    ore: {
+      name: white,
+      color: ore
+    },
+    grain: {
+      name: white,
+      color: grain
+    },
+    wool: {
+      name: white,
+      color: wool
+    },
+    coin: {
+      name: white,
+      color: coin
+    },
+    cloth: {
+      name: white,
+      color: cloth
+    },
+    paper: {
+      name: white,
+      color: paper
     }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {

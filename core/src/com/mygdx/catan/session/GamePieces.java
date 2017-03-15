@@ -14,32 +14,11 @@ import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.TerrainKind;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Helper class that returns PolygonRegions representing various game pieces
  * such as hexes, cities, roads, etc.
  */
 class GamePieces {
-
-    /**
-     * The map of resources to colors
-     */
-    private static Map<String, Color> colorMap;
-
-    static {
-        // TODO move this to the skin
-        colorMap = new HashMap<>();
-        colorMap.put("wood", Color.valueOf("679861"));
-        colorMap.put("brick", Color.valueOf("CC6633"));
-        colorMap.put("ore", Color.valueOf("996633"));
-        colorMap.put("grain", Color.valueOf("FFFF66"));
-        colorMap.put("wool", Color.valueOf("66FF66"));
-        colorMap.put("coin", Color.valueOf("FF9A00"));
-        colorMap.put("cloth", Color.valueOf("CDCDFF"));
-        colorMap.put("paper", Color.valueOf("E6E6B9"));
-    }
 
     private final PolygonRegion sea, desert, hills, forest, mountains, pasture, fields, gold;
 
@@ -62,11 +41,11 @@ class GamePieces {
     GamePieces() {
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
-        aHillsTextureSolid = setupTextureSolid(colorMap.get("brick"));
-        aForestTextureSolid = setupTextureSolid(colorMap.get("wood"));
-        aMountainTextureSolid = setupTextureSolid(colorMap.get("ore"));
-        aPastureTextureSolid = setupTextureSolid(colorMap.get("wool"));
-        aFieldsTextureSolid = setupTextureSolid(colorMap.get("grain"));
+        aHillsTextureSolid = setupTextureSolid(CatanGame.skin.getColor("brick"));
+        aForestTextureSolid = setupTextureSolid(CatanGame.skin.getColor("wood"));
+        aMountainTextureSolid = setupTextureSolid(CatanGame.skin.getColor("ore"));
+        aPastureTextureSolid = setupTextureSolid(CatanGame.skin.getColor("wool"));
+        aFieldsTextureSolid = setupTextureSolid(CatanGame.skin.getColor("grain"));
 
         //Creating the color filling for player pieces
         aOrangeTextureSolid = setupTextureSolid(Color.ORANGE);

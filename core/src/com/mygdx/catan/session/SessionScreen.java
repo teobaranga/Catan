@@ -28,28 +28,10 @@ import java.util.*;
 
 public class SessionScreen implements Screen {
 
-    /**
-     * The map of resources to colors
-     */
-    private static Map<ResourceKind, Color> colorMap;
-
-    static {
-        // TODO move this to the skin
-        colorMap = new HashMap<>();
-        colorMap.put(ResourceKind.WOOD, Color.valueOf("679861"));
-        colorMap.put(ResourceKind.BRICK, Color.valueOf("CC6633"));
-        colorMap.put(ResourceKind.ORE, Color.valueOf("996633"));
-        colorMap.put(ResourceKind.GRAIN, Color.valueOf("FFFF66"));
-        colorMap.put(ResourceKind.WOOL, Color.valueOf("66FF66"));
-        colorMap.put(ResourceKind.COIN, Color.valueOf("FF9A00"));
-        colorMap.put(ResourceKind.CLOTH, Color.valueOf("CDCDFF"));
-        colorMap.put(ResourceKind.PAPER, Color.valueOf("E6E6B9"));
-    }
-
-    private final CatanGame aGame;
-
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
     public static final int LENGTH = 60;                                            // length of an edge of a tile
+
+    private final CatanGame aGame;
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
     private final int OFFX = BASE;                                            // offset on the x axis
     private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
@@ -115,7 +97,7 @@ public class SessionScreen implements Screen {
     private TextButton rollDiceButton;
     private TextButton maritimeTradeButton;
     private TextButton moveShipButton;
-    
+
     private TextButton endTurnButton;
 
     //private TextButton aInitButton;
@@ -263,7 +245,7 @@ public class SessionScreen implements Screen {
                         }
                     }
                 } else if (aMode == SessionScreenModes.CHOOSESHIPMODE) {
-                	for (Pair<CoordinatePair, CoordinatePair> validShip : validEdges) {
+                    for (Pair<CoordinatePair, CoordinatePair> validShip : validEdges) {
                         int xMin = Math.min(validShip.getLeft().getLeft(), validShip.getRight().getLeft());
                         int xMax = Math.max(validShip.getLeft().getLeft(), validShip.getRight().getLeft());
                         int yMin = Math.min(validShip.getLeft().getRight(), validShip.getRight().getRight());
@@ -277,15 +259,15 @@ public class SessionScreen implements Screen {
                             // The edge position is valid, can clear the highlighted positions
                             highlightedPositions.clear();
                             validEdges.clear();
-                            
+
                             shipToMove = validShip;
                             // player is now prompted to choose a new position for the validShip
                             // sets the valid edge position and highlights them
                             setValidMoveShipPositions(validShip);
-                            
+
                             // validShip is removed from GUI game board
                             removeEdgeUnit(validShip.getLeft().getLeft(), validShip.getLeft().getRight(), validShip.getRight().getLeft(), validShip.getRight().getRight());
-                            
+
                             // mode is set to choose edge
                             aMode = SessionScreenModes.CHOOSEUPDATEEDGEMODE;
 
@@ -293,7 +275,7 @@ public class SessionScreen implements Screen {
                         }
                     }
                 } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
-                	for (Pair<CoordinatePair, CoordinatePair> validEdge : validEdges) {
+                    for (Pair<CoordinatePair, CoordinatePair> validEdge : validEdges) {
                         int xMin = Math.min(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
                         int xMax = Math.max(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
                         int yMin = Math.min(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
@@ -307,9 +289,9 @@ public class SessionScreen implements Screen {
                             // The edge position is valid, can clear the highlighted positions
                             highlightedPositions.clear();
                             validEdges.clear();
-                            
+
                             aSessionController.moveShip(shipToMove.getLeft(), shipToMove.getRight(), validEdge.getLeft(), validEdge.getRight(), aSessionController.getPlayerColor(), false);
-                            
+
                             aMode = SessionScreenModes.CHOOSEACTIONMODE;
                             moveShipButton.setText("Move Ship");
 
@@ -321,28 +303,28 @@ public class SessionScreen implements Screen {
             }
         };
     }
-    
+
     public void setValidMoveShipPositions(Pair<CoordinatePair, CoordinatePair> validShip) {
-    	HashSet<CoordinatePair> validShipEndpoints = aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor());
-    	
-    	// removes the end point at the intersection not connected to ships other than validShip
-    	for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
-    		if (i.equals(validShip.getLeft()) || i.equals(validShip.getRight())) {
-    			boolean hasOtherEndpoint = false;
-    			for (CoordinatePair j : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
-        			if (aSessionController.isAdjacent(i, j) && !(j.equals(validShip.getLeft()) || j.equals(validShip.getRight()))) {
-        				hasOtherEndpoint = true;
-        				break;
-        			}
-        		}
-    			if (!hasOtherEndpoint) {
-    				validShipEndpoints.remove(i);
-    			}
-    		}
-    	}
-    	
-    	
-    	for (CoordinatePair i : validShipEndpoints) {
+        HashSet<CoordinatePair> validShipEndpoints = aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor());
+
+        // removes the end point at the intersection not connected to ships other than validShip
+        for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
+            if (i.equals(validShip.getLeft()) || i.equals(validShip.getRight())) {
+                boolean hasOtherEndpoint = false;
+                for (CoordinatePair j : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
+                    if (aSessionController.isAdjacent(i, j) && !(j.equals(validShip.getLeft()) || j.equals(validShip.getRight()))) {
+                        hasOtherEndpoint = true;
+                        break;
+                    }
+                }
+                if (!hasOtherEndpoint) {
+                    validShipEndpoints.remove(i);
+                }
+            }
+        }
+
+
+        for (CoordinatePair i : validShipEndpoints) {
             for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
                 if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
 
@@ -357,12 +339,12 @@ public class SessionScreen implements Screen {
                 }
             }
         }
-    	
-    	// add the valid ship position to validEdges
-    	validEdges.add(validShip);
-    	
-    	// highlights valid edge positions
-    	for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
+
+        // add the valid ship position to validEdges
+        validEdges.add(validShip);
+
+        // highlights valid edge positions
+        for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
             highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
         }
     }
@@ -380,13 +362,15 @@ public class SessionScreen implements Screen {
         // resource table
         Table contentTable = new Table(CatanGame.skin);
         contentTable.setBackground("resTableBackground");
-        contentTable.setSize(550, 120);
-        contentTable.setPosition(Gdx.graphics.getWidth()/2 - 275, 10);
+        contentTable.pad(10);
 
-        for (Map.Entry<ResourceKind, Color> entry : colorMap.entrySet()) {
-            Table aTable = createResourceTable(entry.getKey());
-            contentTable.add(aTable).pad(5);
+        for (ResourceKind resourceKind : ResourceKind.values()) {
+            Table aTable = createResourceTable(resourceKind);
+            contentTable.add(aTable).width(60).height(60).pad(5);
         }
+
+        contentTable.pack();
+        contentTable.setPosition(Gdx.graphics.getWidth() / 2 - contentTable.getWidth() / 2, 10);
 
         // menu table
         Table menuTable = new Table(CatanGame.skin);
@@ -397,7 +381,7 @@ public class SessionScreen implements Screen {
         //end turn table 
         Table turnTable = new Table(CatanGame.skin);
         turnTable.setSize(200, 50);
-        turnTable.setPosition(Gdx.graphics.getWidth() - 210, Gdx.graphics.getHeight()-60);
+        turnTable.setPosition(Gdx.graphics.getWidth() - 210, Gdx.graphics.getHeight() - 60);
 
         // current player table
         currentPlayer = new Table(CatanGame.skin);
@@ -414,7 +398,7 @@ public class SessionScreen implements Screen {
             playersVPLabel[i] = new Label("", CatanGame.skin);
             Table currentVpTable = new Table(CatanGame.skin);
             currentVpTable.add(playersVPLabel[i]);
-            currentVpTable.setSize(200,40);
+            currentVpTable.setSize(200, 40);
             currentVpTable.setPosition(10, Gdx.graphics.getHeight() - 130 - 40 * i);
             playersVP[i] = currentVpTable;
         }
@@ -469,7 +453,7 @@ public class SessionScreen implements Screen {
         setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP);
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
-        
+
         moveShipButton = new TextButton("Move Ship", CatanGame.skin);
         setupMoveShipButton(moveShipButton);
         moveShipButton.pad(0, 10, 0, 10);
@@ -548,7 +532,7 @@ public class SessionScreen implements Screen {
         gameLog = new ScrollPane(table);
         gameLog.setOverscroll(false, false);
         gameLog.setX(Gdx.graphics.getWidth() - tableWidth - pad);
-        gameLog.setY(Gdx.graphics.getHeight() / 2 - tableHeight/2);
+        gameLog.setY(Gdx.graphics.getHeight() / 2 - tableHeight / 2);
         gameLog.setWidth(tableWidth);
         gameLog.setHeight(tableHeight);
 
@@ -604,12 +588,12 @@ public class SessionScreen implements Screen {
             }
         });
     }
-    
+
     private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind) {
         buildButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if(!aSessionController.requestBuildEdgeUnit(aSessionController.getPlayerColor(), kind)) {
+                if (!aSessionController.requestBuildEdgeUnit(aSessionController.getPlayerColor(), kind)) {
                     addGameMessage("Not enough resources for building a " + kind.name().toLowerCase());
                     return;
                 }
@@ -674,53 +658,59 @@ public class SessionScreen implements Screen {
             }
         });
     }
-    
-    private void setupMoveShipButton(TextButton moveButton) {
-    	moveButton.addListener(new ChangeListener() {
 
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				
-				if(aMode != SessionScreenModes.CHOOSESHIPMODE && aMode != SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
-					// loop through all valip ships to move
-					for (EdgeUnit eu : aSessionController.requestValidShips(aSessionController.getPlayerColor())) {
-						// add its endpoints as a pair of coordinate to validedges
-						Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(eu.getAFirstCoordinate(),eu.getASecondCoordinate());
-						validEdges.add(edge);
-					}
-					// create a highlighted piece and add to highlightedpositions
-					for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
-	                    highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-	                }
-					
-					aMode = SessionScreenModes.CHOOSESHIPMODE;
+    private void setupMoveShipButton(TextButton moveButton) {
+        moveButton.addListener(new ChangeListener() {
+
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+
+                if (aMode != SessionScreenModes.CHOOSESHIPMODE && aMode != SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
+                    // loop through all valip ships to move
+                    for (EdgeUnit eu : aSessionController.requestValidShips(aSessionController.getPlayerColor())) {
+                        // add its endpoints as a pair of coordinate to validedges
+                        Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(eu.getAFirstCoordinate(), eu.getASecondCoordinate());
+                        validEdges.add(edge);
+                    }
+                    // create a highlighted piece and add to highlightedpositions
+                    for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
+                        highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                    }
+
+                    aMode = SessionScreenModes.CHOOSESHIPMODE;
                     moveButton.setText("Cancel");
-					
-				} else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE || aMode == SessionScreenModes.CHOOSESHIPMODE) {
-					validEdges.clear();
+
+                } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE || aMode == SessionScreenModes.CHOOSESHIPMODE) {
+                    validEdges.clear();
                     highlightedPositions.clear();
                     //TODO: put the game piece back
                     moveButton.setText("Move Ship");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
-				}
-			}
-    		
-    	});
+                }
+            }
+
+        });
     }
 
     private Table createResourceTable(ResourceKind type) {
+        // Get the name of the resource
+        final String resName = type.toString().toLowerCase();
+
         Table resourceTable = new Table(CatanGame.skin);
-        resourceTable.add(new Label(type.toString().toLowerCase(), CatanGame.skin));
+        resourceTable.setBackground(CatanGame.skin.getDrawable(resName));
+
+        // Display the resource name
+        resourceTable.add(new Label(resName, CatanGame.skin));
         resourceTable.row();
 
+        // Display the resource count
         Label l = new Label("0", CatanGame.skin);
-        l.setText("0");
         resourceTable.add(l);
         resourceLabelMap.put(type, l);
 
-        resourceTable.setBackground(CatanGame.skin.newDrawable("white", colorMap.get(type)));
-        resourceTable.setSize(60, 60);
         resourceTable.pad(10);
+        resourceTable.pack();
+
         return resourceTable;
     }
 
@@ -1136,14 +1126,13 @@ public class SessionScreen implements Screen {
     /**
      * Updates the players' VP
      */
-    void updateVpTables(){
+    void updateVpTables() {
         Player[] players = aSessionController.getPlayers();
         for (int i = 0; i < playersVPLabel.length && i < players.length; i++) {
-            playersVPLabel[i].setText(players[i].getUsername() + ": " +players[i].getTokenVictoryPoints());
+            playersVPLabel[i].setText(players[i].getUsername() + ": " + players[i].getTokenVictoryPoints());
             setPlayerTableColor(playersVP[i], players[i].getColor());
         }
     }
-
 
 
     /**

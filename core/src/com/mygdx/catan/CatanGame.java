@@ -12,7 +12,6 @@ import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.account.AccountManager;
 import com.mygdx.catan.enums.ScreenKind;
-import com.mygdx.catan.screens.create.CreateScreen;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
@@ -94,7 +93,7 @@ public class CatanGame extends Game {
             case BROWSE_GAMES:
                 break;
             case CREATE_GAME:
-                setScreen(new CreateScreen(this, new MenuScreen(this)));
+//                setScreen(new CreateScreen(this, new MenuScreen(this)));
             case IN_GAME:
                 menuMusic.stop();
                 setScreen(new SessionScreen(this));

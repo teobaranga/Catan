@@ -29,7 +29,7 @@ import java.util.*;
 public class SessionScreen implements Screen {
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-    public static final int LENGTH = 60;                                            // length of an edge of a tile
+    public static final int LENGTH = 40;                                            // length of an edge of a tile
 
     private final CatanGame aGame;
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile

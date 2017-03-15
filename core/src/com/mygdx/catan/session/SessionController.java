@@ -16,6 +16,7 @@ import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.request.BuildEdge;
 import com.mygdx.catan.request.BuildIntersection;
 import com.mygdx.catan.request.EndTurn;
+import com.mygdx.catan.request.MoveShip;
 import com.mygdx.catan.request.RollTwoDice;
 import com.mygdx.catan.response.DiceRolled;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -146,6 +147,22 @@ public class SessionController {
                                 break;
 
                         }
+                    });
+                } else if (object instanceof MoveShip) {
+                    Gdx.app.postRunnable(() -> {
+                        final MoveShip shipMoved = (MoveShip) object;
+                        aSessionScreen.addGameMessage(shipMoved.username + " moved a ship");
+                        Pair<Integer, Integer> originfirstCor = shipMoved.getOriginleftPos();
+                        Pair<Integer, Integer> originsecondCor = shipMoved.getOriginrightPos();
+                        Pair<Integer, Integer> newfirstCor = shipMoved.getnewleftPos();
+                        Pair<Integer, Integer> newsecondCor = shipMoved.getnewrightPos();
+                        
+                        CoordinatePair originfirstPos = aGameBoardManager.getCoordinatePairFromCoordinates(originfirstCor.getLeft(), originfirstCor.getRight());
+                        CoordinatePair originsecondPos = aGameBoardManager.getCoordinatePairFromCoordinates(originsecondCor.getLeft(), originsecondCor.getRight());
+                        CoordinatePair newfirstPos = aGameBoardManager.getCoordinatePairFromCoordinates(newfirstCor.getLeft(), newfirstCor.getRight());
+                        CoordinatePair newsecondPos = aGameBoardManager.getCoordinatePairFromCoordinates(newsecondCor.getLeft(), newsecondCor.getRight());
+                        
+                        moveShip(originfirstPos, originsecondPos, newfirstPos, newsecondPos, shipMoved.getOwner(), true);
                     });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
@@ -679,9 +696,22 @@ public class SessionController {
     	if (shipToMove == null) {
     		return false;
     	} else {
+    		// tell other peers if fromPeer is false
+    		if (!fromPeer) {
+    		    Pair<Integer,Integer> originleftPos = new ImmutablePair<>(firstOriginPos.getLeft(), firstOriginPos.getRight());
+    		    Pair<Integer,Integer> originrightPos = new ImmutablePair<>(secondOriginPos.getLeft(), secondOriginPos.getRight());
+    		    Pair<Integer,Integer> newleftPos = new ImmutablePair<>(newFirstPos.getLeft(), newFirstPos.getRight());
+    		    Pair<Integer,Integer> newrightPos = new ImmutablePair<>(newSecondPos.getLeft(), newSecondPos.getRight());
+    		    MoveShip request = MoveShip.newInstance(originleftPos, originrightPos, newleftPos, newrightPos, owner, CatanGame.account.getUsername());
+                CatanGame.client.sendTCP(request);
+    		} else {
+    		    // remove old position of ship from client GUI
+                aSessionScreen.removeEdgeUnit(firstOriginPos.getLeft(), firstOriginPos.getRight(), secondOriginPos.getLeft(), secondOriginPos.getRight());
+    		}
+    		
     		shipToMove.moveShip(newFirstPos, newSecondPos);
-    		aSessionScreen.updateEdge(newFirstPos, newSecondPos, EdgeUnitKind.SHIP, owner);
-    		//TODO: tell other peers if fromPeer is false
+            aSessionScreen.updateEdge(newFirstPos, newSecondPos, EdgeUnitKind.SHIP, owner);
+    		
     		return true;
     	}
     }

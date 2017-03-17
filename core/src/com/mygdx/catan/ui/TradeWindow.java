@@ -5,10 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.ResourceKind;
@@ -18,11 +15,19 @@ import java.util.List;
 
 public class TradeWindow extends CatanWindow {
 
+    private final ScrollPane scrollPane;
+
+    /** ResourceTable containing the offer of the local player */
+    private final ResourceTable offerTable;
+
+    /** Table containing the offers of the other players */
+    private final Table offersTable;
+
     /**
      * Create a new trade window
      *
-     * @param title       Title of the window
-     * @param skin        The skin used to theme this window
+     * @param title Title of the window
+     * @param skin  The skin used to theme this window
      */
     public TradeWindow(String title, Skin skin) {
         super(title, skin);
@@ -30,10 +35,10 @@ public class TradeWindow extends CatanWindow {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/DroidSans.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
         parameter.size = 20;
-        BitmapFont font12 = generator.generateFont(parameter);
-        generator.dispose(); // don't forget to dispose to avoid memory leaks!
+        BitmapFont font = generator.generateFont(parameter);
+        generator.dispose();
 
-        final Label.LabelStyle labelStyle = new Label.LabelStyle(font12, Color.WHITE);
+        final Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
 
         setSize(3.7f / 4f * Gdx.graphics.getWidth(), 3f / 4f * Gdx.graphics.getHeight());
         setX(Gdx.graphics.getWidth() / 2 - getWidth() / 2);
@@ -55,7 +60,7 @@ public class TradeWindow extends CatanWindow {
 
         leftTable.row();
 
-        final Table offerTable = new ResourceTable(skin);
+        offerTable = new ResourceTable(skin);
         leftTable.add(offerTable).left();
 
         final ResourceTable demandTable = new ResourceTable(skin);
@@ -67,7 +72,6 @@ public class TradeWindow extends CatanWindow {
         proposeTrade.pad(10, 50, 10, 50);
         leftTable.add(proposeTrade).colspan(2).padTop(20);
 
-//        leftTable.debug();
         add(leftTable).width(getWidth() / 2f).padLeft(40);
 
         // Create the right-side table where the offers from the other players are displayed
@@ -79,16 +83,46 @@ public class TradeWindow extends CatanWindow {
 
         rightTable.row();
 
-        final ResourceMap offer = new ResourceMap();
-        offer.put(ResourceKind.ORE, 1);
-        final TradeOfferItem playerOffer = new TradeOfferItem("Test Player", offer, skin);
-        rightTable.add(playerOffer).padLeft(10).center();
+        offersTable = new Table(skin);
+        offersTable.padRight(20);
+
+        scrollPane = new ScrollPane(offersTable, skin);
+        scrollPane.setFlickScroll(false);
+        scrollPane.setScrollingDisabled(true, false);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setOverscroll(false, false);
+        rightTable.add(scrollPane).height(3 / 4f * getHeight());
 
 //        rightTable.debugAll();
 
         add(rightTable).width(getWidth() / 2f).top();
+    }
 
-//        debugAll();
+    /**
+     * Request scroll focus on the ScrollPane. Use this so that the user doesn't need
+     * to click on it to enable scrolling using the scroll wheel. Must be called after
+     * the window was added to a stage.
+     */
+    public void requestScrollFocus() {
+        if (getStage() == null)
+            return;
+        getStage().setScrollFocus(scrollPane);
+    }
+
+    /**
+     * Set the maximum number of resources that the player can offer.
+     * The player should not be able to offer more resources than are
+     * available to him/her.
+     *
+     * @param maxOffer Map containing the max count allowed to offer for each resource kind
+     */
+    public void setMaxOffer(ResourceMap maxOffer) {
+        offerTable.setMaxResources(maxOffer);
+    }
+
+    public void addTradeOffer(String player, ResourceMap offer) {
+        final TradeOfferItem playerOffer = new TradeOfferItem(player, offer, getSkin());
+        offersTable.add(playerOffer).padLeft(10).expandY().top();
     }
 
     private class ResourceTable extends Table {
@@ -97,10 +131,10 @@ public class TradeWindow extends CatanWindow {
 
         private List<ResourceWidget> offerResourceWidgets;
 
-        public ResourceTable(Skin skin) {
+        ResourceTable(Skin skin) {
             super(skin);
 
-            offerResourceWidgets = new ArrayList<>(ResourceKind.values().length);
+            offerResourceWidgets = new ArrayList<>(ResourceKind.SIZE);
 
             middleTable = new Table();
 
@@ -117,6 +151,12 @@ public class TradeWindow extends CatanWindow {
                     middleTable.add(widget).expandX().align(i == 3 ? Align.right : Align.left);
                 else
                     add(widget);
+            }
+        }
+
+        private void setMaxResources(ResourceMap maxResources) {
+            for (ResourceWidget widget : offerResourceWidgets) {
+                widget.setMaxResource(maxResources.get(widget.getKind()));
             }
         }
     }

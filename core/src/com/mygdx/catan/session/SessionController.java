@@ -993,6 +993,10 @@ public class SessionController {
         return tradeRatios;
     }
 
+    ResourceMap getMaxOffer() {
+        return localPlayer.getResources();
+    }
+
     /** Call this when the screen is shown */
     void onScreenShown() {
         CatanGame.client.addListener(aSessionListener);

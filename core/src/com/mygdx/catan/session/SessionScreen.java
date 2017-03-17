@@ -497,6 +497,8 @@ public class SessionScreen implements Screen {
                 // Create the window
                 final TradeWindow window = new TradeWindow("Trade", CatanGame.skin);
                 aSessionStage.addActor(window);
+                window.requestScrollFocus();
+                window.setMaxOffer(aSessionController.getMaxOffer());
             }
         });
         menuTable.row();

@@ -11,5 +11,7 @@ public enum ResourceKind {
     GRAIN,
     PAPER,
     CLOTH,
-    COIN
+    COIN;
+
+    public static final int SIZE = values().length;
 }

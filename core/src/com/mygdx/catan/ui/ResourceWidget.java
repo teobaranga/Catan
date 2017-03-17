@@ -24,6 +24,8 @@ public class ResourceWidget extends WidgetGroup {
     /** The number to be displayed next to the image */
     private int count;
 
+    private int maxResource = Integer.MAX_VALUE;
+
     public ResourceWidget(ResourceKind kind, Skin skin) {
         // Add the image
         this.kind = kind;
@@ -69,8 +71,10 @@ public class ResourceWidget extends WidgetGroup {
         addButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                count++;
-                refreshCount();
+                if (count < maxResource) {
+                    count++;
+                    refreshCount();
+                }
             }
         });
         addActor(addButton);
@@ -86,6 +90,14 @@ public class ResourceWidget extends WidgetGroup {
     @Override
     public float getPrefHeight() {
         return image.getHeight() + label.getPrefHeight();
+    }
+
+    public ResourceKind getKind() {
+        return kind;
+    }
+
+    public void setMaxResource(int maxResource) {
+        this.maxResource = maxResource;
     }
 
     public ResourceMap getCount() {

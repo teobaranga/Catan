@@ -20,6 +20,7 @@ import com.mygdx.catan.*;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.ui.DomesticTradeWindow;
 import com.mygdx.catan.ui.TradeWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -87,20 +88,12 @@ public class SessionScreen implements Screen {
     private CoordinatePair initVillageIntersection;
     private Pair<CoordinatePair, CoordinatePair> shipToMove;
 
-    /**
-     * Menu Buttons
-     */
-    private TextButton buildSettlementButton;
-    private TextButton buildCityButton;
-    private TextButton buildRoadButton;
-    private TextButton buildShipButton;
-    private TextButton rollDiceButton;
-    private TextButton maritimeTradeButton;
+    // Menu Buttons
+
+    private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton;
+    private TextButton rollDiceButton, endTurnButton;
+    private TextButton domesticTradeButton, tradeButton;
     private TextButton moveShipButton;
-
-    private TextButton endTurnButton;
-
-    //private TextButton aInitButton;
 
     /**
      * A table that keeps track of game messages, mostly used for debugging
@@ -404,7 +397,6 @@ public class SessionScreen implements Screen {
         }
         updateVpTables();
 
-
         // available game pieces table
         Table availableGamePiecesTable = new Table(CatanGame.skin);
         availableGamePiecesTable.setBackground("resTableBackground");
@@ -481,22 +473,34 @@ public class SessionScreen implements Screen {
         turnTable.add(endTurnButton).padBottom(10).row();
 
         // Add maritime trade button
-        maritimeTradeButton = new TextButton("Maritime Trade", CatanGame.skin);
-        maritimeTradeButton.addListener(new ChangeListener() {
+        domesticTradeButton = new TextButton("Domestic Trade", CatanGame.skin);
+        domesticTradeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 // Generate the trade ratios
                 final ResourceMap tradeRatios = aSessionController.getTradeRatios();
                 // Create the window
-                final TradeWindow tradeWindow = new TradeWindow("Maritime Trade", CatanGame.skin, tradeRatios);
-                tradeWindow.setTradeListener((offer, request, tradeRatio) -> {
+                final DomesticTradeWindow window = new DomesticTradeWindow("Domestic Trade", CatanGame.skin, tradeRatios);
+                window.setDomesticTradeListener((offer, request, tradeRatio) -> {
                     aSessionController.maritimeTrade(offer, request, tradeRatio);
-                    tradeWindow.updateTradeRatios(aSessionController.getTradeRatios());
+                    window.updateTradeRatios(aSessionController.getTradeRatios());
                 });
-                aSessionStage.addActor(tradeWindow);
+                aSessionStage.addActor(window);
             }
         });
-        menuTable.add(maritimeTradeButton);
+        menuTable.add(domesticTradeButton);
+
+        tradeButton = new TextButton("Propose Trade", CatanGame.skin);
+        tradeButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // Create the window
+                final TradeWindow window = new TradeWindow("Trade", CatanGame.skin);
+                aSessionStage.addActor(window);
+            }
+        });
+        menuTable.row();
+        menuTable.add(tradeButton).padTop(10);
 
         // sets center of board
         int offsetX, offsetY;
@@ -505,7 +509,7 @@ public class SessionScreen implements Screen {
         for (Hex hex : aSessionController.getHexes()) {
             offsetX = hex.getLeftCoordinate();
             offsetY = hex.getRightCoordinate();
-            boardHexes.add(gamePieces.createHexagon((offsetX * OFFX), -(offsetY * OFFY), boardOrigin.getLeft(), boardOrigin.getRight(), hex.getKind()));
+            boardHexes.add(gamePieces.createHexagon((offsetX * OFFX), -(offsetY * OFFY), boardOrigin.left, boardOrigin.right, hex.getKind()));
         }
 
         // creates harbours of the board
@@ -984,7 +988,7 @@ public class SessionScreen implements Screen {
                 buildCityButton.setDisabled(true);
                 buildRoadButton.setDisabled(true);
                 buildShipButton.setDisabled(true);
-                maritimeTradeButton.setDisabled(true);
+                domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
@@ -995,7 +999,7 @@ public class SessionScreen implements Screen {
                 buildCityButton.setDisabled(true);
                 buildRoadButton.setDisabled(true);
                 buildShipButton.setDisabled(true);
-                maritimeTradeButton.setDisabled(true);
+                domesticTradeButton.setDisabled(true);
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
 
@@ -1007,7 +1011,7 @@ public class SessionScreen implements Screen {
                 buildCityButton.setDisabled(true);
                 buildRoadButton.setDisabled(true);
                 buildShipButton.setDisabled(true);
-                maritimeTradeButton.setDisabled(true);
+                domesticTradeButton.setDisabled(true);
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
 
@@ -1019,7 +1023,7 @@ public class SessionScreen implements Screen {
                 buildCityButton.setDisabled(true);
                 buildRoadButton.setDisabled(true);
                 buildShipButton.setDisabled(true);
-                maritimeTradeButton.setDisabled(true);
+                domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
@@ -1030,7 +1034,7 @@ public class SessionScreen implements Screen {
                 buildCityButton.setDisabled(false);
                 buildRoadButton.setDisabled(false);
                 buildShipButton.setDisabled(false);
-                maritimeTradeButton.setDisabled(false);
+                domesticTradeButton.setDisabled(false);
                 endTurnButton.setDisabled(false);
 
                 rollDiceButton.setDisabled(true);
@@ -1049,7 +1053,7 @@ public class SessionScreen implements Screen {
         buildRoadButton.setDisabled(true);
         buildShipButton.setDisabled(true);
         rollDiceButton.setDisabled(true);
-        maritimeTradeButton.setDisabled(true);
+        domesticTradeButton.setDisabled(true);
         endTurnButton.setDisabled(true);
     }
 

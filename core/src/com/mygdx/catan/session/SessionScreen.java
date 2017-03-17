@@ -30,7 +30,7 @@ import java.util.*;
 public class SessionScreen implements Screen {
 
     // all values necessary to draw hexagons. Note that only length needs to be changed to change size of board
-    public static final int LENGTH = 60;                                            // length of an edge of a tile
+    public static final int LENGTH = 40;                                            // length of an edge of a tile
 
     private final CatanGame aGame;
     private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
@@ -684,10 +684,17 @@ public class SessionScreen implements Screen {
                     aMode = SessionScreenModes.CHOOSESHIPMODE;
                     moveButton.setText("Cancel");
 
-                } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE || aMode == SessionScreenModes.CHOOSESHIPMODE) {
+                } else if (aMode == SessionScreenModes.CHOOSESHIPMODE) {
                     validEdges.clear();
                     highlightedPositions.clear();
-                    //TODO: put the game piece back
+                    moveButton.setText("Move Ship");
+                    aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
+                    // put the chosen ship game piece back in GUI
+                    updateEdge(shipToMove.getLeft(), shipToMove.getRight(), EdgeUnitKind.SHIP, aSessionController.getPlayerColor());
+                    
+                    validEdges.clear();
+                    highlightedPositions.clear();
                     moveButton.setText("Move Ship");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                 }
@@ -990,6 +997,7 @@ public class SessionScreen implements Screen {
                 buildShipButton.setDisabled(true);
                 domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
+                moveShipButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1002,6 +1010,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(true);
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
+                moveShipButton.setDisabled(true);
 
                 initialize(true);
                 break;
@@ -1014,6 +1023,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(true);
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
+                moveShipButton.setDisabled(true);
 
                 initialize(false);
                 break;
@@ -1025,6 +1035,7 @@ public class SessionScreen implements Screen {
                 buildShipButton.setDisabled(true);
                 domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
+                moveShipButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1036,6 +1047,7 @@ public class SessionScreen implements Screen {
                 buildShipButton.setDisabled(false);
                 domesticTradeButton.setDisabled(false);
                 endTurnButton.setDisabled(false);
+                moveShipButton.setDisabled(false);
 
                 rollDiceButton.setDisabled(true);
                 break;

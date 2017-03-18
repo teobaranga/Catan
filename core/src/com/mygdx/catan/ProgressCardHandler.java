@@ -25,33 +25,19 @@ import java.util.List;
  */
 public class ProgressCardHandler {
 
-    private final GameBoardManager aGameBoardManager;
-    private final SessionManager aSessionManager;
+    private static ProgressCardHandler instance;
+    private SessionController aSessionController;
+    SessionScreen aSessionScreen = aSessionController.getSessionScreen();
 
-    private final SessionScreen aSessionScreen;
-
-
-    /** The local player and player color */
-    private Player localPlayer;
-    private PlayerColor aPlayerColor;
-
-    //private final Listener aSessionListener;
-
-    public ProgressCardHandler (SessionScreen sessionScreen) {
-
-
-        final Game currentGame = GameManager.getInstance().getCurrentGame();
-
-
-        aGameBoardManager = GameBoardManager.getInstance();
-        aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
-
-        aSessionScreen = sessionScreen;
-
+    public static ProgressCardHandler getInstance() {
+        if (instance == null)
+            instance = new ProgressCardHandler();
+        return instance;
     }
 
+
     public void handle (ProgressCardType pType, PlayerColor currentPColor) {
-        final Player currentP = aSessionManager.getCurrentPlayer();
+        final Player currentP = aSessionController.getCurrentPlayer();
         switch(pType) {
             case ALCHEMIST:
             case CRANE:
@@ -65,15 +51,15 @@ public class ProgressCardHandler {
                         validCityWallIntersections.add(v.getPosition());
                     }
                 }
-                //aSessionScreen.initChooseIntersection(validCityWallIntersections, playEngineer);
                 MultiStepMove playEngineer = new MultiStepMove();
+                aSessionScreen.initChooseIntersectionMove(validCityWallIntersections, playEngineer);
                 playEngineer.addMove(new Move() {
                     @Override
                     public void doMove(Object o) {
                         CoordinatePair myCityWallCoordinates = (CoordinatePair) o;
-                        aGameBoardManager.buildCityWall(currentP, myCityWallCoordinates);
+                        aSessionController.buildCityWall(currentPColor, myCityWallCoordinates, true);
                         //revert back to choose action mode and enable buttons
-                        //aSessionScreen.interactionDone();
+                        aSessionScreen.interractionDone();
                     }
                 });
             case INVENTOR:

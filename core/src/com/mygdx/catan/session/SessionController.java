@@ -15,6 +15,7 @@ import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.DiceRolled;
+import com.mygdx.catan.ProgressCardHandler;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -37,6 +38,8 @@ public class SessionController {
 
     private final Listener aSessionListener;
 
+    private final ProgressCardHandler aProgressCardHandler;
+
     /** The random number generator for dice rolls */
     private final CatanRandom random;
 
@@ -56,6 +59,7 @@ public class SessionController {
         aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
         aTransactionManager = TransactionManager.getInstance(aSessionManager);
         tradeManager = TradeManager.getInstance(aTransactionManager);
+        aProgressCardHandler = ProgressCardHandler.getInstance();
 
         aSessionScreen = sessionScreen;
 
@@ -175,6 +179,11 @@ public class SessionController {
                 }
             }
         };
+    }
+
+    /**get Session screen*/
+    public SessionScreen getSessionScreen(){
+        return aSessionScreen;
     }
 
     /** Update the myTurn variable */
@@ -421,6 +430,11 @@ public class SessionController {
             }
         }
         return canBuild;
+    }
+
+    //returns true if progress card play is valid based on game rules
+    public boolean controlPlayProgressCard(PlayerColor owner) {
+        return true;
     }
 
     /**
@@ -702,6 +716,9 @@ public class SessionController {
 
     //TODO: build city wall this is where messages will happen, will tell GUI to show city wall
     public boolean buildCityWall(PlayerColor owner, CoordinatePair myWall, boolean fromPeer){
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        aGameBoardManager.buildCityWall(currentP, myWall);
+        //aSessionScreen.updateCity();
         return true;
     }
 

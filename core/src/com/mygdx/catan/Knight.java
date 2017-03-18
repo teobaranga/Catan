@@ -1,35 +1,44 @@
 package com.mygdx.catan;
 
-import java.util.List;
-
 public class Knight {
 
-	private boolean active;
-	private boolean movedThisTurn;
-	private int level;
-	
-	public Knight() {
-		
-	}
-	
-	public boolean isActive() {
-		throw new RuntimeException("isActive not yet implemented");
-	}
-	
-	public void setActive(boolean active) {
-		
-	}
-	
-	public boolean hasMovedThisTurn() {
-		throw new RuntimeException("hasMovedThisTurn not yet implemented");
-	}
-	
-	public void setHasMovedThisTurn(boolean moved) {
-		
-	}
-	
-	
-	public int getLevel() {
-		throw new RuntimeException("getLevel not yet implemented");
-	}
+    private boolean active;
+    private boolean movedThisTurn;
+
+    /**
+     * Strength of the knight. <p>
+     * 0 - Basic
+     * 1 - Strong
+     * 2 - Mighty
+     */
+    private int level;
+
+    public Knight() {
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+    }
+
+    public boolean hasMovedThisTurn() {
+        return movedThisTurn;
+    }
+
+    public void setHasMovedThisTurn(boolean moved) {
+    }
+
+    public int getLevel() {
+		return level;
+    }
+
+    /** Upgrade this knight */
+    public void upgrade() {
+        // Check for max level
+        if (level == 2)
+            return;
+        level++;
+    }
 }

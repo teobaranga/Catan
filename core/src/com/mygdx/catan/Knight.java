@@ -1,5 +1,7 @@
 package com.mygdx.catan;
 
+import java.util.List;
+
 public class Knight {
 
 	private boolean active;
@@ -25,6 +27,7 @@ public class Knight {
 	public void setHasMovedThisTurn(boolean moved) {
 		
 	}
+	
 	
 	public int getLevel() {
 		throw new RuntimeException("getLevel not yet implemented");

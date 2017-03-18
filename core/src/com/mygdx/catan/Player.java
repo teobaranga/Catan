@@ -20,13 +20,15 @@ public class Player {
     private List<Village> villages;
     private List<Knight> knights;
     private int defenderOfCatanPoints;
-
+    private List<Knight> activeKnights;
+    
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
     private EnumMap<ProgressCardType,Integer> hand;
 
     private int availableSettlements;
     private int availableCities;
+    private int availableMetropolis; //need this for barbarian attack
     private int availableRoads;
     private int availableShips;
 
@@ -52,6 +54,7 @@ public class Player {
 
     public int getAvailableSettlements() { return availableSettlements; }
     public int getAvailableCities() { return availableCities; }
+    public int getAvailableMetropolis() {return availableMetropolis;}
     public int getAvailableRoads() { return availableRoads; }
     public int getAvailableShips() { return availableShips; }
 
@@ -82,6 +85,10 @@ public class Player {
     
     public int getDefenderOfCatanPoints() {
         return defenderOfCatanPoints;
+    }
+    
+    public List<Knight> getActiveKnights() {
+        return activeKnights;
     }
 
     public void incrementDefenderOfCatanPoints(int defenderOfCatanPoints) {

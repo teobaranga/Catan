@@ -35,7 +35,7 @@ public class SessionController {
     private final TradeManager tradeManager;
 
     private final SessionScreen aSessionScreen;
-
+   // private final Session aSession;
     private final Listener aSessionListener;
 
     private final ProgressCardHandler aProgressCardHandler;
@@ -925,12 +925,67 @@ public class SessionController {
     private Pair<Integer, Integer> rollTwoDice() {
         return random.rollTwoDice();
     }
+    
+    private EventKind rollEventDie() {
+        return random.rollEventDie();
+    }
 
     /**
      * Determine the resources generated for the current player from the dice roll.
      *
      * @param diceRoll sum of the red and yellow dice
      */
+    boolean barbarianAttack = true; 
+    private void barbarianHandle() {
+        //TODO: barbarian strength not  yet adding metropolis
+        int barbarianStrength = aGameBoardManager.getCityCount();
+        int activeKnightStrength = 0;
+        List<Player> worstPlayers = new ArrayList<Player>();
+        
+        if(rollEventDie() == EventKind.BARBARIAN) {
+            //barbarian ship moves one space closer towards catan
+            aSessionManager.decreaseBarbarianPosition();
+            
+            //barbarians have reached shore
+            if(barbarianAttack) {
+                //determine barbarian strength
+                for (Player p : aSessionManager.getPlayers()) {
+                   for (Knight activeKnight : p.getActiveKnights()) {
+                       //check type of knight and increase strength accordingly 
+                   }
+                }
+                if(barbarianStrength > activeKnightStrength) {
+                    //barbarians win
+                    int minKnightLevel = 1000; //idk about infinity....
+                    
+                    for(Player p : aSessionManager.getPlayers()) {
+                        int cityCount = 0;
+                        for (Village v : p.getVillages()) {
+                            VillageKind vk = v.getVillageKind();
+                            if(vk == vk.CITY) {
+                                cityCount++;
+                            }
+                            if(cityCount != 0) {
+                                int playerKnightLevel = 0;
+                                for(Knight k : p.getActiveKnights()) {
+                                    playerKnightLevel+= k.getLevel();
+                                }
+                                //weird logic here
+                                if(playerKnightLevel == minKnightLevel) {
+                                    worstPlayers.add(p);
+                                }    
+                            }
+                        }
+                    }
+                    for (Player p : worstPlayers) {
+                        
+                    }
+                }
+                
+            }
+        
+        }
+    }
     private void resourceProduction(int diceRoll) {
         // Get the hexes having a dice number equal to the dice roll
         List<Hex> producingHexes = aGameBoardManager.getProducingHexes(diceRoll);

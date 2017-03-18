@@ -22,10 +22,10 @@ public class Game {
      */
     private final Map<Account, Boolean> readyStatus;
 
+    public Session session;
+
     /** The admin of the game, ie. the player who created this game */
     private Account admin;
-
-    public Session session;
 
     public Game() {
         peers = new LinkedHashMap<>(Config.MAX_PLAYERS);
@@ -76,6 +76,19 @@ public class Game {
      */
     public boolean isInProgress() {
         return session != null;
+    }
+
+    /**
+     * Check if a player of this game is ready.
+     *
+     * @param username username of the player
+     */
+    public boolean isReady(String username) {
+        for (Map.Entry<Account, Boolean> entry : readyStatus.entrySet()) {
+            if (entry.getKey().getUsername().equals(username))
+                return entry.getValue();
+        }
+        return false;
     }
 
     /**

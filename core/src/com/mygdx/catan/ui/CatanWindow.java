@@ -38,8 +38,7 @@ public class CatanWindow extends Window {
 
     private void init() {
         // Make the window around 3/4 of the screen
-        setWidth(width);
-        setHeight(height);
+        setSize(width, height);
 
         // Position window in the middle
         setPosition(Gdx.graphics.getWidth() / 2 - getWidth() / 2, Gdx.graphics.getHeight() / 2 - getHeight() / 2);
@@ -66,13 +65,16 @@ public class CatanWindow extends Window {
 
         setMovable(false);
         setModal(true);
+
+        row();
     }
 
     @Override
-    public void setSize(float width, float height) {
-        super.setSize(width, height);
+    protected void sizeChanged() {
+        super.sizeChanged();
         // Correct the close button's position
-        closeButton.setPosition(getWidth() - closeButton.getWidth() - 5, 0);
+        if (closeButton != null)
+            closeButton.setPosition(getWidth() - closeButton.getWidth() - 5, 0);
     }
 
     /**

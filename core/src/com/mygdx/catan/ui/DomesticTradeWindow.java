@@ -157,8 +157,6 @@ public class DomesticTradeWindow extends CatanWindow {
         setMovable(true);
         contentTable.pad(50f);
 
-        row();
-
         contentTable.add();
         contentTable.add(new Label("Ore", skin));
         contentTable.add(new Label("Wool", skin));

@@ -23,7 +23,7 @@ public class TradeOfferItem extends WidgetGroup {
     private final List<Image> resources;
     private final List<Label> counts;
 
-    public TradeOfferItem(String player, ResourceMap offer, Skin skin) {
+    TradeOfferItem(String player, ResourceMap offer, Skin skin) {
         resources = new ArrayList<>(offer.size());
         counts = new ArrayList<>(offer.size());
         label = new Label(player, skin);

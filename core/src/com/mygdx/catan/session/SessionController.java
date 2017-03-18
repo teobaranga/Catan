@@ -13,11 +13,7 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
-import com.mygdx.catan.request.BuildEdge;
-import com.mygdx.catan.request.BuildIntersection;
-import com.mygdx.catan.request.EndTurn;
-import com.mygdx.catan.request.MoveShip;
-import com.mygdx.catan.request.RollTwoDice;
+import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.DiceRolled;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -169,6 +165,13 @@ public class SessionController {
                         System.out.println(((EndTurn) object).username + " ended their turn");
                         endTurn();
                     });
+                } else if (object instanceof TradeProposal) {
+                    Gdx.app.postRunnable(() -> {
+                        final TradeProposal tradeProposal = (TradeProposal) object;
+                        final ResourceMap offer = tradeProposal.getOffer();
+                        final ResourceMap request = tradeProposal.getRequest();
+                        sessionScreen.onIncomingTrade(tradeProposal.username, offer, request);
+                    });
                 }
             }
         };
@@ -283,6 +286,13 @@ public class SessionController {
     
     public GamePhase getCurrentGamePhase() {
         return aSessionManager.getCurrentPhase();
+    }
+    
+    /**
+     * @return true iff it is the client's turn
+     * */
+    public boolean isMyTurn() {
+    	return myTurn;
     }
 
     /*
@@ -1003,6 +1013,17 @@ public class SessionController {
     void maritimeTrade(ResourceKind offer, ResourceKind request, int tradeRatio) {
         tradeManager.maritimeTrade(offer, request, tradeRatio, localPlayer);
         aSessionScreen.updateResourceBar(localPlayer.getResources());
+    }
+
+    /**
+     * Start a new p2p trade.
+     *
+     * @param offer   offer of the local player
+     * @param request request of the local player
+     */
+    void proposeTrade(ResourceMap offer, ResourceMap request) {
+        TradeProposal tradeProposal = TradeProposal.newInstance(localPlayer.getUsername(), offer, request);
+        CatanGame.client.sendTCP(tradeProposal);
     }
 
     /**

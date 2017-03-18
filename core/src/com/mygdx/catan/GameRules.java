@@ -17,7 +17,8 @@ public class GameRules {
 	private ResourceMap cityCost = new ResourceMap();
 	private ResourceMap cityWallCost = new ResourceMap();
 
-	private EnumMap<ProgressCardKind, Integer> progressCardOccurences = new EnumMap<ProgressCardKind, Integer>(ProgressCardKind.class);
+	private EnumMap<ProgressCardType, Integer> progressCardOccurences = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
+	private EnumMap<ProgressCardType, ProgressCardKind> progressCardKind = new EnumMap<ProgressCardType, ProgressCardKind>(ProgressCardType.class);
 	private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
 	private HashMap<Integer,Integer> defaultDiceNumberMap = new HashMap<Integer,Integer>();
 	private HashMap<Integer,HarbourKind> defaultHarbourMap = new HashMap<Integer,HarbourKind>();
@@ -35,7 +36,7 @@ public class GameRules {
 	private static GameRules aGameRules = new GameRules();
 
 	private GameRules() {
-		initializeProgressCardOccurences();
+		initializeProgressCards();
 		setupDefaultTerrainMap();
 		setupDefaultDiceMap();
 		setupDefaultHarbourMap();
@@ -185,34 +186,81 @@ public class GameRules {
     }
 
 	/**
-	 * initializes progress card occurences
+	 * initializes progress card occurences and kind
 	 * */
-	private void initializeProgressCardOccurences() {
-		progressCardOccurences.put(ProgressCardKind.ALCHEMIST, 2);
-		progressCardOccurences.put(ProgressCardKind.BISHOP, 2);
-		progressCardOccurences.put(ProgressCardKind.COMMERCIALHARBOUR, 2);
-		progressCardOccurences.put(ProgressCardKind.CONSTITUTION, 1);
-		progressCardOccurences.put(ProgressCardKind.CRANE, 2);
-		progressCardOccurences.put(ProgressCardKind.DESERTER, 2);
-		progressCardOccurences.put(ProgressCardKind.DIPLOMAT, 2);
-		progressCardOccurences.put(ProgressCardKind.ENGINEER, 1);
-		progressCardOccurences.put(ProgressCardKind.INTRIGUE, 2);
-		progressCardOccurences.put(ProgressCardKind.INVENTOR, 2);
-		progressCardOccurences.put(ProgressCardKind.IRRIGATION, 2);
-		progressCardOccurences.put(ProgressCardKind.MASTERMERCHANT, 2);
-		progressCardOccurences.put(ProgressCardKind.MEDICINE, 2);
-		progressCardOccurences.put(ProgressCardKind.MERCHANTFLEET, 2);
-		progressCardOccurences.put(ProgressCardKind.MINING, 2);
-		progressCardOccurences.put(ProgressCardKind.PRINTER, 1);
-		progressCardOccurences.put(ProgressCardKind.RESOURCEMONOPOLY, 4);
-		progressCardOccurences.put(ProgressCardKind.ROADBUILDING, 2);
-		progressCardOccurences.put(ProgressCardKind.SABOTEUR, 2);
-		progressCardOccurences.put(ProgressCardKind.SMITH, 2);
-		progressCardOccurences.put(ProgressCardKind.SPY, 3);
-		progressCardOccurences.put(ProgressCardKind.TRADEMONOPOLY, 2);
-		progressCardOccurences.put(ProgressCardKind.WARLORD, 2);
-		progressCardOccurences.put(ProgressCardKind.WEDDING, 2);
-		progressCardOccurences.put(ProgressCardKind.MERCHANT, 6);
+	private void initializeProgressCards() {
+		progressCardOccurences.put(ProgressCardType.ALCHEMIST, 2);
+		progressCardKind.put(ProgressCardType.ALCHEMIST, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.BISHOP, 2);
+		progressCardKind.put(ProgressCardType.BISHOP, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.COMMERCIALHARBOUR, 2);
+		progressCardKind.put(ProgressCardType.COMMERCIALHARBOUR, ProgressCardKind.TRADE);
+		
+		progressCardOccurences.put(ProgressCardType.CONSTITUTION, 1);
+		progressCardKind.put(ProgressCardType.CONSTITUTION, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.CRANE, 2);
+		progressCardKind.put(ProgressCardType.CRANE, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.DESERTER, 2);
+		progressCardKind.put(ProgressCardType.DESERTER, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.DIPLOMAT, 2);
+		progressCardKind.put(ProgressCardType.DIPLOMAT, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.ENGINEER, 1);
+		progressCardKind.put(ProgressCardType.ENGINEER, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.INTRIGUE, 2);
+		progressCardKind.put(ProgressCardType.INTRIGUE, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.INVENTOR, 2);
+		progressCardKind.put(ProgressCardType.INVENTOR, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.IRRIGATION, 2);
+		progressCardKind.put(ProgressCardType.IRRIGATION, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.MASTERMERCHANT, 2);
+		progressCardKind.put(ProgressCardType.MASTERMERCHANT, ProgressCardKind.TRADE);
+		
+		progressCardOccurences.put(ProgressCardType.MEDICINE, 2);
+		progressCardKind.put(ProgressCardType.MEDICINE, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.MERCHANTFLEET, 2);
+		progressCardOccurences.put(ProgressCardType.MINING, 2);
+		progressCardKind.put(ProgressCardType.MINING, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.PRINTER, 1);
+		progressCardKind.put(ProgressCardType.PRINTER, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.RESOURCEMONOPOLY, 4);
+		progressCardKind.put(ProgressCardType.RESOURCEMONOPOLY, ProgressCardKind.TRADE);
+		
+		progressCardOccurences.put(ProgressCardType.ROADBUILDING, 2);
+		progressCardKind.put(ProgressCardType.ROADBUILDING, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.SABOTEUR, 2);
+		progressCardKind.put(ProgressCardType.SABOTEUR, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.SMITH, 2);
+		progressCardKind.put(ProgressCardType.SMITH, ProgressCardKind.SCIENCE);
+		
+		progressCardOccurences.put(ProgressCardType.SPY, 3);
+		progressCardKind.put(ProgressCardType.SPY, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.TRADEMONOPOLY, 2);
+		progressCardKind.put(ProgressCardType.TRADEMONOPOLY, ProgressCardKind.TRADE);
+		
+		progressCardOccurences.put(ProgressCardType.WARLORD, 2);
+		progressCardKind.put(ProgressCardType.WARLORD, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.WEDDING, 2);
+		progressCardKind.put(ProgressCardType.WEDDING, ProgressCardKind.POLITICS);
+		
+		progressCardOccurences.put(ProgressCardType.MERCHANT, 6);
+		progressCardKind.put(ProgressCardType.MERCHANT, ProgressCardKind.TRADE);
 	}
 
 
@@ -254,8 +302,16 @@ public class GameRules {
 	 * @param
 	 * @return occurence of pKind in the progress card stack
 	 * */
-	public int getProgressCardOccurence(ProgressCardKind pKind) {
+	public int getProgressCardOccurence(ProgressCardType pKind) {
 		return progressCardOccurences.get(pKind);
+	}
+	
+	/**
+	 * @param
+	 * @return kind of pType in the progress card stack
+	 * */
+	public ProgressCardKind getProgressCardKind(ProgressCardType pType) {
+		return progressCardKind.get(pType);
 	}
 
 	/**

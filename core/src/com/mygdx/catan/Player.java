@@ -167,7 +167,7 @@ public class Player {
         throw new RuntimeException("chooseCity not yet implemented");
     }
 
-    public ProgressCardKind chooseProgressCard() {
+    public ProgressCardType chooseProgressCard() {
         throw new RuntimeException("progressCardKind not yet implemented");
     }
 

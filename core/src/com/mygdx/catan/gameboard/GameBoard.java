@@ -5,11 +5,14 @@ import com.mygdx.catan.GameRules;
 import com.mygdx.catan.Player;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.ProgressCardKind;
+import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.TerrainKind;
 
 import java.util.*;
 
 public class GameBoard {
+	
+	private GameRules gameRules;
 
 	private ArrayList<Hex> hexes;
 	private ArrayList<CoordinatePair> aIntersectionPositions;			// Villages will be available through the intersection positions
@@ -17,12 +20,15 @@ public class GameBoard {
 	private Hex aRobberPosition;
 	private Hex aMerchantPosition;
 	private Player aMerchantOwner;
-	private Stack<ProgressCardKind> aProgressCardStack = new Stack<>();
+	private Stack<ProgressCardType> aScienceProgressCardStack = new Stack<>();
+	private Stack<ProgressCardType> aPoliticsProgressCardStack = new Stack<>();
+	private Stack<ProgressCardType> aTradeProgressCardStack = new Stack<>();
 	private List<Village> villages;
 	
 	private final int SIZE = GameRules.getGameRulesInstance().getSize();
 	
 	public GameBoard() throws Exception {
+		gameRules = GameRules.getGameRulesInstance();
 		hexes = new ArrayList<>();
 		aIntersectionPositions = new ArrayList<>();
 		aRoadsAndShips = new ArrayList<>();
@@ -95,13 +101,22 @@ public class GameBoard {
         }
         
         // Fills up the progress card stack and shuffles it
-        for (ProgressCardKind kind : ProgressCardKind.values()) {
-        	int occurence = GameRules.getGameRulesInstance().getProgressCardOccurence(kind);
+        for (ProgressCardType type : ProgressCardType.values()) {
+        	int occurence = gameRules.getProgressCardOccurence(type);
+        	ProgressCardKind kind = gameRules.getProgressCardKind(type);
         	for (int i = 0; i<occurence; i++) {
-        		aProgressCardStack.push(kind);
+        		if (kind == ProgressCardKind.POLITICS) {
+        			aPoliticsProgressCardStack.push(type);
+        		} else if (kind == ProgressCardKind.TRADE) {
+        			aTradeProgressCardStack.push(type);
+        		} else if (kind == ProgressCardKind.SCIENCE) {
+        			aScienceProgressCardStack.push(type);
+        		}
         	}
         }
-        Collections.shuffle(aProgressCardStack);
+        Collections.shuffle(aScienceProgressCardStack);
+        Collections.shuffle(aTradeProgressCardStack);
+        Collections.shuffle(aPoliticsProgressCardStack);
 	}
 	
 	public int getNumberofHexes(){
@@ -130,10 +145,24 @@ public class GameBoard {
 	
 	
 	/**
-	 * @return top card of the progress card stack. returns null if empty
+	 * @return top card of the science progress card stack. returns null if empty
 	 * */
-	public ProgressCardKind popProgressCardStack() {
-		return aProgressCardStack.pop();
+	public ProgressCardType popScienceProgressCardStack() {
+		return aScienceProgressCardStack.pop();
+	}
+	
+	/**
+	 * @return top card of the politics progress card stack. returns null if empty
+	 * */
+	public ProgressCardType popPoliticsProgressCardStack() {
+		return aPoliticsProgressCardStack.pop();
+	}
+	
+	/**
+	 * @return top card of the trade progress card stack. returns null if empty
+	 * */
+	public ProgressCardType popTradeProgressCardStack() {
+		return aTradeProgressCardStack.pop();
 	}
 
     /**

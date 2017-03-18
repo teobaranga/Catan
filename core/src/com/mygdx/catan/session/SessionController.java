@@ -292,7 +292,7 @@ public class SessionController {
      * @return true iff it is the client's turn
      * */
     public boolean isMyTurn() {
-    	return aSessionManager.getCurrentPlayer().getAccount().equals(CatanGame.account);
+    	return myTurn;
     }
 
     /*

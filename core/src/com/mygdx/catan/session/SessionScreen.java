@@ -545,10 +545,9 @@ public class SessionScreen implements Screen {
                         }
                     }
                     // adds move that will build the village at chosen intersection
-                    currentlyPerformingMove.addMove(new Move() {
+                    currentlyPerformingMove.addMove(new Move<CoordinatePair>() {
                         @Override
-                        public void doMove(Object o) {
-                            CoordinatePair chosenIntersection = (CoordinatePair) o;
+                        public void doMove(CoordinatePair chosenIntersection) {
                             aSessionController.buildVillage(chosenIntersection, kind, aSessionController.getPlayerColor(), false, false);
                             aMode = SessionScreenModes.CHOOSEACTIONMODE;
                             buildButton.setText(buttonText);
@@ -631,10 +630,9 @@ public class SessionScreen implements Screen {
                     }
 
                  // adds move that will build the village at chosen intersection
-                    currentlyPerformingMove.addMove(new Move() {
+                    currentlyPerformingMove.addMove(new Move<Pair<CoordinatePair,CoordinatePair>>() {
                         @Override
-                        public void doMove(Object o) {
-                            Pair<CoordinatePair,CoordinatePair> chosenEdge = (Pair<CoordinatePair,CoordinatePair>) o;
+                        public void doMove(Pair<CoordinatePair,CoordinatePair> chosenEdge) {
                             aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, false);
 
                             aMode = SessionScreenModes.CHOOSEACTIONMODE;
@@ -702,10 +700,9 @@ public class SessionScreen implements Screen {
                     currentlyPerformingMove = new MultiStepMovingshipMove();
 
                     // adds move that will save the chosen
-                    currentlyPerformingMove.addMove(new Move() {
+                    currentlyPerformingMove.addMove(new Move<Pair<CoordinatePair, CoordinatePair>>() {
                         @Override
-                        public void doMove(Object o) {
-                            Pair<CoordinatePair, CoordinatePair> chosenShip = (Pair<CoordinatePair, CoordinatePair>) o;
+                        public void doMove(Pair<CoordinatePair, CoordinatePair> chosenShip) {
                             ((MultiStepMovingshipMove) currentlyPerformingMove).setShipToMove(chosenShip);
                             // highlights valid destinations
                             setValidMoveShipPositions(chosenShip);
@@ -714,10 +711,9 @@ public class SessionScreen implements Screen {
                         }
                     });
                     // adds move that will move the ship once a new edge is chosen
-                    currentlyPerformingMove.addMove(new Move() {
+                    currentlyPerformingMove.addMove(new Move<Pair<CoordinatePair, CoordinatePair>>() {
                         @Override
-                        public void doMove(Object o) {
-                            Pair<CoordinatePair, CoordinatePair> chosenDest = (Pair<CoordinatePair, CoordinatePair>) o;
+                        public void doMove(Pair<CoordinatePair, CoordinatePair> chosenDest) {
                             Pair<CoordinatePair, CoordinatePair> ship = ((MultiStepMovingshipMove) currentlyPerformingMove).getShipToMove();
                             aSessionController.moveShip(ship.getLeft(), ship.getRight(), chosenDest.getLeft(), chosenDest.getRight(), aSessionController.getPlayerColor(), false);
 
@@ -1174,10 +1170,9 @@ public class SessionScreen implements Screen {
         }
            // villagePieceKind = VillageKind.SETTLEMENT;
             // adds the move that will set up road building, and save the chosen intersection
-            currentlyPerformingMove.addMove(new Move() {
+            currentlyPerformingMove.addMove(new Move<CoordinatePair>() {
                 @Override
-                public void doMove(Object o) {
-                    CoordinatePair chosenIntersection = (CoordinatePair) o;
+                public void doMove(CoordinatePair chosenIntersection) {
                     ((MultiStepInitMove) currentlyPerformingMove).setInitIntersection(chosenIntersection);
 
                  // Building place was picked, can now switch the mode to allow the player to pick a road place
@@ -1206,10 +1201,9 @@ public class SessionScreen implements Screen {
                 }
             });
 
-            currentlyPerformingMove.addMove(new Move() {
+            currentlyPerformingMove.addMove(new Move<Pair<CoordinatePair, CoordinatePair>>() {
                 @Override
-                public void doMove(Object o) {
-                    Pair<CoordinatePair, CoordinatePair> chosenEndpoints = (Pair<CoordinatePair, CoordinatePair>) o;
+                public void doMove(Pair<CoordinatePair, CoordinatePair> chosenEndpoints) {
 
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
 

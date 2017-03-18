@@ -115,6 +115,51 @@ class GamePieces {
         polygonSprite.setScale(2.0f*SessionScreen.LENGTH / region.getRegion().getRegionHeight());
         return polygonSprite;
     }
+    
+    PolygonRegion createHighlightedIntersection(int xCor, int yCor, int base, int length, int pieceBase, PlayerColor color) {
+    	Texture aTexture = aSeaTextureSolid;
+    	
+    	switch (color) {
+        case BLUE:
+            aTexture = aBlueTextureSolid;
+            break;
+        case ORANGE:
+            aTexture = aOrangeTextureSolid;
+            break;
+        case RED:
+            aTexture = aRedTextureSolid;
+            break;
+        case WHITE:
+            aTexture = aWhiteTextureSolid;
+            break;
+        case YELLOW:
+            aTexture = aYellowTextureSolid;
+            break;
+        default:
+            break;
+    	}
+    	
+    	int highlightLength = pieceBase;
+    	int highlightBase = (int) Math.sqrt(Math.pow(highlightLength, 2) - Math.pow(highlightLength / 2, 2));
+    	
+    	float xPos = +(xCor * base);
+        float yPos = -(yCor * length / 2);
+    	
+    	return new PolygonRegion(new TextureRegion(aTexture),
+    		new float[]{      // Six vertices
+    				xPos - highlightBase, yPos - highlightLength / 2,             // Vertex 0                4
+                    xPos, yPos - highlightLength,                       		  // Vertex 1           5         3
+                    xPos + highlightBase, yPos - highlightLength / 2,             // Vertex 2
+                    xPos + highlightBase, yPos + highlightLength / 2,             // Vertex 3           0         2
+                    xPos, yPos + highlightLength,                                 // Vertex 4                1
+                    xPos - highlightBase, yPos + highlightLength / 2              // Vertex 5
+        	}, new short[]{
+        			0, 1, 4,         // Sets up triangulation according to vertices above
+                    0, 4, 5,
+                    1, 2, 3,
+                    1, 3, 4
+    	});
+    }
 
     PolygonSprite createRobber() {
         final PolygonSprite polygonSprite = new PolygonSprite(robber);

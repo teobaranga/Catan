@@ -459,6 +459,7 @@ public class SessionScreen implements Screen {
 
     /**
      * @param opponents client can choose from
+     * @param move whose next move to perform will be called once a player has been chosen
      * Opens window where client can choose one of the opponent players
      * */
     public void chooseOtherPlayer(ArrayList<Player> opponents, MultiStepMove move) {
@@ -471,11 +472,47 @@ public class SessionScreen implements Screen {
             move.performNextMove(player);
 
             System.out.println(player.getAccount().getUsername()+" chosen");
-
-            // re-enable all appropriate actions
-            enablePhase(aSessionController.getCurrentGamePhase());
+            // re-enable all appropriate actions if it's the current player's turn
+            if (aSessionController.isMyTurn()) {
+            	enablePhase(aSessionController.getCurrentGamePhase());
+            }
         });
         aSessionStage.addActor(choosePlayerWindow);
+    }
+    
+    /**
+     * @param valid intersections client can choose from
+     * @param move whose next move to perform will be called once an intersection has been chosen
+     * */
+    public void initChooseIntersectionMove(List<CoordinatePair> valid, MultiStepMove move) {
+    	// disable all possible actions
+        disableAllButtons();
+        
+        // transfers all the valid intersections of validIntersections, and highlights each position on the board
+        for (CoordinatePair i : valid) {
+        	validIntersections.add(i);
+        	highlightedPositions.add(gamePieces.createHighlightedIntersection(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+        }
+        
+        // sets the currently performing move attribute to given move.
+        // When an intersection is chosen, the next move in that MultiStepMove will be performed
+        currentlyPerformingMove = move;
+        
+        aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+    }
+    
+    /**
+     * Called after a multi step move has been fully performed, sets the mode of the GUI to CHOOSEACTIONMODE 
+     * and re-enables all the buttons according to current game phase if it is the client's turn
+     * */
+    public void interractionDone() {
+    	// puts mode back to choose action mode
+    	aMode = SessionScreenModes.CHOOSEACTIONMODE;
+    	
+    	// re-enables all the buttons according to current game phase if it is the client's turn
+    	if (aSessionController.isMyTurn()) {
+        	enablePhase(aSessionController.getCurrentGamePhase());
+        }
     }
 
     private void setupBuildVillageButton(TextButton buildButton, VillageKind kind, String buttonText) {
@@ -517,7 +554,9 @@ public class SessionScreen implements Screen {
                             buildButton.setText(buttonText);
 
                             // re-enable all appropriate actions
-                            enablePhase(aSessionController.getCurrentGamePhase());
+                            if (aSessionController.isMyTurn()) {
+                            	enablePhase(aSessionController.getCurrentGamePhase());
+                            }
                         }
                     });
 
@@ -531,7 +570,9 @@ public class SessionScreen implements Screen {
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
 
                     // re-enable all appropriate actions
-                    enablePhase(aSessionController.getCurrentGamePhase());
+                    if (aSessionController.isMyTurn()) {
+                    	enablePhase(aSessionController.getCurrentGamePhase());
+                    }
                 }
             }
         });
@@ -600,7 +641,9 @@ public class SessionScreen implements Screen {
                             buildButton.setText(buttonText);
 
                             // re-enable all appropriate actions
-                            enablePhase(aSessionController.getCurrentGamePhase());
+                            if (aSessionController.isMyTurn()) {
+                            	enablePhase(aSessionController.getCurrentGamePhase());
+                            }
                         }
                     });
 
@@ -625,7 +668,9 @@ public class SessionScreen implements Screen {
                     buildRoadButton.setText(buttonText);
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                     // re-enable all appropriate actions
-                    enablePhase(aSessionController.getCurrentGamePhase());
+                    if (aSessionController.isMyTurn()) {
+                    	enablePhase(aSessionController.getCurrentGamePhase());
+                    }
                 }
             }
         });
@@ -679,7 +724,9 @@ public class SessionScreen implements Screen {
                             aMode = SessionScreenModes.CHOOSEACTIONMODE;
                             moveShipButton.setText("Move Ship");
                             // re-enable all appropriate actions
-                            enablePhase(aSessionController.getCurrentGamePhase());
+                            if (aSessionController.isMyTurn()) {
+                            	enablePhase(aSessionController.getCurrentGamePhase());
+                            }
                         }
                     });
 
@@ -700,7 +747,9 @@ public class SessionScreen implements Screen {
                     moveButton.setText("Move Ship");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
                     // re-enable all appropriate actions
-                    enablePhase(aSessionController.getCurrentGamePhase());
+                    if (aSessionController.isMyTurn()) {
+                    	enablePhase(aSessionController.getCurrentGamePhase());
+                    }
                 }
             }
 

@@ -287,6 +287,13 @@ public class SessionController {
     public GamePhase getCurrentGamePhase() {
         return aSessionManager.getCurrentPhase();
     }
+    
+    /**
+     * @return true iff it is the client's turn
+     * */
+    public boolean isMyTurn() {
+    	return aSessionManager.getCurrentPlayer().getAccount().equals(CatanGame.account);
+    }
 
     /*
     public void setPlayerColor(PlayerColor pc) {

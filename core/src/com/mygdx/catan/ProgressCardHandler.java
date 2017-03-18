@@ -16,6 +16,7 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.moves.Move;
 import com.mygdx.catan.enums.ProgressCardType;
+import com.mygdx.catan.session.SessionController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,16 +26,13 @@ import java.util.List;
  */
 public class ProgressCardHandler {
 
-    private static ProgressCardHandler instance;
     private SessionController aSessionController;
-    SessionScreen aSessionScreen = aSessionController.getSessionScreen();
+    private SessionScreen aSessionScreen;
 
-    public static ProgressCardHandler getInstance() {
-        if (instance == null)
-            instance = new ProgressCardHandler();
-        return instance;
+    public ProgressCardHandler(SessionController sessionController) {
+        aSessionController = sessionController;
+        SessionScreen aSessionScreen = aSessionController.getSessionScreen();
     }
-
 
     public void handle (ProgressCardType pType, PlayerColor currentPColor) {
         final Player currentP = aSessionController.getCurrentPlayer();

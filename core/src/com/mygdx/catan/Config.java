@@ -29,7 +29,7 @@ public class Config {
     public static final String ACCOUNT_PATH = "acct.bin";
 
     /** The IP of the server. All clients need to connect to this IP. */
-    static final String IP = "local host";
+    static final String IP = "localhost";
 
     public static void registerKryoClasses(Kryo kryo) {
         kryo.setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new SerializingInstantiatorStrategy()));

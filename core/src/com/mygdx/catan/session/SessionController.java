@@ -59,7 +59,7 @@ public class SessionController {
         aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
         aTransactionManager = TransactionManager.getInstance(aSessionManager);
         tradeManager = TradeManager.getInstance(aTransactionManager);
-        aProgressCardHandler = ProgressCardHandler.getInstance();
+        aProgressCardHandler = new ProgressCardHandler(this);
 
         aSessionScreen = sessionScreen;
 

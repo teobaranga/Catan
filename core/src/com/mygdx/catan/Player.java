@@ -17,6 +17,7 @@ public class Player {
     private PlayerColor color;
     private List<EdgeUnit> roadsAndShips;
     private List<Village> villages;
+    private List<Knight> knights;
     private int defenderOfCatanPoints;
 
     private int tokenVictoryPoints;

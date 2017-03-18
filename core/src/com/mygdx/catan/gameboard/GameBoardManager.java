@@ -141,6 +141,10 @@ public class GameBoardManager {
         if(kind == EdgeUnitKind.SHIP) { player.decrementAvailableShips(); }
     }
 
+    public void buildCityWall(Player player, CoordinatePair myCityWall) {
+
+    }
+
     /**
      * @return total number of cities on the gameboard
      */

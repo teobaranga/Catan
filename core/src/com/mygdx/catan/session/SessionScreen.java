@@ -659,7 +659,7 @@ public class SessionScreen implements Screen {
                         @Override
                         public void doMove(Object o) {
                             Pair<CoordinatePair, CoordinatePair> chosenShip = (Pair<CoordinatePair, CoordinatePair>) o;
-                            ((MultiStepMovingshipMove) currentlyPerformingMove).setShipToMove(chosenShip);
+                            ((MultiStepMovingshipMove) currentlyPerformingMove).setShipToMove(chosenShip); //saves ship
                             // highlights valid destinations
                             setValidMoveShipPositions(chosenShip);
                             // chosenShip is removed from GUI game board

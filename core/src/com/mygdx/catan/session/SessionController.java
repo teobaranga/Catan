@@ -372,6 +372,16 @@ public class SessionController {
         return canBuild;
     }
 
+    public boolean requestBuildCityWall (PlayerColor owner) {
+        Player currentP = getCurrentPlayer();
+        ResourceMap cost = GameRules.getGameRulesInstance().getCityWallCost();
+        if (currentP.hasEnoughResources(cost)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
     /**
      * @param owner of request
      * @param kind  of edge unit requested to be built
@@ -559,6 +569,20 @@ public class SessionController {
     	return validShips;
     }
 
+    /** produces a list of cities that are eligible for a city wall i.e. must be a city without a city wall */
+    public ArrayList<CoordinatePair> requestValidCityWallIntersections(PlayerColor owner) {
+        ArrayList<CoordinatePair> validCityWallIntersections = new ArrayList<>();
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        List<Village> listOfVillages = currentP.getVillages();
+        for (Village v : listOfVillages) {
+            if (v.getVillageKind() == VillageKind.CITY && !v.hasCityWalls()) {
+                validCityWallIntersections.add(v.getPosition());
+            }
+        }
+        return validCityWallIntersections;
+    }
+
+
     /**
      * Requests the GameBoardManager to build village on given coordinate. SessionScreen is notified of any boardgame changes.
      *
@@ -663,6 +687,11 @@ public class SessionController {
             }
         }
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)
+        return true;
+    }
+
+    //TODO: build city wall this is where messages will happen, will tell GUI to show city wall
+    public boolean buildCityWall(PlayerColor owner, CoordinatePair myWall, boolean fromPeer){
         return true;
     }
 

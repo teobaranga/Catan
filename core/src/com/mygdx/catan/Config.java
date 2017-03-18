@@ -64,6 +64,7 @@ public class Config {
         kryo.register(BuildEdge.class);
         kryo.register(MoveShip.class);
         kryo.register(EndTurn.class);
+        kryo.register(TradeProposal.class);
         kryo.register(LinkedHashMap.class);
         kryo.register(ArrayList.class);
         kryo.register(ImmutablePair.class);

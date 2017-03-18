@@ -194,7 +194,6 @@ public class MenuScreen implements Screen {
                 messageLabel.setAlignment(Align.center);
                 contentTable.add(messageLabel).colspan(2);
 
-                window.row();
                 window.add(contentTable).expandX().fillX();
 
                 // Display the window

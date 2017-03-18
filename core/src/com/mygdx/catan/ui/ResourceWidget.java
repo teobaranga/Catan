@@ -26,7 +26,7 @@ public class ResourceWidget extends WidgetGroup {
 
     private int maxResource = Integer.MAX_VALUE;
 
-    public ResourceWidget(ResourceKind kind, Skin skin) {
+    ResourceWidget(ResourceKind kind, Skin skin) {
         // Add the image
         this.kind = kind;
         switch (kind) {

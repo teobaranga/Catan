@@ -20,8 +20,14 @@ import com.mygdx.catan.*;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.moves.Move;
+import com.mygdx.catan.moves.MultiStepInitMove;
+import com.mygdx.catan.moves.MultiStepMove;
+import com.mygdx.catan.moves.MultiStepMovingshipMove;
 import com.mygdx.catan.ui.DomesticTradeWindow;
+import com.mygdx.catan.ui.ChoosePlayerWindow;
 import com.mygdx.catan.ui.TradeWindow;
+
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -72,7 +78,9 @@ public class SessionScreen implements Screen {
 
     /** Determines the current mode of the session screen */
     private SessionScreenModes aMode;
-    private boolean initializing;
+    
+    /** Contains the currently performing multi step move */
+    private MultiStepMove currentlyPerformingMove;
 
     /**
      * The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE
@@ -80,16 +88,7 @@ public class SessionScreen implements Screen {
     private ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
     private ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
 
-    /**
-     * determines which kind of game piece is being built. If aMode is not in choose X mode, the values do not matter
-     */
-    private VillageKind villagePieceKind;
-    private EdgeUnitKind edgePieceKind;
-    private CoordinatePair initVillageIntersection;
-    private Pair<CoordinatePair, CoordinatePair> shipToMove;
-
     // Menu Buttons
-
     private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton;
     private TextButton rollDiceButton, endTurnButton;
     private TextButton domesticTradeButton, tradeButton;
@@ -142,7 +141,6 @@ public class SessionScreen implements Screen {
         highlightBatch = new PolygonSpriteBatch();
         gamePieces = new GamePieces();
         robberSprite = gamePieces.createRobber();
-        initializing = false;
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // sets the initializing mode of the session screen (VIEWMODE). set to CHOOSEACTIONMODE for testing purposes 
@@ -160,38 +158,10 @@ public class SessionScreen implements Screen {
 
                             // The building position is valid, can clear the highlighted positions
                             highlightedPositions.clear();
-
-                            if (initializing) {
-                                // Building place was picked, can now switch the mode to allow the player to pick a road place
-                                aMode = SessionScreenModes.CHOOSEEDGEMODE;
-                                // show a transparent version of settlement on validIntersection 
-                                if (villagePieceKind == VillageKind.SETTLEMENT) {
-                                    highlightedPositions.add(gamePieces.createSettlement(validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                                } else {
-                                    highlightedPositions.add(gamePieces.createCity(validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                                }
-                                // finds all valid adjacent edges
-                                for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
-                                    if (validIntersection.isAdjacentTo(i) && !i.isOccupied()) {
-                                        validEdges.add(new MutablePair<>(i, validIntersection));
-                                        // show a transparent version of valid adjacent roads
-                                        if (aSessionController.isOnLand(i, validIntersection)) {
-                                            highlightedPositions.add(gamePieces.createRoad(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                                        } else {
-                                            highlightedPositions.add(gamePieces.createShip(i.getLeft(), i.getRight(), validIntersection.getLeft(), validIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                                        }
-                                    }
-                                }
-                                initVillageIntersection = validIntersection;
-                            } else {
-                                aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                                aSessionController.buildVillage(validIntersection, villagePieceKind, aSessionController.getPlayerColor(), false, initializing);
-                            }
-
-                            buildSettlementButton.setText("Build Settlement");
-                            buildCityButton.setText("Build City");
                             validIntersections.clear();
 
+                            currentlyPerformingMove.performNextMove(validIntersection);
+                            
                             return true;
                         }
                     }
@@ -209,89 +179,14 @@ public class SessionScreen implements Screen {
 
                             // The edge position is valid, can clear the highlighted positions
                             highlightedPositions.clear();
-
-                            if (initializing) {
-                                aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                                if (!aSessionController.isOnLand(validEdge.getLeft(), validEdge.getRight())) {
-                                    edgePieceKind = EdgeUnitKind.SHIP;
-                                }
-
-                                aSessionController.buildInitialVillageAndRoad(initVillageIntersection, validEdge.getLeft(), validEdge.getRight(), villagePieceKind, edgePieceKind);
-
-                                // Stop the initialization phase only after the city was placed
-                                if (villagePieceKind == VillageKind.CITY)
-                                    initializing = false;
-
-                                // End the turn
-                                aSessionController.endTurn();
-                            } else {
-                                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), validEdge.getLeft(), validEdge.getRight(), edgePieceKind, false, initializing);
-                                aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                            }
-
-                            buildRoadButton.setText("Build Road");
-                            buildShipButton.setText("Build Ship");
-
                             validEdges.clear();
+                            
+                            currentlyPerformingMove.performNextMove(validEdge);
 
                             return true;
                         }
                     }
-                } else if (aMode == SessionScreenModes.CHOOSESHIPMODE) {
-                    for (Pair<CoordinatePair, CoordinatePair> validShip : validEdges) {
-                        int xMin = Math.min(validShip.getLeft().getLeft(), validShip.getRight().getLeft());
-                        int xMax = Math.max(validShip.getLeft().getLeft(), validShip.getRight().getLeft());
-                        int yMin = Math.min(validShip.getLeft().getRight(), validShip.getRight().getRight());
-                        int yMax = Math.max(validShip.getLeft().getRight(), validShip.getRight().getRight());
-
-                        if (screenX > boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE - 10 &&
-                                screenX < boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE + 10 &&
-                                screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
-                                screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
-
-                            // The edge position is valid, can clear the highlighted positions
-                            highlightedPositions.clear();
-                            validEdges.clear();
-
-                            shipToMove = validShip;
-                            // player is now prompted to choose a new position for the validShip
-                            // sets the valid edge position and highlights them
-                            setValidMoveShipPositions(validShip);
-
-                            // validShip is removed from GUI game board
-                            removeEdgeUnit(validShip.getLeft().getLeft(), validShip.getLeft().getRight(), validShip.getRight().getLeft(), validShip.getRight().getRight());
-
-                            // mode is set to choose edge
-                            aMode = SessionScreenModes.CHOOSEUPDATEEDGEMODE;
-
-                            return true;
-                        }
-                    }
-                } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
-                    for (Pair<CoordinatePair, CoordinatePair> validEdge : validEdges) {
-                        int xMin = Math.min(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
-                        int xMax = Math.max(validEdge.getLeft().getLeft(), validEdge.getRight().getLeft());
-                        int yMin = Math.min(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
-                        int yMax = Math.max(validEdge.getLeft().getRight(), validEdge.getRight().getRight());
-
-                        if (screenX > boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE - 10 &&
-                                screenX < boardOrigin.getLeft() + (float) (xMin + (xMax - xMin) / 2.0) * BASE + 10 &&
-                                screenY > boardOrigin.getRight() + (float) (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) - 10 &&
-                                screenY < boardOrigin.getRight() + (yMin + (yMax - yMin) / 2.0) * (LENGTH / 2) + 10) {
-
-                            // The edge position is valid, can clear the highlighted positions
-                            highlightedPositions.clear();
-                            validEdges.clear();
-
-                            aSessionController.moveShip(shipToMove.getLeft(), shipToMove.getRight(), validEdge.getLeft(), validEdge.getRight(), aSessionController.getPlayerColor(), false);
-
-                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                            moveShipButton.setText("Move Ship");
-
-                            return true;
-                        }
-                    }
-                }
+                } 
                 return false;
             }
         };
@@ -427,22 +322,22 @@ public class SessionScreen implements Screen {
 
         // creates the menu buttons
         buildSettlementButton = new TextButton("Build Settlement", CatanGame.skin);
-        setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT);
+        setupBuildVillageButton(buildSettlementButton, VillageKind.SETTLEMENT, "Build Settlement");
         buildSettlementButton.pad(0, 10, 0, 10);
         menuTable.add(buildSettlementButton).padBottom(10).row();
 
         buildCityButton = new TextButton("Build City", CatanGame.skin);
-        setupBuildVillageButton(buildCityButton, VillageKind.CITY);
+        setupBuildVillageButton(buildCityButton, VillageKind.CITY, "Built City");
         buildCityButton.pad(0, 10, 0, 10);
         menuTable.add(buildCityButton).padBottom(10).row();
 
         buildRoadButton = new TextButton("Build Road", CatanGame.skin);
-        setupBuildEdgeUnitButton(buildRoadButton, EdgeUnitKind.ROAD);
+        setupBuildEdgeUnitButton(buildRoadButton, EdgeUnitKind.ROAD, "Build Road");
         buildRoadButton.pad(0, 10, 0, 10);
         menuTable.add(buildRoadButton).padBottom(10).row();
 
         buildShipButton = new TextButton("Build Ship", CatanGame.skin);
-        setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP);
+        setupBuildEdgeUnitButton(buildShipButton, EdgeUnitKind.SHIP, "Build Ship");
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
 
@@ -501,6 +396,7 @@ public class SessionScreen implements Screen {
                 window.setMaxOffer(aSessionController.getMaxOffer());
             }
         });
+
         menuTable.row();
         menuTable.add(tradeButton).padTop(10);
 
@@ -558,8 +454,29 @@ public class SessionScreen implements Screen {
         // Begin the game
         aSessionController.checkIfMyTurn();
     }
+    
+    /**
+     * @param opponentPlayers client can choose from
+     * Opens window where client can choose one of the opponent players
+     * */
+    public void chooseOtherPlayer(ArrayList<Player> opponents, MultiStepMove move) {
+        // disable all possible actions
+        disableAllButtons();
+        
+        final ChoosePlayerWindow choosePlayerWindow = new ChoosePlayerWindow("Choose Player", CatanGame.skin, opponents);
+        choosePlayerWindow.setChoosePlayerListener((player) -> {
+            // performs the given move with player
+            move.performNextMove(player);
+            
+            System.out.println(player.getAccount().getUsername()+" chosen");
+            
+            // re-enable all appropriate actions
+            enablePhase(aSessionController.getCurrentGamePhase());
+        });
+        aSessionStage.addActor(choosePlayerWindow);
+    }
 
-    private void setupBuildVillageButton(TextButton buildButton, VillageKind kind) {
+    private void setupBuildVillageButton(TextButton buildButton, VillageKind kind, String buttonText) {
         buildButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -568,6 +485,14 @@ public class SessionScreen implements Screen {
                     addGameMessage("Not enough resources for building the " + kind.name().toLowerCase());
                     return;
                 }
+                
+                // create a MultiStepMove and set session screen current multistepmove
+                currentlyPerformingMove = new MultiStepMove();
+                
+                // disable all other buttons
+                disableAllButtons();
+                buildButton.setDisabled(false);
+                
                 if (aMode != SessionScreenModes.CHOOSEINTERSECTIONMODE) {
                     if (kind == VillageKind.SETTLEMENT) {
                         for (CoordinatePair intersections : aSessionController.requestValidBuildIntersections(aSessionController.getPlayerColor())) {
@@ -580,22 +505,37 @@ public class SessionScreen implements Screen {
                             highlightedPositions.add(gamePieces.createCity(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                         }
                     }
+                    // adds move that will build the village at chosen intersection
+                    currentlyPerformingMove.addMove(new Move() {
+                        @Override
+                        public void doMove(Object o) {
+                            CoordinatePair chosenIntersection = (CoordinatePair) o;
+                            aSessionController.buildVillage(chosenIntersection, kind, aSessionController.getPlayerColor(), false, false);
+                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                            buildButton.setText(buttonText);
+                            
+                            // re-enable all appropriate actions
+                            enablePhase(aSessionController.getCurrentGamePhase());
+                        }
+                    });
 
                     aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
-                    villagePieceKind = kind;
+                    
                     buildButton.setText("Cancel");
-                } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE && !initializing) {
+                } else if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
                     validIntersections.clear();
                     highlightedPositions.clear();
-                    buildSettlementButton.setText("Build Settlement");
-                    buildCityButton.setText("Build City");
+                    buildSettlementButton.setText(buttonText);
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                    
+                    // re-enable all appropriate actions
+                    enablePhase(aSessionController.getCurrentGamePhase());
                 }
             }
         });
     }
 
-    private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind) {
+    private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind, String buttonText) {
         buildButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -603,6 +543,14 @@ public class SessionScreen implements Screen {
                     addGameMessage("Not enough resources for building a " + kind.name().toLowerCase());
                     return;
                 }
+                
+                // disable all other buttons
+                disableAllButtons();
+                buildButton.setDisabled(false);
+                
+                // create a MultiStepMove and set session screen current multistepmove
+                currentlyPerformingMove = new MultiStepMove();
+                
                 if (aMode != SessionScreenModes.CHOOSEEDGEMODE) {
                     // the following loop go through requested valid build positions
                     if (kind == EdgeUnitKind.ROAD) {
@@ -638,6 +586,21 @@ public class SessionScreen implements Screen {
                             }
                         }
                     }
+                    
+                 // adds move that will build the village at chosen intersection
+                    currentlyPerformingMove.addMove(new Move() {
+                        @Override
+                        public void doMove(Object o) {
+                            Pair<CoordinatePair,CoordinatePair> chosenEdge = (Pair<CoordinatePair,CoordinatePair>) o;
+                            aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, false);
+                            
+                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                            buildButton.setText(buttonText);
+                           
+                            // re-enable all appropriate actions
+                            enablePhase(aSessionController.getCurrentGamePhase());
+                        }
+                    });
 
                     // make a sprite that highlights the areas
                     if (kind == EdgeUnitKind.ROAD) {
@@ -652,14 +615,15 @@ public class SessionScreen implements Screen {
 
 
                     aMode = SessionScreenModes.CHOOSEEDGEMODE;
-                    edgePieceKind = kind;
+                    // edgePieceKind = kind;
                     buildButton.setText("Cancel");
-                } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE && !initializing) {
+                } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
                     validEdges.clear();
                     highlightedPositions.clear();
-                    buildRoadButton.setText("Build Road");
-                    buildShipButton.setText("Build Ship");
+                    buildRoadButton.setText(buttonText);
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                    // re-enable all appropriate actions
+                    enablePhase(aSessionController.getCurrentGamePhase());
                 }
             }
         });
@@ -671,7 +635,7 @@ public class SessionScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
 
-                if (aMode != SessionScreenModes.CHOOSESHIPMODE && aMode != SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
+                if (aMode != SessionScreenModes.CHOOSEEDGEMODE) {
                     // loop through all valip ships to move
                     for (EdgeUnit eu : aSessionController.requestValidShips(aSessionController.getPlayerColor())) {
                         // add its endpoints as a pair of coordinate to validedges
@@ -682,23 +646,59 @@ public class SessionScreen implements Screen {
                     for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
                         highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                     }
+                    
+                    // disable all other buttons
+                    disableAllButtons();
+                    moveButton.setDisabled(false);
+                    
+                    // create a MultiStepMovingshipMove and set session screen current multistepmove
+                    currentlyPerformingMove = new MultiStepMovingshipMove();
+                    
+                    // adds move that will save the chosen
+                    currentlyPerformingMove.addMove(new Move() {
+                        @Override
+                        public void doMove(Object o) {
+                            Pair<CoordinatePair, CoordinatePair> chosenShip = (Pair<CoordinatePair, CoordinatePair>) o;
+                            ((MultiStepMovingshipMove) currentlyPerformingMove).setShipToMove(chosenShip);
+                            // highlights valid destinations
+                            setValidMoveShipPositions(chosenShip);
+                            // chosenShip is removed from GUI game board
+                            removeEdgeUnit(chosenShip.getLeft().getLeft(), chosenShip.getLeft().getRight(), chosenShip.getRight().getLeft(), chosenShip.getRight().getRight());
+                        }
+                    });
+                    // adds move that will move the ship once a new edge is chosen
+                    currentlyPerformingMove.addMove(new Move() {
+                        @Override
+                        public void doMove(Object o) {
+                            Pair<CoordinatePair, CoordinatePair> chosenDest = (Pair<CoordinatePair, CoordinatePair>) o;
+                            Pair<CoordinatePair, CoordinatePair> ship = ((MultiStepMovingshipMove) currentlyPerformingMove).getShipToMove();
+                            aSessionController.moveShip(ship.getLeft(), ship.getRight(), chosenDest.getLeft(), chosenDest.getRight(), aSessionController.getPlayerColor(), false);
 
-                    aMode = SessionScreenModes.CHOOSESHIPMODE;
+                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                            moveShipButton.setText("Move Ship");
+                            // re-enable all appropriate actions
+                            enablePhase(aSessionController.getCurrentGamePhase());
+                        }
+                    });
+
+                    aMode = SessionScreenModes.CHOOSEEDGEMODE;
                     moveButton.setText("Cancel");
 
-                } else if (aMode == SessionScreenModes.CHOOSESHIPMODE) {
-                    validEdges.clear();
-                    highlightedPositions.clear();
-                    moveButton.setText("Move Ship");
-                    aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                } else if (aMode == SessionScreenModes.CHOOSEUPDATEEDGEMODE) {
-                    // put the chosen ship game piece back in GUI
-                    updateEdge(shipToMove.getLeft(), shipToMove.getRight(), EdgeUnitKind.SHIP, aSessionController.getPlayerColor());
+                } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
+                    
+                    // if there is only one move left, this will imply a ship has already been chosen
+                    if (currentlyPerformingMove.movesLeft() == 1) {
+                     // put the chosen ship game piece back in GUI
+                        Pair<CoordinatePair, CoordinatePair> ship = ((MultiStepMovingshipMove) currentlyPerformingMove).getShipToMove();
+                        updateEdge(ship.getLeft(), ship.getRight(), EdgeUnitKind.SHIP, aSessionController.getPlayerColor());
+                    }
                     
                     validEdges.clear();
                     highlightedPositions.clear();
                     moveButton.setText("Move Ship");
                     aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                    // re-enable all appropriate actions
+                    enablePhase(aSessionController.getCurrentGamePhase());
                 }
             }
 
@@ -983,6 +983,17 @@ public class SessionScreen implements Screen {
         if (edgeUnit != null)
             edgeUnits.add(edgeUnit);
     }
+    
+    private void disableAllButtons() {
+        buildSettlementButton.setDisabled(true);
+        buildCityButton.setDisabled(true);
+        buildRoadButton.setDisabled(true);
+        buildShipButton.setDisabled(true);
+        domesticTradeButton.setDisabled(true);
+        endTurnButton.setDisabled(true);
+        moveShipButton.setDisabled(true);
+        rollDiceButton.setDisabled(true);
+    }
 
     /**
      * Enable or disable GUI elements depending on the game phase.
@@ -1078,7 +1089,6 @@ public class SessionScreen implements Screen {
      */
     private void initialize(boolean firstInit) {
         aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
-        initializing = true;
         // Highlight the valid positions where building can be placed
         for (CoordinatePair i : aSessionController.requestValidInitializationBuildIntersections()) {
             validIntersections.add(i);
@@ -1088,13 +1098,78 @@ public class SessionScreen implements Screen {
                 highlightedPositions.add(gamePieces.createCity(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
             }
         }
+        
+        // Creates the MultiStepMove involved in initializing
+        currentlyPerformingMove = new MultiStepInitMove();
+        
         // Set the type of village that the player is allowed to place
+        final VillageKind villageKind;
         if (firstInit) {
-            villagePieceKind = VillageKind.SETTLEMENT;
+            villageKind = VillageKind.SETTLEMENT;
         } else {
-            villagePieceKind = VillageKind.CITY;
+            villageKind = VillageKind.CITY;
         }
-        edgePieceKind = EdgeUnitKind.ROAD;
+           // villagePieceKind = VillageKind.SETTLEMENT;
+            // adds the move that will set up road building, and save the chosen intersection
+            currentlyPerformingMove.addMove(new Move() {
+                @Override
+                public void doMove(Object o) {
+                    CoordinatePair chosenIntersection = (CoordinatePair) o;
+                    ((MultiStepInitMove) currentlyPerformingMove).setInitIntersection(chosenIntersection);
+                
+                 // Building place was picked, can now switch the mode to allow the player to pick a road place
+                    aMode = SessionScreenModes.CHOOSEEDGEMODE;
+                    
+                    // show a transparent version of settlement on validIntersection 
+                   if (firstInit) {
+                       highlightedPositions.add(gamePieces.createSettlement(chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                   } else {
+                       highlightedPositions.add(gamePieces.createCity(chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                   }
+                   
+                    // finds all valid adjacent edges
+                    for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
+                        if (chosenIntersection.isAdjacentTo(i) && !i.isOccupied()) {
+                            validEdges.add(new MutablePair<>(i, chosenIntersection));
+                            // show a transparent version of valid adjacent roads
+                            if (aSessionController.isOnLand(i, chosenIntersection)) {
+                                highlightedPositions.add(gamePieces.createRoad(i.getLeft(), i.getRight(), chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                            } else {
+                                highlightedPositions.add(gamePieces.createShip(i.getLeft(), i.getRight(), chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                            }
+                        }
+                    }
+                    // initVillageIntersection = chosenIntersection;
+                }
+            });
+            
+            currentlyPerformingMove.addMove(new Move() {
+                @Override
+                public void doMove(Object o) {
+                    Pair<CoordinatePair, CoordinatePair> chosenEndpoints = (Pair<CoordinatePair, CoordinatePair>) o;
+                    
+                    aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                    
+                    EdgeUnitKind Edgekind = EdgeUnitKind.ROAD;
+                    if (!aSessionController.isOnLand(chosenEndpoints.getLeft(), chosenEndpoints.getRight())) {
+                        Edgekind = EdgeUnitKind.SHIP;
+                    }
+
+                    CoordinatePair initIntersection = ((MultiStepInitMove) currentlyPerformingMove).getInitIntersection();
+                    
+                    aSessionController.buildInitialVillageAndRoad(initIntersection, chosenEndpoints.getLeft(), chosenEndpoints.getRight(), villageKind, Edgekind);
+
+                    // Stop the initialization phase only after the city was placed
+                    // if (villagePieceKind == VillageKind.CITY)
+                    //    initializing = false;
+
+                    // End the turn
+                    aSessionController.endTurn();
+                }
+            });
+            
+        
+        // edgePieceKind = EdgeUnitKind.ROAD;
     }
 
     /**

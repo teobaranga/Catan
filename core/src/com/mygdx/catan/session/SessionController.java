@@ -280,6 +280,10 @@ public class SessionController {
     public PlayerColor getPlayerColor() {
         return aPlayerColor;
     }
+    
+    public GamePhase getCurrentGamePhase() {
+        return aSessionManager.getCurrentPhase();
+    }
 
     /*
     public void setPlayerColor(PlayerColor pc) {

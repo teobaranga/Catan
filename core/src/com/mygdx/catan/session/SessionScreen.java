@@ -26,6 +26,8 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
 import com.mygdx.catan.ui.DomesticTradeWindow;
 import com.mygdx.catan.ui.ChoosePlayerWindow;
+import com.mygdx.catan.ui.ChooseProgressCardKindWindow;
+import com.mygdx.catan.ui.ChooseProgressCardWindow;
 import com.mygdx.catan.ui.TradeWindow;
 
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -405,9 +407,54 @@ public class SessionScreen implements Screen {
                 });
             }
         });
-
         menuTable.row();
         menuTable.add(tradeButton).padTop(10);
+        
+        
+        // TODO: delete when done (buttons for testing)
+        /*
+        TextButton chooseKindButton = new TextButton("Choose Kind", CatanGame.skin);
+        chooseKindButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				MultiStepMove chooseKindMove = new MultiStepMove();
+				chooseKindMove.addMove(new Move<ProgressCardKind>() {
+					@Override
+					public void doMove(ProgressCardKind kind) {
+						System.out.println(kind.toString().toLowerCase());
+						interractionDone();
+					}
+				});
+				chooseProgressCardKind(chooseKindMove);
+			}
+        });
+        menuTable.add(chooseKindButton);
+        */
+        /*
+        TextButton chooseTypeButton = new TextButton("Choose Progress Card", CatanGame.skin);
+        chooseTypeButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				MultiStepMove chooseTypeMove = new MultiStepMove();
+				chooseTypeMove.addMove(new Move<ProgressCardType>() {
+					@Override
+					public void doMove(ProgressCardType type) {
+						System.out.println(type.toString().toLowerCase());
+						interractionDone();
+					}
+				});
+				
+				EnumMap<ProgressCardType, Integer> cards = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
+				cards.put(ProgressCardType.ALCHEMIST, 3);
+				cards.put(ProgressCardType.BISHOP, 4);
+				cards.put(ProgressCardType.COMMERCIALHARBOUR, 2);
+				cards.put(ProgressCardType.CONSTITUTION, 0);
+				cards.put(ProgressCardType.CRANE, 7);
+				chooseProgressCard(cards, chooseTypeMove);
+			}
+        });
+        menuTable.add(chooseTypeButton);*/
+        
 
         // sets center of board
         int offsetX, offsetY;
@@ -478,7 +525,6 @@ public class SessionScreen implements Screen {
             // performs the given move with player
             move.performNextMove(player);
 
-            System.out.println(player.getAccount().getUsername()+" chosen");
             // re-enable all appropriate actions if it's the current player's turn
             if (aSessionController.isMyTurn()) {
             	enablePhase(aSessionController.getCurrentGamePhase());
@@ -506,6 +552,40 @@ public class SessionScreen implements Screen {
         currentlyPerformingMove = move;
         
         aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+    }
+    
+    /**
+     * Opens a window that prompts the client to choose a progress card kind
+     * 
+     * @param move whose next move to perform will be called once an intersection has been chosen
+     * */
+    public void chooseProgressCardKind(MultiStepMove move) {
+    	// disable all possible actions
+        disableAllButtons();
+        
+        final ChooseProgressCardKindWindow chooseKindWindow = new ChooseProgressCardKindWindow("Choose Progress Card Kind", CatanGame.skin);
+        chooseKindWindow.setChooseProgressCardKindListener((kind) -> {
+            // performs the given move with kind
+            move.performNextMove(kind);
+        });
+        aSessionStage.addActor(chooseKindWindow);
+    }
+    
+    /**
+     * Opens a window that prompts the client to choose a progress card type from cards
+     * @param cards that player can choose type from
+     * @param move whose next move to perform will be called once an intersection has been chosen
+     * */
+    public void chooseProgressCard(EnumMap<ProgressCardType, Integer> cards, MultiStepMove move) {
+    	// disable all possible actions
+        disableAllButtons();
+        
+        final ChooseProgressCardWindow chooseProgressCardWindow = new ChooseProgressCardWindow("Choose Progress Card", CatanGame.skin, cards);
+        chooseProgressCardWindow.setChooseProgressCardListener((type) -> {
+        	//performs the given move with type
+        	move.performNextMove(type);
+        });
+        aSessionStage.addActor(chooseProgressCardWindow);
     }
     
     /**

@@ -7,6 +7,7 @@ import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 public class Player {
@@ -22,6 +23,7 @@ public class Player {
 
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
+    private EnumMap<ProgressCardType,Integer> hand;
 
     private int availableSettlements;
     private int availableCities;
@@ -32,6 +34,7 @@ public class Player {
         roadsAndShips = new ArrayList<>();
         villages = new ArrayList<>();
         resourceMap = new ResourceMap();
+        hand = new EnumMap<ProgressCardType,Integer>(ProgressCardType.class);
         // Set the default number of available pieces
         tokenVictoryPoints = 0;
         availableSettlements = 5;
@@ -61,6 +64,22 @@ public class Player {
     public void decrementAvailableShips() { availableShips--; }
     public void incrementAvailableShips() { availableShips++; }
 
+    /**
+     * Adds a progress card with given type to the player's hand 
+     * @param card type that gets added to the Player's hand
+     * */
+    public void addProgressCard(ProgressCardType card) {
+    	hand.put(card, hand.get(card) + 1);
+    }
+    
+    /**
+     * Removes a progress card with given type from the player's hand 
+     * @param card type that gets removed from the Player's hand
+     * */
+    public void removeProgressCard(ProgressCardType card) {
+    	hand.put(card, hand.get(card) - 1);
+    }
+    
     public int getDefenderOfCatanPoints() {
         return defenderOfCatanPoints;
     }

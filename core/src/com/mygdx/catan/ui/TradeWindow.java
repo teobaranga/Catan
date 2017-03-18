@@ -17,8 +17,6 @@ import java.util.List;
 
 public class TradeWindow extends CatanWindow {
 
-    private ScrollPane scrollPane;
-
     /** ResourceTable containing the offer of the local player */
     private ResourceTable offerTable;
 
@@ -27,7 +25,13 @@ public class TradeWindow extends CatanWindow {
     /** Table containing the offers of the other players */
     private Table offersTable;
 
-    private TradeProposalListener listener;
+    private ScrollPane scrollPane;
+
+    private List<TradeOfferItem> offers;
+
+    private TradeProposalListener tradeProposalListener;
+
+    private OfferProposalListener offerProposalListener;
 
     /**
      * Constructor for creating a window for the players on the receiving side of the trade.
@@ -102,6 +106,8 @@ public class TradeWindow extends CatanWindow {
     private void init(boolean instigator, Skin skin) {
         setMovable(true);
 
+        offers = new ArrayList<>();
+
         final Label.LabelStyle labelStyle = new Label.LabelStyle(getFont(), Color.WHITE);
 
         // Create the left-side table where the player offer and demand exist
@@ -136,8 +142,12 @@ public class TradeWindow extends CatanWindow {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (instigator) {
-                    if (listener != null) {
-                        listener.onTradeProposed(offerTable.getResources(), requestTable.getResources());
+                    if (tradeProposalListener != null) {
+                        tradeProposalListener.onTradeProposed(offerTable.getResources(), requestTable.getResources());
+                    }
+                } else {
+                    if (offerProposalListener != null) {
+                        offerProposalListener.onOfferProposed(offerTable.getResources());
                     }
                 }
             }
@@ -163,7 +173,7 @@ public class TradeWindow extends CatanWindow {
         scrollPane.setScrollingDisabled(true, false);
         scrollPane.setFadeScrollBars(false);
         scrollPane.setOverscroll(false, false);
-        rightTable.add(scrollPane).height(3 / 4f * getHeight());
+        rightTable.add(scrollPane).height(3 / 4f * getHeight()).expandX().left().padLeft(20);
 
 //        rightTable.debugAll();
 
@@ -193,12 +203,25 @@ public class TradeWindow extends CatanWindow {
     }
 
     public void setTradeProposalListener(TradeProposalListener listener) {
-        this.listener = listener;
+        this.tradeProposalListener = listener;
+    }
+
+    public void setOfferProposalListener(OfferProposalListener offerProposalListener) {
+        this.offerProposalListener = offerProposalListener;
     }
 
     public void addTradeOffer(String player, ResourceMap offer) {
+        // Update the offer if it already exists
+        for (TradeOfferItem tradeOfferItem : offers) {
+            if (tradeOfferItem.getOwner().equals(player)) {
+                tradeOfferItem.setOffer(offer);
+                return;
+            }
+        }
+        // Create a new offer
         final TradeOfferItem playerOffer = new TradeOfferItem(player, offer, getSkin());
         offersTable.add(playerOffer).padLeft(10).expandY().top();
+        offers.add(playerOffer);
     }
 
     private BitmapFont getFont() {
@@ -212,6 +235,10 @@ public class TradeWindow extends CatanWindow {
 
     public interface TradeProposalListener {
         void onTradeProposed(ResourceMap offer, ResourceMap request);
+    }
+
+    public interface OfferProposalListener {
+        void onOfferProposed(ResourceMap offer);
     }
 
     private class ResourceTable extends Table {

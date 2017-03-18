@@ -15,6 +15,8 @@ public class TradeOfferItem extends WidgetGroup {
 
     private static final float IMAGE_WIDTH = 128f * SCALE;
 
+    private final Skin skin;
+
     /** Label displaying the name of the offering player */
     private final Label label;
 
@@ -24,10 +26,48 @@ public class TradeOfferItem extends WidgetGroup {
     private final List<Label> counts;
 
     TradeOfferItem(String player, ResourceMap offer, Skin skin) {
+        this.skin = skin;
+
         resources = new ArrayList<>(offer.size());
         counts = new ArrayList<>(offer.size());
         label = new Label(player, skin);
         accept = new TextButton("Accept", skin);
+        accept.setWidth(accept.getWidth() + 40);
+
+        setOffer(offer);
+
+        if (resources.isEmpty())
+            return;
+
+        addActor(label);
+
+        addActor(accept);
+    }
+
+    @Override
+    public float getPrefWidth() {
+        return Math.max(IMAGE_WIDTH + 30f, label.getWidth());
+    }
+
+    @Override
+    public float getPrefHeight() {
+        return label.getHeight() + accept.getHeight() + IMAGE_WIDTH / 2f + IMAGE_WIDTH * SCALE * resources.size();
+    }
+
+    /** Get the username of the player */
+    String getOwner() {
+        return label.getText().toString();
+    }
+
+    void setOffer(ResourceMap offer) {
+        // Reset the resource images and labels
+        for (Image resource : resources)
+            resource.remove();
+        resources.clear();
+
+        for (Label count : counts)
+            count.remove();
+        counts.clear();
 
         int index = 0;
         final ResourceKind[] array = offer.keySet().toArray(new ResourceKind[offer.size()]);
@@ -63,24 +103,8 @@ public class TradeOfferItem extends WidgetGroup {
             index++;
         }
 
-        if (resources.isEmpty())
-            return;
-
+        // Fix the label and accept button positions
         label.setY(getPrefHeight() - label.getHeight());
-        addActor(label);
-
-        accept.setWidth(accept.getWidth() + 40);
         accept.setY(getPrefHeight() - label.getHeight() - accept.getHeight());
-        addActor(accept);
-    }
-
-    @Override
-    public float getPrefWidth() {
-        return Math.max(IMAGE_WIDTH + 30f, label.getWidth());
-    }
-
-    @Override
-    public float getPrefHeight() {
-        return label.getHeight() + accept.getHeight() + IMAGE_WIDTH / 2f + IMAGE_WIDTH * SCALE * resources.size();
     }
 }

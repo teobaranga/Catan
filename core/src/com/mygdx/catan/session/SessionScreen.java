@@ -119,6 +119,9 @@ public class SessionScreen implements Screen {
     private Label availableRoads;
     private Label availableShips;
 
+    /** The currently active trade window, may be null */
+    private TradeWindow tradeWindow;
+
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
      * any other of the stage actors. Used for choosing village positions, road positions, etc.
@@ -391,11 +394,15 @@ public class SessionScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
                 // Create the window
 //                final TradeWindow window = new TradeWindow("Trade", "test", new ResourceMap(), new ResourceMap(), CatanGame.skin);
-                final TradeWindow window = new TradeWindow(CatanGame.skin);
-                aSessionStage.addActor(window);
-                window.requestScrollFocus();
+                tradeWindow = new TradeWindow(CatanGame.skin);
+                aSessionStage.addActor(tradeWindow);
+                tradeWindow.requestScrollFocus();
 //                window.setMaxOffer(aSessionController.getMaxOffer());
-                window.setTradeProposalListener((offer, request) -> aSessionController.proposeTrade(offer, request));
+                tradeWindow.setTradeProposalListener((offer, request) -> aSessionController.proposeTrade(offer, request));
+                tradeWindow.setWindowCloseListener(() -> {
+                    tradeWindow = null;
+                    // TODO cancel the trade as well
+                });
             }
         });
 
@@ -860,8 +867,21 @@ public class SessionScreen implements Screen {
      * @param request  the request of the player
      */
     void onIncomingTrade(String username, ResourceMap offer, ResourceMap request) {
-        final TradeWindow window = new TradeWindow(username, offer, request, CatanGame.skin);
-        aSessionStage.addActor(window);
+        tradeWindow = new TradeWindow(username, offer, request, CatanGame.skin);
+        tradeWindow.setOfferProposalListener(offer1 -> aSessionController.proposeOffer(offer1));
+        aSessionStage.addActor(tradeWindow);
+    }
+
+    /**
+     * Called when a reply/offer to a trade proposal was received.
+     *
+     * @param username username of the player proposing the offer
+     * @param offer    the offer of the player
+     */
+    void onIncomingOffer(String username, ResourceMap offer) {
+        if (tradeWindow != null) {
+            tradeWindow.addTradeOffer(username, offer);
+        }
     }
 
     /**

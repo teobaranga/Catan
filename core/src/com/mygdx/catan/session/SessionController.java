@@ -171,10 +171,17 @@ public class SessionController {
                     });
                 } else if (object instanceof TradeProposal) {
                     Gdx.app.postRunnable(() -> {
+                        // Get the trade proposal info
                         final TradeProposal tradeProposal = (TradeProposal) object;
                         final ResourceMap offer = tradeProposal.getOffer();
                         final ResourceMap request = tradeProposal.getRequest();
-                        sessionScreen.onIncomingTrade(tradeProposal.username, offer, request);
+                        if (request != null) {
+                            // Start a new trade
+                            sessionScreen.onIncomingTrade(tradeProposal.username, offer, request);
+                        } else {
+                            // Add an offer to an existing trade
+                            sessionScreen.onIncomingOffer(tradeProposal.username, offer);
+                        }
                     });
                 }
             }
@@ -775,7 +782,6 @@ public class SessionController {
     		return true;
     	}
     }
-
     
     public void buildInitialVillageAndRoad(CoordinatePair villagePos, CoordinatePair firstEdgePos, CoordinatePair secondEdgePos, VillageKind kind, EdgeUnitKind edgeKind) {
     	 if (kind == VillageKind.CITY) {
@@ -1040,6 +1046,11 @@ public class SessionController {
      */
     void proposeTrade(ResourceMap offer, ResourceMap request) {
         TradeProposal tradeProposal = TradeProposal.newInstance(localPlayer.getUsername(), offer, request);
+        CatanGame.client.sendTCP(tradeProposal);
+    }
+
+    void proposeOffer(ResourceMap offer) {
+        TradeProposal tradeProposal = TradeProposal.newInstance(localPlayer.getUsername(), offer);
         CatanGame.client.sendTCP(tradeProposal);
     }
 

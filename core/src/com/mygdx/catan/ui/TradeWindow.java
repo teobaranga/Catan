@@ -227,6 +227,12 @@ public class TradeWindow extends CatanWindow {
         this.offerAcceptListener = offerAcceptListener;
     }
 
+    /**
+     * Add an incoming offer from a player.
+     *
+     * @param player username of the player
+     * @param offer  the offer
+     */
     public void addTradeOffer(String player, ResourceMap offer) {
         // Update the offer if it already exists
         for (TradeOfferItem tradeOfferItem : offers) {
@@ -244,6 +250,26 @@ public class TradeWindow extends CatanWindow {
         });
         offersTable.add(playerOffer).padLeft(10).expandY().top();
         offers.add(playerOffer);
+    }
+
+    /**
+     * Remove a specific player's offer.
+     *
+     * @param player username of the player
+     */
+    public void removeTradeOffer(String player) {
+        // Find the offer
+        TradeOfferItem tradeOfferItem = null;
+        for (TradeOfferItem offer : offers) {
+            if (offer.getOwner().equals(player)) {
+                tradeOfferItem = offer;
+            }
+        }
+        // Remove it
+        if (tradeOfferItem != null) {
+            tradeOfferItem.remove();
+            offers.remove(tradeOfferItem);
+        }
     }
 
     private BitmapFont getFont() {

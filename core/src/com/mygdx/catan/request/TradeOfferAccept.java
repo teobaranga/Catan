@@ -2,7 +2,7 @@ package com.mygdx.catan.request;
 
 import com.mygdx.catan.ResourceMap;
 
-public class TradeAccepted extends ForwardedRequest {
+public class TradeOfferAccept extends ForwardedRequest {
 
     /** The username of the player whose offer was accepted */
     private String chosenUsername;
@@ -14,18 +14,18 @@ public class TradeAccepted extends ForwardedRequest {
     private ResourceMap localOffer;
 
     /**
-     * Create a new message of type TradeAccepted.
+     * Create a new message of type TradeOfferAccept.
      *
      * @param username       username of the sender
      * @param chosenUsername username of the player whose offer was accepted
      */
-    public static TradeAccepted newInstance(String username, String chosenUsername, ResourceMap remoteOffer, ResourceMap localOffer) {
-        final TradeAccepted tradeAccepted = new TradeAccepted();
-        tradeAccepted.username = username;
-        tradeAccepted.chosenUsername = chosenUsername;
-        tradeAccepted.remoteOffer = remoteOffer;
-        tradeAccepted.localOffer = localOffer;
-        return tradeAccepted;
+    public static TradeOfferAccept newInstance(String username, String chosenUsername, ResourceMap remoteOffer, ResourceMap localOffer) {
+        final TradeOfferAccept tradeOfferAccept = new TradeOfferAccept();
+        tradeOfferAccept.username = username;
+        tradeOfferAccept.chosenUsername = chosenUsername;
+        tradeOfferAccept.remoteOffer = remoteOffer;
+        tradeOfferAccept.localOffer = localOffer;
+        return tradeOfferAccept;
     }
 
     public String getChosenUsername() {

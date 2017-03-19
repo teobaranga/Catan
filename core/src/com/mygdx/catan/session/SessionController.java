@@ -180,17 +180,17 @@ public class SessionController {
                             sessionScreen.onIncomingTrade(tradeProposal.username, offer, request);
                         } else {
                             // Add an offer to an existing trade
-                            sessionScreen.onIncomingOffer(tradeProposal.username, offer);
+                            sessionScreen.onTradeOfferReceived(tradeProposal.username, offer);
                         }
                     });
-                } else if (object instanceof TradeAccepted) {
+                } else if (object instanceof TradeOfferAccept) {
                     Gdx.app.postRunnable(() -> {
-                        final TradeAccepted tradeAccepted = (TradeAccepted) object;
+                        final TradeOfferAccept tradeOfferAccept = (TradeOfferAccept) object;
                         // Perform the trade on the player whose offer was accepted
-                        if (tradeAccepted.getChosenUsername().equals(localPlayer.getUsername())) {
+                        if (tradeOfferAccept.getChosenUsername().equals(localPlayer.getUsername())) {
                             // The local offer is from the perspective of the trade initiator
-                            final ResourceMap localOffer = tradeAccepted.getLocalOffer();
-                            final ResourceMap remoteOffer = tradeAccepted.getRemoteOffer();
+                            final ResourceMap localOffer = tradeOfferAccept.getLocalOffer();
+                            final ResourceMap remoteOffer = tradeOfferAccept.getRemoteOffer();
                             tradeManager.trade(localPlayer, localOffer, remoteOffer);
                             sessionScreen.updateResourceBar(localPlayer.getResources());
                         }
@@ -198,6 +198,8 @@ public class SessionController {
                     });
                 } else if (object instanceof TradeCancel) {
                     Gdx.app.postRunnable(aSessionScreen::onTradeCompleted);
+                } else if (object instanceof TradeOfferCancel) {
+                    Gdx.app.postRunnable(() -> aSessionScreen.onTradeOfferCancelled(((TradeOfferCancel) object).username));
                 }
             }
         };
@@ -1154,6 +1156,13 @@ public class SessionController {
         CatanGame.client.sendTCP(tradeProposal);
     }
 
+    /** Cancel the local player's offer. */
+    void cancelOffer() {
+        TradeOfferCancel tradeOfferCancel = TradeOfferCancel.newInstance(localPlayer.getUsername());
+        CatanGame.client.sendTCP(tradeOfferCancel);
+        aSessionScreen.onTradeCompleted();
+    }
+
     /**
      * Accept a trade.
      *
@@ -1166,8 +1175,8 @@ public class SessionController {
         tradeManager.trade(localPlayer, remoteOffer, localOffer);
         aSessionScreen.updateResourceBar(localPlayer.getResources());
         // Inform the other players of the trade
-        TradeAccepted tradeAccepted = TradeAccepted.newInstance(localPlayer.getUsername(), username, remoteOffer, localOffer);
-        CatanGame.client.sendTCP(tradeAccepted);
+        TradeOfferAccept tradeOfferAccept = TradeOfferAccept.newInstance(localPlayer.getUsername(), username, remoteOffer, localOffer);
+        CatanGame.client.sendTCP(tradeOfferAccept);
         // Trade completed
         aSessionScreen.onTradeCompleted();
     }

@@ -974,6 +974,7 @@ public class SessionScreen implements Screen {
         tradeWindow.setOfferProposalListener(offer1 -> aSessionController.proposeOffer(offer1));
         tradeWindow.setWindowCloseListener(() -> {
             tradeWindow = null;
+            aSessionController.cancelOffer();
         });
         aSessionStage.addActor(tradeWindow);
     }
@@ -984,9 +985,18 @@ public class SessionScreen implements Screen {
      * @param username username of the player proposing the offer
      * @param offer    the offer of the player
      */
-    void onIncomingOffer(String username, ResourceMap offer) {
+    void onTradeOfferReceived(String username, ResourceMap offer) {
         if (tradeWindow != null)
             tradeWindow.addTradeOffer(username, offer);
+    }
+
+    /**
+     * Called when an offer was cancelled.
+     * @param username username of the player who cancelled their offer
+     */
+    void onTradeOfferCancelled(String username) {
+        if (tradeWindow != null)
+            tradeWindow.removeTradeOffer(username);
     }
 
     /**

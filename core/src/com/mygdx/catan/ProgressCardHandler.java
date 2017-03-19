@@ -3,9 +3,12 @@ package com.mygdx.catan;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.game.Game;
+import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.session.SessionController;
+import com.mygdx.catan.session.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,16 +18,22 @@ import java.util.List;
  */
 public class ProgressCardHandler {
 
+    private final SessionManager aSessionManager;
+
     private SessionController aSessionController;
     //private SessionScreen aSessionScreen;
 
     public ProgressCardHandler(SessionController sessionController) {
         aSessionController = sessionController;
+        final Game currentGame = GameManager.getInstance().getCurrentGame();
+        aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
         //SessionScreen aSessionScreen = aSessionController.getSessionScreen();
     }
 
     public void handle (ProgressCardType pType, PlayerColor currentPColor) {
         final Player currentP = aSessionController.getCurrentPlayer();
+        aSessionManager.incrementProgressCardMap(pType);
+        //SessionManager.getInstance().incrementProgressCardMap(pType);
         switch(pType) {
             case ALCHEMIST:
             case CRANE:

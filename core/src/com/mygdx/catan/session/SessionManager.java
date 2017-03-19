@@ -271,14 +271,14 @@ public class SessionManager {
         aSession.longestRoadOwner = player;
     }
 
-    public void incrementProgressCardMap (HashMap<ProgressCardType, Integer> progressCardMap, ProgressCardType pType) {
-        Integer currentValue = progressCardMap.get(pType);
-        progressCardMap.put(pType, currentValue++);
+    public void incrementProgressCardMap (ProgressCardType pType) {
+        Integer currentValue = aSession.getProgressCardMap().get(pType);
+        aSession.getProgressCardMap().put(pType, currentValue++);
     }
 
-    public void decrementProgressCardMap (HashMap<ProgressCardType, Integer> progressCardMap, ProgressCardType pType) {
-        Integer currentValue = progressCardMap.get(pType);
-        progressCardMap.put(pType, currentValue--);
+    public void decrementProgressCardMap (ProgressCardType pType) {
+        Integer currentValue = aSession.getProgressCardMap().get(pType);
+        aSession.getProgressCardMap().put(pType, currentValue--);
     }
 
     public HashMap<ProgressCardType, Integer> clearProgressCardsInPlay (HashMap<ProgressCardType, Integer> progressCardMap) {

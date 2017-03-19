@@ -7,7 +7,8 @@ import java.util.Queue;
  * Class that describes a succession of Moves, together forming one full move
  */
 public class MultiStepMove {
-    private Queue<Move> queueOfMoves;
+	
+	private Queue<Move> queueOfMoves;
 
     public MultiStepMove() {
         queueOfMoves = new LinkedList<>();

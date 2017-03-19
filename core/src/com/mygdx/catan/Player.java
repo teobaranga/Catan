@@ -9,6 +9,7 @@ import com.mygdx.catan.gameboard.Village;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Player {
 
@@ -18,9 +19,8 @@ public class Player {
     private PlayerColor color;
     private List<EdgeUnit> roadsAndShips;
     private List<Village> villages;
-    private List<Knight> knights;
+    private List<Knight> knights; //TODO: keep track of knights for each player
     private int defenderOfCatanPoints;
-    private List<Knight> activeKnights;
     
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
@@ -88,7 +88,7 @@ public class Player {
     }
     
     public List<Knight> getActiveKnights() {
-        return activeKnights;
+        return knights.stream().filter(x -> x.isActive()).collect(Collectors.toList());
     }
 
     public void incrementDefenderOfCatanPoints(int defenderOfCatanPoints) {

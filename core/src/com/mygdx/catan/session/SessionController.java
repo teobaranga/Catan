@@ -13,9 +13,11 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.moves.Move;
+import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.DiceRolled;
-import com.mygdx.catan.ProgressCardHandler;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -991,8 +993,8 @@ public class SessionController {
     }
 
     private void barbarianHandleAttack() {
-        //TODO: barbarian strength not  yet adding metropolis
-        int barbarianStrength = aGameBoardManager.getCityCount();
+        
+        int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
         int activeKnightStrength = 0;
 
         //determine activeKnightStrength strength
@@ -1027,7 +1029,44 @@ public class SessionController {
                 }
             }
             //TODO: get cities to pillage from barbarians and pillage. deal with city walls.
+            for (Player p : worstPlayers) {
+                //TODO:send message to worstplayer to select a city
+                
+                ArrayList<CoordinatePair> validCityIntersections = new ArrayList<>();
+                List<Village> listOfVillages = p.getVillages();
+                for (Village v : listOfVillages) {
+                    if (v.getVillageKind() == VillageKind.CITY) {
+                        validCityIntersections.add(v.getPosition());
+                    }
+                }
+                
+                MultiStepMove pillageVillageMove = new MultiStepMove();
+                pillageVillageMove.addMove(new Move<CoordinatePair>() {
 
+                    @Override
+                    public void doMove(CoordinatePair cityPosition) {
+                        //pillage a village if it is a city, make to settlement
+                        Village city = cityPosition.getOccupyingVillage();
+                        //if the city has city walls then these are removed 
+                        if (city.hasCityWalls()) {
+                           city.setCityWalls(false);
+                        }else {
+                            city.setVillageKind(VillageKind.SETTLEMENT);
+                        
+                            p.incrementAvailableCities();
+                            p.decrementAvailableSettlements();
+                        }
+                      //TODO: reflect changes in GUI.
+                        //unlock gui
+                        aSessionScreen.interractionDone();
+                    }
+                    
+                });
+                aSessionScreen.initChooseIntersectionMove(validCityIntersections, pillageVillageMove);
+                
+                //choose intersection in session screen
+            }
+       
         } else {
             //islanders win
             int maxKnightLevel = 0;

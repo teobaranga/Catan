@@ -414,15 +414,15 @@ public class SessionController {
             }
         }
 
-        if (kind == CITY && aSessionManager.getSession().getProgressCardMap().get(ProgressCardType.MEDICINE) > 0) {
-            ResourceMap cost = GameRules.getGameRulesInstance().getCityCostWithMedicine();
-            boolean hasAvailCities = currentP.getAvailableCities() > 0;
-            if (currentP.hasEnoughResources(cost) && hasAvailCities) {
-                canBuild = true;
-            } else {
-                canBuild = false;
-            }
-        }
+//        if (kind == CITY && aSessionManager.getSession().getProgressCardMap().get(ProgressCardType.MEDICINE) > 0) {
+//            ResourceMap cost = GameRules.getGameRulesInstance().getCityCostWithMedicine();
+//            boolean hasAvailCities = currentP.getAvailableCities() > 0;
+//            if (currentP.hasEnoughResources(cost) && hasAvailCities) {
+//                canBuild = true;
+//            } else {
+//                canBuild = false;
+//            }
+//        }
         if (kind == CITY) {
             ResourceMap cost = GameRules.getGameRulesInstance().getCityCost();
             boolean hasAvailCities = currentP.getAvailableCities() > 0;
@@ -438,20 +438,18 @@ public class SessionController {
     public boolean requestBuildCityWall (PlayerColor owner) {
         Player currentP = getCurrentPlayer();
         Boolean canBuild = false;
-        if (aSessionManager.getSession().getProgressCardMap().get(ProgressCardType.ENGINEER) > 0) {
-            ResourceMap cost = GameRules.getGameRulesInstance().getCityWallWithEngineer();
-            if (currentP.hasEnoughResources(cost)) {
-                canBuild = true;
-            }
+//        if (aSessionManager.getSession().getProgressCardMap().get(ProgressCardType.ENGINEER) > 0) {
+//            ResourceMap cost = GameRules.getGameRulesInstance().getCityWallWithEngineer();
+//            if (currentP.hasEnoughResources(cost)) {
+//                canBuild = true;
+//            }
+//        }
+        ResourceMap cost = GameRules.getGameRulesInstance().getCityWallCost();
+        if ((currentP.hasEnoughResources(cost))) {
+            canBuild = true;
         }
         else {
-            ResourceMap cost = GameRules.getGameRulesInstance().getCityWallCost();
-            if ((currentP.hasEnoughResources(cost))) {
-                canBuild = true;
-            }
-            else {
-                canBuild = false;
-            }
+            canBuild = false;
         }
         return canBuild;
     }

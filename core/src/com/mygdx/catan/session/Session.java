@@ -62,10 +62,10 @@ public class Session {
         currentPhase = GamePhase.SETUP_PHASE_ONE;
         clockwise = true;
 
-        progressCardMap = new HashMap<>();
-        for (ProgressCardType p: ProgressCardType.values()) {
-            progressCardMap.put(p, 0);
-        }
+//        progressCardMap = new HashMap<>();
+//        for (ProgressCardType p: ProgressCardType.values()) {
+//            progressCardMap.put(p, 0);
+//        }
     }
 
     public static Session newInstance(Collection<Account> accounts, int VPsToWin) {

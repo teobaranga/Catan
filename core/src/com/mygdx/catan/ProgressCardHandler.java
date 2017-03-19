@@ -32,7 +32,7 @@ public class ProgressCardHandler {
 
     public void handle (ProgressCardType pType, PlayerColor currentPColor) {
         final Player currentP = aSessionController.getCurrentPlayer();
-        aSessionManager.incrementProgressCardMap(pType);
+        //aSessionManager.incrementProgressCardMap(pType);
         //SessionManager.getInstance().incrementProgressCardMap(pType);
         switch(pType) {
             case ALCHEMIST:
@@ -54,6 +54,7 @@ public class ProgressCardHandler {
                     //revert back to choose action mode and enable buttons
                     aSessionController.getSessionScreen().interractionDone();
                 });
+                break;
             case INVENTOR:
                 break;
             case IRRIGATION:
@@ -74,6 +75,7 @@ public class ProgressCardHandler {
                     //revert back to choose action mode and enable buttons
                     aSessionController.getSessionScreen().interractionDone();
                 });
+                break;
             case MINING:
                 break;
             case PRINTER:

@@ -580,6 +580,31 @@ public class SessionScreen implements Screen {
     }
     
     /**
+     * @param valid edges client can choose from
+     * @param move whose next move to perform will be called once an edge has been chosen
+     * */
+    public void initChooseEdgeMove(List<Pair<CoordinatePair, CoordinatePair>> valid, MultiStepMove move) {
+    	// disable all possible actions
+        disableAllButtons();
+        
+        // transfers all the valid intersections of validIntersections, and highlights each position on the board
+        for (Pair<CoordinatePair, CoordinatePair> i : valid) {
+        	validEdges.add(i);
+        	if (aSessionController.isOnLand(i.getLeft(), i.getRight())) {
+                highlightedPositions.add(gamePieces.createRoad(i.getLeft().getLeft(), i.getLeft().getRight(), i.getRight().getLeft(), i.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor())); 
+            } else {
+                highlightedPositions.add(gamePieces.createShip(i.getLeft().getLeft(), i.getLeft().getRight(), i.getRight().getLeft(), i.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+            }
+        }
+        
+        // sets the currently performing move attribute to given move.
+        // When an intersection is chosen, the next move in that MultiStepMove will be performed
+        currentlyPerformingMove = move;
+        
+        aMode = SessionScreenModes.CHOOSEEDGEMODE;
+    }
+    
+    /**
      * Opens a window that prompts the client to choose a progress card kind
      * 
      * @param move whose next move to perform will be called once an intersection has been chosen
@@ -655,6 +680,10 @@ public class SessionScreen implements Screen {
     public void interractionDone() {
     	// puts mode back to choose action mode
     	aMode = SessionScreenModes.CHOOSEACTIONMODE;
+    	
+    	// clears the available build positions and highlighted positions
+    	highlightedPositions.clear();
+        validIntersections.clear();
     	
     	// re-enables all the buttons according to current game phase if it is the client's turn
     	if (aSessionController.isMyTurn()) {

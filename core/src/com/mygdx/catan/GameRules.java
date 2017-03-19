@@ -17,7 +17,6 @@ public class GameRules {
 	private ResourceMap cityCost = new ResourceMap();
 	private ResourceMap cityWallCost = new ResourceMap();
 	private ResourceMap cityCostWithMedicine = new ResourceMap();
-	private ResourceMap cityWallWithEngineer = new ResourceMap();
 
 	private EnumMap<ProgressCardType, Integer> progressCardOccurences = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
 	private EnumMap<ProgressCardType, ProgressCardKind> progressCardKind = new EnumMap<ProgressCardType, ProgressCardKind>(ProgressCardType.class);
@@ -49,7 +48,6 @@ public class GameRules {
 		setupCityCost();
 		setupCityWallCost();
 		setupCityCostWithMedicine();
-		setupCityWallCostWithEngineer();
 	}
 
 	/**
@@ -85,8 +83,6 @@ public class GameRules {
 	private void setupCityWallCost(){
 		cityWallCost.put(ResourceKind.BRICK, 2);
 	}
-
-	private void setupCityWallCostWithEngineer () { cityWallWithEngineer.put(ResourceKind.BRICK, 0); }
 
 	/**
 	 * hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
@@ -489,12 +485,54 @@ public class GameRules {
 	 * @return standard cost of things that can be built throughout the game
 	 */
 	public ResourceMap getSettlementCost() { return settlementCost; }
-	public ResourceMap getRoadCost() { return roadCost; }
-	public ResourceMap getShipCost() { return shipCost; }
-	public ResourceMap getCityCost() { return cityCost; }
-	public ResourceMap getCityWallCost() { return cityWallCost; }
-	public ResourceMap getCityCostWithMedicine () { return cityCostWithMedicine; }
-	public ResourceMap getCityWallWithEngineer () { return cityWallWithEngineer; }
+	
+	public ResourceMap getRoadCost(ProgressCardType type) { 
+	    if (type == null) {
+            return roadCost;
+        }
+	    switch (type) {
+	    case ROADBUILDING:
+	        return new ResourceMap();
+        default:
+            return roadCost;
+	    }
+	}
+	
+	public ResourceMap getShipCost(ProgressCardType type) {
+	    if (type == null) {
+            return shipCost;
+        }
+	    switch (type) {
+	    case ROADBUILDING:
+	        return new ResourceMap();
+        default:
+            return shipCost;
+	    }
+	}
+	
+	public ResourceMap getCityCost(ProgressCardType type) {
+	    if (type == null) {
+	        return cityCost;
+	    }
+	    switch (type) {
+	    case MEDICINE:
+	        return cityCostWithMedicine;
+	    default :
+	        return cityCost;
+	    }
+	}
+	
+	public ResourceMap getCityWallCost(ProgressCardType type) {
+	    if (type == null) {
+            return cityWallCost;
+        }
+	    switch (type) {
+	    case ENGINEER:
+	        return new ResourceMap();
+        default:
+            return cityWallCost;
+	    }
+	}
 
 
 }

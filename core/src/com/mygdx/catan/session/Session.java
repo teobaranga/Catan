@@ -44,8 +44,11 @@ public class Session {
 
     private Player[] players;
     private ResourceMap bank;
+    
+    /** Describes the currently executing progress card. Null if no progress card is executing */
+    private ProgressCardType currentlyExecutingProgressCard;
 
-    private HashMap<ProgressCardType, Integer> progressCardMap;
+    //private HashMap<ProgressCardType, Integer> progressCardMap;
 
     //TODO: change this to fit design, so far this is only placeholder!
     public Session() {
@@ -89,7 +92,7 @@ public class Session {
         return players;
     }
 
-    public HashMap<ProgressCardType, Integer> getProgressCardMap () { return progressCardMap; }
+   // public HashMap<ProgressCardType, Integer> getProgressCardMap () { return progressCardMap; }
 
     /**
      * Add resources to the bank.
@@ -111,5 +114,13 @@ public class Session {
             cost.put(entry.getKey(), (diff > 0) ? diff : entry.getValue());
         }
         return cost;
+    }
+    
+    public ProgressCardType getCurrentlyExecutingProgressCard() {
+        return currentlyExecutingProgressCard;
+    }
+    
+    public void setCurrentlyExecutingProgressCard(ProgressCardType type) {
+        currentlyExecutingProgressCard = type;
     }
 }

@@ -271,6 +271,18 @@ public class SessionManager {
         aSession.longestRoadOwner = player;
     }
 
+    public void setCurrentlyExecutingProgressCard(ProgressCardType type) {
+        aSession.setCurrentlyExecutingProgressCard(type);
+    }
+    
+    public void finishCurrentlyExecutingProgressCard() {
+        aSession.setCurrentlyExecutingProgressCard(null);
+    }
+    
+    public ProgressCardType getCurrentlyExecutingProgressCard() {
+        return aSession.getCurrentlyExecutingProgressCard();
+    }
+    
 //    public void incrementProgressCardMap (ProgressCardType pType) {
 //        Integer currentValue = aSession.getProgressCardMap().get(pType);
 //        aSession.getProgressCardMap().put(pType, currentValue++);

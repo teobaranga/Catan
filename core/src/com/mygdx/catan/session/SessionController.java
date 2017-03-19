@@ -424,7 +424,7 @@ public class SessionController {
 //            }
 //        }
         if (kind == CITY) {
-            ResourceMap cost = GameRules.getGameRulesInstance().getCityCost();
+            ResourceMap cost = GameRules.getGameRulesInstance().getCityCost(aSessionManager.getCurrentlyExecutingProgressCard());
             boolean hasAvailCities = currentP.getAvailableCities() > 0;
             if (currentP.hasEnoughResources(cost) && hasAvailCities) {
                 canBuild = true;
@@ -444,7 +444,7 @@ public class SessionController {
 //                canBuild = true;
 //            }
 //        }
-        ResourceMap cost = GameRules.getGameRulesInstance().getCityWallCost();
+        ResourceMap cost = GameRules.getGameRulesInstance().getCityWallCost(aSessionManager.getCurrentlyExecutingProgressCard());
         if ((currentP.hasEnoughResources(cost))) {
             canBuild = true;
         }
@@ -466,7 +466,7 @@ public class SessionController {
         boolean canBuild = false;
         ResourceMap cost = null;
         if (kind == EdgeUnitKind.SHIP) {
-             cost = GameRules.getGameRulesInstance().getShipCost();
+             cost = GameRules.getGameRulesInstance().getShipCost(aSessionManager.getCurrentlyExecutingProgressCard());
             if (currentP.hasEnoughResources(cost) && hasAvailableShips) {
                 canBuild = true;
             } else {
@@ -474,7 +474,7 @@ public class SessionController {
             }
         }
         if (kind == EdgeUnitKind.ROAD) {
-             cost = GameRules.getGameRulesInstance().getRoadCost();
+             cost = GameRules.getGameRulesInstance().getRoadCost(aSessionManager.getCurrentlyExecutingProgressCard());
             if (currentP.hasEnoughResources(cost) && hasAvailableRoads) {
                 canBuild = true;
             } else {
@@ -701,7 +701,7 @@ public class SessionController {
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
-                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost());
+                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(currentP.getResources());
                 }
 
@@ -740,7 +740,7 @@ public class SessionController {
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
-                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost());
+                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(currentP.getResources());
                 }
 
@@ -755,7 +755,7 @@ public class SessionController {
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
                 if (!init) {
-                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost());
+                    aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(currentP.getResources());
                 }
 

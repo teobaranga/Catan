@@ -127,8 +127,8 @@ class CatanServer {
                             forwardedResponse = PlayerLeft.newInstance(forwardedRequest.username);
                         } else if (forwardedRequest instanceof StartGame) {
                             forwardedResponse = startGame(forwardedRequest.username);
-                        } else if (forwardedRequest instanceof RollTwoDice) {
-                            final RollTwoDice rollTwoDice = (RollTwoDice) forwardedRequest;
+                        } else if (forwardedRequest instanceof RollDice) {
+                            final RollDice rollTwoDice = (RollDice) forwardedRequest;
                             forwardedResponse = handleDiceRoll(rollTwoDice.username, rollTwoDice.getRollResult());
                         }
 

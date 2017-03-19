@@ -59,7 +59,7 @@ public class Config {
         kryo.register(LeaveGame.class);
         kryo.register(PlayerJoined.class);
         kryo.register(PlayerLeft.class);
-        kryo.register(RollTwoDice.class);
+        kryo.register(RollDice.class);
         kryo.register(DiceRolled.class);
         kryo.register(BuildIntersection.class);
         kryo.register(BuildEdge.class);

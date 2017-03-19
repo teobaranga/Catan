@@ -954,10 +954,10 @@ public class SessionController {
         int barbarianStrength = aGameBoardManager.getCityCount();
         int activeKnightStrength = 0;
 
-        //determine barbarian strength
+        //determine activeKnightStrength strength
         for (Player p : aSessionManager.getPlayers()) {
            for (Knight activeKnight : p.getActiveKnights()) {
-               //TODO: check type of knight and increase strength accordingly 
+               activeKnightStrength += activeKnight.getLevel(); 
            }
         }
         
@@ -986,12 +986,36 @@ public class SessionController {
                 }
             }
             //TODO: get cities to pillage from barbarians and pillage. deal with city walls.
+       
         } else {
             //islanders win
             int maxKnightLevel = 0;
+            List<Player> bestPlayers = new ArrayList<Player>();
+            
             for (Player p : aSessionManager.getPlayers()) {
                 int playerKnightLevel = 0;
-                
+                for (Knight k : p.getActiveKnights()) {
+                    playerKnightLevel+= k.getLevel();
+                }
+                if (playerKnightLevel > maxKnightLevel) {
+                    maxKnightLevel = playerKnightLevel;
+                    bestPlayers.clear();
+                    bestPlayers.add(p);
+                } else if (playerKnightLevel == maxKnightLevel) {
+                    bestPlayers.add(p);
+                }
+            }
+            //TODO: deal with defender of catan points here
+            int numberOfBestPlayers = bestPlayers.size();
+            if (numberOfBestPlayers == 1) {
+                //this player is the defender of catan
+                //TODO: do we set them as the defender somehow?
+                Player bestPlayer = bestPlayers.get(0);
+                bestPlayer.incrementDefenderOfCatanPoints(1);
+            }
+            else {
+                //no player is the defender
+                //TODO: deal with players who tie for highest strength
             }
         }
     }
@@ -1075,9 +1099,21 @@ public class SessionController {
                 // We're at the phase where we have to determine who rolled the highest number
                 // Roll the dice
                 Pair<Integer, Integer> diceResults = rollTwoDice();
+                EventKind eventDieResult = rollEventDie();
+                
+                if (eventDieResult == EventKind.BARBARIAN) {
+                    aSessionManager.decreaseBarbarianPosition();
+                    if (aSessionManager.getSession().barbarianPosition == 0) {
+                        //barbarians attack!
+                        barbarianHandleAttack();
+                    }
+                }
+                
                 // Inform the server / other users of the roll
-                RollTwoDice request = RollTwoDice.newInstance(diceResults, CatanGame.account.getUsername());
+                RollDice request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
+                
+                
                 break;
             default:
                 // FIXME This is not good, pretend it doesn't exist (-Teo)

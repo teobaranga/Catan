@@ -1422,7 +1422,7 @@ public class SessionScreen implements Screen {
     void updateVpTables() {
         Player[] players = aSessionController.getPlayers();
         for (int i = 0; i < playersVPLabel.length && i < players.length; i++) {
-            playersVPLabel[i].setText(players[i].getUsername() + ": " + players[i].getTokenVictoryPoints());
+            playersVPLabel[i].setText(players[i].getUsername() + ": " + aSessionController.currentVP(players[i]));
             setPlayerTableColor(playersVP[i], players[i].getColor());
         }
     }

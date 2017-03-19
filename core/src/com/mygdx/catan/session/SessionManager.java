@@ -261,4 +261,12 @@ public class SessionManager {
             lastPlayerIndex = aSession.getPlayers().length - 1;
         return aSession.playerIndex == (aSession.clockwise ? aSession.firstPlayerIndex : lastPlayerIndex);
     }
+
+    public Player getlongestRoadOwner() {
+        return aSession.longestRoadOwner;
+    }
+
+    public void setlongestRoadOwner(Player player) {
+        aSession.longestRoadOwner = player;
+    }
 }

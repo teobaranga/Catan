@@ -78,7 +78,7 @@ public class GameBoardManager {
      * @return 0 if player does not own merchant, 1 otherwise
      */
     public int getMerchantPoint(Player player) {
-        if (aGameBoard.getMerchantOwner().equals(player)) {
+        if (player.equals(aGameBoard.getMerchantOwner())) {
             return 1;
         } else {
             return 0;
@@ -349,4 +349,30 @@ public class GameBoardManager {
     	}
     	return null;
     }
+
+
+    public int getVillagePoints(Player player) {
+        int villagePoints = 0;
+        for (Village v : aGameBoard.getVillages()) {
+            VillageKind vk = v.getVillageKind();
+            if (v.getOwner().equals(player)){
+                switch (vk) {
+                    case CITY:
+                        villagePoints += 2;
+                        break;
+                    case SETTLEMENT:
+                        villagePoints += 1;
+                        break;
+                    case POLITICS_METROPOLIS:
+                    case SCIENCE_METROPOLIS:
+                    case TRADE_METROPOLIS:
+                        villagePoints += 4;
+                    default:
+                        break;
+                }
+            }
+        }
+        return villagePoints;
+    }
+
 }

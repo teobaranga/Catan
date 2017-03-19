@@ -36,6 +36,9 @@ public class Session {
     /** Flag indicating whether the next player is determined in a clockwise fashion. */
     public boolean clockwise;
 
+    /** Longest Road Owner */
+    public Player longestRoadOwner;
+
     private Player[] players;
     private ResourceMap bank;
 

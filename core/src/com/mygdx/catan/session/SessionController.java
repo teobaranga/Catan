@@ -200,6 +200,10 @@ public class SessionController {
                     Gdx.app.postRunnable(aSessionScreen::onTradeCompleted);
                 } else if (object instanceof TradeOfferCancel) {
                     Gdx.app.postRunnable(() -> aSessionScreen.onTradeOfferCancelled(((TradeOfferCancel) object).username));
+                } else if (object instanceof UpdateVP){
+                    Gdx.app.postRunnable(() -> {
+                        aSessionScreen.updateVpTables();
+                    });
                 }
             }
         };
@@ -253,6 +257,7 @@ public class SessionController {
     /** Notify all the other players that the current player ended his/her turn. */
     void endTurnNotify() {
         endTurn();
+        CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
         CatanGame.client.sendTCP(EndTurn.newInstance());
     }
 
@@ -689,6 +694,7 @@ public class SessionController {
         // if method call is from a peer, the gui only needs to be notified of the new gameboard change.
         // otherwise the gui will also need to be notified about resource changes
         //NOTE: if kind is for example city, then all you need to do is upgrade the settlement on that coordinate to a city
+        CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
         return true;
     }
 
@@ -739,6 +745,7 @@ public class SessionController {
             }
         }
         //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)
+        CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
         return true;
     }
 
@@ -918,6 +925,18 @@ public class SessionController {
     }
     */
 
+    public int currentVP(Player player) {
+        int currentVP = 0;
+        Player longestRoadOwner =  aSessionManager.getlongestRoadOwner();
+        if (player.equals(longestRoadOwner)) {
+            currentVP++;
+        }
+        currentVP += aGameBoardManager.getMerchantPoint(player);
+        currentVP += player.getTokenVictoryPoints();
+        currentVP += aGameBoardManager.getVillagePoints(player);
+        return currentVP;
+    }
+
     /**
      * Adds resources to the bank.
      *
@@ -959,7 +978,7 @@ public class SessionController {
         //determine activeKnightStrength strength
         for (Player p : aSessionManager.getPlayers()) {
            for (Knight activeKnight : p.getActiveKnights()) {
-               activeKnightStrength += activeKnight.getLevel(); 
+               activeKnightStrength += activeKnight.getLevel();
            }
         }
         
@@ -988,12 +1007,12 @@ public class SessionController {
                 }
             }
             //TODO: get cities to pillage from barbarians and pillage. deal with city walls.
-       
+
         } else {
             //islanders win
             int maxKnightLevel = 0;
             List<Player> bestPlayers = new ArrayList<Player>();
-            
+
             for (Player p : aSessionManager.getPlayers()) {
                 int playerKnightLevel = 0;
                 for (Knight k : p.getActiveKnights()) {
@@ -1102,7 +1121,7 @@ public class SessionController {
                 // Roll the dice
                 Pair<Integer, Integer> diceResults = rollTwoDice();
                 EventKind eventDieResult = rollEventDie();
-                
+
                 if (eventDieResult == EventKind.BARBARIAN) {
                     aSessionManager.decreaseBarbarianPosition();
                     if (aSessionManager.getSession().barbarianPosition == 0) {
@@ -1110,12 +1129,12 @@ public class SessionController {
                         barbarianHandleAttack();
                     }
                 }
-                
+
                 // Inform the server / other users of the roll
                 RollDice request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
-                
-                
+
+
                 break;
             default:
                 // FIXME This is not good, pretend it doesn't exist (-Teo)

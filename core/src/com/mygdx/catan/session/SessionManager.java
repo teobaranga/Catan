@@ -7,6 +7,7 @@ import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ProgressCardType;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.ArrayList;
@@ -268,5 +269,22 @@ public class SessionManager {
 
     public void setlongestRoadOwner(Player player) {
         aSession.longestRoadOwner = player;
+    }
+
+    public void incrementProgressCardMap (HashMap<ProgressCardType, Integer> progressCardMap, ProgressCardType pType) {
+        Integer currentValue = progressCardMap.get(pType);
+        progressCardMap.put(pType, currentValue++);
+    }
+
+    public void decrementProgressCardMap (HashMap<ProgressCardType, Integer> progressCardMap, ProgressCardType pType) {
+        Integer currentValue = progressCardMap.get(pType);
+        progressCardMap.put(pType, currentValue--);
+    }
+
+    public HashMap<ProgressCardType, Integer> clearProgressCardsInPlay (HashMap<ProgressCardType, Integer> progressCardMap) {
+        for(Integer i: progressCardMap.values()) {
+            i = 0;
+        }
+        return progressCardMap;
     }
 }

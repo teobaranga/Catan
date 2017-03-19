@@ -16,6 +16,8 @@ public class GameRules {
 	private ResourceMap shipCost = new ResourceMap();
 	private ResourceMap cityCost = new ResourceMap();
 	private ResourceMap cityWallCost = new ResourceMap();
+	private ResourceMap cityCostWithMedicine = new ResourceMap();
+	private ResourceMap cityWallWithEngineer = new ResourceMap();
 
 	private EnumMap<ProgressCardType, Integer> progressCardOccurences = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
 	private EnumMap<ProgressCardType, ProgressCardKind> progressCardKind = new EnumMap<ProgressCardType, ProgressCardKind>(ProgressCardType.class);
@@ -46,6 +48,8 @@ public class GameRules {
 		setupShipCost();
 		setupCityCost();
 		setupCityWallCost();
+		setupCityCostWithMedicine();
+		setupCityWallCostWithEngineer();
 	}
 
 	/**
@@ -73,9 +77,16 @@ public class GameRules {
 		cityCost.put(ResourceKind.ORE, 3);
 	}
 
+	private void setupCityCostWithMedicine(){
+		cityCostWithMedicine.put(ResourceKind.GRAIN, 1);
+		cityCostWithMedicine.put(ResourceKind.ORE, 2);
+	}
+
 	private void setupCityWallCost(){
 		cityWallCost.put(ResourceKind.BRICK, 2);
 	}
+
+	private void setupCityWallCostWithEngineer () { cityWallWithEngineer.put(ResourceKind.BRICK, 0); }
 
 	/**
 	 * hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
@@ -482,6 +493,8 @@ public class GameRules {
 	public ResourceMap getShipCost() { return shipCost; }
 	public ResourceMap getCityCost() { return cityCost; }
 	public ResourceMap getCityWallCost() { return cityWallCost; }
+	public ResourceMap getCityCostWithMedicine () { return cityCostWithMedicine; }
+	public ResourceMap getCityWallWithEngineer () { return cityWallWithEngineer; }
 
 
 }

@@ -49,8 +49,26 @@ public class ProgressCardHandler {
                 break;
             case IRRIGATION:
                 break;
+            //allows player to upgrade a settlement to a city for 2 ore and 1 grain
             case MEDICINE:
-                break;
+                ArrayList<CoordinatePair> validUpgradeIntersections = new ArrayList<>();
+                List<Village> listOfSettlements = currentP.getVillages();
+                for (Village v : listOfSettlements) {
+                    if(v.getVillageKind() == VillageKind.SETTLEMENT) {
+                        validUpgradeIntersections.add(v.getPosition());
+                    }
+                }
+                MultiStepMove playMedicine = new MultiStepMove();
+                aSessionController.getSessionScreen().initChooseIntersectionMove(validUpgradeIntersections, playMedicine);
+                playMedicine.addMove(new Move() {
+                    @Override
+                    public void doMove(Object o) {
+                        CoordinatePair myCityCoordinates = (CoordinatePair) o;
+                        aSessionController.buildCityWall(currentPColor, myCityCoordinates, true);
+                        //revert back to choose action mode and enable buttons
+                        aSessionController.getSessionScreen().interractionDone();
+                    }
+                });
             case MINING:
                 break;
             case PRINTER:

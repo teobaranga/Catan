@@ -412,6 +412,15 @@ public class SessionController {
             }
         }
 
+        if (kind == CITY && aSessionManager.getSession().getProgressCardMap().get(ProgressCardType.MEDICINE) > 0) {
+            ResourceMap cost = GameRules.getGameRulesInstance().getCityCostWithMedicine();
+            boolean hasAvailCities = currentP.getAvailableCities() > 0;
+            if (currentP.hasEnoughResources(cost) && hasAvailCities) {
+                canBuild = true;
+            } else {
+                canBuild = false;
+            }
+        }
         if (kind == CITY) {
             ResourceMap cost = GameRules.getGameRulesInstance().getCityCost();
             boolean hasAvailCities = currentP.getAvailableCities() > 0;
@@ -426,13 +435,23 @@ public class SessionController {
 
     public boolean requestBuildCityWall (PlayerColor owner) {
         Player currentP = getCurrentPlayer();
-        ResourceMap cost = GameRules.getGameRulesInstance().getCityWallCost();
-        if (currentP.hasEnoughResources(cost)) {
-            return true;
+        Boolean canBuild = false;
+        if (aSessionManager.getSession().getProgressCardMap().get(ProgressCardType.ENGINEER) > 0) {
+            ResourceMap cost = GameRules.getGameRulesInstance().getCityWallWithEngineer();
+            if (currentP.hasEnoughResources(cost)) {
+                canBuild = true;
+            }
         }
         else {
-            return false;
+            ResourceMap cost = GameRules.getGameRulesInstance().getCityWallCost();
+            if ((currentP.hasEnoughResources(cost))) {
+                canBuild = true;
+            }
+            else {
+                canBuild = false;
+            }
         }
+        return canBuild;
     }
     /**
      * @param owner of request
@@ -753,6 +772,7 @@ public class SessionController {
     public boolean buildCityWall(PlayerColor owner, CoordinatePair myWall, boolean fromPeer){
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
         aGameBoardManager.buildCityWall(currentP, myWall);
+        //need to change city has wall to true
         //aSessionScreen.updateCity();
         return true;
     }

@@ -40,6 +40,7 @@ public class Config {
         kryo.register(Player.class);
         kryo.register(Player[].class);
         kryo.register(ResourceKind.class);
+        kryo.register(ProgressCardType.class);
         kryo.register(VillageKind.class);
         kryo.register(EdgeUnitKind.class);
         kryo.register(ResourceMap.class);

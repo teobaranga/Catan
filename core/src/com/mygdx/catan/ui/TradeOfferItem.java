@@ -2,7 +2,9 @@ package com.mygdx.catan.ui;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.ResourceKind;
 
@@ -25,6 +27,10 @@ public class TradeOfferItem extends WidgetGroup {
     private final List<Image> resources;
     private final List<Label> counts;
 
+    private ResourceMap offer;
+
+    private AcceptListener acceptListener;
+
     TradeOfferItem(String player, ResourceMap offer, Skin skin) {
         this.skin = skin;
 
@@ -33,6 +39,14 @@ public class TradeOfferItem extends WidgetGroup {
         label = new Label(player, skin);
         accept = new TextButton("Accept", skin);
         accept.setWidth(accept.getWidth() + 40);
+        accept.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (acceptListener != null) {
+                    acceptListener.onAcceptClicked(getOwner(), TradeOfferItem.this.offer);
+                }
+            }
+        });
 
         setOffer(offer);
 
@@ -60,6 +74,8 @@ public class TradeOfferItem extends WidgetGroup {
     }
 
     void setOffer(ResourceMap offer) {
+        this.offer = offer;
+
         // Reset the resource images and labels
         for (Image resource : resources)
             resource.remove();
@@ -106,5 +122,13 @@ public class TradeOfferItem extends WidgetGroup {
         // Fix the label and accept button positions
         label.setY(getPrefHeight() - label.getHeight());
         accept.setY(getPrefHeight() - label.getHeight() - accept.getHeight());
+    }
+
+    public void setAcceptListener(AcceptListener acceptListener) {
+        this.acceptListener = acceptListener;
+    }
+
+    public interface AcceptListener {
+        void onAcceptClicked(String username, ResourceMap offer);
     }
 }

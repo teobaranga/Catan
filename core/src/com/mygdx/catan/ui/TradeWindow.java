@@ -33,6 +33,8 @@ public class TradeWindow extends CatanWindow {
 
     private OfferProposalListener offerProposalListener;
 
+    private OfferAcceptListener offerAcceptListener;
+
     /**
      * Constructor for creating a window for the players on the receiving side of the trade.
      * This creates a trade window containing information about the initializing player, the offer,
@@ -141,14 +143,25 @@ public class TradeWindow extends CatanWindow {
         proposeTrade.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                final ResourceMap offer = offerTable.getResources();
+
+                // Check if the user actually set an offer
+                if (offer.isEmpty())
+                    return;
+
                 if (instigator) {
-                    if (tradeProposalListener != null) {
-                        tradeProposalListener.onTradeProposed(offerTable.getResources(), requestTable.getResources());
-                    }
+                    final ResourceMap request = requestTable.getResources();
+
+                    // Also check if the trade initiator set a request
+                    // If not, the trade can't happen
+                    if (request.isEmpty())
+                        return;
+
+                    if (tradeProposalListener != null)
+                        tradeProposalListener.onTradeProposed(offer, request);
                 } else {
-                    if (offerProposalListener != null) {
-                        offerProposalListener.onOfferProposed(offerTable.getResources());
-                    }
+                    if (offerProposalListener != null)
+                        offerProposalListener.onOfferProposed(offer);
                 }
             }
         });
@@ -210,6 +223,10 @@ public class TradeWindow extends CatanWindow {
         this.offerProposalListener = offerProposalListener;
     }
 
+    public void setOfferAcceptListener(OfferAcceptListener offerAcceptListener) {
+        this.offerAcceptListener = offerAcceptListener;
+    }
+
     public void addTradeOffer(String player, ResourceMap offer) {
         // Update the offer if it already exists
         for (TradeOfferItem tradeOfferItem : offers) {
@@ -220,6 +237,11 @@ public class TradeWindow extends CatanWindow {
         }
         // Create a new offer
         final TradeOfferItem playerOffer = new TradeOfferItem(player, offer, getSkin());
+        playerOffer.setAcceptListener((username, offer1) -> {
+            if (offerAcceptListener != null) {
+                offerAcceptListener.onOfferAccepted(username, offer1, offerTable.getResources());
+            }
+        });
         offersTable.add(playerOffer).padLeft(10).expandY().top();
         offers.add(playerOffer);
     }
@@ -239,6 +261,10 @@ public class TradeWindow extends CatanWindow {
 
     public interface OfferProposalListener {
         void onOfferProposed(ResourceMap offer);
+    }
+
+    public interface OfferAcceptListener {
+        void onOfferAccepted(String username, ResourceMap remoteOffer, ResourceMap localOffer);
     }
 
     private class ResourceTable extends Table {

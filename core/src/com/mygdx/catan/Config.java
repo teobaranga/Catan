@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.objenesis.strategy.SerializingInstantiatorStrategy;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 
 public class Config {
@@ -65,8 +66,10 @@ public class Config {
         kryo.register(MoveShip.class);
         kryo.register(EndTurn.class);
         kryo.register(TradeProposal.class);
+        kryo.register(TradeAccepted.class);
         kryo.register(LinkedHashMap.class);
         kryo.register(ArrayList.class);
         kryo.register(ImmutablePair.class);
+        kryo.register(EnumMap.class);
     }
 }

@@ -98,6 +98,7 @@ class CatanServer {
             public void received(Connection connection, Object object) {
                 Response response = null;
 
+                // Handle the messages sent to only one player
                 if (object instanceof LoginRequest) {
                     // Attempt login
                     response = attemptLogin(((LoginRequest) object));
@@ -107,6 +108,7 @@ class CatanServer {
                     response = createNewGame(connection, ((CreateGame) object).account);
                 }
 
+                // Handle the messages sent to multiple players
                 if (object instanceof ForwardedRequest) {
                     // Get the forwarded request
                     final ForwardedRequest forwardedRequest = (ForwardedRequest) object;

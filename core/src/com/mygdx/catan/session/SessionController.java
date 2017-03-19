@@ -183,6 +183,19 @@ public class SessionController {
                             sessionScreen.onIncomingOffer(tradeProposal.username, offer);
                         }
                     });
+                } else if (object instanceof TradeAccepted) {
+                    Gdx.app.postRunnable(() -> {
+                        final TradeAccepted tradeAccepted = (TradeAccepted) object;
+                        // Perform the trade on the player whose offer was accepted
+                        if (tradeAccepted.getChosenUsername().equals(localPlayer.getUsername())) {
+                            // The local offer is from the perspective of the trade initiator
+                            final ResourceMap localOffer = tradeAccepted.getLocalOffer();
+                            final ResourceMap remoteOffer = tradeAccepted.getRemoteOffer();
+                            tradeManager.trade(localPlayer, localOffer, remoteOffer);
+                            sessionScreen.updateResourceBar(localPlayer.getResources());
+                        }
+                        sessionScreen.onTradeCompleted();
+                    });
                 }
             }
         };
@@ -1079,7 +1092,7 @@ public class SessionController {
      * @param tradeRatio the number of units of the offered resource necessary to receive one requested resource
      */
     void maritimeTrade(ResourceKind offer, ResourceKind request, int tradeRatio) {
-        tradeManager.maritimeTrade(offer, request, tradeRatio, localPlayer);
+        tradeManager.domesticTrade(offer, request, tradeRatio, localPlayer);
         aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
 
@@ -1097,6 +1110,24 @@ public class SessionController {
     void proposeOffer(ResourceMap offer) {
         TradeProposal tradeProposal = TradeProposal.newInstance(localPlayer.getUsername(), offer);
         CatanGame.client.sendTCP(tradeProposal);
+    }
+
+    /**
+     * Accept a trade.
+     *
+     * @param username    username of the player whose offer was accepted
+     * @param remoteOffer the offer accepted
+     * @param localOffer  the offer of trade initiator
+     */
+    void acceptTrade(String username, ResourceMap remoteOffer, ResourceMap localOffer) {
+        // Perform the trade locally
+        tradeManager.trade(localPlayer, remoteOffer, localOffer);
+        aSessionScreen.updateResourceBar(localPlayer.getResources());
+        // Inform the other players of the trade
+        TradeAccepted tradeAccepted = TradeAccepted.newInstance(localPlayer.getUsername(), username, remoteOffer, localOffer);
+        CatanGame.client.sendTCP(tradeAccepted);
+        // Trade completed
+        aSessionScreen.onTradeCompleted();
     }
 
     /**

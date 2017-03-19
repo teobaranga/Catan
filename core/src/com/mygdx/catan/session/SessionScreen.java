@@ -399,8 +399,9 @@ public class SessionScreen implements Screen {
                 tradeWindow = new TradeWindow(CatanGame.skin);
                 aSessionStage.addActor(tradeWindow);
                 tradeWindow.requestScrollFocus();
-//                window.setMaxOffer(aSessionController.getMaxOffer());
+//                tradeWindow.setMaxOffer(aSessionController.getMaxOffer()); // TODO uncomment when done debugging
                 tradeWindow.setTradeProposalListener((offer, request) -> aSessionController.proposeTrade(offer, request));
+                tradeWindow.setOfferAcceptListener((username, remoteOffer, localOffer) -> aSessionController.acceptTrade(username, remoteOffer, localOffer));
                 tradeWindow.setWindowCloseListener(() -> {
                     tradeWindow = null;
                     // TODO cancel the trade as well
@@ -948,7 +949,12 @@ public class SessionScreen implements Screen {
      */
     void onIncomingTrade(String username, ResourceMap offer, ResourceMap request) {
         tradeWindow = new TradeWindow(username, offer, request, CatanGame.skin);
+//        tradeWindow.setMaxOffer(aSessionController.getMaxOffer()); // TODO uncomment when done debugging
         tradeWindow.setOfferProposalListener(offer1 -> aSessionController.proposeOffer(offer1));
+        tradeWindow.setWindowCloseListener(() -> {
+            tradeWindow = null;
+            // TODO is this right?
+        });
         aSessionStage.addActor(tradeWindow);
     }
 
@@ -959,9 +965,15 @@ public class SessionScreen implements Screen {
      * @param offer    the offer of the player
      */
     void onIncomingOffer(String username, ResourceMap offer) {
-        if (tradeWindow != null) {
+        if (tradeWindow != null)
             tradeWindow.addTradeOffer(username, offer);
-        }
+    }
+
+    /**
+     * Called when the trade was completed.
+     */
+    void onTradeCompleted() {
+        tradeWindow.close();
     }
 
     /**
@@ -1424,7 +1436,7 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(red);
     }
 
-    public void updateResourceBar(ResourceMap updates) {
+    void updateResourceBar(ResourceMap updates) {
         for (Map.Entry<ResourceKind, Integer> entry : updates.entrySet()) {
             ResourceKind resourceKind = entry.getKey();
             Label l = resourceLabelMap.get(resourceKind);

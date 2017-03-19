@@ -150,19 +150,28 @@ public class GameBoardManager {
      */
     public int getCityCount() {
         int cityCount = 0;
-
-        ArrayList<CoordinatePair> edgesAndIntersections = aGameBoard.getIntersectionsAndEdges();
-
-        for (CoordinatePair coordinate : edgesAndIntersections) {
-            if (coordinate.isOccupied()) {
-                Village v = coordinate.getOccupyingVillage();
-                if (v.getVillageKind().equals(VillageKind.CITY)) {
-                    cityCount++;
-                }
+        for (Village village : aGameBoard.getVillages()) {
+            if (village.getVillageKind() == VillageKind.CITY) {
+                cityCount++;
             }
         }
-
         return cityCount;
+    }
+
+    /**
+     * @return total number of metropoles on the gameboard
+     */
+    public int getMetropolisCount() {
+        int metropolisCount = 0;
+        for (Village village : aGameBoard.getVillages()) {
+            final VillageKind villageKind = village.getVillageKind();
+            if (villageKind == VillageKind.POLITICS_METROPOLIS ||
+                    villageKind == VillageKind.SCIENCE_METROPOLIS ||
+                    villageKind == VillageKind.TRADE_METROPOLIS) {
+                metropolisCount++;
+            }
+        }
+        return metropolisCount;
     }
 
     /**

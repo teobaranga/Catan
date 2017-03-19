@@ -669,7 +669,6 @@ public class SessionController {
      * @param init     indicated whether the method was called during initialization. If it was, player resource are not updated
      * @return true if building the village was successful, false otherwise
      */
-    //TODO: update with progress cards
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer, boolean init) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 
@@ -682,6 +681,8 @@ public class SessionController {
                 aSessionScreen.updateIntersection(position, owner, kind);
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
+                // note that resources only get updated locally, that is only the player who is connected to the client will have their resources updated. 
+                // if this is to change, we would also need to update the currentlyExecutingProgressCard to be the same across the network
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
                     aSessionScreen.updateResourceBar(currentP.getResources());
@@ -700,6 +701,8 @@ public class SessionController {
                 aSessionScreen.updateIntersection(position, owner, kind);
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
+                // note that resources only get updated locally, that is only the player who is connected to the client will have their resources updated. 
+                // if this is to change, we would also need to update the currentlyExecutingProgressCard to be the same across the network
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(currentP.getResources());
@@ -739,6 +742,8 @@ public class SessionController {
             if (!fromPeer) {
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
+                // note that resources only get updated locally, that is only the player who is connected to the client will have their resources updated. 
+                // if this is to change, we would also need to update the currentlyExecutingProgressCard to be the same across the network
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(currentP.getResources());
@@ -754,6 +759,8 @@ public class SessionController {
             if (!fromPeer) {
                 aSessionScreen.updateAvailableGamePieces(currentP.getAvailableSettlements(), currentP.getAvailableCities(), currentP.getAvailableRoads(), currentP.getAvailableShips());
                 // if piece was build during regular turn, appropriate resources are removed from the player
+                // note that resources only get updated locally, that is only the player who is connected to the client will have their resources updated. 
+                // if this is to change, we would also need to update the currentlyExecutingProgressCard to be the same across the network
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(currentP.getResources());

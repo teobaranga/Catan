@@ -273,6 +273,8 @@ public class SessionManager {
 
     public void setCurrentlyExecutingProgressCard(ProgressCardType type) {
         aSession.setCurrentlyExecutingProgressCard(type);
+        
+        //TODO: loop through players and remove card from players hand
     }
     
     public void finishCurrentlyExecutingProgressCard() {

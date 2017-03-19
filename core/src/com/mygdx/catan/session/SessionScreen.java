@@ -348,7 +348,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card");
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.ROADBUILDING);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
         
@@ -691,15 +691,15 @@ public class SessionScreen implements Screen {
         }
     }
 
-    private void setupPlayProgressCardButton(TextButton playButton, String buttonText) {
+    private void setupPlayProgressCardButton(TextButton playButton, String buttonText, ProgressCardType type) {
         playButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if(!aSessionController.controlPlayProgressCard(aSessionController.getPlayerColor())) {
                     addGameMessage("Some comment about progress card play");
                 }
-                aSessionController.getProgressCardHandler().handle(ProgressCardType.ENGINEER, aSessionController.getPlayerColor());
-                System.out.println("engineer card played");
+                aSessionController.getProgressCardHandler().handle(type, aSessionController.getPlayerColor());
+                System.out.println(type.toString().toLowerCase()+" card played");
             }
         });
     }

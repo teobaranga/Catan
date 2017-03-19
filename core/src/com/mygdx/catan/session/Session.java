@@ -10,7 +10,6 @@ import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.ProgressCardType;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 

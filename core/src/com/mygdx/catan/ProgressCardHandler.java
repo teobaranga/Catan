@@ -1,16 +1,21 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.*;
+import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
-import com.mygdx.catan.gameboard.GameBoardManager;
+import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
+import com.mygdx.catan.session.SessionScreen;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Created by amandaivey on 3/14/17.
@@ -26,13 +31,16 @@ public class ProgressCardHandler {
         aSessionController = sessionController;
         final Game currentGame = GameManager.getInstance().getCurrentGame();
         aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
-        //SessionScreen aSessionScreen = aSessionController.getSessionScreen();
+        // aSessionScreen = aSessionController.getSessionScreen();
+        
     }
 
     public void handle (ProgressCardType pType, PlayerColor currentPColor) {
         final Player currentP = aSessionController.getCurrentPlayer();
         //aSessionManager.incrementProgressCardMap(pType);
         //SessionManager.getInstance().incrementProgressCardMap(pType);
+        aSessionManager.setCurrentlyExecutingProgressCard(pType);
+        
         switch(pType) {
             case ALCHEMIST:
             case CRANE:
@@ -70,7 +78,7 @@ public class ProgressCardHandler {
             //allows player to upgrade a settlement to a city for 2 ore and 1 grain
             case MEDICINE:
                 ArrayList<CoordinatePair> validUpgradeIntersections = new ArrayList<>();
-                List<Village> listOfSettlements = currentP.getVillages();
+                final List<Village> listOfSettlements = currentP.getVillages();
                 for (Village v : listOfSettlements) {
                     if(v.getVillageKind() == VillageKind.SETTLEMENT) {
                         validUpgradeIntersections.add(v.getPosition());
@@ -99,6 +107,57 @@ public class ProgressCardHandler {
                 aSessionManager.incrementTokenVP(currentP);
                 break;
             case ROADBUILDING:
+                ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
+                
+            	// loops through valid road end points and adds valid edges (both ships and roads)
+                for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
+                    for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) { 
+                        if (aSessionController.isAdjacent(i, j)) {
+
+                            Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
+                            validEdges.add(edge);
+
+                            for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                                if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                                    validEdges.remove(edge);
+                                }
+                            }
+                        }
+                    } 
+                }
+                
+                // create multistepmove that will handle building both edges
+                MultiStepMove move = new MultiStepMove();
+                
+                // add the moves
+                move.<Pair<CoordinatePair,CoordinatePair>>addMove(chosenEdge -> {
+                    EdgeUnitKind kind = EdgeUnitKind.ROAD;
+                    if (!aSessionController.isOnLand(chosenEdge.getLeft(), chosenEdge.getRight())) {
+                        kind = EdgeUnitKind.SHIP;
+                    }
+                    aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, false);
+                    
+                    // re initializes validEdges 
+                    validEdges.clear();
+                    updateValidEdges(validEdges, chosenEdge);
+                    
+                    // prompts the player to choose the second edge with updated valid edges
+                    aSessionController.getSessionScreen().initChooseEdgeMove(validEdges, move);
+                });
+                
+                move.<Pair<CoordinatePair,CoordinatePair>>addMove(chosenEdge -> {
+                    EdgeUnitKind kind = EdgeUnitKind.ROAD;
+                    if (!aSessionController.isOnLand(chosenEdge.getLeft(), chosenEdge.getRight())) {
+                        kind = EdgeUnitKind.SHIP;
+                    }
+                    aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, false);
+                    
+                    // ends the move
+                    aSessionController.getSessionScreen().interractionDone();
+                });
+                
+                aSessionController.getSessionScreen().initChooseEdgeMove(validEdges, move);
+                
                 break;
             case SMITH:
                 break;
@@ -136,5 +195,24 @@ public class ProgressCardHandler {
         }
     }
 
+    
+    private void updateValidEdges(List<Pair<CoordinatePair,CoordinatePair>> validEdges, Pair<CoordinatePair,CoordinatePair> chosenEdge) {
+     // loops through valid road end points and adds valid edges (both ships and roads)
+        for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
+            for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) { 
+                if (aSessionController.isAdjacent(i, j)) {
+
+                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
+                    validEdges.add(edge);
+
+                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                            validEdges.remove(edge);
+                        }
+                    }
+                }
+            } 
+        }
+    }
 
 }

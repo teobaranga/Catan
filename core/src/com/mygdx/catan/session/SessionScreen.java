@@ -28,6 +28,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 public class SessionScreen implements Screen {
 
@@ -457,6 +458,32 @@ public class SessionScreen implements Screen {
 			}
         });
         menuTable.add(chooseTypeButton);*/
+        /*
+        TextButton chooseTypeButton = new TextButton("Choose Resources", CatanGame.skin);
+        chooseTypeButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				MultiStepMove chooseTypeMove = new MultiStepMove();
+				chooseTypeMove.addMove(new Move<ResourceMap>() {
+					@Override
+					public void doMove(ResourceMap map) {
+						for (Entry<ResourceKind, Integer> entry : map.entrySet()) {
+							if (entry.getValue() > 0) {
+								System.out.println(entry.getKey().toString().toLowerCase() + " : " + entry.getValue());
+							}
+						}
+						interractionDone();
+					}
+				});
+				
+				ResourceMap map = new ResourceMap();;
+				map.add(ResourceKind.BRICK, 3);
+				map.add(ResourceKind.GRAIN, 5);
+				map.add(ResourceKind.WOOD, 1);
+				chooseMultipleResource(map, 4, chooseTypeMove);
+			}
+        });
+        menuTable.add(chooseTypeButton);*/
         
 
         // sets center of board
@@ -527,11 +554,6 @@ public class SessionScreen implements Screen {
         choosePlayerWindow.setChoosePlayerListener((player) -> {
             // performs the given move with player
             move.performNextMove(player);
-
-            // re-enable all appropriate actions if it's the current player's turn
-            if (aSessionController.isMyTurn()) {
-            	enablePhase(aSessionController.getCurrentGamePhase());
-            }
         });
         aSessionStage.addActor(choosePlayerWindow);
     }
@@ -577,16 +599,51 @@ public class SessionScreen implements Screen {
     /**
      * Opens a window that prompts the client to choose a progress card type from cards
      * @param cards that player can choose type from
-     * @param move whose next move to perform will be called once an intersection has been chosen
+     * @param move whose next move to perform will be called once a ProgressCardType has been chosen
      * */
     public void chooseProgressCard(EnumMap<ProgressCardType, Integer> cards, MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
         
-        final ChooseProgressCardWindow chooseProgressCardWindow = new ChooseProgressCardWindow("Choose Progress Card", CatanGame.skin, cards);
-        chooseProgressCardWindow.setChooseProgressCardListener((type) -> {
+        final ChooseFromEnumMapWindow<ProgressCardType> chooseProgressCardWindow = new ChooseFromEnumMapWindow<ProgressCardType>("Choose Progress Card", CatanGame.skin, cards);
+        chooseProgressCardWindow.setChooseCardListener((type) -> {
         	//performs the given move with type
         	move.performNextMove(type);
+        });
+        aSessionStage.addActor(chooseProgressCardWindow);
+    }
+    
+    /**
+     * Opens a window that prompts the client to choose a resource card type from cards
+     * @param cards that player can choose type from
+     * @param move whose next move to perform will be called once a ResourceKind has been chosen
+     * */
+    public void chooseResource(EnumMap<ResourceKind, Integer> cards, MultiStepMove move) {
+    	// disable all possible actions
+        disableAllButtons();
+        
+        final ChooseFromEnumMapWindow<ResourceKind> chooseProgressCardWindow = new ChooseFromEnumMapWindow<ResourceKind>("Choose Progress Card", CatanGame.skin, cards);
+        chooseProgressCardWindow.setChooseCardListener((type) -> {
+        	//performs the given move with type
+        	move.performNextMove(type);
+        });
+        aSessionStage.addActor(chooseProgressCardWindow);
+    }
+    
+    /**
+     * Opens a window that prompts the client to choose a resource card type from cards
+     * @param cards that player can choose type from
+     * @param numberToChoose number of cards that player needs to choose
+     * @param move whose next move to perform will be called once a ResourceKind has been chosen
+     * */
+    public void chooseMultipleResource(EnumMap<ResourceKind, Integer> cards, int numberToChoose, MultiStepMove move) {
+    	// disable all possible actions
+        disableAllButtons();
+        
+        final ChooseMultipleResourcesWindow chooseProgressCardWindow = new ChooseMultipleResourcesWindow("Choose " + numberToChoose + " Resource Cards", CatanGame.skin, cards, numberToChoose);
+        chooseProgressCardWindow.setChooseCardListener((map) -> {
+        	//performs the given move with type
+        	move.performNextMove(map);
         });
         aSessionStage.addActor(chooseProgressCardWindow);
     }

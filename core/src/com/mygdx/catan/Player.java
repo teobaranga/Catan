@@ -21,10 +21,10 @@ public class Player {
     private List<Village> villages;
     private List<Knight> knights; //TODO: keep track of knights for each player
     private int defenderOfCatanPoints;
-    
+
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
-    private EnumMap<ProgressCardType,Integer> hand;
+    private EnumMap<ProgressCardType, Integer> hand;
 
     private int availableSettlements;
     private int availableCities;
@@ -35,8 +35,9 @@ public class Player {
     public Player() {
         roadsAndShips = new ArrayList<>();
         villages = new ArrayList<>();
+        knights = new ArrayList<>();
         resourceMap = new ResourceMap();
-        hand = new EnumMap<ProgressCardType,Integer>(ProgressCardType.class);
+        hand = new EnumMap<>(ProgressCardType.class);
         // Set the default number of available pieces
         tokenVictoryPoints = 0;
         availableSettlements = 5;
@@ -52,43 +53,91 @@ public class Player {
         return player;
     }
 
-    public int getAvailableSettlements() { return availableSettlements; }
-    public int getAvailableCities() { return availableCities; }
-    public int getAvailableMetropolis() {return availableMetropolis;}
-    public int getAvailableRoads() { return availableRoads; }
-    public int getAvailableShips() { return availableShips; }
+    public int getAvailableSettlements() {
+        return availableSettlements;
+    }
 
-    public void decrementAvailableSettlements() { availableSettlements--; }
-    public void incrementAvailableSettlements() { availableSettlements++; }
-    public void decrementAvailableCities() { availableCities--; }
-    public void incrementAvailableCities() { availableCities++; }
-    public void decrementAvailableRoads() { availableRoads--; }
-    public void incrementAvailableRoads() { availableRoads++; }
-    public void decrementAvailableShips() { availableShips--; }
-    public void incrementAvailableShips() { availableShips++; }
+    public int getAvailableCities() {
+        return availableCities;
+    }
+
+    public int getAvailableMetropolis() {
+        return availableMetropolis;
+    }
+
+    public int getAvailableRoads() {
+        return availableRoads;
+    }
+
+    public int getAvailableShips() {
+        return availableShips;
+    }
+
+    public void decrementAvailableSettlements() {
+        availableSettlements--;
+    }
+
+    public void incrementAvailableSettlements() {
+        availableSettlements++;
+    }
+
+    public void decrementAvailableCities() {
+        availableCities--;
+    }
+
+    public void incrementAvailableCities() {
+        availableCities++;
+    }
+
+    public void decrementAvailableRoads() {
+        availableRoads--;
+    }
+
+    public void incrementAvailableRoads() {
+        availableRoads++;
+    }
+
+    public void decrementAvailableShips() {
+        availableShips--;
+    }
+
+    public void incrementAvailableShips() {
+        availableShips++;
+    }
 
     /**
-     * Adds a progress card with given type to the player's hand 
+     * Adds a progress card with given type to the player's hand
+     *
      * @param card type that gets added to the Player's hand
-     * */
+     */
     public void addProgressCard(ProgressCardType card) {
-    	hand.put(card, hand.get(card) + 1);
+        hand.put(card, hand.get(card) + 1);
     }
-    
+
     /**
-     * Removes a progress card with given type from the player's hand 
+     * Removes a progress card with given type from the player's hand
+     *
      * @param card type that gets removed from the Player's hand
-     * */
+     */
     public void removeProgressCard(ProgressCardType card) {
-    	hand.put(card, hand.get(card) - 1);
+        hand.put(card, hand.get(card) - 1);
     }
-    
+
     public int getDefenderOfCatanPoints() {
         return defenderOfCatanPoints;
     }
-    
+
+    public List<Knight> getKnights() {
+        return knights;
+    }
+
     public List<Knight> getActiveKnights() {
-        return knights.stream().filter(x -> x.isActive()).collect(Collectors.toList());
+        return knights.stream().filter(Knight::isActive).collect(Collectors.toList());
+    }
+
+    /** Add a new knight to this player */
+    public void addKnight(Knight knight) {
+        knights.add(knight);
     }
 
     public void incrementDefenderOfCatanPoints(int defenderOfCatanPoints) {
@@ -124,8 +173,9 @@ public class Player {
 
     /**
      * Check if the player has enough of a specific resource/commodity
+     *
      * @param resourceKind type of resource/commodity
-     * @param count count of that resource
+     * @param count        count of that resource
      */
     public boolean hasEnoughOfResource(ResourceKind resourceKind, int count) {
         return resourceMap.get(resourceKind) >= count;
@@ -222,7 +272,9 @@ public class Player {
         return roadsAndShips;
     }
 
-    public List<Village> getVillages() { return villages; }
+    public List<Village> getVillages() {
+        return villages;
+    }
 
     /**
      * adds given EdgeUnit to roadsAndShips. Its position and and type is assumed to be legal.
@@ -246,7 +298,9 @@ public class Player {
         return color;
     }
 
-    public ResourceMap getResources() { return resourceMap;}
+    public ResourceMap getResources() {
+        return resourceMap;
+    }
 
     /** Get this player's account */
     public Account getAccount() {

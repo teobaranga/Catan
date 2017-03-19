@@ -196,6 +196,8 @@ public class SessionController {
                         }
                         sessionScreen.onTradeCompleted();
                     });
+                } else if (object instanceof TradeCancel) {
+                    Gdx.app.postRunnable(aSessionScreen::onTradeCompleted);
                 }
             }
         };
@@ -1131,6 +1133,13 @@ public class SessionController {
         TradeAccepted tradeAccepted = TradeAccepted.newInstance(localPlayer.getUsername(), username, remoteOffer, localOffer);
         CatanGame.client.sendTCP(tradeAccepted);
         // Trade completed
+        aSessionScreen.onTradeCompleted();
+    }
+
+    /** Cancel the entire trade */
+    void cancelTrade() {
+        TradeCancel tradeCancel = TradeCancel.newInstance(localPlayer.getUsername());
+        CatanGame.client.sendTCP(tradeCancel);
         aSessionScreen.onTradeCompleted();
     }
 

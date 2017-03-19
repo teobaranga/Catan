@@ -411,7 +411,8 @@ public class SessionScreen implements Screen {
                 tradeWindow.setOfferAcceptListener((username, remoteOffer, localOffer) -> aSessionController.acceptTrade(username, remoteOffer, localOffer));
                 tradeWindow.setWindowCloseListener(() -> {
                     tradeWindow = null;
-                    // TODO cancel the trade as well
+                    // TODO maybe show a confirmation message before cancelling the trade?
+                    aSessionController.cancelTrade();
                 });
             }
         });
@@ -973,7 +974,6 @@ public class SessionScreen implements Screen {
         tradeWindow.setOfferProposalListener(offer1 -> aSessionController.proposeOffer(offer1));
         tradeWindow.setWindowCloseListener(() -> {
             tradeWindow = null;
-            // TODO is this right?
         });
         aSessionStage.addActor(tradeWindow);
     }
@@ -993,7 +993,8 @@ public class SessionScreen implements Screen {
      * Called when the trade was completed.
      */
     void onTradeCompleted() {
-        tradeWindow.close();
+        if (tradeWindow != null)
+            tradeWindow.close();
     }
 
     /**

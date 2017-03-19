@@ -1,10 +1,9 @@
 package com.mygdx.catan;
 
-import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.enums.ProgressCardType;
-import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.enums.*;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
+import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.session.SessionController;
@@ -58,6 +57,15 @@ public class ProgressCardHandler {
             case INVENTOR:
                 break;
             case IRRIGATION:
+                int numGrainCards = 0;
+                for(Village v: currentP.getVillages()) {
+                    if (GameBoardManager.getInstance().isAdjacentToCertainHex(TerrainKind.FIELDS, v.getPosition())) {
+                        numGrainCards+=2;
+                    }
+                }
+                ResourceMap newGrains = new ResourceMap();
+                newGrains.add(ResourceKind.GRAIN, numGrainCards);
+                currentP.addResources(newGrains);
                 break;
             //allows player to upgrade a settlement to a city for 2 ore and 1 grain
             case MEDICINE:
@@ -77,8 +85,18 @@ public class ProgressCardHandler {
                 });
                 break;
             case MINING:
+                int numOreCards = 0;
+                for(Village v: currentP.getVillages()) {
+                    if (GameBoardManager.getInstance().isAdjacentToCertainHex(TerrainKind.MOUNTAINS, v.getPosition())) {
+                        numOreCards+=2;
+                    }
+                }
+                ResourceMap newOre = new ResourceMap();
+                newOre.add(ResourceKind.GRAIN, numOreCards);
+                currentP.addResources(newOre);
                 break;
             case PRINTER:
+                aSessionManager.incrementTokenVP(currentP);
                 break;
             case ROADBUILDING:
                 break;
@@ -87,6 +105,7 @@ public class ProgressCardHandler {
             case BISHOP:
                 break;
             case CONSTITUTION:
+                aSessionManager.incrementTokenVP(currentP);
                 break;
             case DESERTER:
                 break;

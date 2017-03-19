@@ -156,6 +156,8 @@ public class Player {
         this.tokenVictoryPoints = tokenVictoryPoints;
     }
 
+    public void incrementTokenVictoryPoints() { tokenVictoryPoints++; }
+
     /**
      * Check if the player has enough resources.
      *

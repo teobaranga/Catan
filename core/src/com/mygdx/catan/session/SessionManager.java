@@ -299,4 +299,7 @@ public class SessionManager {
 //        }
 //        return aSession.getProgressCardMap();
 //    }
+    public void incrementTokenVP (Player currentP) {
+        currentP.incrementTokenVictoryPoints();
+    }
 }

@@ -375,4 +375,14 @@ public class GameBoardManager {
         return villagePoints;
     }
 
+    //Returns whether or not a coordinate pair is adjacent to a field hex
+    public boolean isAdjacentToCertainHex(TerrainKind tKind, CoordinatePair pair) {
+        for (Hex h: aGameBoard.getHexes()) {
+            if (h.isAdjacent(pair) && h.getKind() == tKind) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

@@ -669,7 +669,7 @@ public class SessionController {
      * @param init     indicated whether the method was called during initialization. If it was, player resource are not updated
      * @return true if building the village was successful, false otherwise
      */
-    //TODO: update with prgoress cards
+    //TODO: update with progress cards
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer, boolean init) {
         Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
 

@@ -95,6 +95,7 @@ public class SessionScreen implements Screen {
     private TextButton rollDiceButton, endTurnButton;
     private TextButton domesticTradeButton, tradeButton;
     private TextButton moveShipButton;
+    private TextButton playProgressCardButton;
 
     /**
      * A table that keeps track of game messages, mostly used for debugging
@@ -351,6 +352,12 @@ public class SessionScreen implements Screen {
         moveShipButton.pad(0, 10, 0, 10);
         menuTable.add(moveShipButton).padBottom(10).row();
 
+        playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card");
+        playProgressCardButton.pad(0, 10, 0, 10);
+        menuTable.add(playProgressCardButton).padBottom(10).row();
+        
+
         // Add roll dice button
         rollDiceButton = new TextButton("Roll Dice", CatanGame.skin);
         rollDiceButton.addListener(new ChangeListener() {
@@ -601,6 +608,19 @@ public class SessionScreen implements Screen {
     	if (aSessionController.isMyTurn()) {
         	enablePhase(aSessionController.getCurrentGamePhase());
         }
+    }
+
+    private void setupPlayProgressCardButton(TextButton playButton, String buttonText) {
+        playButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if(!aSessionController.controlPlayProgressCard(aSessionController.getPlayerColor())) {
+                    addGameMessage("Some comment about progress card play");
+                }
+                aSessionController.getProgressCardHandler().handle(ProgressCardType.ENGINEER, aSessionController.getPlayerColor());
+                System.out.println("engineer card played");
+            }
+        });
     }
 
     private void setupBuildVillageButton(TextButton buildButton, VillageKind kind, String buttonText) {

@@ -206,6 +206,10 @@ public class SessionController {
         return aSessionScreen;
     }
 
+    public ProgressCardHandler getProgressCardHandler() {
+        return aProgressCardHandler;
+    }
+
     /** Update the myTurn variable */
     void checkIfMyTurn() {
         myTurn = aSessionManager.getCurrentPlayer().getAccount().equals(CatanGame.account);

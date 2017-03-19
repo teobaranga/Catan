@@ -27,11 +27,11 @@ import java.util.List;
 public class ProgressCardHandler {
 
     private SessionController aSessionController;
-    private SessionScreen aSessionScreen;
+    //private SessionScreen aSessionScreen;
 
     public ProgressCardHandler(SessionController sessionController) {
         aSessionController = sessionController;
-        SessionScreen aSessionScreen = aSessionController.getSessionScreen();
+        //SessionScreen aSessionScreen = aSessionController.getSessionScreen();
     }
 
     public void handle (ProgressCardType pType, PlayerColor currentPColor) {
@@ -50,14 +50,14 @@ public class ProgressCardHandler {
                     }
                 }
                 MultiStepMove playEngineer = new MultiStepMove();
-                aSessionScreen.initChooseIntersectionMove(validCityWallIntersections, playEngineer);
+                aSessionController.getSessionScreen().initChooseIntersectionMove(validCityWallIntersections, playEngineer);
                 playEngineer.addMove(new Move() {
                     @Override
                     public void doMove(Object o) {
                         CoordinatePair myCityWallCoordinates = (CoordinatePair) o;
                         aSessionController.buildCityWall(currentPColor, myCityWallCoordinates, true);
                         //revert back to choose action mode and enable buttons
-                        aSessionScreen.interractionDone();
+                        aSessionController.getSessionScreen().interractionDone();
                     }
                 });
             case INVENTOR:

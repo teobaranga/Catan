@@ -7,10 +7,13 @@ import com.mygdx.catan.enums.EventKind;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.ProgressCardType;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 
 public class Session {
 
@@ -42,6 +45,8 @@ public class Session {
     private Player[] players;
     private ResourceMap bank;
 
+    private HashMap<ProgressCardType, Integer> progressCardMap;
+
     //TODO: change this to fit design, so far this is only placeholder!
     public Session() {
         // Add the initial bank resources
@@ -56,6 +61,10 @@ public class Session {
         bank.add(ResourceKind.CLOTH, 12);
         currentPhase = GamePhase.SETUP_PHASE_ONE;
         clockwise = true;
+
+        for (ProgressCardType p: ProgressCardType.values()) {
+            progressCardMap.put(p, 0);
+        }
     }
 
     public static Session newInstance(Collection<Account> accounts, int VPsToWin) {
@@ -78,6 +87,8 @@ public class Session {
     public Player[] getPlayers() {
         return players;
     }
+
+    public HashMap<ProgressCardType, Integer> getProgressCardMap () { return progressCardMap; }
 
     /**
      * Add resources to the bank.

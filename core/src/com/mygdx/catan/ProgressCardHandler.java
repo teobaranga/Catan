@@ -1,21 +1,10 @@
 package com.mygdx.catan;
 
-import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.Player;
-import com.mygdx.catan.enums.ProgressCardKind;
-import com.mygdx.catan.enums.VillageKind;
-import com.mygdx.catan.game.Game;
-import com.mygdx.catan.game.GameManager;
-import com.mygdx.catan.gameboard.GameBoardManager;
-import com.mygdx.catan.gameboard.Village;
-import com.mygdx.catan.moves.MultiStepMovingshipMove;
-import com.mygdx.catan.session.SessionManager;
-import com.mygdx.catan.session.SessionScreen;
-import com.mygdx.catan.moves.MultiStepMove;
-import com.mygdx.catan.session.SessionController;
-import com.mygdx.catan.moves.Move;
 import com.mygdx.catan.enums.ProgressCardType;
+import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.session.SessionController;
 
 import java.util.ArrayList;
@@ -51,14 +40,10 @@ public class ProgressCardHandler {
                 }
                 MultiStepMove playEngineer = new MultiStepMove();
                 aSessionController.getSessionScreen().initChooseIntersectionMove(validCityWallIntersections, playEngineer);
-                playEngineer.addMove(new Move() {
-                    @Override
-                    public void doMove(Object o) {
-                        CoordinatePair myCityWallCoordinates = (CoordinatePair) o;
-                        aSessionController.buildCityWall(currentPColor, myCityWallCoordinates, true);
-                        //revert back to choose action mode and enable buttons
-                        aSessionController.getSessionScreen().interractionDone();
-                    }
+                playEngineer.<CoordinatePair>addMove(myCityWallCoordinates -> {
+                    aSessionController.buildCityWall(currentPColor, myCityWallCoordinates, true);
+                    //revert back to choose action mode and enable buttons
+                    aSessionController.getSessionScreen().interractionDone();
                 });
             case INVENTOR:
                 break;

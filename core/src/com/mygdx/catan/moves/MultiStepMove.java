@@ -5,28 +5,30 @@ import java.util.Queue;
 
 /**
  * Class that describes a succession of Moves, together forming one full move
- * */
+ */
 public class MultiStepMove {
     private Queue<Move> queueOfMoves;
 
     public MultiStepMove() {
-        queueOfMoves = new LinkedList<Move>();
+        queueOfMoves = new LinkedList<>();
     }
-    
-    public void addMove(Move move) {
+
+    public <T> void addMove(Move<T> move) {
         queueOfMoves.add(move);
     }
-    
+
     /**
      * Performs the next move in the queue, if empty nothing happens
-     * 
+     *
      * @param o can be any object, implementation of Move determine more specific type
-     * */
+     */
     public void performNextMove(Object o) {
-        if (queueOfMoves.isEmpty()) {return;}
+        if (queueOfMoves.isEmpty()) {
+            return;
+        }
         queueOfMoves.poll().doMove(o);
     }
-    
+
     public int movesLeft() {
         return queueOfMoves.size();
     }

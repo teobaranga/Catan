@@ -20,16 +20,10 @@ import com.mygdx.catan.*;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
-import com.mygdx.catan.moves.Move;
 import com.mygdx.catan.moves.MultiStepInitMove;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
-import com.mygdx.catan.ui.DomesticTradeWindow;
-import com.mygdx.catan.ui.ChoosePlayerWindow;
-import com.mygdx.catan.ui.ChooseProgressCardKindWindow;
-import com.mygdx.catan.ui.ChooseProgressCardWindow;
-import com.mygdx.catan.ui.TradeWindow;
-
+import com.mygdx.catan.ui.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -654,17 +648,14 @@ public class SessionScreen implements Screen {
                         }
                     }
                     // adds move that will build the village at chosen intersection
-                    currentlyPerformingMove.addMove(new Move<CoordinatePair>() {
-                        @Override
-                        public void doMove(CoordinatePair chosenIntersection) {
-                            aSessionController.buildVillage(chosenIntersection, kind, aSessionController.getPlayerColor(), false, false);
-                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                            buildButton.setText(buttonText);
+                    currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
+                        aSessionController.buildVillage(chosenIntersection, kind, aSessionController.getPlayerColor(), false, false);
+                        aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                        buildButton.setText(buttonText);
 
-                            // re-enable all appropriate actions
-                            if (aSessionController.isMyTurn()) {
-                            	enablePhase(aSessionController.getCurrentGamePhase());
-                            }
+                        // re-enable all appropriate actions
+                        if (aSessionController.isMyTurn()) {
+                            enablePhase(aSessionController.getCurrentGamePhase());
                         }
                     });
 
@@ -739,18 +730,15 @@ public class SessionScreen implements Screen {
                     }
 
                  // adds move that will build the village at chosen intersection
-                    currentlyPerformingMove.addMove(new Move<Pair<CoordinatePair,CoordinatePair>>() {
-                        @Override
-                        public void doMove(Pair<CoordinatePair,CoordinatePair> chosenEdge) {
-                            aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, false);
+                    currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenEdge -> {
+                        aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, false);
 
-                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                            buildButton.setText(buttonText);
+                        aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                        buildButton.setText(buttonText);
 
-                            // re-enable all appropriate actions
-                            if (aSessionController.isMyTurn()) {
-                            	enablePhase(aSessionController.getCurrentGamePhase());
-                            }
+                        // re-enable all appropriate actions
+                        if (aSessionController.isMyTurn()) {
+                            enablePhase(aSessionController.getCurrentGamePhase());
                         }
                     });
 
@@ -809,29 +797,23 @@ public class SessionScreen implements Screen {
                     currentlyPerformingMove = new MultiStepMovingshipMove();
 
                     // adds move that will save the chosen
-                    currentlyPerformingMove.addMove(new Move<Pair<CoordinatePair, CoordinatePair>>() {
-                        @Override
-                        public void doMove(Pair<CoordinatePair, CoordinatePair> chosenShip) {
-                            ((MultiStepMovingshipMove) currentlyPerformingMove).setShipToMove(chosenShip);
-                            // highlights valid destinations
-                            setValidMoveShipPositions(chosenShip);
-                            // chosenShip is removed from GUI game board
-                            removeEdgeUnit(chosenShip.getLeft().getLeft(), chosenShip.getLeft().getRight(), chosenShip.getRight().getLeft(), chosenShip.getRight().getRight());
-                        }
+                    currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenShip -> {
+                        ((MultiStepMovingshipMove) currentlyPerformingMove).setShipToMove(chosenShip);
+                        // highlights valid destinations
+                        setValidMoveShipPositions(chosenShip);
+                        // chosenShip is removed from GUI game board
+                        removeEdgeUnit(chosenShip.getLeft().getLeft(), chosenShip.getLeft().getRight(), chosenShip.getRight().getLeft(), chosenShip.getRight().getRight());
                     });
                     // adds move that will move the ship once a new edge is chosen
-                    currentlyPerformingMove.addMove(new Move<Pair<CoordinatePair, CoordinatePair>>() {
-                        @Override
-                        public void doMove(Pair<CoordinatePair, CoordinatePair> chosenDest) {
-                            Pair<CoordinatePair, CoordinatePair> ship = ((MultiStepMovingshipMove) currentlyPerformingMove).getShipToMove();
-                            aSessionController.moveShip(ship.getLeft(), ship.getRight(), chosenDest.getLeft(), chosenDest.getRight(), aSessionController.getPlayerColor(), false);
+                    currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenDest -> {
+                        Pair<CoordinatePair, CoordinatePair> ship = ((MultiStepMovingshipMove) currentlyPerformingMove).getShipToMove();
+                        aSessionController.moveShip(ship.getLeft(), ship.getRight(), chosenDest.getLeft(), chosenDest.getRight(), aSessionController.getPlayerColor(), false);
 
-                            aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                            moveShipButton.setText("Move Ship");
-                            // re-enable all appropriate actions
-                            if (aSessionController.isMyTurn()) {
-                            	enablePhase(aSessionController.getCurrentGamePhase());
-                            }
+                        aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                        moveShipButton.setText("Move Ship");
+                        // re-enable all appropriate actions
+                        if (aSessionController.isMyTurn()) {
+                            enablePhase(aSessionController.getCurrentGamePhase());
                         }
                     });
 
@@ -1313,59 +1295,53 @@ public class SessionScreen implements Screen {
         }
            // villagePieceKind = VillageKind.SETTLEMENT;
             // adds the move that will set up road building, and save the chosen intersection
-            currentlyPerformingMove.addMove(new Move<CoordinatePair>() {
-                @Override
-                public void doMove(CoordinatePair chosenIntersection) {
-                    ((MultiStepInitMove) currentlyPerformingMove).setInitIntersection(chosenIntersection);
+            currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
+                ((MultiStepInitMove) currentlyPerformingMove).setInitIntersection(chosenIntersection);
 
-                 // Building place was picked, can now switch the mode to allow the player to pick a road place
-                    aMode = SessionScreenModes.CHOOSEEDGEMODE;
+             // Building place was picked, can now switch the mode to allow the player to pick a road place
+                aMode = SessionScreenModes.CHOOSEEDGEMODE;
 
-                    // show a transparent version of settlement on validIntersection
-                   if (firstInit) {
-                       highlightedPositions.add(gamePieces.createSettlement(chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                   } else {
-                       highlightedPositions.add(gamePieces.createCity(chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                   }
+                // show a transparent version of settlement on validIntersection
+               if (firstInit) {
+                   highlightedPositions.add(gamePieces.createSettlement(chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+               } else {
+                   highlightedPositions.add(gamePieces.createCity(chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+               }
 
-                    // finds all valid adjacent edges
-                    for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
-                        if (chosenIntersection.isAdjacentTo(i) && !i.isOccupied()) {
-                            validEdges.add(new MutablePair<>(i, chosenIntersection));
-                            // show a transparent version of valid adjacent roads
-                            if (aSessionController.isOnLand(i, chosenIntersection)) {
-                                highlightedPositions.add(gamePieces.createRoad(i.getLeft(), i.getRight(), chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                            } else {
-                                highlightedPositions.add(gamePieces.createShip(i.getLeft(), i.getRight(), chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                            }
+                // finds all valid adjacent edges
+                for (CoordinatePair i : aSessionController.getIntersectionsAndEdges()) {
+                    if (chosenIntersection.isAdjacentTo(i) && !i.isOccupied()) {
+                        validEdges.add(new MutablePair<>(i, chosenIntersection));
+                        // show a transparent version of valid adjacent roads
+                        if (aSessionController.isOnLand(i, chosenIntersection)) {
+                            highlightedPositions.add(gamePieces.createRoad(i.getLeft(), i.getRight(), chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                        } else {
+                            highlightedPositions.add(gamePieces.createShip(i.getLeft(), i.getRight(), chosenIntersection.getLeft(), chosenIntersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                         }
                     }
-                    // initVillageIntersection = chosenIntersection;
                 }
+                // initVillageIntersection = chosenIntersection;
             });
 
-            currentlyPerformingMove.addMove(new Move<Pair<CoordinatePair, CoordinatePair>>() {
-                @Override
-                public void doMove(Pair<CoordinatePair, CoordinatePair> chosenEndpoints) {
+            currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenEndpoints -> {
 
-                    aMode = SessionScreenModes.CHOOSEACTIONMODE;
+                aMode = SessionScreenModes.CHOOSEACTIONMODE;
 
-                    EdgeUnitKind Edgekind = EdgeUnitKind.ROAD;
-                    if (!aSessionController.isOnLand(chosenEndpoints.getLeft(), chosenEndpoints.getRight())) {
-                        Edgekind = EdgeUnitKind.SHIP;
-                    }
-
-                    CoordinatePair initIntersection = ((MultiStepInitMove) currentlyPerformingMove).getInitIntersection();
-
-                    aSessionController.buildInitialVillageAndRoad(initIntersection, chosenEndpoints.getLeft(), chosenEndpoints.getRight(), villageKind, Edgekind);
-
-                    // Stop the initialization phase only after the city was placed
-                    // if (villagePieceKind == VillageKind.CITY)
-                    //    initializing = false;
-
-                    // End the turn
-                    aSessionController.endTurn();
+                EdgeUnitKind Edgekind = EdgeUnitKind.ROAD;
+                if (!aSessionController.isOnLand(chosenEndpoints.getLeft(), chosenEndpoints.getRight())) {
+                    Edgekind = EdgeUnitKind.SHIP;
                 }
+
+                CoordinatePair initIntersection = ((MultiStepInitMove) currentlyPerformingMove).getInitIntersection();
+
+                aSessionController.buildInitialVillageAndRoad(initIntersection, chosenEndpoints.getLeft(), chosenEndpoints.getRight(), villageKind, Edgekind);
+
+                // Stop the initialization phase only after the city was placed
+                // if (villagePieceKind == VillageKind.CITY)
+                //    initializing = false;
+
+                // End the turn
+                aSessionController.endTurn();
             });
 
 

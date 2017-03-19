@@ -62,6 +62,7 @@ public class Session {
         currentPhase = GamePhase.SETUP_PHASE_ONE;
         clockwise = true;
 
+        progressCardMap = new HashMap<>();
         for (ProgressCardType p: ProgressCardType.values()) {
             progressCardMap.put(p, 0);
         }

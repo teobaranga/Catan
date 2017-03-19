@@ -60,14 +60,10 @@ public class ProgressCardHandler {
                 }
                 MultiStepMove playMedicine = new MultiStepMove();
                 aSessionController.getSessionScreen().initChooseIntersectionMove(validUpgradeIntersections, playMedicine);
-                playMedicine.addMove(new Move() {
-                    @Override
-                    public void doMove(Object o) {
-                        CoordinatePair myCityCoordinates = (CoordinatePair) o;
-                        aSessionController.buildCityWall(currentPColor, myCityCoordinates, true);
-                        //revert back to choose action mode and enable buttons
-                        aSessionController.getSessionScreen().interractionDone();
-                    }
+                playMedicine.<CoordinatePair>addMove(myCityCoordinates -> {
+                    aSessionController.buildCityWall(currentPColor, myCityCoordinates, true);
+                    //revert back to choose action mode and enable buttons
+                    aSessionController.getSessionScreen().interractionDone();
                 });
             case MINING:
                 break;

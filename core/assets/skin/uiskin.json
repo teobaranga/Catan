@@ -3,9 +3,6 @@
     default: {
       file: default.fnt
     },
-    arial-13: {
-      file: arial-13.fnt
-    },
     droid-sans-15: {
       file: droid-sans-15.fnt
     }

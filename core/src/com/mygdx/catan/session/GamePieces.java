@@ -1,18 +1,18 @@
 package com.mygdx.catan.session;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
-import com.badlogic.gdx.graphics.g2d.PolygonRegionLoader;
-import com.badlogic.gdx.graphics.g2d.PolygonSprite;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.TerrainKind;
+import com.mygdx.catan.gameboard.Knight;
 
 /**
  * Helper class that returns PolygonRegions representing various game pieces
@@ -20,9 +20,13 @@ import com.mygdx.catan.enums.TerrainKind;
  */
 class GamePieces {
 
+    private static GamePieces instance;
+
     private final PolygonRegion sea, desert, hills, forest, mountains, pasture, fields, gold;
 
     private final PolygonRegion robber;
+
+    private final TextureAtlas.AtlasRegion knightBasic, knightStrong, knightMighty;
 
     private Texture aSeaTextureSolid;
     private Texture aHillsTextureSolid;
@@ -38,7 +42,7 @@ class GamePieces {
     private Texture aYellowTextureSolid;
 
     /** Create a new instance of this helper class */
-    GamePieces() {
+    private GamePieces() {
         // Creating the color filling for hexagons
         aSeaTextureSolid = setupTextureSolid(Color.TEAL);
         aHillsTextureSolid = setupTextureSolid(CatanGame.skin.getColor("brick"));
@@ -54,6 +58,14 @@ class GamePieces {
         aBlueTextureSolid = setupTextureSolid(Color.BLUE);
         aYellowTextureSolid = setupTextureSolid(Color.YELLOW);
 
+        AssetManager assetManager = new AssetManager();
+        assetManager.load("gamepieces/gamepieces.atlas", TextureAtlas.class);
+        assetManager.finishLoading();
+        TextureAtlas gamePieces = assetManager.get("gamepieces/gamepieces.atlas", TextureAtlas.class);
+        knightBasic = gamePieces.findRegion("k_basic");
+        knightStrong = gamePieces.findRegion("k_strong");
+        knightMighty = gamePieces.findRegion("k_mighty");
+
         PolygonRegionLoader polygonRegionLoader = new PolygonRegionLoader();
 
         sea = polygonRegionLoader.load(CatanGame.skin.getRegion("sea"), Gdx.files.internal("hex.psh"));
@@ -66,6 +78,12 @@ class GamePieces {
         gold = polygonRegionLoader.load(CatanGame.skin.getRegion("gold"), Gdx.files.internal("hex.psh"));
 
         robber = polygonRegionLoader.load(CatanGame.skin.getRegion("robber"), Gdx.files.internal("robber.psh"));
+    }
+
+    public static GamePieces getInstance() {
+        if (instance == null)
+            instance = new GamePieces();
+        return instance;
     }
 
     /**
@@ -165,6 +183,38 @@ class GamePieces {
         final PolygonSprite polygonSprite = new PolygonSprite(robber);
         polygonSprite.setScale(0.4f);
         return polygonSprite;
+    }
+
+    /**
+     * Create a new Knight, represented as an Image.
+     *
+     * @param strength the strength of the knight
+     */
+    Image createKnight(Knight.Strength strength) {
+        Image knight = null;
+        switch (strength) {
+            case BASIC:
+                // Create basic knight
+                knight = new Image(knightBasic);
+                break;
+            case STRONG:
+                // Create strong knight
+                knight = new Image(knightStrong);
+                break;
+            case MIGHTY:
+                // Create mighty knight
+                knight = new Image(knightMighty);
+                break;
+        }
+
+        // Scale down the image
+        final float knightScale = 1 / 8f;
+        knight.setSize(knightScale * knight.getWidth(), knightScale * knight.getHeight());
+
+        // Place the origin in the center of the image to make it easier to draw
+        knight.setOrigin(knight.getWidth() / 2f, knight.getHeight() / 2f);
+
+        return knight;
     }
 
     /**

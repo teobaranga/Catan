@@ -1,6 +1,7 @@
 package com.mygdx.catan.session;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.*;
@@ -9,10 +10,7 @@ import com.mygdx.catan.TradeAndTransaction.TransactionManager;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
-import com.mygdx.catan.gameboard.EdgeUnit;
-import com.mygdx.catan.gameboard.GameBoardManager;
-import com.mygdx.catan.gameboard.Hex;
-import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.gameboard.*;
 import com.mygdx.catan.moves.Move;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.request.*;
@@ -722,6 +720,23 @@ public class SessionController {
     }
 
     /**
+     * Build a new basic knight for the local player.
+     * TODO: placeholder method only for the moment
+     */
+    Image buildKnight(CoordinatePair position, boolean fromPeer) {
+        // TODO: Add knight to gameboard state
+
+        // Display the knight
+        GamePieces gamePieces = GamePieces.getInstance();
+        Image knight = gamePieces.createKnight(Knight.Strength.BASIC);
+        knight.setPosition(position.getLeft() - knight.getOriginX(), position.getRight() - knight.getOriginY());
+
+        // TODO: inform other players
+
+        return knight;
+    }
+
+    /**
      * Requests the GameBoardManager to build edge unit on given coordinates. If fromPeer is false, the SessionController verifies that the position is valid, else it simply places the settlement. SessionScreen is notified of any boardgame changes.
      * Determines if new edge unit piece increases the players longest road, and takes appropriate action.
      *
@@ -1006,7 +1021,7 @@ public class SessionController {
         //determine activeKnightStrength strength
         for (Player p : aSessionManager.getPlayers()) {
            for (Knight activeKnight : p.getActiveKnights()) {
-               activeKnightStrength += activeKnight.getLevel();
+               activeKnightStrength += activeKnight.getStrength();
            }
         }
         
@@ -1021,7 +1036,7 @@ public class SessionController {
                     if (vk == VillageKind.CITY) {
                         int playerKnightLevel = 0;
                         for (Knight k : p.getActiveKnights()) {
-                            playerKnightLevel+= k.getLevel();
+                            playerKnightLevel+= k.getStrength();
                         }
                         if (playerKnightLevel < minKnightLevel) {
                             minKnightLevel = playerKnightLevel;
@@ -1081,7 +1096,7 @@ public class SessionController {
             for (Player p : aSessionManager.getPlayers()) {
                 int playerKnightLevel = 0;
                 for (Knight k : p.getActiveKnights()) {
-                    playerKnightLevel+= k.getLevel();
+                    playerKnightLevel+= k.getStrength();
                 }
                 if (playerKnightLevel > maxKnightLevel) {
                     maxKnightLevel = playerKnightLevel;

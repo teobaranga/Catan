@@ -11,10 +11,7 @@ import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.catan.*;
 import com.mygdx.catan.enums.*;
@@ -28,7 +25,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.Map.Entry;
+import java.util.List;
 
 public class SessionScreen implements Screen {
 
@@ -47,7 +44,7 @@ public class SessionScreen implements Screen {
 
     private SessionController aSessionController;
 
-    private Stage aSessionStage;
+    private Stage aSessionStage, gamePiecesStage;
 
     /** The list of polygons representing the board hexes */
     private List<PolygonSprite> boardHexes;
@@ -60,6 +57,9 @@ public class SessionScreen implements Screen {
 
     /** The List of EdgeUnits currently on the board */
     private List<PolygonRegion> edgeUnits;
+
+    /** The list of knights currently on the board */
+    private List<Image> knights;
 
     /** The List of valid building regions on the board */
     private List<PolygonRegion> highlightedPositions;
@@ -86,7 +86,7 @@ public class SessionScreen implements Screen {
     private ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
 
     // Menu Buttons
-    private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton;
+    private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton, buildKnightButton;
     private TextButton rollDiceButton, endTurnButton;
     private TextButton domesticTradeButton, tradeButton;
     private TextButton moveShipButton;
@@ -135,12 +135,13 @@ public class SessionScreen implements Screen {
         boardHarbours = new ArrayList<>();
         villages = new ArrayList<>();
         edgeUnits = new ArrayList<>();
+        knights = new ArrayList<>();
         highlightedPositions = new ArrayList<>();
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new EnumMap<>(ResourceKind.class);
         polyBatch = new PolygonSpriteBatch();
         highlightBatch = new PolygonSpriteBatch();
-        gamePieces = new GamePieces();
+        gamePieces = GamePieces.getInstance();
         robberSprite = gamePieces.createRobber();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -241,6 +242,7 @@ public class SessionScreen implements Screen {
     @Override
     public void show() {
         aSessionStage = new Stage();
+        gamePiecesStage = new Stage();
 
         // Combine input (click handling) from the InputAdapter and the Stage
         final InputMultiplexer inputMultiplexer = new InputMultiplexer();
@@ -249,22 +251,21 @@ public class SessionScreen implements Screen {
         Gdx.input.setInputProcessor(inputMultiplexer);
 
         // resource table
-        Table contentTable = new Table(CatanGame.skin);
-        contentTable.setBackground("resTableBackground");
-        contentTable.pad(10);
+        Table resourcesTable = new Table(CatanGame.skin);
+        resourcesTable.setBackground("resTableBackground");
+        resourcesTable.pad(10);
 
         for (ResourceKind resourceKind : ResourceKind.values()) {
             Table aTable = createResourceTable(resourceKind);
-            contentTable.add(aTable).width(60).height(60).pad(5);
+            resourcesTable.add(aTable).width(60).height(60).pad(5);
         }
 
-        contentTable.pack();
-        contentTable.setPosition(Gdx.graphics.getWidth() / 2 - contentTable.getWidth() / 2, 10);
+        resourcesTable.pack();
+        resourcesTable.setPosition(Gdx.graphics.getWidth() / 2 - resourcesTable.getWidth() / 2, 10);
 
         // menu table
         Table menuTable = new Table(CatanGame.skin);
         menuTable.setBackground("resTableBackground");
-        menuTable.setSize(200, 300);
         menuTable.setPosition(10, 10);
 
         //end turn table 
@@ -342,6 +343,47 @@ public class SessionScreen implements Screen {
         buildShipButton.pad(0, 10, 0, 10);
         menuTable.add(buildShipButton).padBottom(10).row();
 
+        buildKnightButton = new TextButton("Build Knight", CatanGame.skin);
+        buildKnightButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // Create a new multi-step move to allow the player to place a knight
+                currentlyPerformingMove = new MultiStepMove();
+
+                // Keep track of the previous session mode
+                final SessionScreenModes prevMode = aMode;
+
+                // Switch the mode to allow the player to choose an intersection
+                aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+
+                // TODO: generate the actual valid positions for the knight
+                for (CoordinatePair intersection : aSessionController.requestValidInitializationBuildIntersections()) {
+                    validIntersections.add(intersection);
+                    highlightedPositions.add(gamePieces.createSettlement(intersection.getLeft(), intersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                }
+
+                // Make the current move place a knight at the specified position
+                currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
+                    // Clear the highlighted positions
+                    validIntersections.clear();
+                    highlightedPositions.clear();
+                    // Build the knight
+                    CoordinatePair intersection = CoordinatePair.of(
+                            boardOrigin.getLeft() + chosenIntersection.getLeft() * OFFX,
+                            boardOrigin.getRight() + chosenIntersection.getRight() * -LENGTH / 2, null);
+                    Image knight = aSessionController.buildKnight(intersection, false);
+                    knights.add(knight);
+                    gamePiecesStage.addActor(knight);
+                    // Go back to the previous mode
+                    aMode = prevMode;
+                    // re-enable all appropriate actions
+                    enablePhase(aSessionController.getCurrentGamePhase());
+                });
+            }
+        });
+        buildKnightButton.pad(0, 10, 0, 10);
+        menuTable.add(buildKnightButton).padBottom(10).row();
+
         moveShipButton = new TextButton("Move Ship", CatanGame.skin);
         setupMoveShipButton(moveShipButton);
         moveShipButton.pad(0, 10, 0, 10);
@@ -413,6 +455,10 @@ public class SessionScreen implements Screen {
         });
         menuTable.row();
         menuTable.add(tradeButton).padTop(10);
+
+        // Pack the menu table to make it fit all its children
+        menuTable.pad(10);
+        menuTable.pack();
         
         
         // TODO: delete when done (buttons for testing)
@@ -524,7 +570,7 @@ public class SessionScreen implements Screen {
         gameLog.setWidth(tableWidth);
         gameLog.setHeight(tableHeight);
 
-        aSessionStage.addActor(contentTable);
+        aSessionStage.addActor(resourcesTable);
         aSessionStage.addActor(availableGamePiecesTable);
         aSessionStage.addActor(menuTable);
         aSessionStage.addActor(turnTable);
@@ -995,6 +1041,8 @@ public class SessionScreen implements Screen {
 
         aSessionStage.act(delta);
         aSessionStage.draw();
+
+        gamePiecesStage.draw();
     }
 
     @Override

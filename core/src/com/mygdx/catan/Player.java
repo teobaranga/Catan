@@ -4,6 +4,7 @@ import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.gameboard.Village;
 
 import java.util.ArrayList;

@@ -20,6 +20,7 @@ public class GameBoard {
 	private Hex aRobberPosition;
 	private Hex aMerchantPosition;
 	private Player aMerchantOwner;
+	private Player aBootOwner;
 	private Stack<ProgressCardType> aScienceProgressCardStack = new Stack<>();
 	private Stack<ProgressCardType> aPoliticsProgressCardStack = new Stack<>();
 	private Stack<ProgressCardType> aTradeProgressCardStack = new Stack<>();
@@ -142,8 +143,15 @@ public class GameBoard {
 	public Player getMerchantOwner() {
 	    return aMerchantOwner;
 	}
-	
-	
+
+	public void setaBootOwner(Player newOwner) {
+		aBootOwner = newOwner;
+	}
+
+	public Player getaBootOwner() {
+		return aBootOwner;
+	}
+
 	/**
 	 * @return top card of the science progress card stack. returns null if empty
 	 * */

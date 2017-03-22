@@ -80,9 +80,27 @@ public class GameBoardManager {
     public int getMerchantPoint(Player player) {
         if (player.equals(aGameBoard.getMerchantOwner())) {
             return 1;
-        } else {
-            return 0;
         }
+        return 0;
+
+    }
+
+    /**
+     *
+     * Checks if the given player suffers from the Old Boot malus.
+     *
+     * @param player the Player whose potential malus is requested
+     * @return 1 if malus applies, 0 otherwise.
+     */
+    public int getBootMalus(Player player) {
+        if (player.equals(aGameBoard.getaBootOwner())) {
+            return 1;
+        }
+        return 0;
+    }
+
+    public void setaBootOwner(Player newOwner) {
+        aGameBoard.setaBootOwner(newOwner);
     }
 
     //TODO
@@ -116,10 +134,10 @@ public class GameBoardManager {
     public boolean upgradeSettlement(Player player, CoordinatePair position) {
         Village settlement = position.getOccupyingVillage();
         //TODO: upgrade to metropolis if already a city?
-        
+
         //note: settlement is already associated to player and position, and list of villages in aGameBoard, and therefore only needs to be upgraded to city
         settlement.setVillageKind(VillageKind.CITY);
-        
+
         player.decrementAvailableCities();
         player.incrementAvailableSettlements();
         return true;

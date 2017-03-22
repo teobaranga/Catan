@@ -1180,14 +1180,13 @@ public class SessionController {
         aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
 
-    /*public ResourceMap getOwnresourcesUpdate(Map<Player,ResourceMap> updatedPlayerResources) {
-        for (Map.Entry<Player, ResourceMap> entry : updatedPlayerResources.entrySet() ) {
-            if(entry.getKey().getColor().equals(aPlayerColor)) {
-                return entry.getValue();
-            }
-        }
-        return new ResourceMap();
-    }*/
+    public int getBootMalus(Player player) {
+        return aGameBoardManager.getBootMalus(player);
+    }
+
+    public void setBootOwner(Player newOwner) {
+        aGameBoardManager.setaBootOwner(newOwner);
+    }
 
     /**
      * Roll the dice according to the phase of the game/session.

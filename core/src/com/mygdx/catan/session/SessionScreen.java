@@ -110,6 +110,18 @@ public class SessionScreen implements Screen {
     private Label[] playersVPLabel;
 
     /**
+     * Fish Count table
+     */
+    private Table fishCount;
+    private Label fishCountLabel;
+
+    /**
+     * Table to show the Old Boot Owner.
+     */
+    private Table bootOwner;
+    private Label bootOwnerLabel;
+
+    /**
      * labels that keeps track of available game pieces to build
      */
     private Label availableSettlements;
@@ -263,6 +275,24 @@ public class SessionScreen implements Screen {
         resourcesTable.pack();
         resourcesTable.setPosition(Gdx.graphics.getWidth() / 2 - resourcesTable.getWidth() / 2, 10);
 
+        //fish table
+        fishCount = new Table(CatanGame.skin);
+        fishCountLabel = new Label("",CatanGame.skin);
+        Label fishResource = new Label("Fish", CatanGame.skin);
+        Table fishTable = new Table(CatanGame.skin);
+
+        fishCount.add(fishResource).row();
+        fishCount.add(fishCountLabel).row();
+        fishCount.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
+        fishTable.add(fishCount).width(60).height(60).pad(5);
+
+        fishTable.setBackground("resTableBackground");
+        fishTable.pad(10);
+        fishTable.pack();
+        fishTable.setPosition(resourcesTable.getX() + resourcesTable.getWidth() + 25, 10);
+
+        updateFishTable(0);
+
         // menu table
         Table menuTable = new Table(CatanGame.skin);
         menuTable.setBackground("resTableBackground");
@@ -293,6 +323,13 @@ public class SessionScreen implements Screen {
             playersVP[i] = currentVpTable;
         }
         updateVpTables();
+
+        bootOwnerLabel = new Label("Boot Owner: No one", CatanGame.skin);
+        bootOwner = new Table(CatanGame.skin);
+        bootOwner.setSize(200, 40);
+        bootOwner.setPosition(10, Gdx.graphics.getHeight() - 300);
+        bootOwner.setBackground(CatanGame.skin.newDrawable("white", Color.BLACK));
+        bootOwner.add(bootOwnerLabel);
 
         // available game pieces table
         Table availableGamePiecesTable = new Table(CatanGame.skin);
@@ -571,6 +608,7 @@ public class SessionScreen implements Screen {
         gameLog.setHeight(tableHeight);
 
         aSessionStage.addActor(resourcesTable);
+        aSessionStage.addActor(fishTable);
         aSessionStage.addActor(availableGamePiecesTable);
         aSessionStage.addActor(menuTable);
         aSessionStage.addActor(turnTable);
@@ -578,6 +616,7 @@ public class SessionScreen implements Screen {
         for (int i = 0; i < playersVP.length; i++) {
             aSessionStage.addActor(playersVP[i]);
         }
+        aSessionStage.addActor(bootOwner);
         aSessionStage.addActor(gameLog);
 
         // Notify the controller that the session screen is displayed
@@ -1584,6 +1623,10 @@ public class SessionScreen implements Screen {
             int newValue = entry.getValue();
             l.setText(newValue + "");
         }
+    }
+
+    void updateFishTable(int newFishCount) {
+        fishCountLabel.setText("" + newFishCount);
     }
 
     /**

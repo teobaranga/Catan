@@ -324,6 +324,7 @@ public class SessionScreen implements Screen {
         }
         updateVpTables();
 
+        //Old Boot Table
         bootOwnerLabel = new Label("Boot Owner: No one", CatanGame.skin);
         bootOwner = new Table(CatanGame.skin);
         bootOwner.setSize(200, 40);
@@ -1627,6 +1628,10 @@ public class SessionScreen implements Screen {
 
     void updateFishTable(int newFishCount) {
         fishCountLabel.setText("" + newFishCount);
+    }
+
+    void updateBootOwner(Player player) {
+        bootOwnerLabel.setText("Boot Owner: " + player.getUsername());
     }
 
     /**

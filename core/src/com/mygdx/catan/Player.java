@@ -26,6 +26,7 @@ public class Player {
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
     private EnumMap<ProgressCardType, Integer> hand;
+    private EnumMap<FishTokenType, Integer> fishTokenHand;
 
     private int availableSettlements;
     private int availableCities;
@@ -39,6 +40,7 @@ public class Player {
         knights = new ArrayList<>();
         resourceMap = new ResourceMap();
         hand = new EnumMap<>(ProgressCardType.class);
+        fishTokenHand = new EnumMap<>(FishTokenType.class);
         // Set the default number of available pieces
         tokenVictoryPoints = 0;
         availableSettlements = 5;
@@ -242,6 +244,29 @@ public class Player {
      //not yet needed for this demo
 		
 	}*/
+
+	public void addFishToken(FishTokenType type) {
+	    if (fishTokenHand.get(type) == null) {
+            fishTokenHand.put(type, fishTokenHand.get(type) + 1);
+        } else {
+	        fishTokenHand.put(type, 1);
+        }
+
+    }
+
+    public EnumMap<FishTokenType, Integer> getFishTokenHand() {
+	    return fishTokenHand;
+    }
+
+    public void removeFishToken(EnumMap<FishTokenType, Integer> fishTokenToRemove) {
+	    for (EnumMap.Entry<FishTokenType, Integer> entry : fishTokenToRemove.entrySet()) {
+            int newCount = fishTokenHand.get(entry.getKey()) - entry.getValue();
+            if (newCount < 0){
+	            throw new RuntimeException("FishToken count is below 0");
+            }
+            fishTokenHand.put(entry.getKey(), newCount);
+        }
+    }
 
     public Village chooseCity() {
         throw new RuntimeException("chooseCity not yet implemented");

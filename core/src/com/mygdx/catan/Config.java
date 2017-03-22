@@ -41,6 +41,7 @@ public class Config {
         kryo.register(Player[].class);
         kryo.register(ResourceKind.class);
         kryo.register(ProgressCardType.class);
+        kryo.register(FishTokenType.class);
         kryo.register(VillageKind.class);
         kryo.register(EdgeUnitKind.class);
         kryo.register(ResourceMap.class);
@@ -71,6 +72,7 @@ public class Config {
         kryo.register(TradeOfferCancel.class);
         kryo.register(TradeCancel.class);
         kryo.register(UpdateVP.class);
+        kryo.register(UpdateOldBoot.class);
         kryo.register(LinkedHashMap.class);
         kryo.register(ArrayList.class);
         kryo.register(ImmutablePair.class);

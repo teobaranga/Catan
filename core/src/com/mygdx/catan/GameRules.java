@@ -20,6 +20,7 @@ public class GameRules {
 
 	private EnumMap<ProgressCardType, Integer> progressCardOccurences = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
 	private EnumMap<ProgressCardType, ProgressCardKind> progressCardKind = new EnumMap<ProgressCardType, ProgressCardKind>(ProgressCardType.class);
+	private EnumMap<FishTokenType, Integer> fishTokenOccurences = new EnumMap<FishTokenType, Integer>(FishTokenType.class);
 	private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
 	private HashMap<Integer,Integer> defaultDiceNumberMap = new HashMap<Integer,Integer>();
 	private HashMap<Integer,HarbourKind> defaultHarbourMap = new HashMap<Integer,HarbourKind>();
@@ -38,6 +39,7 @@ public class GameRules {
 
 	private GameRules() {
 		initializeProgressCards();
+		initializeFishTokens();
 		setupDefaultTerrainMap();
 		setupDefaultDiceMap();
 		setupDefaultHarbourMap();
@@ -270,6 +272,16 @@ public class GameRules {
 		progressCardKind.put(ProgressCardType.MERCHANT, ProgressCardKind.TRADE);
 	}
 
+	/**
+	 *	Initializes the occurrences of each FishToken type.
+	 */
+	private void initializeFishTokens() {
+		fishTokenOccurences.put(FishTokenType.ONE_FISH, 11);
+		fishTokenOccurences.put(FishTokenType.TWO_FISH, 10);
+		fishTokenOccurences.put(FishTokenType.THREE_FISH, 8);
+		fishTokenOccurences.put(FishTokenType.OLD_BOOT, 1);
+	}
+
 
 	/**
 	 * @param x left coordinate
@@ -309,7 +321,7 @@ public class GameRules {
 	 * @param
 	 * @return occurence of pKind in the progress card stack
 	 * */
-	public int getProgressCardOccurence(ProgressCardType pKind) {
+	public int getProgressCardOccurrence(ProgressCardType pKind) {
 		return progressCardOccurences.get(pKind);
 	}
 	
@@ -320,6 +332,10 @@ public class GameRules {
 	public ProgressCardKind getProgressCardKind(ProgressCardType pType) {
 		return progressCardKind.get(pType);
 	}
+
+	public int getFishTokenOccurrence(FishTokenType fType) {
+	    return fishTokenOccurences.get(fType);
+    }
 
 	/**
 	 * @return size of the gameboard: corresponds to the number of tiles on the longest diagonal

@@ -200,6 +200,12 @@ public class SessionController {
                     Gdx.app.postRunnable(aSessionScreen::onTradeCompleted);
                 } else if (object instanceof TradeOfferCancel) {
                     Gdx.app.postRunnable(() -> aSessionScreen.onTradeOfferCancelled(((TradeOfferCancel) object).username));
+                } else if (object instanceof  UpdateOldBoot){
+                    Gdx.app.postRunnable(() -> {
+                        UpdateOldBoot updateOldBoot = (UpdateOldBoot) object;
+                        setBootOwner(updateOldBoot.getPlayer());
+                        aSessionScreen.updateBootOwner(updateOldBoot.getPlayer());
+                    });
                 } else if (object instanceof UpdateVP){
                     Gdx.app.postRunnable(() -> {
                         aSessionScreen.updateVpTables();
@@ -1319,5 +1325,15 @@ public class SessionController {
     /** Call this when the screen is hidden */
     void onScreenHidden() {
         CatanGame.client.removeListener(aSessionListener);
+    }
+
+    void getFishToken() {
+        FishTokenType type  = aGameBoardManager.drawFishToken();
+        if (type == FishTokenType.OLD_BOOT) {
+            UpdateOldBoot request = UpdateOldBoot.newInstance(localPlayer);
+            CatanGame.client.sendTCP(request);
+        } else {
+            localPlayer.addFishToken(type);
+        }
     }
 }

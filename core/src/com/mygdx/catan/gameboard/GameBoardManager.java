@@ -2,10 +2,7 @@ package com.mygdx.catan.gameboard;
 
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.Player;
-import com.mygdx.catan.enums.EdgeUnitKind;
-import com.mygdx.catan.enums.ProgressCardType;
-import com.mygdx.catan.enums.TerrainKind;
-import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.enums.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,19 +55,23 @@ public class GameBoardManager {
     public ProgressCardType drawProgressCard() {
         return aGameBoard.popScienceProgressCardStack();
     }
-    
+
     /**
      * @return top of trade progress card stack, null if stack is empty
      */
     public ProgressCardType drawTradeProgressCard() {
         return aGameBoard.popTradeProgressCardStack();
     }
-    
+
     /**
      * @return top of politics progress card stack, null if stack is empty
      */
     public ProgressCardType drawPoliticsProgressCard() {
         return aGameBoard.popPoliticsProgressCardStack();
+    }
+
+    public FishTokenType drawFishToken() {
+        return  aGameBoard.popFishTokenStack();
     }
 
     /**
@@ -353,9 +354,9 @@ public class GameBoardManager {
     public List<Village> getBuildingsInPlay() {
         return aGameBoard.getVillages();
     }
-    
+
     /**
-     * @param leftCoordinate x coordinate of intersection 
+     * @param leftCoordinate x coordinate of intersection
      * @param rightCoordinate y coordinate of intersection
      * @return the intersection with coordinates <x,y>, null if such an intersection does not exist
      * */

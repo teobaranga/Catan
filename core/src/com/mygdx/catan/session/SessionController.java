@@ -1077,9 +1077,8 @@ public class SessionController {
                         //if the city has city walls then these are removed 
                         if (city.hasCityWalls()) {
                            city.setCityWalls(false);
-                        }else {
+                        } else {
                             city.setVillageKind(VillageKind.SETTLEMENT);
-                        
                             p.incrementAvailableCities();
                             p.decrementAvailableSettlements();
                         }
@@ -1090,11 +1089,9 @@ public class SessionController {
                     
                 });
                 aSessionScreen.initChooseIntersectionMove(validCityIntersections, pillageVillageMove);
-                
-                //choose intersection in session screen
             }
        
-        } else {
+        } else if (activeKnightStrength >= barbarianStrength) {
             //islanders win
             int maxKnightLevel = 0;
             List<Player> bestPlayers = new ArrayList<Player>();
@@ -1102,7 +1099,7 @@ public class SessionController {
             for (Player p : aSessionManager.getPlayers()) {
                 int playerKnightLevel = 0;
                 for (Knight k : p.getActiveKnights()) {
-                    playerKnightLevel+= k.getStrength();
+                    playerKnightLevel += k.getStrength();
                 }
                 if (playerKnightLevel > maxKnightLevel) {
                     maxKnightLevel = playerKnightLevel;
@@ -1113,18 +1110,44 @@ public class SessionController {
                 }
             }
             //TODO: deal with defender of catan points here
-            int numberOfBestPlayers = bestPlayers.size();
-            if (numberOfBestPlayers == 1) {
+            if (bestPlayers.size() == 1) {
                 //this player is the defender of catan
                 //TODO: do we set them as the defender somehow?
                 Player bestPlayer = bestPlayers.get(0);
                 bestPlayer.incrementDefenderOfCatanPoints(1);
+                //TODO: present with a defender of catan vp card. 
+            } else {
+                //no player will be declared defender of Catan. 
+                //each eligible player will draw in CW order 1 card from any of the 3 PC decks
+                for (Player bp : bestPlayers) {
+                    MultiStepMove handleProgressCardKind = new MultiStepMove();
+                    handleProgressCardKind.addMove(new Move<ProgressCardKind>() {
+                         
+                        @Override
+                        public void doMove(ProgressCardKind kind) {
+                            //get type and handle it accordingly
+                            ProgressCardType card;
+                            if (kind == ProgressCardKind.POLITICS) {
+                                card = aGameBoardManager.drawPoliticsProgressCard();
+                            } else if (kind == ProgressCardKind.TRADE) {
+                                card = aGameBoardManager.drawTradeProgressCard(); 
+                            } else {
+                                card = aGameBoardManager.drawProgressCard();
+                            }
+                            
+                            aProgressCardHandler.handle(card, bp.getColor());
+                            bp.addProgressCard(card);
+                            //TODO: reflect changes in GUI
+                            aSessionScreen.interractionDone();
+                        }  
+                    });
+                    aSessionScreen.chooseProgressCardKind(handleProgressCardKind);
+                }
             }
-            else {
-                //no player is the defender
-                //TODO: deal with players who tie for highest strength
-            }
-        }
+        } else {
+            //regardless of outcome, barbarians go home. 
+            aSessionManager.resetBarbarianPosition();
+        }   
     }
     private void resourceProduction(int diceRoll) {
         // Get the hexes having a dice number equal to the dice roll

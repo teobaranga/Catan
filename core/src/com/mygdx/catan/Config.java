@@ -75,6 +75,7 @@ public class Config {
         kryo.register(DiceRolled.class);
         kryo.register(DrawProgressCard.class);
         kryo.register(BuildIntersection.class);
+        kryo.register(UpdateResources.class);
         kryo.register(SwitchHexDiceNumbers.class);
         kryo.register(BuildEdge.class);
         kryo.register(MoveShip.class);

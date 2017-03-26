@@ -215,6 +215,25 @@ public class SessionController {
                         aSessionScreen.updateResourceBar(clientPlayer.getResources());
 
                     });
+                } else if (object instanceof TakeResources) {
+                    Gdx.app.postRunnable(() -> {
+                        final TakeResources resourcesTaken = (TakeResources) object;
+                        aSessionScreen.addGameMessage(resourcesTaken.sender + " took your resources");
+                        
+                        Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
+                        clientPlayer.removeResources(resourcesTaken.getResources());
+                        aSessionScreen.updateResourceBar(clientPlayer.getResources());
+                        
+                    });
+                } else if (object instanceof UpdateResources) {
+                    Gdx.app.postRunnable(() -> {
+                        final UpdateResources resourcesUpdated = (UpdateResources) object;
+                        
+                        Player peer = aSessionManager.getCurrentPlayerFromColor(resourcesUpdated.getResourceOwner());
+                        peer.setResources(resourcesUpdated.getUpdatedResources());
+                        
+                        aSessionScreen.addGameMessage(resourcesUpdated.username + " now has " + peer.getResourceHandSize() + " resource and commodities cards");
+                    });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
                         System.out.println(((EndTurn) object).username + " ended their turn");

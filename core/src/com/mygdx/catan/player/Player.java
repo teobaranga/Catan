@@ -1,5 +1,6 @@
 package com.mygdx.catan.player;
 
+import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.FishTokenMap;
 import com.mygdx.catan.ResourceMap;
@@ -9,6 +10,7 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.request.UpdateResources;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -249,6 +251,7 @@ public class Player {
      */
     public void addResources(ResourceMap cost) {
         resourceMap.add(cost);
+        updatedResources();
     }
 
     /**
@@ -256,6 +259,24 @@ public class Player {
      */
     public void removeResources(ResourceMap cost) {
         resourceMap.remove(cost);
+        updatedResources();
+    }
+    
+    /**
+     * sends message to peers about updated resources
+     * */
+    private void updatedResources() {
+        UpdateResources request = UpdateResources.newInstance(resourceMap, color, CatanGame.account.getUsername());
+        CatanGame.client.sendTCP(request);
+    }
+    
+    /**
+     * sets the current player resources to given map
+     * */
+    public void setResources(ResourceMap map) {
+        for (ResourceKind kind : ResourceKind.values()) {
+            resourceMap.put(kind, map.get(kind));
+        }
     }
 
     public int getProgressCardCount() {

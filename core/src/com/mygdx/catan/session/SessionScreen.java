@@ -442,7 +442,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.WEDDING);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.MASTERMERCHANT);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
         
@@ -1708,7 +1708,7 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(red);
     }
 
-    void updateResourceBar(ResourceMap updates) {
+    public void updateResourceBar(ResourceMap updates) {
         for (Map.Entry<ResourceKind, Integer> entry : updates.entrySet()) {
             ResourceKind resourceKind = entry.getKey();
             Label l = resourceLabelMap.get(resourceKind);

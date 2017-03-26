@@ -13,6 +13,7 @@ import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.BuildIntersection;
 import com.mygdx.catan.request.GiveResources;
 import com.mygdx.catan.request.SwitchHexDiceNumbers;
+import com.mygdx.catan.request.TakeResources;
 import com.mygdx.catan.request.TargetedChooseResourceCardRequest;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
@@ -49,6 +50,7 @@ public class ProgressCardHandler {
         //aSessionManager.incrementProgressCardMap(pType);
         //SessionManager.getInstance().incrementProgressCardMap(pType);
         aSessionManager.setCurrentlyExecutingProgressCard(pType);
+        ArrayList<Player> playersWithMoreVP = new ArrayList<>();
         
         switch(pType) {
             case ALCHEMIST:
@@ -221,17 +223,12 @@ public class ProgressCardHandler {
             case WARLORD:
                 break;
             case WEDDING:
-                ArrayList<Player> playerWithMoreVP = new ArrayList<>();
                 
                 // adds all the players with more VP points than current player
-                for (Player p : aSessionManager.getPlayers()) {
-                    if (!p.equals(currentP) /*&& aSessionController.currentVP(p) > aSessionController.currentVP(currentP)*/) {
-                          playerWithMoreVP.add(p);
-                    }
-                }
+                updatePlayersWithMoreVP(playersWithMoreVP, currentP);
                 
                 // sends a targeted request to each player with more VP
-                for (Player p : playerWithMoreVP) {
+                for (Player p : playersWithMoreVP) {
                     TargetedChooseResourceCardRequest request = TargetedChooseResourceCardRequest.newInstance(2, CatanGame.account.getUsername(), p.getUsername());
                     CatanGame.client.sendTCP(request);
                 }
@@ -240,6 +237,32 @@ public class ProgressCardHandler {
             case COMMERCIALHARBOUR:
                 break;
             case MASTERMERCHANT:
+                // adds all the players with more VP points than current player
+                updatePlayersWithMoreVP(playersWithMoreVP, currentP);
+                
+                // creates multistepmove that prompts client to choose a player whose hand they will be able to look through
+                MultiStepMove takeResources = new MultiStepMove();
+                                
+                takeResources.<Player>addMove(player -> {
+                    final Player chosenPlayer = player;
+                    
+                    int numberOfResources = 2;
+                    if (player.getResourceHandSize() < numberOfResources) { numberOfResources = player.getResourceHandSize(); }
+                    
+                    takeResources.<ResourceMap>addMove(map -> {
+                        currentP.addResources(map);
+                        aSessionController.getSessionScreen().updateResourceBar(currentP.getResources());
+                        TakeResources request = TakeResources.newInstance(map, currentP.getUsername(), chosenPlayer.getUsername());
+                        CatanGame.client.sendTCP(request);
+                        
+                        aSessionController.getSessionScreen().interractionDone();
+                    });
+                    
+                    aSessionController.getSessionScreen().chooseMultipleResource(player.getResources(), numberOfResources, takeResources);
+                });
+                
+                aSessionController.getSessionScreen().chooseOtherPlayer(playersWithMoreVP, takeResources);
+                
                 break;
             case MERCHANTFLEET:
                 break;
@@ -269,6 +292,15 @@ public class ProgressCardHandler {
                     }
                 }
             } 
+        }
+    }
+    
+    private void updatePlayersWithMoreVP(List<Player> playersWithMoreVPlist, Player currentPlayer) {
+        playersWithMoreVPlist.clear();
+        for (Player p : aSessionManager.getPlayers()) {
+            if (!p.equals(currentPlayer) /*&& aSessionController.currentVP(p) > aSessionController.currentVP(currentPlayer)*/) {
+                playersWithMoreVPlist.add(p);
+            }
         }
     }
 

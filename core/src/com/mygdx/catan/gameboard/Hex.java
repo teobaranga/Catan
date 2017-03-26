@@ -29,6 +29,10 @@ public class Hex {
 		return aDiceNumber;
 	}
 	
+	public void setDiceNumber(int newDiceNumber) {
+	    aDiceNumber = newDiceNumber;
+	}
+	
 	public int getLeftCoordinate() {
 		return aCoordinates.getLeft();
 	}

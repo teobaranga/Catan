@@ -85,6 +85,7 @@ public class SessionScreen implements Screen {
      */
     private ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
     private ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
+    private ArrayList<Hex> validHexes = new ArrayList<>();
 
     // Menu Buttons
     private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton, buildKnightButton;
@@ -207,9 +208,25 @@ public class SessionScreen implements Screen {
                             return true;
                         }
                     }
+                } else if (aMode == SessionScreenModes.CHOOSEHEXMODE) {
+                    for (Hex validHex : validHexes) {
+                        if (screenX > boardOrigin.getLeft() + validHex.getLeftCoordinate() * OFFX - 10 &&
+                                screenX < boardOrigin.getLeft() + validHex.getLeftCoordinate() * OFFX + 10 &&
+                                screenY > boardOrigin.getRight() + validHex.getRightCoordinate() * OFFY - 10 &&
+                                screenY < boardOrigin.getRight() + validHex.getRightCoordinate() * OFFY + 10) {
+                            
+                            // The hex position is valid, can clear the highlighted positions
+                            highlightedPositions.clear();
+                            validHexes.clear();
+                            
+                            currentlyPerformingMove.performNextMove(validHex);
+                            
+                            return true;
+                        }
+                    }
                 }
                 return false;
-            }
+            } 
         };
     }
 
@@ -423,7 +440,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.ROADBUILDING);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.INVENTOR);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
         
@@ -668,6 +685,27 @@ public class SessionScreen implements Screen {
         currentlyPerformingMove = move;
         
         aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+    }
+    
+    /**
+     * @param valid hexes client can choose from
+     * @param move which next move to perform will be called once a hex has been chosen
+     * */
+    public void initChooseHexMove(List<Hex> valid, MultiStepMove move) {
+        // disable all possible actions
+        disableAllButtons();
+        
+        // transfers all the valid intersections of validIntersections, and highlights each position on the board
+        for (Hex h : valid) {
+            validHexes.add(h);
+            highlightedPositions.add(gamePieces.createHighlightedIntersection(h.getLeftCoordinate(), h.getRightCoordinate(), OFFX, OFFY*2, LENGTH, aSessionController.getPlayerColor()));
+        }
+        
+        // sets the currently performing move attribute to given move.
+        // When an intersection is chosen, the next move in that MultiStepMove will be performed
+        currentlyPerformingMove = move;
+        
+        aMode = SessionScreenModes.CHOOSEHEXMODE;
     }
     
     /**
@@ -1113,7 +1151,7 @@ public class SessionScreen implements Screen {
             polyBatch.draw(village, boardOrigin.getLeft(), boardOrigin.getRight());
         }
         for (Hex hex : aSessionController.getHexes()) {
-            Integer prob = GameRules.getGameRulesInstance().getDiceNumber(hex);
+            Integer prob = hex.getDiceNumber();
             if (prob != 0 && prob != null) {
                 float xPos = (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX - 7));
                 float yPos = (float) (boardOrigin.getRight() - (hex.getRightCoordinate() * OFFY - 5));

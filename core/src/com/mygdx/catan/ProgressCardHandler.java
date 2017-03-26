@@ -2,6 +2,7 @@ package com.mygdx.catan;
 
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.GameBoardManager;
+import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.EdgeUnit;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class ProgressCardHandler {
 
     private final SessionManager aSessionManager;
+    private final GameBoardManager aGameBoardManager;
 
     private SessionController aSessionController;
     //private SessionScreen aSessionScreen;
@@ -31,6 +33,7 @@ public class ProgressCardHandler {
         aSessionController = sessionController;
         final Game currentGame = GameManager.getInstance().getCurrentGame();
         aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
+        aGameBoardManager = GameBoardManager.getInstance();
         // aSessionScreen = aSessionController.getSessionScreen();
         
     }
@@ -63,6 +66,32 @@ public class ProgressCardHandler {
                 });
                 break;
             case INVENTOR:
+                ArrayList<Hex> validHexes = new ArrayList<>();
+                // adds all hexes without 2, 6, 8 or 12 to validHexes
+                for (Hex h : aGameBoardManager.getHexes()) {
+                    if (h.getDiceNumber() != 2 && h.getDiceNumber() != 6 && h.getDiceNumber() != 8 && h.getDiceNumber() != 12 && h.getDiceNumber() != 0) {
+                        validHexes.add(h);
+                    }
+                }
+                
+                MultiStepMove playInventor = new MultiStepMove();
+                
+                playInventor.<Hex>addMove(chosenFirstHex -> {
+                    final Hex firstHex = chosenFirstHex;
+                    validHexes.remove(chosenFirstHex);
+                    aSessionController.getSessionScreen().initChooseHexMove(validHexes, playInventor);
+                    
+                    playInventor.<Hex>addMove(chosenSecondHex -> {
+                        int firstDiceNumber = firstHex.getDiceNumber();
+                        firstHex.setDiceNumber(chosenSecondHex.getDiceNumber());
+                        chosenSecondHex.setDiceNumber(firstDiceNumber);
+                        aSessionController.getSessionScreen().interractionDone();
+                    });
+                    
+                });
+                
+                aSessionController.getSessionScreen().initChooseHexMove(validHexes, playInventor);
+                
                 break;
             case IRRIGATION:
                 int numGrainCards = 0;

@@ -21,6 +21,7 @@ import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.moves.MultiStepInitMove;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.ui.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;

@@ -1,6 +1,6 @@
 package com.mygdx.catan.request;
 
-import com.mygdx.catan.Player;
+import com.mygdx.catan.player.Player;
 
 /**
  * Requests the server to tell every client to update the Old Boot Owner.

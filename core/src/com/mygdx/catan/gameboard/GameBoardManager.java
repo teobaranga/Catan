@@ -1,7 +1,7 @@
 package com.mygdx.catan.gameboard;
 
 import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.Player;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.enums.*;
 
 import java.util.ArrayList;

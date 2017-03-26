@@ -13,6 +13,7 @@ import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.*;
 import com.mygdx.catan.moves.Move;
 import com.mygdx.catan.moves.MultiStepMove;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.DiceRolled;
 
@@ -1017,10 +1018,6 @@ public class SessionController {
         return random.rollTwoDice();
     }
 
-    private EventKind rollEventDie() {
-        return random.rollEventDie();
-    }
-
     private void barbarianHandleAttack() {
 
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
@@ -1033,10 +1030,12 @@ public class SessionController {
            }
         }
 
+        System.out.println(String.format("Barbarians vs Catan: %d : %d", barbarianStrength, activeKnightStrength));
+
         if (barbarianStrength > activeKnightStrength) {
             //barbarians win
             int minKnightLevel = Integer.MAX_VALUE;
-            List<Player> worstPlayers = new ArrayList<Player>();
+            List<Player> worstPlayers = new ArrayList<>();
 
             for (Player p : aSessionManager.getPlayers()) {
                 for (Village v : p.getVillages()) {
@@ -1231,6 +1230,8 @@ public class SessionController {
         Pair<Integer, Integer> diceResults = rollTwoDice();
         RollDice request = null;
 
+//        aSessionManager.setCurrentPhase(TURN_FIRST_PHASE); // TODO REMOVE THIS
+
         switch (aSessionManager.getCurrentPhase()) {
             case SETUP_PHASE_ONE:
                 // We're at the phase where we have to determine who rolled the highest number
@@ -1240,7 +1241,9 @@ public class SessionController {
             case TURN_FIRST_PHASE:
                 // We're at the phase where we the player rolls the dice and everyone gets appropriate resources
                 // Roll the event die as well
-                EventKind eventDieResult = rollEventDie();
+                EventKind eventDieResult = random.rollEventDieBarbarian(); // TODO roll using the correct method
+
+//                aSessionManager.getSession().barbarianPosition = 1;
 
                 if (eventDieResult == EventKind.BARBARIAN) {
                     aSessionManager.decreaseBarbarianPosition();
@@ -1249,6 +1252,8 @@ public class SessionController {
                         barbarianHandleAttack();
                     }
                 }
+
+                aSessionScreen.addGameMessage(String.format("Rolled a %d %d %s", diceResults.getLeft(), diceResults.getRight(), eventDieResult));
 
                 // Create the message that informs the other users of the dice roll
                 request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());

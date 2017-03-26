@@ -39,8 +39,10 @@ public class Player {
         villages = new ArrayList<>();
         knights = new ArrayList<>();
         resourceMap = new ResourceMap();
+        fishTokenHand = new FishTokenMap();
         hand = new EnumMap<>(ProgressCardType.class);
-        fishTokenHand = new EnumMap<>(FishTokenType.class);
+
+
         // Set the default number of available pieces
         tokenVictoryPoints = 0;
         availableSettlements = 5;
@@ -246,12 +248,7 @@ public class Player {
 	}*/
 
 	public void addFishToken(FishTokenType type) {
-	    if (fishTokenHand.get(type) == null) {
-            fishTokenHand.put(type, fishTokenHand.get(type) + 1);
-        } else {
-	        fishTokenHand.put(type, 1);
-        }
-
+        fishTokenHand.merge(type, 1, (a, b) -> a + b);
     }
 
     public EnumMap<FishTokenType, Integer> getFishTokenHand() {

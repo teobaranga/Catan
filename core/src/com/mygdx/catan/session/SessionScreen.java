@@ -116,9 +116,12 @@ public class SessionScreen implements Screen {
     /**
      * Fish Count table
      */
-    private Table fishCount;
-    private Label fishCountLabel;
-
+    private Table oneFishCount;
+    private Table twoFishCount;
+    private Table threeFishCount;
+    private Label oneFishCountLabel;
+    private Label twoFishCountLabel;
+    private Label threeFishCountLabel;
     /**
      * Table to show the Old Boot Owner.
      */
@@ -277,25 +280,13 @@ public class SessionScreen implements Screen {
         }
 
         resourcesTable.pack();
-        resourcesTable.setPosition(Gdx.graphics.getWidth() / 2 - resourcesTable.getWidth() / 2, 10);
+        resourcesTable.setPosition(Gdx.graphics.getWidth() / 2 - resourcesTable.getWidth()* 3 / 4, 10);
 
         //fish table
-        fishCount = new Table(CatanGame.skin);
-        fishCountLabel = new Label("",CatanGame.skin);
-        Label fishResource = new Label("Fish", CatanGame.skin);
         Table fishTable = new Table(CatanGame.skin);
-
-        fishCount.add(fishResource).row();
-        fishCount.add(fishCountLabel).row();
-        fishCount.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
-        fishTable.add(fishCount).width(60).height(60).pad(5);
-
-        fishTable.setBackground("resTableBackground");
-        fishTable.pad(10);
-        fishTable.pack();
+        initFishTable(fishTable);
         fishTable.setPosition(resourcesTable.getX() + resourcesTable.getWidth() + 25, 10);
 
-        updateFishTable(0);
 
         // menu table
         Table menuTable = new Table(CatanGame.skin);
@@ -863,6 +854,87 @@ public class SessionScreen implements Screen {
         });
     }
 
+    private void getValidEdgePosition(EdgeUnitKind kind) {
+        if (kind == EdgeUnitKind.ROAD) {
+            for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
+                for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
+                    if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i, j)) {
+
+                        Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
+                        validEdges.add(edge);
+
+                        for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                            if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                                validEdges.remove(edge);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
+                for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
+                    if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
+
+                        Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
+                        validEdges.add(edge);
+
+                        for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                            if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                                validEdges.remove(edge);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    public void buildEdgeUnitForFree(EdgeUnitKind kind){
+        // create a MultiStepMove and set session screen current multistepmove
+        currentlyPerformingMove = new MultiStepMove();
+
+        if (aMode != SessionScreenModes.CHOOSEEDGEMODE) {
+            // the following loop go through requested valid build positions
+            getValidEdgePosition(kind);
+
+            // adds move that will build the village at chosen intersection
+            currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenEdge -> {
+                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, true);
+
+                aMode = SessionScreenModes.CHOOSEACTIONMODE;
+
+                // re-enable all appropriate actions
+                if (aSessionController.isMyTurn()) {
+                    enablePhase(aSessionController.getCurrentGamePhase());
+                }
+            });
+
+            // make a sprite that highlights the areas
+            if (kind == EdgeUnitKind.ROAD) {
+                for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
+                    highlightedPositions.add(gamePieces.createRoad(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                }
+            } else {
+                for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
+                    highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                }
+            }
+            aMode = SessionScreenModes.CHOOSEEDGEMODE;
+            // edgePieceKind = kind;
+        } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
+            validEdges.clear();
+            highlightedPositions.clear();
+            aMode = SessionScreenModes.CHOOSEACTIONMODE;
+            // re-enable all appropriate actions
+            if (aSessionController.isMyTurn()) {
+                enablePhase(aSessionController.getCurrentGamePhase());
+            }
+        }
+    }
+
+
     private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind, String buttonText) {
         buildButton.addListener(new ChangeListener() {
             @Override
@@ -881,39 +953,7 @@ public class SessionScreen implements Screen {
 
                 if (aMode != SessionScreenModes.CHOOSEEDGEMODE) {
                     // the following loop go through requested valid build positions
-                    if (kind == EdgeUnitKind.ROAD) {
-                        for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
-                            for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
-                                if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i, j)) {
-
-                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
-                                    validEdges.add(edge);
-
-                                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
-                                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
-                                            validEdges.remove(edge);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
-                            for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
-                                if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
-
-                                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
-                                    validEdges.add(edge);
-
-                                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
-                                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
-                                            validEdges.remove(edge);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    getValidEdgePosition(kind);
 
                  // adds move that will build the village at chosen intersection
                     currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenEdge -> {
@@ -1640,8 +1680,39 @@ public class SessionScreen implements Screen {
         }
     }
 
-    void updateFishTable(int newFishCount) {
-        fishCountLabel.setText("" + newFishCount);
+    void initFishTable(Table fishTable) {
+        oneFishCount = new Table(CatanGame.skin);
+        twoFishCount = new Table(CatanGame.skin);
+        threeFishCount  = new Table(CatanGame.skin);
+        oneFishCountLabel = new Label("0",CatanGame.skin);
+        twoFishCountLabel = new Label("0",CatanGame.skin);
+        threeFishCountLabel = new Label("0",CatanGame.skin);
+
+        oneFishCount.add(new Label("1 fish", CatanGame.skin)).row();
+        twoFishCount.add(new Label("2 fish", CatanGame.skin)).row();
+        threeFishCount.add(new Label("3 fish", CatanGame.skin)).row();
+        oneFishCount.add(oneFishCountLabel).row();
+        twoFishCount.add(twoFishCountLabel).row();
+        threeFishCount.add(threeFishCountLabel).row();
+
+        oneFishCount.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
+        twoFishCount.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
+        threeFishCount.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
+
+        fishTable.add(oneFishCount).width(60).height(60).pad(5);
+        fishTable.add(twoFishCount).width(60).height(60).pad(5);
+        fishTable.add(threeFishCount).width(60).height(60).pad(5);
+
+        fishTable.setBackground("resTableBackground");
+        fishTable.pad(10);
+        fishTable.pack();
+
+    }
+
+    void updateFishTable(Map<FishTokenType, Integer> newTokenCount) {
+            oneFishCountLabel.setText(newTokenCount.get(FishTokenType.ONE_FISH) + "");
+            twoFishCountLabel.setText(newTokenCount.get(FishTokenType.TWO_FISH) + "");
+            threeFishCountLabel.setText(newTokenCount.get(FishTokenType.THREE_FISH) + "");
     }
 
     void updateBootOwner(Player player) {

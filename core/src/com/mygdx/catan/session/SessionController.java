@@ -20,8 +20,10 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static com.mygdx.catan.enums.GamePhase.*;
 import static com.mygdx.catan.enums.ResourceKind.*;
@@ -1198,6 +1200,10 @@ public class SessionController {
                         break;
                     case GOLDFIELD:
                         break;
+                    case FISHERY:
+                           getFishToken();
+                           aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());
+                        break;
                     default:
                         break;
                 }
@@ -1356,6 +1362,39 @@ public class SessionController {
             CatanGame.client.sendTCP(request);
         } else {
             localPlayer.addFishToken(type);
+        }
+    }
+
+    void fishActionHandle(EnumMap<FishTokenType, Integer> consumedFishToken) {
+        int fishCount = 0;
+        localPlayer.removeFishToken(consumedFishToken);
+        for (Map.Entry<FishTokenType, Integer> entry: consumedFishToken.entrySet()) {
+            switch(entry.getKey()){
+                case ONE_FISH:
+                    fishCount += entry.getValue();
+                    break;
+                case TWO_FISH:
+                    fishCount += entry.getValue() * 2;
+                    break;
+                case THREE_FISH:
+                    fishCount += entry.getValue() * 3;
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (fishCount >= 7) {
+            localPlayer.addProgressCard(aGameBoardManager.drawProgressCard());  // TODO use UI window to let player choose between Progress Card types
+        } else if (fishCount >= 5) {
+            aSessionScreen.buildEdgeUnitForFree(EdgeUnitKind.ROAD); // TODO use UI window to let player choose between ROAD and SHIP
+        } else if (fishCount >= 4) {
+            //take a chosen resource from the bank;
+        } else if (fishCount >= 3) {
+            //stealResource();
+        } else if (fishCount >= 2) {
+            //moveRobberOutOfBoard()
+        } else {
+            throw new RuntimeException("wrong number of fish was given");
         }
     }
 }

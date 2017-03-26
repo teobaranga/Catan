@@ -40,11 +40,12 @@ public class Config {
         kryo.register(Player.class);
         kryo.register(Player[].class);
         kryo.register(ResourceKind.class);
+        kryo.register(ResourceMap.class);
         kryo.register(ProgressCardType.class);
         kryo.register(FishTokenType.class);
+        kryo.register(FishTokenMap.class);
         kryo.register(VillageKind.class);
         kryo.register(EdgeUnitKind.class);
-        kryo.register(ResourceMap.class);
         kryo.register(EventKind.class);
         kryo.register(GamePhase.class);
         kryo.register(com.mygdx.catan.game.Game.class);

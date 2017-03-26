@@ -156,12 +156,12 @@ public class SessionController {
                         Pair<Integer, Integer> originsecondCor = shipMoved.getOriginrightPos();
                         Pair<Integer, Integer> newfirstCor = shipMoved.getnewleftPos();
                         Pair<Integer, Integer> newsecondCor = shipMoved.getnewrightPos();
-                        
+
                         CoordinatePair originfirstPos = aGameBoardManager.getCoordinatePairFromCoordinates(originfirstCor.getLeft(), originfirstCor.getRight());
                         CoordinatePair originsecondPos = aGameBoardManager.getCoordinatePairFromCoordinates(originsecondCor.getLeft(), originsecondCor.getRight());
                         CoordinatePair newfirstPos = aGameBoardManager.getCoordinatePairFromCoordinates(newfirstCor.getLeft(), newfirstCor.getRight());
                         CoordinatePair newsecondPos = aGameBoardManager.getCoordinatePairFromCoordinates(newsecondCor.getLeft(), newsecondCor.getRight());
-                        
+
                         moveShip(originfirstPos, originsecondPos, newfirstPos, newsecondPos, shipMoved.getOwner(), true);
                     });
                 } else if (object instanceof EndTurn) {
@@ -331,11 +331,11 @@ public class SessionController {
     public PlayerColor getPlayerColor() {
         return aPlayerColor;
     }
-    
+
     public GamePhase getCurrentGamePhase() {
         return aSessionManager.getCurrentPhase();
     }
-    
+
     /**
      * @return true iff it is the client's turn
      * */
@@ -613,20 +613,20 @@ public class SessionController {
         return validShipEndpoints;
         // same as above but with no edges that are in land can be chosen
     }
-    
+
     /**
      * @param owner of requested valid intersections
      * @return a list of all ships that the owner may move
      * */
     public ArrayList<EdgeUnit> requestValidShips(PlayerColor owner) {
-    	
+
     	Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
     	ArrayList<EdgeUnit> validShips = new ArrayList<EdgeUnit>();
-    	
-    	
+
+
     	for (EdgeUnit eu : currentP.getRoadsAndShips()) {
     		boolean isMoveable = (eu.getKind() == EdgeUnitKind.SHIP);
-    		
+
     		// verifies that eu is not in between two other edge units
     		if (isMoveable) {
     			for (EdgeUnit firstAdjacentEu : currentP.getRoadsAndShips()) {
@@ -642,10 +642,10 @@ public class SessionController {
             		}
         		}
     		}
-    		
+
     		if (isMoveable) { validShips.add(eu); }
     	}
-    	
+
     	return validShips;
     }
 
@@ -815,8 +815,8 @@ public class SessionController {
         //TODO: as described above
         return false;
     }
-    
-    
+
+
     /**
      * Finds the owner's ship at <firstOriginPos,secondOriginPos> and updates its coordinates to <newFirstPos,newSecondPos>, assets that EdgeUnit at origin positions is a ship
      * @param firstOriginPos  first coordinate of ship to move
@@ -830,13 +830,13 @@ public class SessionController {
     public boolean moveShip(CoordinatePair firstOriginPos, CoordinatePair secondOriginPos, CoordinatePair newFirstPos, CoordinatePair newSecondPos, PlayerColor owner, boolean fromPeer) {
     	Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
     	EdgeUnit shipToMove = null;
-    	
+
     	for (EdgeUnit eu : currentP.getRoadsAndShips()) {
     		if (eu.hasEndpoint(firstOriginPos) && eu.hasEndpoint(secondOriginPos)) {
     			shipToMove = eu;
     		}
     	}
-    	
+
     	if (shipToMove == null) {
     		return false;
     	} else {
@@ -852,14 +852,14 @@ public class SessionController {
     		    // remove old position of ship from client GUI
                 aSessionScreen.removeEdgeUnit(firstOriginPos.getLeft(), firstOriginPos.getRight(), secondOriginPos.getLeft(), secondOriginPos.getRight());
     		}
-    		
+
     		shipToMove.moveShip(newFirstPos, newSecondPos);
             aSessionScreen.updateEdge(newFirstPos, newSecondPos, EdgeUnitKind.SHIP, owner);
-    		
+
     		return true;
     	}
     }
-    
+
     public void buildInitialVillageAndRoad(CoordinatePair villagePos, CoordinatePair firstEdgePos, CoordinatePair secondEdgePos, VillageKind kind, EdgeUnitKind edgeKind) {
     	 if (kind == VillageKind.CITY) {
              buildVillage(villagePos, VillageKind.SETTLEMENT, getPlayerColor(), false, true);
@@ -871,7 +871,7 @@ public class SessionController {
 
          buildEdgeUnit(getPlayerColor(), firstEdgePos, secondEdgePos, edgeKind, false, true);
     }
-    
+
     void distributeInitialResources(CoordinatePair cityPos) {
         List<Hex> neighbouringHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
         Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
@@ -1014,13 +1014,13 @@ public class SessionController {
     private Pair<Integer, Integer> rollTwoDice() {
         return random.rollTwoDice();
     }
-    
+
     private EventKind rollEventDie() {
         return random.rollEventDie();
     }
 
     private void barbarianHandleAttack() {
-        
+
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
         int activeKnightStrength = 0;
 
@@ -1030,12 +1030,12 @@ public class SessionController {
                activeKnightStrength += activeKnight.getStrength();
            }
         }
-        
+
         if (barbarianStrength > activeKnightStrength) {
             //barbarians win
-            int minKnightLevel = Integer.MAX_VALUE; 
+            int minKnightLevel = Integer.MAX_VALUE;
             List<Player> worstPlayers = new ArrayList<Player>();
-            
+
             for (Player p : aSessionManager.getPlayers()) {
                 for (Village v : p.getVillages()) {
                     VillageKind vk = v.getVillageKind();
@@ -1058,7 +1058,7 @@ public class SessionController {
             //TODO: get cities to pillage from barbarians and pillage. deal with city walls.
             for (Player p : worstPlayers) {
                 //TODO:send message to worstplayer to select a city
-                
+
                 ArrayList<CoordinatePair> validCityIntersections = new ArrayList<>();
                 List<Village> listOfVillages = p.getVillages();
                 for (Village v : listOfVillages) {
@@ -1066,7 +1066,7 @@ public class SessionController {
                         validCityIntersections.add(v.getPosition());
                     }
                 }
-                
+
                 MultiStepMove pillageVillageMove = new MultiStepMove();
                 pillageVillageMove.addMove(new Move<CoordinatePair>() {
 
@@ -1086,11 +1086,11 @@ public class SessionController {
                         //unlock gui
                         aSessionScreen.interractionDone();
                     }
-                    
+
                 });
                 aSessionScreen.initChooseIntersectionMove(validCityIntersections, pillageVillageMove);
             }
-       
+
         } else if (activeKnightStrength >= barbarianStrength) {
             //islanders win
             int maxKnightLevel = 0;
@@ -1122,7 +1122,7 @@ public class SessionController {
                 for (Player bp : bestPlayers) {
                     MultiStepMove handleProgressCardKind = new MultiStepMove();
                     handleProgressCardKind.addMove(new Move<ProgressCardKind>() {
-                         
+
                         @Override
                         public void doMove(ProgressCardKind kind) {
                             //get type and handle it accordingly
@@ -1130,16 +1130,16 @@ public class SessionController {
                             if (kind == ProgressCardKind.POLITICS) {
                                 card = aGameBoardManager.drawPoliticsProgressCard();
                             } else if (kind == ProgressCardKind.TRADE) {
-                                card = aGameBoardManager.drawTradeProgressCard(); 
+                                card = aGameBoardManager.drawTradeProgressCard();
                             } else {
                                 card = aGameBoardManager.drawProgressCard();
                             }
-                            
+
                             aProgressCardHandler.handle(card, bp.getColor());
                             bp.addProgressCard(card);
                             //TODO: reflect changes in GUI
                             aSessionScreen.interractionDone();
-                        }  
+                        }
                     });
                     aSessionScreen.chooseProgressCardKind(handleProgressCardKind);
                 }
@@ -1147,7 +1147,7 @@ public class SessionController {
         } else {
             //regardless of outcome, barbarians go home. 
             aSessionManager.resetBarbarianPosition();
-        }   
+        }
     }
     private void resourceProduction(int diceRoll) {
         // Get the hexes having a dice number equal to the dice roll
@@ -1221,13 +1221,19 @@ public class SessionController {
      * Roll the dice according to the phase of the game/session.
      */
     void rollDice() {
+        // Roll the red and yellow dice
+        Pair<Integer, Integer> diceResults = rollTwoDice();
+        RollDice request = null;
+
         switch (aSessionManager.getCurrentPhase()) {
-            case TURN_FIRST_PHASE:
-                // We're at the phase where we the player rolls the dice and everyone gets appropriate resources
             case SETUP_PHASE_ONE:
                 // We're at the phase where we have to determine who rolled the highest number
-                // Roll the dice
-                Pair<Integer, Integer> diceResults = rollTwoDice();
+                // We don't need to do anything else
+                request = RollDice.newInstance(diceResults, CatanGame.account.getUsername());
+                break;
+            case TURN_FIRST_PHASE:
+                // We're at the phase where we the player rolls the dice and everyone gets appropriate resources
+                // Roll the event die as well
                 EventKind eventDieResult = rollEventDie();
 
                 if (eventDieResult == EventKind.BARBARIAN) {
@@ -1238,21 +1244,14 @@ public class SessionController {
                     }
                 }
 
-                // Inform the server / other users of the roll
-                RollDice request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
-                CatanGame.client.sendTCP(request);
-
-
-                break;
-            default:
-                // FIXME This is not good, pretend it doesn't exist (-Teo)
-                //Pair<Integer, Integer> roll = rollTwoDice();
-//                Map<Player, ResourceMap> resourceUpdateMap = getResourceUpdate(roll.getLeft() + roll.getRight());
-//                RollDice diceResourcesToSent = RollDice.newInstance(resourceUpdateMap, "Dummy");
-                //aSessionScreen.showDice(roll.getLeft(), roll.getRight());
-//                aSessionScreen.updateResourceBar(getOwnresourcesUpdate(resourceUpdateMap));
+                // Create the message that informs the other users of the dice roll
+                request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
                 break;
         }
+
+        // Inform the server / other users of the roll
+        if (request != null)
+            CatanGame.client.sendTCP(request);
     }
 
     /**

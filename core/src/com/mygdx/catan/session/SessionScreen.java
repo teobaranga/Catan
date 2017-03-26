@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
 import com.mygdx.catan.*;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
@@ -108,6 +109,9 @@ public class SessionScreen implements Screen {
      */
     private Table[] playersVP;
     private Label[] playersVPLabel;
+
+    /** Label displaying the current barbarian position */
+    private Label barbarianPositionLabel;
 
     /**
      * Fish Count table
@@ -454,6 +458,11 @@ public class SessionScreen implements Screen {
         });
         turnTable.add(endTurnButton).padBottom(10).row();
 
+        // Add the barbarian label
+        barbarianPositionLabel = new Label("Barbarian position: " + 0, CatanGame.skin);
+        barbarianPositionLabel.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 20f, Align.top);
+        aSessionStage.addActor(barbarianPositionLabel);
+
         // Add maritime trade button
         domesticTradeButton = new TextButton("Domestic Trade", CatanGame.skin);
         domesticTradeButton.addListener(new ChangeListener() {
@@ -625,6 +634,11 @@ public class SessionScreen implements Screen {
 
         // Begin the game
         aSessionController.checkIfMyTurn();
+    }
+
+    /** Update the label display the current barbarian position */
+    void updateBarbarianPosition(int newDistance) {
+        barbarianPositionLabel.setText("Barbarian position: " + newDistance);
     }
 
     /**

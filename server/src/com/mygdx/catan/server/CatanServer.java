@@ -107,6 +107,28 @@ class CatanServer {
                 } else if (object instanceof CreateGame) {
                     response = createNewGame(connection, ((CreateGame) object).account);
                 }
+                
+                if (object instanceof TargetedRequest) {
+                    final TargetedRequest targetedRequest = (TargetedRequest) object;
+                    Object targetedResponse = targetedRequest;
+                    
+                    // Get the peers of the client that sent the request
+                    Game game = gamesMap.get(targetedRequest.sender);
+                    if (game != null) { 
+                        if (targetedRequest instanceof TargetedChooseResourceCardRequest) {
+                            targetedResponse = ChooseResourceCardRequest.newInstance(((TargetedChooseResourceCardRequest) targetedRequest).getNumberOfCards(), targetedRequest.sender);
+                        }
+                    
+                        for (Account peer : game.peers.keySet()) {
+                            // send message when target is found
+                            if (peer.getUsername().equals(targetedRequest.target)) {
+                             // Forward the object (message) to the peer
+                                server.sendToTCP(game.peers.get(peer), targetedResponse); 
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 // Handle the messages sent to multiple players
                 if (object instanceof ForwardedRequest) {

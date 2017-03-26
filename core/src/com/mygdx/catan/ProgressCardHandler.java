@@ -11,7 +11,9 @@ import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.BuildIntersection;
+import com.mygdx.catan.request.GiveResources;
 import com.mygdx.catan.request.SwitchHexDiceNumbers;
+import com.mygdx.catan.request.TargetedChooseResourceCardRequest;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
 
@@ -219,6 +221,21 @@ public class ProgressCardHandler {
             case WARLORD:
                 break;
             case WEDDING:
+                ArrayList<Player> playerWithMoreVP = new ArrayList<>();
+                
+                // adds all the players with more VP points than current player
+                for (Player p : aSessionManager.getPlayers()) {
+                    if (!p.equals(currentP) /*&& aSessionController.currentVP(p) > aSessionController.currentVP(currentP)*/) {
+                          playerWithMoreVP.add(p);
+                    }
+                }
+                
+                // sends a targeted request to each player with more VP
+                for (Player p : playerWithMoreVP) {
+                    TargetedChooseResourceCardRequest request = TargetedChooseResourceCardRequest.newInstance(2, CatanGame.account.getUsername(), p.getUsername());
+                    CatanGame.client.sendTCP(request);
+                }
+                
                 break;
             case COMMERCIALHARBOUR:
                 break;

@@ -177,6 +177,44 @@ public class SessionController {
                       firstHex.setDiceNumber(secondHex.getDiceNumber());
                       secondHex.setDiceNumber(firstHexNumberToken);
                   });  
+                } else if (object instanceof ChooseResourceCardRequest) {
+                  Gdx.app.postRunnable(() -> {
+                      final ChooseResourceCardRequest chooseResources = (ChooseResourceCardRequest) object;
+                      
+                      Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
+                      
+                      MultiStepMove chooseResourceCards = new MultiStepMove();
+                      chooseResourceCards.<ResourceMap>addMove(map -> {
+                          clientPlayer.removeResources(map);
+                          aSessionScreen.updateResourceBar(clientPlayer.getResources());
+                          
+                          // send targeted message to username player
+                          GiveResources request = GiveResources.newInstance(map, CatanGame.account.getUsername(), chooseResources.username);
+                          CatanGame.client.sendTCP(request);
+                          
+                          aSessionScreen.interractionDone();
+                      });
+                      
+                      int resourcesToChoose = chooseResources.getNumberOfCards();
+                      // if client player has less than requested number of resources, it is set to hand size
+                      if (clientPlayer.getResourceHandSize() < resourcesToChoose) { resourcesToChoose = clientPlayer.getResourceHandSize(); }
+                      
+                      if (resourcesToChoose > 0) {
+                          aSessionScreen.addGameMessage(chooseResources.username + " has requested that you choose " + resourcesToChoose + " resources from your hand");
+                          aSessionScreen.chooseMultipleResource(clientPlayer.getResources(), resourcesToChoose, chooseResourceCards);
+                      }
+                      
+                  });  
+                } else if (object instanceof GiveResources) {
+                    Gdx.app.postRunnable(() -> {
+                        final GiveResources resourcesGiven = (GiveResources) object;
+                        aSessionScreen.addGameMessage(resourcesGiven.sender + " gave you resources");
+                        
+                        Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
+                        clientPlayer.addResources(resourcesGiven.getResources());
+                        aSessionScreen.updateResourceBar(clientPlayer.getResources());
+                        
+                    });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
                         System.out.println(((EndTurn) object).username + " ended their turn");

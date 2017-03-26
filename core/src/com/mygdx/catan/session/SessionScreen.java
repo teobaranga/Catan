@@ -442,7 +442,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.INVENTOR);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.WEDDING);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
         
@@ -700,7 +700,7 @@ public class SessionScreen implements Screen {
         // transfers all the valid intersections of validIntersections, and highlights each position on the board
         for (Hex h : valid) {
             validHexes.add(h);
-            highlightedPositions.add(gamePieces.createHighlightedIntersection(h.getLeftCoordinate(), h.getRightCoordinate(), OFFX, OFFY*2, LENGTH, aSessionController.getPlayerColor()));
+            highlightedPositions.add(gamePieces.createHighlightedIntersection(h.getLeftCoordinate(), h.getRightCoordinate(), OFFX, OFFY*2, LENGTH, PlayerColor.WHITE));
         }
         
         // sets the currently performing move attribute to given move.

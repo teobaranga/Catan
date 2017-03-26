@@ -64,6 +64,10 @@ public class Config {
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
         kryo.register(ForwardedRequest.class);
+        kryo.register(TargetedRequest.class);
+        kryo.register(ChooseResourceCardRequest.class);
+        kryo.register(TargetedChooseResourceCardRequest.class);
+        kryo.register(GiveResources.class);
         kryo.register(LeaveGame.class);
         kryo.register(PlayerJoined.class);
         kryo.register(PlayerLeft.class);

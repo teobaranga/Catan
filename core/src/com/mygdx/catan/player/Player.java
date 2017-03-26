@@ -13,6 +13,7 @@ import com.mygdx.catan.gameboard.Village;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Player {
@@ -292,8 +293,17 @@ public class Player {
         throw new RuntimeException("chooseResourceIndex not yet implemented");
     }
 
-    public int getHandSize() {
-        throw new RuntimeException("getHandSize not yet implemented");
+    /**
+     * @return number of resource cards in the player's hand
+     * */
+    public int getResourceHandSize() {
+        int handSize = 0;
+        
+        for (Map.Entry<ResourceKind, Integer> entry : resourceMap.entrySet()) {
+            handSize += entry.getValue();
+        }
+        
+        return handSize;
     }
 
     public ResourceKind chooseResourceType() {

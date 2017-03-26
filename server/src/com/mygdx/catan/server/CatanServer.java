@@ -14,7 +14,7 @@ import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
 import com.mygdx.catan.session.Session;
 import com.mygdx.catan.session.SessionManager;
-import org.apache.commons.lang3.tuple.Pair;
+import com.mygdx.catan.ui.DiceRollPair;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -243,7 +243,7 @@ class CatanServer {
         return GameResponse.newInstance(game);
     }
 
-    private DiceRolled handleDiceRoll(String username, Pair<Integer, Integer> dice) {
+    private DiceRolled handleDiceRoll(String username, DiceRollPair dice) {
         final Game game = gamesMap.get(username);
         if (!game.isInProgress())
             return null;
@@ -255,7 +255,7 @@ class CatanServer {
                 sessionManager.updateDiceRollPlayersCount();
                 // Update the highest-roll player if necessary
                 // Compare the dice rolls
-                final int roll = dice.getLeft() + dice.getRight();
+                final int roll = dice.getRed() + dice.getYellow();
                 final int highestDiceRoll = sessionManager.getHighestDiceRoll();
                 if (roll > highestDiceRoll) {
                     // Update the highest dice roll

@@ -30,7 +30,7 @@ public class Player {
     private ResourceMap resourceMap;
     private CityImprovements cityImprovements;
     private EnumMap<ProgressCardType, Integer> hand;
-    private EnumMap<FishTokenType, Integer> fishTokenHand;
+    private FishTokenMap fishTokenHand;
 
     private int availableSettlements;
     private int availableCities;
@@ -258,7 +258,7 @@ public class Player {
         fishTokenHand.merge(type, 1, (a, b) -> a + b);
     }
 
-    public EnumMap<FishTokenType, Integer> getFishTokenHand() {
+    public FishTokenMap getFishTokenHand() {
         return fishTokenHand;
     }
 

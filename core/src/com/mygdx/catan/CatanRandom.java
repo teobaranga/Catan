@@ -1,8 +1,7 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.EventKind;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import com.mygdx.catan.ui.DiceRollPair;
 
 import java.util.Random;
 
@@ -21,9 +20,13 @@ public class CatanRandom {
         return instance;
     }
 
-    /** Get two random dice rolls */
-    public Pair<Integer, Integer> rollTwoDice() {
-        return new ImmutablePair<>(nextDie(), nextDie());
+    /**
+     * Get a pair of integers representing the roll of the red and yellow dice.
+     *
+     * @return a pair of integers, first one being the red die, second one being the yellow die
+     */
+    public DiceRollPair rollTwoDice() {
+        return DiceRollPair.newRoll(nextDie(), nextDie());
     }
 
     /** Get a random event */

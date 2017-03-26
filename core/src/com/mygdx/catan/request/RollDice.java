@@ -1,8 +1,7 @@
 package com.mygdx.catan.request;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.mygdx.catan.enums.EventKind;
+import com.mygdx.catan.ui.DiceRollPair;
 
 /**
  * Request indicating that the sender player rolled the dice.
@@ -10,10 +9,10 @@ import com.mygdx.catan.enums.EventKind;
 public class RollDice extends ForwardedRequest {
 
     /** Pair of integers representing the red and yellow die values */
-    private Pair<Integer, Integer> rollResult;
+    private DiceRollPair rollResult;
     private EventKind eventDieResult;
 
-    public static RollDice newInstance(Pair<Integer, Integer> result, String username) {
+    public static RollDice newInstance(DiceRollPair result, String username) {
         RollDice request = new RollDice();
         
         request.rollResult = result;
@@ -22,7 +21,7 @@ public class RollDice extends ForwardedRequest {
         return request;
     }
     
-    public static RollDice newInstance(Pair<Integer, Integer> result, EventKind eventResult, String username) {
+    public static RollDice newInstance(DiceRollPair result, EventKind eventResult, String username) {
         RollDice request = new RollDice();
         request.eventDieResult = eventResult;
         request.rollResult = result;
@@ -32,7 +31,7 @@ public class RollDice extends ForwardedRequest {
     }
     
     
-    public Pair<Integer, Integer> getRollResult() {
+    public DiceRollPair getRollResult() {
         return rollResult;
     }
     

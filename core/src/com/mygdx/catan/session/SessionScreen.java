@@ -84,9 +84,9 @@ public class SessionScreen implements Screen {
     /**
      * The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE
      */
-    private ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
-    private ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
-    private ArrayList<Hex> validHexes = new ArrayList<>();
+    private ArrayList<CoordinatePair> validIntersections;
+    private ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges;
+    private ArrayList<Hex> validHexes;
 
     // Menu Buttons
     private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton, buildKnightButton;
@@ -95,9 +95,7 @@ public class SessionScreen implements Screen {
     private TextButton moveShipButton;
     private TextButton playProgressCardButton;
 
-    /**
-     * A table that keeps track of game messages, mostly used for debugging
-     */
+    /** A table that keeps track of game messages, mostly used for debugging */
     private ScrollPane gameLog;
 
     /**
@@ -152,6 +150,9 @@ public class SessionScreen implements Screen {
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
         aSessionController = new SessionController(this);
+        validIntersections = new ArrayList<>();
+        validEdges = new ArrayList<>();
+        validHexes = new ArrayList<>();
         boardHexes = new ArrayList<>();
         boardHarbours = new ArrayList<>();
         villages = new ArrayList<>();
@@ -1686,9 +1687,6 @@ public class SessionScreen implements Screen {
         availableShips.setText("Available Ships: " + newAvailShips);
     }
 
-    /**
-     *
-     */
     public void showDice(int yellowDice, int redDice) {
 
         Table yellow = new Table();
@@ -1745,13 +1743,12 @@ public class SessionScreen implements Screen {
         fishTable.setBackground("resTableBackground");
         fishTable.pad(10);
         fishTable.pack();
-
     }
 
-    void updateFishTable(Map<FishTokenType, Integer> newTokenCount) {
-            oneFishCountLabel.setText(newTokenCount.get(FishTokenType.ONE_FISH) + "");
-            twoFishCountLabel.setText(newTokenCount.get(FishTokenType.TWO_FISH) + "");
-            threeFishCountLabel.setText(newTokenCount.get(FishTokenType.THREE_FISH) + "");
+    void updateFishTable(FishTokenMap newTokenCount) {
+            oneFishCountLabel.setText(newTokenCount.getOneFish() + "");
+            twoFishCountLabel.setText(newTokenCount.getTwoFish() + "");
+            threeFishCountLabel.setText(newTokenCount.getThreeFish() + "");
     }
 
     void updateBootOwner(Player player) {

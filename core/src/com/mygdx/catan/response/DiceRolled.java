@@ -1,7 +1,7 @@
 package com.mygdx.catan.response;
 
 import com.mygdx.catan.session.Session;
-import org.apache.commons.lang3.tuple.Pair;
+import com.mygdx.catan.ui.DiceRollPair;
 
 /**
  * Response sent as result of a player rolling the dice.
@@ -15,18 +15,18 @@ public class DiceRolled implements Response {
     private String username;
 
     /** The sum of the dice numbers */
-    private Pair<Integer, Integer> diceRoll;
+    private DiceRollPair diceRoll;
 
     private Session session;
 
-    public static DiceRolled newInstance(String username, Pair<Integer, Integer> diceRoll) {
+    public static DiceRolled newInstance(String username, DiceRollPair diceRoll) {
         final DiceRolled response = new DiceRolled();
         response.username = username;
         response.diceRoll = diceRoll;
         return response;
     }
 
-    public static DiceRolled newInstance(String username, Pair<Integer, Integer> diceRoll, Session session) {
+    public static DiceRolled newInstance(String username, DiceRollPair diceRoll, Session session) {
         final DiceRolled response = newInstance(username, diceRoll);
         response.session = session;
         return response;
@@ -36,7 +36,7 @@ public class DiceRolled implements Response {
         return username;
     }
 
-    public Pair<Integer, Integer> getDiceRoll() {
+    public DiceRollPair getDiceRoll() {
         return diceRoll;
     }
 

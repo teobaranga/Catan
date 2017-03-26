@@ -16,15 +16,11 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.DiceRolled;
-
+import com.mygdx.catan.ui.DiceRollPair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.mygdx.catan.enums.GamePhase.*;
 import static com.mygdx.catan.enums.ResourceKind.*;
@@ -85,7 +81,7 @@ public class SessionController {
                         // Inform the player of the dice roll
                         final DiceRolled diceRolled = (DiceRolled) object;
                         aSessionScreen.addGameMessage(diceRolled.getUsername() + " rolled a " + diceRolled.getDiceRoll());
-                        aSessionScreen.showDice(diceRolled.getDiceRoll().getLeft(), diceRolled.getDiceRoll().getRight());
+                        aSessionScreen.showDice(diceRolled.getDiceRoll().getRed(), diceRolled.getDiceRoll().getYellow());
 
                         switch (aSessionManager.getCurrentPhase()) {
                             case SETUP_PHASE_ONE:
@@ -100,7 +96,7 @@ public class SessionController {
                                 }
                                 break;
                             case TURN_FIRST_PHASE:
-                                resourceProduction(diceRolled.getDiceRoll().getLeft() + diceRolled.getDiceRoll().getRight());
+                                resourceProduction(diceRolled.getDiceRoll().getSum());
                                 endPhase(TURN_FIRST_PHASE);
                                 break;
                             default:
@@ -1023,15 +1019,6 @@ public class SessionController {
         return cost;
     }
 
-    /**
-     * Get a pair of integers representing the roll of the red and yellow dice.
-     *
-     * @return a pair of integers, first one being the red die, second one being the yellow die
-     */
-    private Pair<Integer, Integer> rollTwoDice() {
-        return random.rollTwoDice();
-    }
-
     private void barbarianHandleAttack() {
 
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
@@ -1241,7 +1228,7 @@ public class SessionController {
      */
     void rollDice() {
         // Roll the red and yellow dice
-        Pair<Integer, Integer> diceResults = rollTwoDice();
+        DiceRollPair diceResults = random.rollTwoDice();
         RollDice request = null;
 
 //        aSessionManager.setCurrentPhase(TURN_FIRST_PHASE); // TODO REMOVE THIS
@@ -1267,7 +1254,7 @@ public class SessionController {
                     }
                 }
 
-                aSessionScreen.addGameMessage(String.format("Rolled a %d %d %s", diceResults.getLeft(), diceResults.getRight(), eventDieResult));
+                aSessionScreen.addGameMessage(String.format("Rolled a %d %d %s", diceResults.getRed(), diceResults.getYellow(), eventDieResult));
 
                 // Create the message that informs the other users of the dice roll
                 request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());

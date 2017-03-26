@@ -8,6 +8,7 @@ import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
 import com.mygdx.catan.session.Session;
+import com.mygdx.catan.ui.DiceRollPair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.objenesis.strategy.SerializingInstantiatorStrategy;
 
@@ -42,6 +43,7 @@ public class Config {
         kryo.register(Player.class);
         kryo.register(CityImprovements.class);
         kryo.register(Player[].class);
+        kryo.register(DiceRollPair.class);
         kryo.register(ResourceKind.class);
         kryo.register(ResourceMap.class);
         kryo.register(ProgressCardType.class);

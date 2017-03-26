@@ -63,6 +63,10 @@ public class Player {
         player.color = color;
         return player;
     }
+    
+    public CityImprovements getCityImprovements() {
+        return cityImprovements;
+    }
 
     public int getAvailableSettlements() {
         return availableSettlements;
@@ -155,8 +159,16 @@ public class Player {
         this.defenderOfCatanPoints = defenderOfCatanPoints;
     }
 
-    public int getImprovementLevelByType(EventDie type) {
-        throw new RuntimeException("getImprovementLevelByType not yet implemented");
+    public int getImprovementLevelByType(EventKind eventDieResult) {
+        int level = 0;
+        if (eventDieResult == EventKind.SCIENCE) {
+            level = getCityImprovements().getScienceLevel();
+        } else if (eventDieResult == EventKind.TRADE) {
+            level = getCityImprovements().getTradeLevel();
+        } else if (eventDieResult == EventKind.POLITICS) {
+            level = getCityImprovements().getPoliticsLevel();
+        }
+        return level;
     }
 
     public int getTokenVictoryPoints() {

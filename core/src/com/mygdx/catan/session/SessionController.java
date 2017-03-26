@@ -39,6 +39,7 @@ public class SessionController {
 
     private final ProgressCardHandler aProgressCardHandler;
 
+    private final GameRules aGameRules;
     /** The random number generator for dice rolls */
     private final CatanRandom random;
 
@@ -59,7 +60,7 @@ public class SessionController {
         aTransactionManager = TransactionManager.getInstance(aSessionManager);
         tradeManager = TradeManager.getInstance(aTransactionManager);
         aProgressCardHandler = new ProgressCardHandler(this);
-
+        aGameRules = GameRules.getGameRulesInstance();
         aSessionScreen = sessionScreen;
 
         random = CatanRandom.getInstance();
@@ -169,51 +170,50 @@ public class SessionController {
                       aSessionScreen.addGameMessage(diceNumbersSwitched.username + " switched the number tokens of two hexes");
                       Pair<Integer,Integer> firstHexPos = diceNumbersSwitched.getFirstHex();
                       Pair<Integer,Integer> secondHexPos = diceNumbersSwitched.getSecondHex();
-                      
+
                       Hex firstHex = aGameBoardManager.getHexFromCoordinates(firstHexPos.getLeft(), firstHexPos.getRight());
                       Hex secondHex = aGameBoardManager.getHexFromCoordinates(secondHexPos.getLeft(), secondHexPos.getRight());
-                      
+
                       int firstHexNumberToken = firstHex.getDiceNumber();
                       firstHex.setDiceNumber(secondHex.getDiceNumber());
                       secondHex.setDiceNumber(firstHexNumberToken);
-                  });  
-                } else if (object instanceof ChooseResourceCardRequest) {
+                  });  } else if (object instanceof ChooseResourceCardRequest) {
                   Gdx.app.postRunnable(() -> {
                       final ChooseResourceCardRequest chooseResources = (ChooseResourceCardRequest) object;
-                      
+
                       Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
-                      
+
                       MultiStepMove chooseResourceCards = new MultiStepMove();
                       chooseResourceCards.<ResourceMap>addMove(map -> {
                           clientPlayer.removeResources(map);
                           aSessionScreen.updateResourceBar(clientPlayer.getResources());
-                          
+
                           // send targeted message to username player
                           GiveResources request = GiveResources.newInstance(map, CatanGame.account.getUsername(), chooseResources.username);
                           CatanGame.client.sendTCP(request);
-                          
+
                           aSessionScreen.interractionDone();
                       });
-                      
+
                       int resourcesToChoose = chooseResources.getNumberOfCards();
                       // if client player has less than requested number of resources, it is set to hand size
                       if (clientPlayer.getResourceHandSize() < resourcesToChoose) { resourcesToChoose = clientPlayer.getResourceHandSize(); }
-                      
+
                       if (resourcesToChoose > 0) {
                           aSessionScreen.addGameMessage(chooseResources.username + " has requested that you choose " + resourcesToChoose + " resources from your hand");
                           aSessionScreen.chooseMultipleResource(clientPlayer.getResources(), resourcesToChoose, chooseResourceCards);
                       }
-                      
-                  });  
+
+                  });
                 } else if (object instanceof GiveResources) {
                     Gdx.app.postRunnable(() -> {
                         final GiveResources resourcesGiven = (GiveResources) object;
                         aSessionScreen.addGameMessage(resourcesGiven.sender + " gave you resources");
-                        
+
                         Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
                         clientPlayer.addResources(resourcesGiven.getResources());
                         aSessionScreen.updateResourceBar(clientPlayer.getResources());
-                        
+
                     });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
@@ -260,6 +260,13 @@ public class SessionController {
                 } else if (object instanceof UpdateVP){
                     Gdx.app.postRunnable(() -> {
                         aSessionScreen.updateVpTables();
+                    });
+                } else if (object instanceof DrawProgressCard) {
+                    Gdx.app.postRunnable(() -> {
+                        DrawProgressCard drawProgressCard = (DrawProgressCard) object;
+                        ProgressCardType card = drawProgressCard.getCard();
+                        ProgressCardKind cardKind = aGameRules.getProgressCardKind(card);
+                        aGameBoardManager.removeProgressCard(card, cardKind);
                     });
                 }
             }
@@ -1057,6 +1064,39 @@ public class SessionController {
         return cost;
     }
 
+    //The event die yields a trade,science, or politics. eligible players choose progress card
+    private void eventDieProgressCardHandle(EventKind eventDieResult, int redDie) {
+        for (Player p : aSessionManager.getPlayers()) {
+
+            int level = p.getImprovementLevelByType(eventDieResult);
+            //player is eligible
+            if (redDie <= level) {
+                if (p.getProgressCardCount() != 4) {
+
+                    MultiStepMove chooseProgressCard = new MultiStepMove();
+                    chooseProgressCard.addMove(new Move<ProgressCardKind>() {
+
+                        @Override
+                        public void doMove(ProgressCardKind kind) {
+                            ProgressCardType card;
+                            if (kind == ProgressCardKind.TRADE) {
+                                card = aGameBoardManager.drawTradeProgressCard();
+                            } else if (kind == ProgressCardKind.POLITICS) {
+                                card = aGameBoardManager.drawPoliticsProgressCard();
+                            } else {
+                                card = aGameBoardManager.drawProgressCard();
+                            }
+                            aProgressCardHandler.handle(card, p.getColor());
+                            p.addProgressCard(card);
+                            CatanGame.client.sendTCP(DrawProgressCard.newInstance(card));
+                            aSessionScreen.interractionDone();
+                        }
+                    });
+                    aSessionScreen.chooseProgressCardKind(chooseProgressCard);
+                }
+            }
+        }
+    }
     private void barbarianHandleAttack() {
 
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
@@ -1095,7 +1135,7 @@ public class SessionController {
                     }
                 }
             }
-            //TODO: get cities to pillage from barbarians and pillage. deal with city walls.
+            //TODO: get cities to pillage from barbarians and village. deal with city walls.
             for (Player p : worstPlayers) {
                 //TODO:send message to worstplayer to select a city
 
@@ -1161,25 +1201,21 @@ public class SessionController {
                 //each eligible player will draw in CW order 1 card from any of the 3 PC decks
                 for (Player bp : bestPlayers) {
                     MultiStepMove handleProgressCardKind = new MultiStepMove();
-                    handleProgressCardKind.addMove(new Move<ProgressCardKind>() {
-
-                        @Override
-                        public void doMove(ProgressCardKind kind) {
-                            //get type and handle it accordingly
-                            ProgressCardType card;
-                            if (kind == ProgressCardKind.POLITICS) {
-                                card = aGameBoardManager.drawPoliticsProgressCard();
-                            } else if (kind == ProgressCardKind.TRADE) {
-                                card = aGameBoardManager.drawTradeProgressCard();
-                            } else {
-                                card = aGameBoardManager.drawProgressCard();
-                            }
-
-                            aProgressCardHandler.handle(card, bp.getColor());
-                            bp.addProgressCard(card);
-                            //TODO: reflect changes in GUI
-                            aSessionScreen.interractionDone();
+                    handleProgressCardKind.addMove((Move<ProgressCardKind>) kind -> {
+                        //get type and handle it accordingly
+                        ProgressCardType card;
+                        if (kind == ProgressCardKind.POLITICS) {
+                            card = aGameBoardManager.drawPoliticsProgressCard();
+                        } else if (kind == ProgressCardKind.TRADE) {
+                            card = aGameBoardManager.drawTradeProgressCard();
+                        } else {
+                            card = aGameBoardManager.drawProgressCard();
                         }
+
+                        aProgressCardHandler.handle(card, bp.getColor());
+                        bp.addProgressCard(card);
+                        CatanGame.client.sendTCP(DrawProgressCard.newInstance(card));
+                        aSessionScreen.interractionDone();
                     });
                     aSessionScreen.chooseProgressCardKind(handleProgressCardKind);
                 }
@@ -1290,6 +1326,8 @@ public class SessionController {
                         //barbarians attack!
                         barbarianHandleAttack();
                     }
+                } else if (eventDieResult == EventKind.TRADE || eventDieResult == EventKind.POLITICS || eventDieResult == EventKind.SCIENCE) {
+                    eventDieProgressCardHandle(eventDieResult, diceResults.getRed());
                 }
 
                 aSessionScreen.addGameMessage(String.format("Rolled a %d %d %s", diceResults.getRed(), diceResults.getYellow(), eventDieResult));

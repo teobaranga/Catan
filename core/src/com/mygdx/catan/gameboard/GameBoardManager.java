@@ -144,6 +144,10 @@ public class GameBoardManager {
         return true;
     }
 
+    public void removeProgressCard(ProgressCardType cardType, ProgressCardKind cardKind) {
+        aGameBoard.removeProgressCard(cardType, cardKind);
+    }
+
     /**
      * Builds the edge unit according to corresponding input. Adds the edge unit to the player's collection of edge units, as well as the gameboard's collection of edge units
      *

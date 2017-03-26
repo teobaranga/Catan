@@ -188,7 +188,17 @@ public class GameBoard {
 		return aTradeProgressCardStack.pop();
 	}
 
-    /**
+    public void removeProgressCard(ProgressCardType cardType, ProgressCardKind cardKind) {
+		if (cardKind == ProgressCardKind.POLITICS) {
+			aPoliticsProgressCardStack.remove(cardType);
+		} else if (cardKind == ProgressCardKind.SCIENCE) {
+			aScienceProgressCardStack.remove(cardType);
+		} else {
+			aTradeProgressCardStack.remove(cardType);
+		}
+	}
+
+	/**
      * @return top card of the Fish Token stack, null if empty
      */
 	public FishTokenType popFishTokenStack() {

@@ -73,6 +73,7 @@ public class Config {
         kryo.register(PlayerLeft.class);
         kryo.register(RollDice.class);
         kryo.register(DiceRolled.class);
+        kryo.register(DrawProgressCard.class);
         kryo.register(BuildIntersection.class);
         kryo.register(SwitchHexDiceNumbers.class);
         kryo.register(BuildEdge.class);

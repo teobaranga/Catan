@@ -368,6 +368,20 @@ public class GameBoardManager {
     	}
     	return null;
     }
+    
+    /**
+     * @param leftCoordinate x coordinate of hex
+     * @param rightCoordinate y coordinate of hex
+     * @return the hex with coordinates <x,y>, null if such an intersection does not exist
+     * */
+    public Hex getHexFromCoordinates(int leftCoordinate, int rightCoordinate) {
+        for (Hex hex : aGameBoard.getHexes()) {
+            if (hex.getLeftCoordinate() == leftCoordinate && hex.getRightCoordinate() == rightCoordinate) {
+                return hex;
+            }
+        }
+        return null;
+    }
 
 
     public int getVillagePoints(Player player) {

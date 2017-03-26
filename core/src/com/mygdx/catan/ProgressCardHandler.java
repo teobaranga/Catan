@@ -10,8 +10,12 @@ import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.request.BuildIntersection;
+import com.mygdx.catan.request.SwitchHexDiceNumbers;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -86,6 +90,13 @@ public class ProgressCardHandler {
                         firstHex.setDiceNumber(chosenSecondHex.getDiceNumber());
                         chosenSecondHex.setDiceNumber(firstDiceNumber);
                         aSessionController.getSessionScreen().interractionDone();
+                        
+                        // sends message to peers about hex number token change
+                        Pair<Integer,Integer> firstHexPos = new ImmutablePair<>(firstHex.getLeftCoordinate(), firstHex.getRightCoordinate());
+                        Pair<Integer,Integer> secondHexPos = new ImmutablePair<>(chosenSecondHex.getLeftCoordinate(), chosenSecondHex.getRightCoordinate());
+                        
+                        SwitchHexDiceNumbers request = SwitchHexDiceNumbers.newInstance(firstHexPos, secondHexPos, CatanGame.account.getUsername());
+                        CatanGame.client.sendTCP(request);
                     });
                     
                 });

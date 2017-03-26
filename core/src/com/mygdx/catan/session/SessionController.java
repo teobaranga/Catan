@@ -167,6 +167,20 @@ public class SessionController {
 
                         moveShip(originfirstPos, originsecondPos, newfirstPos, newsecondPos, shipMoved.getOwner(), true);
                     });
+                } else if (object instanceof SwitchHexDiceNumbers) {
+                  Gdx.app.postRunnable(() -> {
+                      final SwitchHexDiceNumbers diceNumbersSwitched = (SwitchHexDiceNumbers) object;
+                      aSessionScreen.addGameMessage(diceNumbersSwitched.username + " switched the number tokens of two hexes");
+                      Pair<Integer,Integer> firstHexPos = diceNumbersSwitched.getFirstHex();
+                      Pair<Integer,Integer> secondHexPos = diceNumbersSwitched.getSecondHex();
+                      
+                      Hex firstHex = aGameBoardManager.getHexFromCoordinates(firstHexPos.getLeft(), firstHexPos.getRight());
+                      Hex secondHex = aGameBoardManager.getHexFromCoordinates(secondHexPos.getLeft(), secondHexPos.getRight());
+                      
+                      int firstHexNumberToken = firstHex.getDiceNumber();
+                      firstHex.setDiceNumber(secondHex.getDiceNumber());
+                      secondHex.setDiceNumber(firstHexNumberToken);
+                  });  
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
                         System.out.println(((EndTurn) object).username + " ended their turn");

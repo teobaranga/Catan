@@ -2,7 +2,7 @@ package com.mygdx.catan.gameboard;
 
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
-import com.mygdx.catan.Player;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.ProgressCardType;

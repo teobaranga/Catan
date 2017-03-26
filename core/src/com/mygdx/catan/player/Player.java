@@ -1,5 +1,8 @@
-package com.mygdx.catan;
+package com.mygdx.catan.player;
 
+import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.FishTokenMap;
+import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
@@ -25,6 +28,7 @@ public class Player {
 
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
+    private CityImprovements cityImprovements;
     private EnumMap<ProgressCardType, Integer> hand;
     private EnumMap<FishTokenType, Integer> fishTokenHand;
 
@@ -39,6 +43,7 @@ public class Player {
         villages = new ArrayList<>();
         knights = new ArrayList<>();
         resourceMap = new ResourceMap();
+        cityImprovements = new CityImprovements();
         fishTokenHand = new FishTokenMap();
         hand = new EnumMap<>(ProgressCardType.class);
 
@@ -161,7 +166,9 @@ public class Player {
         this.tokenVictoryPoints = tokenVictoryPoints;
     }
 
-    public void incrementTokenVictoryPoints() { tokenVictoryPoints++; }
+    public void incrementTokenVictoryPoints() {
+        tokenVictoryPoints++;
+    }
 
     /**
      * Check if the player has enough resources.
@@ -252,14 +259,14 @@ public class Player {
     }
 
     public EnumMap<FishTokenType, Integer> getFishTokenHand() {
-	    return fishTokenHand;
+        return fishTokenHand;
     }
 
     public void removeFishToken(EnumMap<FishTokenType, Integer> fishTokenToRemove) {
-	    for (EnumMap.Entry<FishTokenType, Integer> entry : fishTokenToRemove.entrySet()) {
+        for (EnumMap.Entry<FishTokenType, Integer> entry : fishTokenToRemove.entrySet()) {
             int newCount = fishTokenHand.get(entry.getKey()) - entry.getValue();
-            if (newCount < 0){
-	            throw new RuntimeException("FishToken count is below 0");
+            if (newCount < 0) {
+                throw new RuntimeException("FishToken count is below 0");
             }
             fishTokenHand.put(entry.getKey(), newCount);
         }

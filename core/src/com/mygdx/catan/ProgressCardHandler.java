@@ -1,21 +1,20 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.*;
-import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.EdgeUnit;
+import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.moves.MultiStepMove;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
-import com.mygdx.catan.session.SessionScreen;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Created by amandaivey on 3/14/17.

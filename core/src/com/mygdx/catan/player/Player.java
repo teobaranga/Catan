@@ -40,6 +40,7 @@ public class Player {
     private int availableMetropolis; //need this for barbarian attack
     private int availableRoads;
     private int availableShips;
+    private int availableKnights;
 
     public Player() {
         roadsAndShips = new ArrayList<>();
@@ -121,6 +122,10 @@ public class Player {
     public void incrementAvailableShips() {
         availableShips++;
     }
+
+    public void incrementAvailableKnights() {availableKnights++;}
+
+    public void decrementAvailableKnights() {availableKnights--;}
 
     /**
      * Adds a progress card with given type to the player's hand
@@ -396,5 +401,15 @@ public class Player {
         }
         Player otherPlayer = (Player) other;
         return this.color.equals(otherPlayer.getColor());
+    }
+
+    //loop through players knights and gets position based on
+    public Knight getPosition(int leftCoord, int rightCoord) {
+        for (Knight k: knights) {
+            if (k.getPosition().getLeft() == leftCoord && k.getPosition().getRight() == rightCoord) {
+                return k;
+            }
+        }
+        return null;
     }
 }

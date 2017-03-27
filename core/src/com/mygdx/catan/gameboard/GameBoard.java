@@ -26,6 +26,7 @@ public class GameBoard {
 	private Stack<ProgressCardType> aTradeProgressCardStack;
 	private Stack<FishTokenType> aFishTokenStack;
 	private List<Village> villages;
+	private ArrayList<Knight> knights;
 	
 	private final int SIZE = GameRules.getGameRulesInstance().getSize();
 	
@@ -150,7 +151,7 @@ public class GameBoard {
 	public ArrayList<Hex> getHexes() {
 		return hexes;
 	}
-	
+
 	public void setMerchantOwner(Player newOwner) {
 	    aMerchantOwner = newOwner;
 	}
@@ -274,4 +275,9 @@ public class GameBoard {
     List<Village> getVillages() {
 	    return villages;
     }
+
+    void addKnight(Knight knight) {knights.add(knight);}
+
+    public ArrayList<Knight> getKnights() { return knights; }
+
 }

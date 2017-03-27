@@ -49,6 +49,8 @@ public class GameBoardManager {
         return aGameBoard.getRobberPosition();
     }
 
+    public GameBoard getGameBoard() {return this.aGameBoard;}
+
     /**
      * @return top of science progress card stack, null if stack is empty
      */
@@ -165,6 +167,39 @@ public class GameBoardManager {
     }
 
     public void buildCityWall(Player player, CoordinatePair myCityWall) {
+
+    }
+
+    public void buildBasicKnight(Player player, CoordinatePair myKnightPosition) {
+        Knight myKnight = new Knight(player, myKnightPosition);
+        player.addKnight(myKnight);
+        aGameBoard.addKnight(myKnight);
+    }
+
+
+
+
+    /**TODO: you may move an active knight to another intersection. in order for the knight to move, you must have built roads
+     * linking the intersection the knight is moving from to the intersection that he is moving to
+     * @param player current player
+     * @param knight the knight you'd like to move
+     * @param myKnightPosition desired position
+     * @return total number of cities on the gameboard
+     */
+    public void moveKnight(Player player, Knight knight, CoordinatePair myKnightPosition) {
+
+    }
+
+    public void activateKnight(Knight k) {
+        k.setActive(true);
+    }
+
+    //TODO: you may move one of your active knights to an intersection occupried by an opponent's knight.
+    //you can only displace a knight if he is weaker than the knight you are moving
+    //the owner of the displaced knight must move his knight to any empty intersection that is connected
+    //by roads to the place from which he was dispalced
+    //if there is no valid intersection the knight is removed from the board
+    public void displaceKnight(Player player, Knight myKnight, Knight displacedKnight) {
 
     }
 

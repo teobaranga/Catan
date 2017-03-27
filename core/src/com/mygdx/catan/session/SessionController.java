@@ -726,6 +726,32 @@ public class SessionController {
     	return validShips;
     }
 
+    //todo: return valid knigths for moving
+    public ArrayList<Knight> requestValidKnightsForMove(PlayerColor owner) {
+        ArrayList <Knight> validKnights = new ArrayList<>();
+        return validKnights;
+    }
+
+    //todo: return valid move intersections
+    public ArrayList<CoordinatePair> requestValidMovingKnightIntersections(PlayerColor owner) {
+        ArrayList<CoordinatePair> validMovingKnightIntersections = new ArrayList<>();
+        return validMovingKnightIntersections;
+    }
+
+    //todo: return valid knigths for displacing
+    public ArrayList<Knight> requestValidKnightsForDisplace(PlayerColor owner) {
+        ArrayList <Knight> validKnights = new ArrayList<>();
+        return validKnights;
+    }
+
+    //todo: return valid displace intersections
+    public ArrayList<CoordinatePair> requestValidDisplacingKnightIntersections(PlayerColor owner) {
+        ArrayList<CoordinatePair> validDisplacingKnightIntersections = new ArrayList<>();
+        return validDisplacingKnightIntersections;
+    }
+
+
+
     /** produces a list of cities that are eligible for a city wall i.e. must be a city without a city wall */
     public ArrayList<CoordinatePair> requestValidCityWallIntersections(PlayerColor owner) {
         ArrayList<CoordinatePair> validCityWallIntersections = new ArrayList<>();
@@ -737,6 +763,17 @@ public class SessionController {
             }
         }
         return validCityWallIntersections;
+    }
+
+    public ArrayList<CoordinatePair> requestValidActivateKnightIntersections(PlayerColor owner) {
+        ArrayList<CoordinatePair> validInactiveKnights = new ArrayList<>();
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        for (Knight k : aGameBoardManager.getGameBoard().getKnights()) {
+            if (currentP.equals(k.getOwner()) && !k.isActive()) {
+                validInactiveKnights.add(k.getPosition());
+            }
+        }
+        return validInactiveKnights;
     }
 
 
@@ -817,6 +854,41 @@ public class SessionController {
         // TODO: inform other players
 
         return knight;
+    }
+
+    public boolean buildKnight(PlayerColor owner, CoordinatePair position, boolean fromPeer) {
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        aTransactionManager.payBankToPlayer(currentP, GameRules.getGameRulesInstance().getActivateKnightCost(aSessionManager.getCurrentlyExecutingProgressCard()));
+
+        //send request
+        BuildKnightRequest request = BuildKnightRequest.newInstance(false, 1, owner, CatanGame.account.getUsername(), new ImmutablePair<>(position.getLeft(), position.getRight()));
+        CatanGame.client.sendTCP(request);
+        return true;
+    }
+
+    public boolean activateKnight(PlayerColor owner, Knight myKnight, boolean fromPeer) {
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getActivateKnightCost(aSessionManager.getCurrentlyExecutingProgressCard()));
+        aGameBoardManager.activateKnight(myKnight);
+        CoordinatePair position = myKnight.getPosition();
+
+        //change knight status
+        ChangeKnightStatus request = ChangeKnightStatus.newInstance(true, owner, CatanGame.account.getUsername(), new ImmutablePair<>(position.getLeft(), position.getRight()));
+        CatanGame.client.sendTCP(request);
+        /* TODO: update display, inform other players, check sufficient resources */
+        return true;
+    }
+
+    //todo: update gameboard, inform players of move
+    public boolean moveKnight(PlayerColor owner, Knight k, CoordinatePair newPosition) {
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        aGameBoardManager.moveKnight(currentP, k, newPosition);
+        k.setActive(false);
+        //update session screen
+
+        MoveKnightRequest request = MoveKnightRequest.newInstance(new ImmutablePair<>(k.getPosition().getLeft(), k.getPosition().getRight()), new ImmutablePair<>(newPosition.getLeft(), newPosition.getRight()), owner, CatanGame.account.getUsername());
+        CatanGame.client.sendTCP(request);
+        return true;
     }
 
     /**

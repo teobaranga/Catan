@@ -17,6 +17,9 @@ public class GameRules {
 	private ResourceMap cityCost = new ResourceMap();
 	private ResourceMap cityWallCost = new ResourceMap();
 	private ResourceMap cityCostWithMedicine = new ResourceMap();
+	private ResourceMap buildBasicKnightCost = new ResourceMap();
+	private ResourceMap activateKnightCost = new ResourceMap();
+	private ResourceMap promoteKnightCost = new ResourceMap();
 
 	private EnumMap<ProgressCardType, Integer> progressCardOccurences = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
 	private EnumMap<ProgressCardType, ProgressCardKind> progressCardKind = new EnumMap<ProgressCardType, ProgressCardKind>(ProgressCardType.class);
@@ -50,6 +53,9 @@ public class GameRules {
 		setupCityCost();
 		setupCityWallCost();
 		setupCityCostWithMedicine();
+		setupBuildBasicKnightCost();
+		setupActivateKnightCost();
+		setupPromoteKnightCost();
 	}
 
 	/**
@@ -84,6 +90,20 @@ public class GameRules {
 
 	private void setupCityWallCost(){
 		cityWallCost.put(ResourceKind.BRICK, 2);
+	}
+
+	private void setupBuildBasicKnightCost() {
+		buildBasicKnightCost.put(ResourceKind.WOOL, 1);
+		buildBasicKnightCost.put(ResourceKind.ORE, 1);
+	}
+
+	private void setupActivateKnightCost() {
+		activateKnightCost.put(ResourceKind.GRAIN, 1);
+	}
+
+	private void setupPromoteKnightCost() {
+		promoteKnightCost.put(ResourceKind.WOOL, 1);
+		promoteKnightCost.put(ResourceKind.ORE, 1);
 	}
 
 	/**
@@ -549,6 +569,34 @@ public class GameRules {
             return cityWallCost;
 	    }
 	}
+
+	public ResourceMap getbuildBasicKnightCost() {
+		return buildBasicKnightCost;
+	}
+
+	public ResourceMap getActivateKnightCost(ProgressCardType type) {
+		if (type == null) {
+			return activateKnightCost;
+		}
+		switch (type) {
+			case WARLORD:
+				return new ResourceMap();
+			default:
+				return activateKnightCost;
+		}
+	}
+
+	public ResourceMap getPromoteKnightCost(ProgressCardType type) {
+	    if (type == null) {
+	        return promoteKnightCost;
+        }
+        switch (type) {
+            case SMITH:
+                return new ResourceMap();
+            default:
+                return promoteKnightCost;
+        }
+    }
 
 
 }

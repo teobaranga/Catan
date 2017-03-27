@@ -19,6 +19,11 @@ import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import com.mygdx.catan.session.SessionScreen;
+import com.mygdx.catan.gameboard.Knight;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -81,32 +86,32 @@ public class ProgressCardHandler {
                         validHexes.add(h);
                     }
                 }
-                
+
                 MultiStepMove playInventor = new MultiStepMove();
-                
+
                 playInventor.<Hex>addMove(chosenFirstHex -> {
                     final Hex firstHex = chosenFirstHex;
                     validHexes.remove(chosenFirstHex);
                     aSessionController.getSessionScreen().initChooseHexMove(validHexes, playInventor);
-                    
+
                     playInventor.<Hex>addMove(chosenSecondHex -> {
                         int firstDiceNumber = firstHex.getDiceNumber();
                         firstHex.setDiceNumber(chosenSecondHex.getDiceNumber());
                         chosenSecondHex.setDiceNumber(firstDiceNumber);
                         aSessionController.getSessionScreen().interractionDone();
-                        
+
                         // sends message to peers about hex number token change
                         Pair<Integer,Integer> firstHexPos = new ImmutablePair<>(firstHex.getLeftCoordinate(), firstHex.getRightCoordinate());
                         Pair<Integer,Integer> secondHexPos = new ImmutablePair<>(chosenSecondHex.getLeftCoordinate(), chosenSecondHex.getRightCoordinate());
-                        
+
                         SwitchHexDiceNumbers request = SwitchHexDiceNumbers.newInstance(firstHexPos, secondHexPos, CatanGame.account.getUsername());
                         CatanGame.client.sendTCP(request);
                     });
-                    
+
                 });
-                
+
                 aSessionController.getSessionScreen().initChooseHexMove(validHexes, playInventor);
-                
+
                 break;
             case IRRIGATION:
                 int numGrainCards = 0;
@@ -203,7 +208,38 @@ public class ProgressCardHandler {
                 aSessionController.getSessionScreen().initChooseEdgeMove(validEdges, move);
                 
                 break;
+            //you may promote 2 knights 1 level each for free
+            //todo: you may only promote a "strong" knight if you have the fortress city improvement
             case SMITH:
+                ArrayList<CoordinatePair> validKnights = new ArrayList<>();
+                List<Knight> listOfKnights = currentP.getKnights();
+                for (Knight k : listOfKnights) {
+                    if (k.getStrength() != 3) {
+                        validKnights.add(k.getPosition());
+                    }
+                }
+                MultiStepMove playSmith = new MultiStepMove();
+                aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+                playSmith.<CoordinatePair>addMove(myKnightCoordinates -> {
+                    for (Knight k: listOfKnights) {
+                        if (k.getPosition().equals(myKnightCoordinates)) {
+                            k.upgrade();
+                        }
+                    }
+                    validKnights.clear();
+                    updateValidKnights(validKnights, myKnightCoordinates);
+
+                });
+                playSmith.<CoordinatePair>addMove(mySecondKnightCoordinates -> {
+                    for (Knight k: listOfKnights) {
+                        if (k.getPosition().equals(mySecondKnightCoordinates)) {
+                            k.upgrade();
+                        }
+                    }
+                });
+
+                //revert back to choose action mode and enable buttons
+                aSessionController.getSessionScreen().interractionDone();
                 break;
             case BISHOP:
                 break;
@@ -302,6 +338,15 @@ public class ProgressCardHandler {
                 playersWithMoreVPlist.add(p);
             }
         }
+    }
+
+    private void updateValidKnights(ArrayList<CoordinatePair> validKnights, CoordinatePair chosenKnight) {
+        for(CoordinatePair i : validKnights) {
+            if (i.equals(chosenKnight)) {
+                validKnights.remove(i);
+            }
+        }
+
     }
 
 }

@@ -1152,9 +1152,35 @@ public class SessionScreen implements Screen {
         for (PolygonRegion village : villages) {
             polyBatch.draw(village, boardOrigin.getLeft(), boardOrigin.getRight());
         }
+        int drawnBigFishery = 0;
         for (Hex hex : aSessionController.getHexes()) {
             Integer prob = hex.getDiceNumber();
-            if (prob != 0 && prob != null) {
+            if (hex.getKind() == TerrainKind.BIG_FISHERY) {
+                float yPos = 0;
+                float xPos = 0;
+                switch (drawnBigFishery) {
+                    case 0:
+                         xPos = (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX + 8));
+                         yPos = (float) (boardOrigin.getRight() - (hex.getRightCoordinate() * OFFY - 20));
+                        break;
+                    case 1:
+                        xPos = (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX + 8));
+                        yPos = (float) (boardOrigin.getRight() - (hex.getRightCoordinate() * OFFY));
+                        break;
+                    case 2:
+                        xPos = (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX - 20));
+                        yPos = (float) (boardOrigin.getRight() - (hex.getRightCoordinate() * OFFY - 20));
+                        break;
+                    case 3:
+                        xPos = (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX - 20));
+                        yPos = (float) (boardOrigin.getRight() - (hex.getRightCoordinate() * OFFY));
+                        break;
+                    default:
+                        break;
+                }
+                CatanGame.skin.getFont("default").draw(polyBatch, prob.toString(), xPos, yPos);
+                drawnBigFishery++;
+            } else if (prob != null && prob != 0) {
                 float xPos = (float) (boardOrigin.getLeft() + (hex.getLeftCoordinate() * OFFX - 7));
                 float yPos = (float) (boardOrigin.getRight() - (hex.getRightCoordinate() * OFFY - 5));
                 CatanGame.skin.getFont("default").draw(polyBatch, prob.toString(), xPos, yPos);
@@ -1751,8 +1777,8 @@ public class SessionScreen implements Screen {
             threeFishCountLabel.setText(newTokenCount.getThreeFish() + "");
     }
 
-    void updateBootOwner(Player player) {
-        bootOwnerLabel.setText("Boot Owner: " + player.getUsername());
+    void updateBootOwner(String username) {
+        bootOwnerLabel.setText("Boot Owner: " + username);
     }
 
     /**

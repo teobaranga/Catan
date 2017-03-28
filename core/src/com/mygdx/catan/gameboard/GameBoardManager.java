@@ -287,7 +287,7 @@ public class GameBoardManager {
         int seaHexes = 0;
         ArrayList<Hex> neighbouringHexes = getNeighbouringHexes(intersection);
         for (Hex h : neighbouringHexes) {
-            if (h.getKind() == TerrainKind.SEA) {
+            if (h.getKind() == TerrainKind.SEA || h.getKind() == TerrainKind.SMALL_FISHERY || h.getKind() == TerrainKind.BIG_FISHERY) {
                 seaHexes++;
             }
         }
@@ -296,7 +296,7 @@ public class GameBoardManager {
 
     public boolean isOnSea(CoordinatePair intersection) {
         for (Hex h : getNeighbouringHexes(intersection)) {
-            if (h.getKind() == TerrainKind.SEA) {
+            if (h.getKind() == TerrainKind.SEA || h.getKind() == TerrainKind.SMALL_FISHERY) {
                 return true;
             }
         }

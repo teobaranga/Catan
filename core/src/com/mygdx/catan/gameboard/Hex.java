@@ -11,9 +11,9 @@ public class Hex {
 	
 	
 	/**
-	 * @param Coordinate Pair of the Hex
-	 * @param its Terrain Kind
-	 * @param its dice number
+	 * @param pCoordinates Coordinate Pair of the Hex
+	 * @param pKind its Terrain Kind
+	 * @param pDiceNumber its dice number
 	 * */
 	public Hex(CoordinatePair pCoordinates, TerrainKind pKind, int pDiceNumber) {
 		aCoordinates = pCoordinates;

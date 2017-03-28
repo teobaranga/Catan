@@ -8,6 +8,8 @@ import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.enums.FishTokenType;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.*;
 
 public class GameBoard {
@@ -48,6 +50,7 @@ public class GameBoard {
 
         // initialize hex position coordinates, where x=(aHexPositions[i].getLeft()) and y=(aHexPositions[i].getRight())
         // the coordinates describe the offset from the center.
+
         for (int row = 0; row < SIZE; row++) {
             int cols = SIZE - java.lang.Math.abs(row - half);
 
@@ -55,58 +58,79 @@ public class GameBoard {
                 int x = -cols + 2 * col + 1;
                 int y = (row - half);
                 CoordinatePair hexCoord = CoordinatePair.of(x, y, HarbourKind.NONE);
-                
+
                 // gets the dice number and terrain kind from the hard coded maps in GameRules
                 Integer lDiceNumber = aDiceNumberSetup.get(hexCoord.hashCode());
                 TerrainKind lTerrainKind = aHexKindSetup.get(hexCoord.hashCode());
-                
+
                 // Creates and adds the Hex. If key was not hard coded (or hard coded wrong) the hex is not added and an exception is thrown
                 if (lDiceNumber != null || lTerrainKind != null) {
-                	Hex hex = new Hex(hexCoord,lTerrainKind,lDiceNumber);
-                	hexes.add(hex);
-                	// set the robber to the desert position
-                	if (lTerrainKind == TerrainKind.DESERT) {
-                		aRobberPosition = hex;
-                	}
+                    // multiple dice numbers on the same tile. The dice numbers are constant.
+                    if ( lTerrainKind == TerrainKind.BIG_FISHERY){
+                        hexes.add(new Hex(hexCoord,lTerrainKind,2));
+                        hexes.add(new Hex(hexCoord,lTerrainKind,3));
+                        hexes.add(new Hex(hexCoord,lTerrainKind,11));
+                        hexes.add(new Hex(hexCoord,lTerrainKind,12));
+                    } else {
+                        Hex hex = new Hex(hexCoord,lTerrainKind,lDiceNumber);
+                        hexes.add(hex);
+                    }
+                    // NOTE: Robber now starts out of the board
                 } else {
-                	throw new Exception("Mismatch with GameRules");
+                    throw new Exception("Mismatch with GameRules");
                 }
-                
+
                 /*Creates the intersections*/
-                
+
                 if (y < 0) { // top half of board
-                // Creates the top, and top left points adjacent to current hex
+                    // Creates the top, and top left points adjacent to current hex
                     aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,y*3 - 1)));
                     aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,GameRules.getGameRulesInstance().getHarbourKind(x,y*3 - 2)));
-                // If the hex is the last column of a row, create the top right point
+                    // If the hex is the last column of a row, create the top right point
                     if (col == cols - 1) {
-                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y-1)));
+                        aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y-1)));
                     }
                 } else if (y == 0) { // middle
-                // Creates the top, and top left points adjacent to current hex
+                    // Creates the top, and top left points adjacent to current hex
                     aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,3*y-1)));
                     aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,GameRules.getGameRulesInstance().getHarbourKind(x,3*y-2)));
-                // Creates the bottom, and bottom left points adjacent to current hex
+                    // Creates the bottom, and bottom left points adjacent to current hex
                     aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,3*y+1)));
                     aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,GameRules.getGameRulesInstance().getHarbourKind(x,3*y+2)));
-                // If the hex is the last column of a row, create the top right and bottom right points
-                    if (col == cols - 1) { 
-                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y-1)));
-                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y+1)));
+                    // If the hex is the last column of a row, create the top right and bottom right points
+                    if (col == cols - 1) {
+                        aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y-1)));
+                        aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y+1)));
                     }
                 } else { // bottom half of board
-                // Creates the bottom, and bottom left points adjacent to current hex
-                    // FIXME: change to same HarbourKind as above once hashCode function has been fixed 
+                    // Creates the bottom, and bottom left points adjacent to current hex
+                    // FIXME: change to same HarbourKind as above once hashCode function has been fixed
                     aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,HarbourKind.NONE));
                     aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,HarbourKind.NONE));
-                // If the hex is the last column of a row, create the bottom right point
-                    if (col == cols - 1) { 
-                    	aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,HarbourKind.NONE));
+                    // If the hex is the last column of a row, create the bottom right point
+                    if (col == cols - 1) {
+                        aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,HarbourKind.NONE));
                     }
                 }
-            }	
+            }
         }
-        
+
+        // Initialize the Side Fisheries
+        for(int i = 0; i < 6; i++) {
+            Pair<Integer,Integer> currentPair = GameRules.getGameRulesInstance().getSmallFisheryPair(i);
+            CoordinatePair hexCoord = CoordinatePair.of(currentPair.getLeft(), currentPair.getRight(), HarbourKind.NONE);
+            Integer lDiceNumber = aDiceNumberSetup.get(hexCoord.hashCode());
+            TerrainKind lTerrainKind = aHexKindSetup.get(hexCoord.hashCode());
+
+            if (lDiceNumber != null || lTerrainKind != null) {
+                Hex hex = new Hex(hexCoord,lTerrainKind,lDiceNumber);
+                hexes.add(hex);
+                // Robber now starts out of the board
+            } else {
+                throw new Exception("Mismatch with GameRules");
+            }
+        }
+
         // Fills up the progress card stack and shuffles it
         for (ProgressCardType type : ProgressCardType.values()) {
         	int occurrence = gameRules.getProgressCardOccurrence(type);
@@ -126,16 +150,20 @@ public class GameBoard {
         Collections.shuffle(aPoliticsProgressCardStack);
 
         //fills the FishToken stack and shuffles it
+        fillFishTokenStack();
+        Collections.shuffle(aFishTokenStack);
+
+	}
+
+	private void fillFishTokenStack() {
         for (FishTokenType type : FishTokenType.values()) {
             int occurrence = gameRules.getFishTokenOccurrence(type);
             for (int i = 0; i<occurrence; i++) {
                 aFishTokenStack.push(type);
             }
         }
-        Collections.shuffle(aFishTokenStack);
+    }
 
-	}
-	
 	public int getNumberofHexes(){
 		return hexes.size();
 	}
@@ -203,6 +231,10 @@ public class GameBoard {
      * @return top card of the Fish Token stack, null if empty
      */
 	public FishTokenType popFishTokenStack() {
+	    if (aFishTokenStack.empty()) {
+	        fillFishTokenStack();
+	        Collections.shuffle(aFishTokenStack);
+        }
 	    return aFishTokenStack.pop();
 	}
 

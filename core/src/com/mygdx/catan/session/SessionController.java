@@ -273,8 +273,11 @@ public class SessionController {
                 } else if (object instanceof  UpdateOldBoot){
                     Gdx.app.postRunnable(() -> {
                         UpdateOldBoot updateOldBoot = (UpdateOldBoot) object;
-                        setBootOwner(updateOldBoot.getPlayer());
-                        aSessionScreen.updateBootOwner(updateOldBoot.getPlayer());
+                        aSessionScreen.updateBootOwner(updateOldBoot.username);
+                        for (Player p: aSessionManager.getPlayers())
+                            if (p.getUsername().equals(updateOldBoot.username)) {
+                                setBootOwner(p);
+                            }
                     });
                 } else if (object instanceof UpdateVP){
                     Gdx.app.postRunnable(() -> {
@@ -1050,8 +1053,6 @@ public class SessionController {
                 case FIELDS:
                     fieldCounter++;
                     break;
-                case DESERT:
-                    break;
                 case GOLDFIELD:
                     break;
                 case SEA:
@@ -1365,7 +1366,8 @@ public class SessionController {
                         break;
                     case GOLDFIELD:
                         break;
-                    case FISHERY:
+                    case BIG_FISHERY:
+                    case SMALL_FISHERY:
                            getFishToken();
                            aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());
                         break;
@@ -1531,7 +1533,7 @@ public class SessionController {
     void getFishToken() {
         FishTokenType type  = aGameBoardManager.drawFishToken();
         if (type == FishTokenType.OLD_BOOT) {
-            UpdateOldBoot request = UpdateOldBoot.newInstance(localPlayer);
+            UpdateOldBoot request = UpdateOldBoot.newInstance(localPlayer.getUsername());
             CatanGame.client.sendTCP(request);
         } else {
             localPlayer.addFishToken(type);

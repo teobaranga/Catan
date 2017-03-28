@@ -286,8 +286,9 @@ public class CreateScreen implements Screen {
                 break;
             case SEA:
                 break;
-            case DESERT:
-                aTexture = aDesertTextureSolid;
+            case BIG_FISHERY:
+                break;
+            case SMALL_FISHERY:
                 break;
             case GOLDFIELD:
                 aTexture = aGoldfieldTextureSolid;

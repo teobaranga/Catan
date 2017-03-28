@@ -22,7 +22,7 @@ class GamePieces {
 
     private static GamePieces instance;
 
-    private final PolygonRegion sea, desert, hills, forest, mountains, pasture, fields, gold;
+    private final PolygonRegion sea, fishery, hills, forest, mountains, pasture, fields, gold;
 
     private final PolygonRegion robber;
 
@@ -69,7 +69,7 @@ class GamePieces {
         PolygonRegionLoader polygonRegionLoader = new PolygonRegionLoader();
 
         sea = polygonRegionLoader.load(CatanGame.skin.getRegion("sea"), Gdx.files.internal("hex.psh"));
-        desert = polygonRegionLoader.load(CatanGame.skin.getRegion("desert"), Gdx.files.internal("hex.psh"));
+        fishery = polygonRegionLoader.load(CatanGame.skin.getRegion("sea"), Gdx.files.internal("hex.psh")); //TODO arnaud, modify this to different tile than sea tile and split small/big fisheries
         hills = polygonRegionLoader.load(CatanGame.skin.getRegion("hills"), Gdx.files.internal("hex.psh"));
         forest = polygonRegionLoader.load(CatanGame.skin.getRegion("forest"), Gdx.files.internal("hex.psh"));
         mountains = polygonRegionLoader.load(CatanGame.skin.getRegion("mountains"), Gdx.files.internal("hex.psh"));
@@ -117,11 +117,14 @@ class GamePieces {
                 break;
             case SEA:
                 break;
-            case DESERT:
-                region = desert;
-                break;
             case GOLDFIELD:
                 region = gold;
+                break;
+            case BIG_FISHERY:
+                region = fishery;
+                break;
+            case SMALL_FISHERY:
+                region = fishery;
                 break;
             default:
                 break;

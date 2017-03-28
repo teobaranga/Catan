@@ -1559,11 +1559,11 @@ public class SessionController {
             }
         }
         if (fishCount >= 7) {
-            localPlayer.addProgressCard(aGameBoardManager.drawProgressCard());  // TODO use UI window to let player choose between Progress Card types
+            aSessionScreen.chooseProgressCardKind(new MultiStepMove());  // TODO use UI window to let player choose between Progress Card types
         } else if (fishCount >= 5) {
             aSessionScreen.buildEdgeUnitForFree(EdgeUnitKind.ROAD); // TODO use UI window to let player choose between ROAD and SHIP
         } else if (fishCount >= 4) {
-            //take a chosen resource from the bank;
+            aSessionScreen.chooseResource(new ResourceMap(), new MultiStepMove()); //TODO check if correct
         } else if (fishCount >= 3) {
             //stealResource();
         } else if (fishCount >= 2) {

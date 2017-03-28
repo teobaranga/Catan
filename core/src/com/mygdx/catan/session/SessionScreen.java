@@ -216,19 +216,19 @@ public class SessionScreen implements Screen {
                                 screenX < boardOrigin.getLeft() + validHex.getLeftCoordinate() * OFFX + 10 &&
                                 screenY > boardOrigin.getRight() + validHex.getRightCoordinate() * OFFY - 10 &&
                                 screenY < boardOrigin.getRight() + validHex.getRightCoordinate() * OFFY + 10) {
-                            
+
                             // The hex position is valid, can clear the highlighted positions
                             highlightedPositions.clear();
                             validHexes.clear();
-                            
+
                             currentlyPerformingMove.performNextMove(validHex);
-                            
+
                             return true;
                         }
                     }
                 }
                 return false;
-            } 
+            }
         };
     }
 
@@ -445,7 +445,7 @@ public class SessionScreen implements Screen {
         setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.MASTERMERCHANT);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
-        
+
 
         // Add roll dice button
         rollDiceButton = new TextButton("Roll Dice", CatanGame.skin);
@@ -516,8 +516,8 @@ public class SessionScreen implements Screen {
         // Pack the menu table to make it fit all its children
         menuTable.pad(10);
         menuTable.pack();
-        
-        
+
+
         // TODO: delete when done (buttons for testing)
         /*
         TextButton chooseKindButton = new TextButton("Choose Kind", CatanGame.skin);
@@ -587,7 +587,7 @@ public class SessionScreen implements Screen {
 			}
         });
         menuTable.add(chooseTypeButton);*/
-        
+
 
         // sets center of board
         int offsetX, offsetY;
@@ -667,7 +667,7 @@ public class SessionScreen implements Screen {
         });
         aSessionStage.addActor(choosePlayerWindow);
     }
-    
+
     /**
      * @param valid intersections client can choose from
      * @param move whose next move to perform will be called once an intersection has been chosen
@@ -675,20 +675,20 @@ public class SessionScreen implements Screen {
     public void initChooseIntersectionMove(List<CoordinatePair> valid, MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
-        
+
         // transfers all the valid intersections of validIntersections, and highlights each position on the board
         for (CoordinatePair i : valid) {
         	validIntersections.add(i);
         	highlightedPositions.add(gamePieces.createHighlightedIntersection(i.getLeft(), i.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
         }
-        
+
         // sets the currently performing move attribute to given move.
         // When an intersection is chosen, the next move in that MultiStepMove will be performed
         currentlyPerformingMove = move;
-        
+
         aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
     }
-    
+
     /**
      * @param valid hexes client can choose from
      * @param move which next move to perform will be called once a hex has been chosen
@@ -696,20 +696,20 @@ public class SessionScreen implements Screen {
     public void initChooseHexMove(List<Hex> valid, MultiStepMove move) {
         // disable all possible actions
         disableAllButtons();
-        
+
         // transfers all the valid intersections of validIntersections, and highlights each position on the board
         for (Hex h : valid) {
             validHexes.add(h);
             highlightedPositions.add(gamePieces.createHighlightedIntersection(h.getLeftCoordinate(), h.getRightCoordinate(), OFFX, OFFY*2, LENGTH, PlayerColor.WHITE));
         }
-        
+
         // sets the currently performing move attribute to given move.
         // When an intersection is chosen, the next move in that MultiStepMove will be performed
         currentlyPerformingMove = move;
-        
+
         aMode = SessionScreenModes.CHOOSEHEXMODE;
     }
-    
+
     /**
      * @param valid edges client can choose from
      * @param move whose next move to perform will be called once an edge has been chosen
@@ -717,33 +717,33 @@ public class SessionScreen implements Screen {
     public void initChooseEdgeMove(List<Pair<CoordinatePair, CoordinatePair>> valid, MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
-        
+
         // transfers all the valid intersections of validIntersections, and highlights each position on the board
         for (Pair<CoordinatePair, CoordinatePair> i : valid) {
         	validEdges.add(i);
         	if (aSessionController.isOnLand(i.getLeft(), i.getRight())) {
-                highlightedPositions.add(gamePieces.createRoad(i.getLeft().getLeft(), i.getLeft().getRight(), i.getRight().getLeft(), i.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor())); 
+                highlightedPositions.add(gamePieces.createRoad(i.getLeft().getLeft(), i.getLeft().getRight(), i.getRight().getLeft(), i.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
             } else {
                 highlightedPositions.add(gamePieces.createShip(i.getLeft().getLeft(), i.getLeft().getRight(), i.getRight().getLeft(), i.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
             }
         }
-        
+
         // sets the currently performing move attribute to given move.
         // When an intersection is chosen, the next move in that MultiStepMove will be performed
         currentlyPerformingMove = move;
-        
+
         aMode = SessionScreenModes.CHOOSEEDGEMODE;
     }
-    
+
     /**
      * Opens a window that prompts the client to choose a progress card kind
      * 
-     * @param move whose next move to perform will be called once an intersection has been chosen
+     * @param move whose next move to perform will be called once an ProgressCardType has been chosen
      * */
     public void chooseProgressCardKind(MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
-        
+
         final ChooseProgressCardKindWindow chooseKindWindow = new ChooseProgressCardKindWindow("Choose Progress Card Kind", CatanGame.skin);
         chooseKindWindow.setChooseProgressCardKindListener((kind) -> {
             // performs the given move with kind
@@ -751,16 +751,16 @@ public class SessionScreen implements Screen {
         });
         aSessionStage.addActor(chooseKindWindow);
     }
-    
+
     /**
      * Opens a window that prompts the client to choose a progress card type from cards
-     * @param cards that player can choose type from
-     * @param move whose next move to perform will be called once a ProgressCardType has been chosen
+     * @param cards cards that player can choose type from
+     * @param move whose next move to perform will be called once a ProgressCard has been chosen
      * */
     public void chooseProgressCard(EnumMap<ProgressCardType, Integer> cards, MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
-        
+
         final ChooseFromEnumMapWindow<ProgressCardType> chooseProgressCardWindow = new ChooseFromEnumMapWindow<ProgressCardType>("Choose Progress Card", CatanGame.skin, cards);
         chooseProgressCardWindow.setChooseCardListener((type) -> {
         	//performs the given move with type
@@ -768,54 +768,54 @@ public class SessionScreen implements Screen {
         });
         aSessionStage.addActor(chooseProgressCardWindow);
     }
-    
+
     /**
      * Opens a window that prompts the client to choose a resource card type from cards
-     * @param cards that player can choose type from
+     * @param resources the resources that player can choose type from
      * @param move whose next move to perform will be called once a ResourceKind has been chosen
      * */
-    public void chooseResource(EnumMap<ResourceKind, Integer> cards, MultiStepMove move) {
+    public void chooseResource(EnumMap<ResourceKind, Integer> resources, MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
-        
-        final ChooseFromEnumMapWindow<ResourceKind> chooseProgressCardWindow = new ChooseFromEnumMapWindow<ResourceKind>("Choose Progress Card", CatanGame.skin, cards);
-        chooseProgressCardWindow.setChooseCardListener((type) -> {
+
+        final ChooseFromEnumMapWindow<ResourceKind> chooseResourceCardWindow = new ChooseFromEnumMapWindow<ResourceKind>("Choose Resource Card", CatanGame.skin, resources);
+        chooseResourceCardWindow.setChooseCardListener((type) -> {
         	//performs the given move with type
         	move.performNextMove(type);
         });
-        aSessionStage.addActor(chooseProgressCardWindow);
+        aSessionStage.addActor(chooseResourceCardWindow);
     }
-    
+
     /**
      * Opens a window that prompts the client to choose a resource card type from cards
-     * @param cards that player can choose type from
+     * @param resources resources that player can choose type from
      * @param numberToChoose number of cards that player needs to choose
      * @param move whose next move to perform will be called once a ResourceKind has been chosen
      * */
-    public void chooseMultipleResource(EnumMap<ResourceKind, Integer> cards, int numberToChoose, MultiStepMove move) {
+    public void chooseMultipleResource(EnumMap<ResourceKind, Integer> resources, int numberToChoose, MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
-        
-        final ChooseMultipleResourcesWindow chooseProgressCardWindow = new ChooseMultipleResourcesWindow("Choose " + numberToChoose + " Resource Cards", CatanGame.skin, cards, numberToChoose);
-        chooseProgressCardWindow.setChooseCardListener((map) -> {
+
+        final ChooseMultipleResourcesWindow chooseResourcesCardWindow = new ChooseMultipleResourcesWindow("Choose " + numberToChoose + " Resource Cards", CatanGame.skin, resources, numberToChoose);
+        chooseResourcesCardWindow.setChooseCardListener((map) -> {
         	//performs the given move with type
         	move.performNextMove(map);
         });
-        aSessionStage.addActor(chooseProgressCardWindow);
+        aSessionStage.addActor(chooseResourcesCardWindow);
     }
-    
+
     /**
-     * Called after a multi step move has been fully performed, sets the mode of the GUI to CHOOSEACTIONMODE 
+     * Called after a multi step move has been fully performed, sets the mode of the GUI to CHOOSEACTIONMODE
      * and re-enables all the buttons according to current game phase if it is the client's turn
      * */
     public void interractionDone() {
     	// puts mode back to choose action mode
     	aMode = SessionScreenModes.CHOOSEACTIONMODE;
-    	
+
     	// clears the available build positions and highlighted positions
     	highlightedPositions.clear();
         validIntersections.clear();
-    	
+
     	// re-enables all the buttons according to current game phase if it is the client's turn
     	if (aSessionController.isMyTurn()) {
         	enablePhase(aSessionController.getCurrentGamePhase());

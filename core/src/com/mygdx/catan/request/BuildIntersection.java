@@ -28,9 +28,7 @@ public class BuildIntersection extends ForwardedRequest {
 		return position;
 	}
 	
-	public VillageKind getKind() {
-		return kind;
-	}
+	public VillageKind getKind() { return kind; }
 	
 	public PlayerColor getOwner() {
 		return owner;

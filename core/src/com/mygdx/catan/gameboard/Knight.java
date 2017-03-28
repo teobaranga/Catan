@@ -27,6 +27,7 @@ public class Knight {
     }
 
     public void setActive(boolean active) {
+        this.active = active;
     }
 
     public boolean hasMovedThisTurn() {
@@ -36,9 +37,15 @@ public class Knight {
     public void setHasMovedThisTurn(boolean moved) {
     }
 
+    public Player getOwner() {
+        return this.owner;
+    }
+
     public int getStrength() {
         return strength.value;
     }
+
+    public CoordinatePair getPosition() { return position; }
 
     /** Upgrade this knight */
     public void upgrade() {

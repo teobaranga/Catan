@@ -13,6 +13,7 @@ import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.gameboard.Knight;
+import com.mygdx.catan.ui.KnightActor;
 
 /**
  * Helper class that returns PolygonRegions representing various game pieces
@@ -26,7 +27,23 @@ class GamePieces {
 
     private final PolygonRegion robber;
 
-    private final TextureAtlas.AtlasRegion knightBasic, knightStrong, knightMighty;
+    /**
+     * Array of regions representing the active knight states for each level.
+     * i = 0 -> Basic
+     * i = 1 -> Strong
+     * i = 2 -> Mighty
+     */
+    private final TextureAtlas.AtlasRegion[] knightActive;
+
+    /**
+     * Array of regions representing the inactive knight states for each level.
+     * i = 0 -> Basic
+     * i = 1 -> Strong
+     * i = 2 -> Mighty
+     */
+    private final TextureAtlas.AtlasRegion[] knightInactive;
+
+    private final TextureAtlas.AtlasRegion cityWall;
 
     private Texture aSeaTextureSolid;
     private Texture aHillsTextureSolid;
@@ -62,9 +79,16 @@ class GamePieces {
         assetManager.load("gamepieces/gamepieces.atlas", TextureAtlas.class);
         assetManager.finishLoading();
         TextureAtlas gamePieces = assetManager.get("gamepieces/gamepieces.atlas", TextureAtlas.class);
-        knightBasic = gamePieces.findRegion("k_basic");
-        knightStrong = gamePieces.findRegion("k_strong");
-        knightMighty = gamePieces.findRegion("k_mighty");
+        knightActive = new TextureAtlas.AtlasRegion[3];
+        knightInactive = new TextureAtlas.AtlasRegion[3];
+        knightActive[0] = gamePieces.findRegion("k_basic");
+        knightActive[1] = gamePieces.findRegion("k_strong");
+        knightActive[2] = gamePieces.findRegion("k_mighty");
+        knightInactive[0] = gamePieces.findRegion("k_basic_inactive");
+        knightInactive[1] = gamePieces.findRegion("k_strong_inactive");
+        knightInactive[2] = gamePieces.findRegion("k_mighty_inactive");
+
+        cityWall = gamePieces.findRegion("cityWall");
 
         PolygonRegionLoader polygonRegionLoader = new PolygonRegionLoader();
 
@@ -133,53 +157,53 @@ class GamePieces {
         final PolygonSprite polygonSprite = new PolygonSprite(region);
         polygonSprite.setPosition(xOrigin + xPos - region.getRegion().getRegionWidth() / 2f,
                 yOrigin + yPos - region.getRegion().getRegionHeight() / 2f);
-        polygonSprite.setScale(2.0f*SessionScreen.LENGTH / region.getRegion().getRegionHeight());
+        polygonSprite.setScale(2.0f * SessionScreen.LENGTH / region.getRegion().getRegionHeight());
         return polygonSprite;
     }
-    
+
     PolygonRegion createHighlightedIntersection(int xCor, int yCor, int base, int length, int pieceBase, PlayerColor color) {
-    	Texture aTexture = aSeaTextureSolid;
-    	
-    	switch (color) {
-        case BLUE:
-            aTexture = aBlueTextureSolid;
-            break;
-        case ORANGE:
-            aTexture = aOrangeTextureSolid;
-            break;
-        case RED:
-            aTexture = aRedTextureSolid;
-            break;
-        case WHITE:
-            aTexture = aWhiteTextureSolid;
-            break;
-        case YELLOW:
-            aTexture = aYellowTextureSolid;
-            break;
-        default:
-            break;
-    	}
-    	
-    	int highlightLength = pieceBase;
-    	int highlightBase = (int) Math.sqrt(Math.pow(highlightLength, 2) - Math.pow(highlightLength / 2, 2));
-    	
-    	float xPos = +(xCor * base);
+        Texture aTexture = aSeaTextureSolid;
+
+        switch (color) {
+            case BLUE:
+                aTexture = aBlueTextureSolid;
+                break;
+            case ORANGE:
+                aTexture = aOrangeTextureSolid;
+                break;
+            case RED:
+                aTexture = aRedTextureSolid;
+                break;
+            case WHITE:
+                aTexture = aWhiteTextureSolid;
+                break;
+            case YELLOW:
+                aTexture = aYellowTextureSolid;
+                break;
+            default:
+                break;
+        }
+
+        int highlightLength = pieceBase;
+        int highlightBase = (int) Math.sqrt(Math.pow(highlightLength, 2) - Math.pow(highlightLength / 2, 2));
+
+        float xPos = +(xCor * base);
         float yPos = -(yCor * length / 2);
-    	
-    	return new PolygonRegion(new TextureRegion(aTexture),
-    		new float[]{      // Six vertices
-    				xPos - highlightBase, yPos - highlightLength / 2,             // Vertex 0                4
-                    xPos, yPos - highlightLength,                       		  // Vertex 1           5         3
-                    xPos + highlightBase, yPos - highlightLength / 2,             // Vertex 2
-                    xPos + highlightBase, yPos + highlightLength / 2,             // Vertex 3           0         2
-                    xPos, yPos + highlightLength,                                 // Vertex 4                1
-                    xPos - highlightBase, yPos + highlightLength / 2              // Vertex 5
-        	}, new short[]{
-        			0, 1, 4,         // Sets up triangulation according to vertices above
-                    0, 4, 5,
-                    1, 2, 3,
-                    1, 3, 4
-    	});
+
+        return new PolygonRegion(new TextureRegion(aTexture),
+                new float[]{      // Six vertices
+                        xPos - highlightBase, yPos - highlightLength / 2,             // Vertex 0                4
+                        xPos, yPos - highlightLength,                              // Vertex 1           5         3
+                        xPos + highlightBase, yPos - highlightLength / 2,             // Vertex 2
+                        xPos + highlightBase, yPos + highlightLength / 2,             // Vertex 3           0         2
+                        xPos, yPos + highlightLength,                                 // Vertex 4                1
+                        xPos - highlightBase, yPos + highlightLength / 2              // Vertex 5
+                }, new short[]{
+                0, 1, 4,         // Sets up triangulation according to vertices above
+                0, 4, 5,
+                1, 2, 3,
+                1, 3, 4
+        });
     }
 
     PolygonSprite createRobber() {
@@ -191,33 +215,19 @@ class GamePieces {
     /**
      * Create a new Knight, represented as an Image.
      *
-     * @param strength the strength of the knight
+     * @param knight the knight associated with this actor
      */
-    Image createKnight(Knight.Strength strength) {
-        Image knight = null;
-        switch (strength) {
-            case BASIC:
-                // Create basic knight
-                knight = new Image(knightBasic);
-                break;
-            case STRONG:
-                // Create strong knight
-                knight = new Image(knightStrong);
-                break;
-            case MIGHTY:
-                // Create mighty knight
-                knight = new Image(knightMighty);
-                break;
-        }
+    KnightActor createKnight(Knight knight) {
+        KnightActor knightActor = new KnightActor(knight, knightActive, knightInactive);
 
         // Scale down the image
         final float knightScale = 1 / 8f;
-        knight.setSize(knightScale * knight.getWidth(), knightScale * knight.getHeight());
+        knightActor.setSize(knightScale * knightActor.getWidth(), knightScale * knightActor.getHeight());
 
         // Place the origin in the center of the image to make it easier to draw
-        knight.setOrigin(knight.getWidth() / 2f, knight.getHeight() / 2f);
+        knightActor.setOrigin(knightActor.getWidth() / 2f, knightActor.getHeight() / 2f);
 
-        return knight;
+        return knightActor;
     }
 
     /**
@@ -319,6 +329,40 @@ class GamePieces {
                 6, 1, 2,
                 2, 1, 3
         });
+    }
+
+    /** Create a city wall image with the provided color */
+    Image createCityWall(PlayerColor color) {
+        // Create the image from the texture region
+        Image cityWallImage = new Image(cityWall);
+
+        // Set the color
+        switch (color) {
+            case WHITE:
+                cityWallImage.setColor(Color.WHITE);
+                break;
+            case BLUE:
+                cityWallImage.setColor(Color.BLUE);
+                break;
+            case RED:
+                cityWallImage.setColor(Color.RED);
+                break;
+            case ORANGE:
+                cityWallImage.setColor(Color.ORANGE);
+                break;
+            case YELLOW:
+                cityWallImage.setColor(Color.YELLOW);
+                break;
+        }
+
+        // Scale down the image
+        final float imageScale = 1 / 4f;
+        cityWallImage.setSize(imageScale * cityWallImage.getWidth(), imageScale * cityWallImage.getHeight());
+
+        // Place the origin in the center of the image to make it easier to draw
+        cityWallImage.setOrigin(cityWallImage.getWidth() / 2f, cityWallImage.getHeight() / 2f);
+
+        return cityWallImage;
     }
 
     /**
@@ -696,22 +740,5 @@ class GamePieces {
         pix.setColor(color); // DE is red, AD is green and BE is blue.
         pix.fill();
         return new Texture(pix);
-    }
-
-    public Texture getPlayerColorTexture(PlayerColor pc) {
-        switch (pc) {
-            case BLUE:
-                return aBlueTextureSolid;
-            case ORANGE:
-                return aOrangeTextureSolid;
-            case RED:
-                return aRedTextureSolid;
-            case WHITE:
-                return aWhiteTextureSolid;
-            case YELLOW:
-                return aYellowTextureSolid;
-            default:
-                return null;
-        }
     }
 }

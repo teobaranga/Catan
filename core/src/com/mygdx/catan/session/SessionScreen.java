@@ -10,11 +10,16 @@ import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.mygdx.catan.*;
+import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.FishTokenMap;
+import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
@@ -61,7 +66,10 @@ public class SessionScreen implements Screen {
     private List<PolygonRegion> edgeUnits;
 
     /** The list of knights currently on the board */
-    private List<Image> knights;
+    private List<KnightActor> knights;
+
+    /** The list of city walls currently on the board */
+    private List<Image> cityWalls;
 
     /** The List of valid building regions on the board */
     private List<PolygonRegion> highlightedPositions;
@@ -89,7 +97,8 @@ public class SessionScreen implements Screen {
     private ArrayList<Hex> validHexes;
 
     // Menu Buttons
-    private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton, buildKnightButton;
+    private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton, buildKnightButton,
+            buildCityWallButton;
     private TextButton rollDiceButton, endTurnButton;
     private TextButton domesticTradeButton, tradeButton;
     private TextButton moveShipButton;
@@ -158,6 +167,7 @@ public class SessionScreen implements Screen {
         villages = new ArrayList<>();
         edgeUnits = new ArrayList<>();
         knights = new ArrayList<>();
+        cityWalls = new ArrayList<>();
         highlightedPositions = new ArrayList<>();
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new EnumMap<>(ResourceKind.class);
@@ -284,6 +294,7 @@ public class SessionScreen implements Screen {
 
         // Combine input (click handling) from the InputAdapter and the Stage
         final InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(gamePiecesStage);
         inputMultiplexer.addProcessor(aSessionStage);
         inputMultiplexer.addProcessor(inputAdapter);
         Gdx.input.setInputProcessor(inputMultiplexer);
@@ -423,9 +434,15 @@ public class SessionScreen implements Screen {
                     CoordinatePair intersection = CoordinatePair.of(
                             boardOrigin.getLeft() + chosenIntersection.getLeft() * OFFX,
                             boardOrigin.getRight() + chosenIntersection.getRight() * -LENGTH / 2, null);
-                    Image knight = aSessionController.buildKnight(intersection, false);
-                    knights.add(knight);
-                    gamePiecesStage.addActor(knight);
+                    KnightActor knightActor = aSessionController.buildKnight(intersection, false);
+                    knightActor.addListener(new ClickListener() {
+                        @Override
+                        public void clicked(InputEvent event, float x, float y) {
+                            System.out.println("You clicked an actor");
+                        }
+                    });
+                    knights.add(knightActor);
+                    gamePiecesStage.addActor(knightActor);
                     // Go back to the previous mode
                     aMode = prevMode;
                     // re-enable all appropriate actions
@@ -435,6 +452,47 @@ public class SessionScreen implements Screen {
         });
         buildKnightButton.pad(0, 10, 0, 10);
         menuTable.add(buildKnightButton).padBottom(10).row();
+
+        buildCityWallButton = new TextButton("Build City Wall", CatanGame.skin);
+        buildCityWallButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // Create a new multi-step move to allow the player to place a city wall
+                currentlyPerformingMove = new MultiStepMove();
+
+                // Keep track of the previous session mode
+                final SessionScreenModes prevMode = aMode;
+
+                // Switch the mode to allow the player to choose an intersection
+                aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+
+                // TODO: generate the actual valid positions for the city walls
+                for (CoordinatePair intersection : aSessionController.requestValidInitializationBuildIntersections()) {
+                    validIntersections.add(intersection);
+                    highlightedPositions.add(gamePieces.createSettlement(intersection.getLeft(), intersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                }
+
+                // Make the current move place a city wall at the specified position
+                currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
+                    // Clear the highlighted positions
+                    validIntersections.clear();
+                    highlightedPositions.clear();
+                    // Build the knight
+                    CoordinatePair intersection = CoordinatePair.of(
+                            boardOrigin.getLeft() + chosenIntersection.getLeft() * OFFX,
+                            boardOrigin.getRight() + chosenIntersection.getRight() * -LENGTH / 2, null);
+                    Image cityWall = aSessionController.buildCityWall(intersection, false);
+                    cityWalls.add(cityWall);
+                    gamePiecesStage.addActor(cityWall);
+                    // Go back to the previous mode
+                    aMode = prevMode;
+                    // re-enable all appropriate actions
+                    enablePhase(aSessionController.getCurrentGamePhase());
+                });
+            }
+        });
+        buildCityWallButton.pad(0, 10, 0, 10);
+        menuTable.add(buildCityWallButton).padBottom(10).row();
 
         moveShipButton = new TextButton("Move Ship", CatanGame.skin);
         setupMoveShipButton(moveShipButton);
@@ -1675,12 +1733,10 @@ public class SessionScreen implements Screen {
         }
     }
 
-
     /**
      * Updates the current player
      */
     void updateCurrentPlayer(Player newCurrentPlayer) {
-
         String currentPlayerName = newCurrentPlayer.getAccount().getUsername();
         currentPlayerLabel.setText("Current Player: " + currentPlayerName);
         setPlayerTableColor(currentPlayer, newCurrentPlayer.getColor());
@@ -1696,7 +1752,6 @@ public class SessionScreen implements Screen {
             setPlayerTableColor(playersVP[i], players[i].getColor());
         }
     }
-
 
     /**
      * Updates the available game pieces
@@ -1734,6 +1789,7 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(red);
     }
 
+    /** Refresh the resource bar to display the most recent values for the local player's resources */
     public void updateResourceBar(ResourceMap updates) {
         for (Map.Entry<ResourceKind, Integer> entry : updates.entrySet()) {
             ResourceKind resourceKind = entry.getKey();

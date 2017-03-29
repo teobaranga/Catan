@@ -20,6 +20,7 @@ public class Knight {
     public Knight(Player owner, CoordinatePair position) {
         this.owner = owner;
         this.position = position;
+        this.strength = Strength.BASIC;
     }
 
     public boolean isActive() {

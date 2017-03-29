@@ -1,7 +1,6 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.EventKind;
-import com.mygdx.catan.ui.DiceRollPair;
 
 import java.util.Random;
 

@@ -1,7 +1,7 @@
 package com.mygdx.catan.request;
 
 import com.mygdx.catan.enums.EventKind;
-import com.mygdx.catan.ui.DiceRollPair;
+import com.mygdx.catan.DiceRollPair;
 
 /**
  * Request indicating that the sender player rolled the dice.

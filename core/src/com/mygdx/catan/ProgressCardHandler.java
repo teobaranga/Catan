@@ -1,38 +1,23 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.*;
-import com.mygdx.catan.gameboard.GameBoardManager;
-import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
-import com.mygdx.catan.gameboard.EdgeUnit;
-import com.mygdx.catan.gameboard.GameBoardManager;
-import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.gameboard.*;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
-import com.mygdx.catan.request.BuildIntersection;
-import com.mygdx.catan.request.GiveResources;
 import com.mygdx.catan.request.SwitchHexDiceNumbers;
 import com.mygdx.catan.request.TakeResources;
 import com.mygdx.catan.request.TargetedChooseResourceCardRequest;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import com.mygdx.catan.session.SessionScreen;
-import com.mygdx.catan.gameboard.Knight;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by amandaivey on 3/14/17.
- */
 public class ProgressCardHandler {
 
     private final SessionManager aSessionManager;
@@ -47,7 +32,6 @@ public class ProgressCardHandler {
         aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
         aGameBoardManager = GameBoardManager.getInstance();
         // aSessionScreen = aSessionController.getSessionScreen();
-        
     }
 
     public void handle (ProgressCardType pType, PlayerColor currentPColor) {
@@ -56,13 +40,14 @@ public class ProgressCardHandler {
         //SessionManager.getInstance().incrementProgressCardMap(pType);
         aSessionManager.setCurrentlyExecutingProgressCard(pType);
         ArrayList<Player> playersWithMoreVP = new ArrayList<>();
-        
+
         switch(pType) {
             case ALCHEMIST:
+                break;
             case CRANE:
-
-                /** adds a city wall to selected city for free*/
+                break;
             case ENGINEER:
+                // Adds a city wall to selected city for free
                 ArrayList<CoordinatePair> validCityWallIntersections = new ArrayList<>();
                 List<Village> listOfVillages = currentP.getVillages();
                 for (Village v : listOfVillages) {
@@ -268,37 +253,37 @@ public class ProgressCardHandler {
                     TargetedChooseResourceCardRequest request = TargetedChooseResourceCardRequest.newInstance(2, CatanGame.account.getUsername(), p.getUsername());
                     CatanGame.client.sendTCP(request);
                 }
-                
+
                 break;
             case COMMERCIALHARBOUR:
                 break;
             case MASTERMERCHANT:
                 // adds all the players with more VP points than current player
                 updatePlayersWithMoreVP(playersWithMoreVP, currentP);
-                
+
                 // creates multistepmove that prompts client to choose a player whose hand they will be able to look through
                 MultiStepMove takeResources = new MultiStepMove();
-                                
+
                 takeResources.<Player>addMove(player -> {
                     final Player chosenPlayer = player;
-                    
+
                     int numberOfResources = 2;
                     if (player.getResourceHandSize() < numberOfResources) { numberOfResources = player.getResourceHandSize(); }
-                    
+
                     takeResources.<ResourceMap>addMove(map -> {
                         currentP.addResources(map);
                         aSessionController.getSessionScreen().updateResourceBar(currentP.getResources());
                         TakeResources request = TakeResources.newInstance(map, currentP.getUsername(), chosenPlayer.getUsername());
                         CatanGame.client.sendTCP(request);
-                        
+
                         aSessionController.getSessionScreen().interractionDone();
                     });
-                    
+
                     aSessionController.getSessionScreen().chooseMultipleResource(player.getResources(), numberOfResources, takeResources);
                 });
-                
+
                 aSessionController.getSessionScreen().chooseOtherPlayer(playersWithMoreVP, takeResources);
-                
+
                 break;
             case MERCHANTFLEET:
                 break;
@@ -330,7 +315,7 @@ public class ProgressCardHandler {
             } 
         }
     }
-    
+
     private void updatePlayersWithMoreVP(List<Player> playersWithMoreVPlist, Player currentPlayer) {
         playersWithMoreVPlist.clear();
         for (Player p : aSessionManager.getPlayers()) {

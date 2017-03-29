@@ -1,7 +1,7 @@
 package com.mygdx.catan.response;
 
 import com.mygdx.catan.session.Session;
-import com.mygdx.catan.ui.DiceRollPair;
+import com.mygdx.catan.DiceRollPair;
 
 /**
  * Response sent as result of a player rolling the dice.

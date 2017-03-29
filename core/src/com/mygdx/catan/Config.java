@@ -8,7 +8,6 @@ import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
 import com.mygdx.catan.session.Session;
-import com.mygdx.catan.ui.DiceRollPair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.objenesis.strategy.SerializingInstantiatorStrategy;
 

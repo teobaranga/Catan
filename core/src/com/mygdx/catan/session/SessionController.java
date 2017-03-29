@@ -16,7 +16,8 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.DiceRolled;
-import com.mygdx.catan.ui.DiceRollPair;
+import com.mygdx.catan.DiceRollPair;
+import com.mygdx.catan.ui.KnightActor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -34,17 +35,18 @@ public class SessionController {
     private final TradeManager tradeManager;
 
     private final SessionScreen aSessionScreen;
-   // private final Session aSession;
+
+    /** Listener for server messages */
     private final Listener aSessionListener;
 
     private final ProgressCardHandler aProgressCardHandler;
 
     private final GameRules aGameRules;
+
+    private final GamePieces gamePieces;
+
     /** The random number generator for dice rolls */
     private final CatanRandom random;
-
-    /** The local player's color */
-    private PlayerColor aPlayerColor;
 
     /** The local player */
     private Player localPlayer;
@@ -61,6 +63,7 @@ public class SessionController {
         tradeManager = TradeManager.getInstance(aTransactionManager);
         aProgressCardHandler = new ProgressCardHandler(this);
         aGameRules = GameRules.getGameRulesInstance();
+        gamePieces = GamePieces.getInstance();
         aSessionScreen = sessionScreen;
 
         random = CatanRandom.getInstance();
@@ -69,7 +72,6 @@ public class SessionController {
         for (Player p : aSessionManager.getPlayers()) {
             if (p.getAccount().equals(CatanGame.account)) {
                 localPlayer = p;
-                aPlayerColor = p.getColor();
                 break;
             }
         }
@@ -181,12 +183,11 @@ public class SessionController {
                   Gdx.app.postRunnable(() -> {
                       final ChooseResourceCardRequest chooseResources = (ChooseResourceCardRequest) object;
 
-                      Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
 
                       MultiStepMove chooseResourceCards = new MultiStepMove();
                       chooseResourceCards.<ResourceMap>addMove(map -> {
-                          clientPlayer.removeResources(map);
-                          aSessionScreen.updateResourceBar(clientPlayer.getResources());
+                          localPlayer.removeResources(map);
+                          aSessionScreen.updateResourceBar(localPlayer.getResources());
 
                           // send targeted message to username player
                           GiveResources request = GiveResources.newInstance(map, CatanGame.account.getUsername(), chooseResources.username);
@@ -197,11 +198,11 @@ public class SessionController {
 
                       int resourcesToChoose = chooseResources.getNumberOfCards();
                       // if client player has less than requested number of resources, it is set to hand size
-                      if (clientPlayer.getResourceHandSize() < resourcesToChoose) { resourcesToChoose = clientPlayer.getResourceHandSize(); }
+                      if (localPlayer.getResourceHandSize() < resourcesToChoose) { resourcesToChoose = localPlayer.getResourceHandSize(); }
 
                       if (resourcesToChoose > 0) {
                           aSessionScreen.addGameMessage(chooseResources.username + " has requested that you choose " + resourcesToChoose + " resources from your hand");
-                          aSessionScreen.chooseMultipleResource(clientPlayer.getResources(), resourcesToChoose, chooseResourceCards);
+                          aSessionScreen.chooseMultipleResource(localPlayer.getResources(), resourcesToChoose, chooseResourceCards);
                       }
 
                   });
@@ -210,19 +211,17 @@ public class SessionController {
                         final GiveResources resourcesGiven = (GiveResources) object;
                         aSessionScreen.addGameMessage(resourcesGiven.sender + " gave you resources");
 
-                        Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
-                        clientPlayer.addResources(resourcesGiven.getResources());
-                        aSessionScreen.updateResourceBar(clientPlayer.getResources());
+                        localPlayer.addResources(resourcesGiven.getResources());
+                        aSessionScreen.updateResourceBar(localPlayer.getResources());
 
                     });
                 } else if (object instanceof TakeResources) {
                     Gdx.app.postRunnable(() -> {
                         final TakeResources resourcesTaken = (TakeResources) object;
                         aSessionScreen.addGameMessage(resourcesTaken.sender + " took your resources");
-                        
-                        Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
-                        clientPlayer.removeResources(resourcesTaken.getResources());
-                        aSessionScreen.updateResourceBar(clientPlayer.getResources());
+
+                        localPlayer.removeResources(resourcesTaken.getResources());
+                        aSessionScreen.updateResourceBar(localPlayer.getResources());
                         
                     });
                 } else if (object instanceof UpdateResources) {
@@ -295,8 +294,8 @@ public class SessionController {
         };
     }
 
-    /**get Session screen*/
-    public SessionScreen getSessionScreen(){
+    /** get Session screen */
+    public SessionScreen getSessionScreen() {
         return aSessionScreen;
     }
 
@@ -409,7 +408,7 @@ public class SessionController {
     }
 
     public PlayerColor getPlayerColor() {
-        return aPlayerColor;
+        return localPlayer.getColor();
     }
 
     public GamePhase getCurrentGamePhase() {
@@ -806,7 +805,7 @@ public class SessionController {
                 // if this is to change, we would also need to update the currentlyExecutingProgressCard to be the same across the network
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getSettlementCost());
-                    aSessionScreen.updateResourceBar(currentP.getResources());
+                    aSessionScreen.updateResourceBar(localPlayer.getResources());
                 }
 
                 // notify peers about board game change
@@ -826,7 +825,7 @@ public class SessionController {
                 // if this is to change, we would also need to update the currentlyExecutingProgressCard to be the same across the network
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost(aSessionManager.getCurrentlyExecutingProgressCard()));
-                    aSessionScreen.updateResourceBar(currentP.getResources());
+                    aSessionScreen.updateResourceBar(localPlayer.getResources());
                 }
 
                 // notify peers about board game change
@@ -846,17 +845,29 @@ public class SessionController {
      * Build a new basic knight for the local player.
      * TODO: placeholder method only for the moment
      */
-    Image buildKnight(CoordinatePair position, boolean fromPeer) {
+    KnightActor buildKnight(CoordinatePair position, boolean fromPeer) {
         // TODO: Add knight to gameboard state
+        final Knight knight = new Knight(localPlayer, position);
 
         // Display the knight
-        GamePieces gamePieces = GamePieces.getInstance();
-        Image knight = gamePieces.createKnight(Knight.Strength.BASIC);
-        knight.setPosition(position.getLeft() - knight.getOriginX(), position.getRight() - knight.getOriginY());
+        KnightActor knightActor = gamePieces.createKnight(knight);
+        knightActor.setPosition(position.getLeft() - knightActor.getOriginX(), position.getRight() - knightActor.getOriginY());
 
         // TODO: inform other players
 
-        return knight;
+        return knightActor;
+    }
+
+    Image buildCityWall(CoordinatePair position, boolean fromPeer) {
+        // TODO: Add city wall to gameboard state
+
+        // Display the city wall
+        Image cityWall = gamePieces.createCityWall(localPlayer.getColor());
+        cityWall.setPosition(position.getLeft() - cityWall.getOriginX(), position.getRight() - cityWall.getOriginY());
+
+        // TODO inform other players
+
+        return cityWall;
     }
 
     public boolean buildKnight(PlayerColor owner, CoordinatePair position, boolean fromPeer) {
@@ -919,7 +930,7 @@ public class SessionController {
                 // if this is to change, we would also need to update the currentlyExecutingProgressCard to be the same across the network
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost(aSessionManager.getCurrentlyExecutingProgressCard()));
-                    aSessionScreen.updateResourceBar(currentP.getResources());
+                    aSessionScreen.updateResourceBar(localPlayer.getResources());
                 }
 
                 // notify peers about board game change
@@ -936,7 +947,7 @@ public class SessionController {
                 // if this is to change, we would also need to update the currentlyExecutingProgressCard to be the same across the network
                 if (!init) {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost(aSessionManager.getCurrentlyExecutingProgressCard()));
-                    aSessionScreen.updateResourceBar(currentP.getResources());
+                    aSessionScreen.updateResourceBar(localPlayer.getResources());
                 }
 
                 // notify peers about board game change
@@ -1026,7 +1037,6 @@ public class SessionController {
 
     void distributeInitialResources(CoordinatePair cityPos) {
         List<Hex> neighbouringHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
-        Player clientPlayer = aSessionManager.getCurrentPlayerFromColor(aPlayerColor);
         ResourceMap playerResourceMap = new ResourceMap();
 
         int pastureCounter = 0;
@@ -1068,8 +1078,8 @@ public class SessionController {
         playerResourceMap.put(BRICK, hillCounter);
         playerResourceMap.put(GRAIN, fieldCounter);
 
-        clientPlayer.addResources(playerResourceMap);
-        aSessionScreen.updateResourceBar(clientPlayer.getResources());
+        localPlayer.addResources(playerResourceMap);
+        aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
 
     /*

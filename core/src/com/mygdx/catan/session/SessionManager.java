@@ -2,6 +2,7 @@ package com.mygdx.catan.session;
 
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
+import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
@@ -57,6 +58,13 @@ public class SessionManager {
                 List<Account> accounts = new ArrayList<>();
                 accounts.add(CatanGame.account);
                 session = Session.newInstance(accounts, GameRules.getGameRulesInstance().getVpToWin());
+
+                // Add lots of resources to the players to make it easy to test
+                ResourceMap resourceMap = new ResourceMap();
+                for (ResourceKind resourceKind : ResourceKind.values())
+                    resourceMap.add(resourceKind, 100);
+                for (Player player : session.getPlayers())
+                    player.addResources(resourceMap);
             }
             sessionManagerInstances.put(session, new SessionManager(session));
         }

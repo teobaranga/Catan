@@ -14,7 +14,7 @@ import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.*;
 import com.mygdx.catan.session.Session;
 import com.mygdx.catan.session.SessionManager;
-import com.mygdx.catan.ui.DiceRollPair;
+import com.mygdx.catan.DiceRollPair;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -107,23 +107,23 @@ class CatanServer {
                 } else if (object instanceof CreateGame) {
                     response = createNewGame(connection, ((CreateGame) object).account);
                 }
-                
+
                 if (object instanceof TargetedRequest) {
                     final TargetedRequest targetedRequest = (TargetedRequest) object;
                     Object targetedResponse = targetedRequest;
-                    
+
                     // Get the peers of the client that sent the request
                     Game game = gamesMap.get(targetedRequest.sender);
-                    if (game != null) { 
+                    if (game != null) {
                         if (targetedRequest instanceof TargetedChooseResourceCardRequest) {
                             targetedResponse = ChooseResourceCardRequest.newInstance(((TargetedChooseResourceCardRequest) targetedRequest).getNumberOfCards(), targetedRequest.sender);
                         }
-                    
+
                         for (Account peer : game.peers.keySet()) {
                             // send message when target is found
                             if (peer.getUsername().equals(targetedRequest.target)) {
-                             // Forward the object (message) to the peer
-                                server.sendToTCP(game.peers.get(peer), targetedResponse); 
+                                // Forward the object (message) to the peer
+                                server.sendToTCP(game.peers.get(peer), targetedResponse);
                                 break;
                             }
                         }

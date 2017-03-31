@@ -16,12 +16,12 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.DiceRolled;
-import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.ui.KnightActor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import static com.mygdx.catan.enums.GamePhase.*;
 import static com.mygdx.catan.enums.ResourceKind.*;
@@ -233,6 +233,44 @@ public class SessionController {
                         
                         aSessionScreen.addGameMessage(resourcesUpdated.username + " now has " + peer.getResourceHandSize() + " resource and commodities cards");
                     });
+                } else if (object instanceof TargetedShowProgressCardsRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        final TargetedShowProgressCardsRequest showProgressCards = (TargetedShowProgressCardsRequest) object;
+                        aSessionScreen.addGameMessage("you show your progress card hand to " + showProgressCards.sender);
+                        
+                        // send progress card hand back to sender
+                        ChooseOpponentProgressCard request = ChooseOpponentProgressCard.newInstance(localPlayer.getProgressCardHand(), localPlayer.getUsername(), showProgressCards.sender);
+                        CatanGame.client.sendTCP(request);
+                    });
+                } else if (object instanceof ChooseOpponentProgressCard) {
+                    Gdx.app.postRunnable(() -> {
+                        final ChooseOpponentProgressCard chooseCardtoSteal = (ChooseOpponentProgressCard) object;
+                        aSessionScreen.addGameMessage("choose progress card to steal from " + chooseCardtoSteal.sender);
+                        
+                        // multistep move that will steal chosen progress card
+                        MultiStepMove stealCard = new MultiStepMove();
+                        
+                        stealCard.<ProgressCardType>addMove(type -> {
+                            // take progress card from sender
+                            TakeProgressCard request = TakeProgressCard.newInstance(type, localPlayer.getUsername(), chooseCardtoSteal.sender);
+                            CatanGame.client.sendTCP(request);
+                            
+                            // add card to local player hand
+                            localPlayer.addProgressCard(type);
+                            
+                            aSessionScreen.interractionDone();
+                        });
+                        
+                        // prompt local player to choose progress card from given hand
+                        aSessionScreen.chooseProgressCard(chooseCardtoSteal.getHand(), stealCard);
+                    });
+                } else if (object instanceof TakeProgressCard) {
+                    Gdx.app.postRunnable(() -> {
+                        final TakeProgressCard progressCardsTaken = (TakeProgressCard) object;
+                        aSessionScreen.addGameMessage(progressCardsTaken.sender + " stole your progress card(s)");
+                        
+                        localPlayer.removeProgressCard(progressCardsTaken.getProgressCard());
+                    });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
                         System.out.println(((EndTurn) object).username + " ended their turn");
@@ -351,6 +389,8 @@ public class SessionController {
      */
     void endTurn() {
         aSessionManager.nextPlayer();
+        // resets all the turn temporary status effects of local player 
+        localPlayer.endTurn();
         switch (aSessionManager.getCurrentPhase()) {
             case SETUP_PHASE_TWO_CLOCKWISE:
                 // End the clockwise phase if everyone placed their settlements
@@ -409,6 +449,10 @@ public class SessionController {
 
     public PlayerColor getPlayerColor() {
         return localPlayer.getColor();
+    }
+    
+    public Player getLocalPlayer() {
+        return localPlayer;
     }
 
     public GamePhase getCurrentGamePhase() {
@@ -1517,6 +1561,10 @@ public class SessionController {
             // Get the min number of resources of this type that the player
             // needs to give in order to receive any other resource
             int ratio = localPlayer.getHighestHarbourLevel(resourceKind);
+            
+            // if localPlayer has played MERCHANTFLEET and chosen resourceKind, set ratio to 2
+            if (resourceKind == localPlayer.getTemporaryResourceKindTrade()) { ratio = 2; }
+            
             if (localPlayer.hasEnoughOfResource(resourceKind, ratio)) {
                 tradeRatios.put(resourceKind, ratio);
             } else {
@@ -1573,7 +1621,7 @@ public class SessionController {
         } else if (fishCount >= 5) {
             aSessionScreen.buildEdgeUnitForFree(EdgeUnitKind.ROAD); // TODO use UI window to let player choose between ROAD and SHIP
         } else if (fishCount >= 4) {
-            aSessionScreen.chooseResource(new ResourceMap(), new MultiStepMove()); //TODO check if correct
+            aSessionScreen.chooseResource(new ArrayList<>(), new MultiStepMove()); //TODO check if correct
         } else if (fishCount >= 3) {
             //stealResource();
         } else if (fishCount >= 2) {

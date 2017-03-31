@@ -500,7 +500,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.MASTERMERCHANT);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.SPY);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -644,8 +644,7 @@ public class SessionScreen implements Screen {
 				chooseMultipleResource(map, 4, chooseTypeMove);
 			}
         });
-        menuTable.add(chooseTypeButton);*/
-
+        menuTable.add(chooseTypeButton); */
 
         // sets center of board
         int offsetX, offsetY;
@@ -815,11 +814,11 @@ public class SessionScreen implements Screen {
      * @param cards cards that player can choose type from
      * @param move whose next move to perform will be called once a ProgressCard has been chosen
      * */
-    public void chooseProgressCard(EnumMap<ProgressCardType, Integer> cards, MultiStepMove move) {
+    public void chooseProgressCard(Collection<ProgressCardType> cards, MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
 
-        final ChooseFromEnumMapWindow<ProgressCardType> chooseProgressCardWindow = new ChooseFromEnumMapWindow<ProgressCardType>("Choose Progress Card", CatanGame.skin, cards);
+        final ChooseFromEnumCollectionWindow<ProgressCardType> chooseProgressCardWindow = new ChooseFromEnumCollectionWindow<ProgressCardType>("Choose Progress Card", CatanGame.skin, cards);
         chooseProgressCardWindow.setChooseCardListener((type) -> {
         	//performs the given move with type
         	move.performNextMove(type);
@@ -832,11 +831,11 @@ public class SessionScreen implements Screen {
      * @param resources the resources that player can choose type from
      * @param move whose next move to perform will be called once a ResourceKind has been chosen
      * */
-    public void chooseResource(EnumMap<ResourceKind, Integer> resources, MultiStepMove move) {
+    public void chooseResource(Collection<ResourceKind> resources, MultiStepMove move) {
     	// disable all possible actions
         disableAllButtons();
 
-        final ChooseFromEnumMapWindow<ResourceKind> chooseResourceCardWindow = new ChooseFromEnumMapWindow<ResourceKind>("Choose Resource Card", CatanGame.skin, resources);
+        final ChooseFromEnumCollectionWindow<ResourceKind> chooseResourceCardWindow = new ChooseFromEnumCollectionWindow<ResourceKind>("Choose Resource Card", CatanGame.skin, resources);
         chooseResourceCardWindow.setChooseCardListener((type) -> {
         	//performs the given move with type
         	move.performNextMove(type);

@@ -68,6 +68,9 @@ public class Config {
         kryo.register(TargetedChooseResourceCardRequest.class);
         kryo.register(GiveResources.class);
         kryo.register(TakeResources.class);
+        kryo.register(TakeProgressCard.class);
+        kryo.register(TargetedShowProgressCardsRequest.class);
+        kryo.register(ChooseOpponentProgressCard.class);
         kryo.register(LeaveGame.class);
         kryo.register(PlayerJoined.class);
         kryo.register(PlayerLeft.class);

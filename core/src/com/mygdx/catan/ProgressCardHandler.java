@@ -6,9 +6,11 @@ import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.*;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.request.GiveResources;
 import com.mygdx.catan.request.SwitchHexDiceNumbers;
 import com.mygdx.catan.request.TakeResources;
 import com.mygdx.catan.request.TargetedChooseResourceCardRequest;
+import com.mygdx.catan.request.TargetedShowProgressCardsRequest;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -16,6 +18,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ProgressCardHandler {
@@ -240,6 +243,24 @@ public class ProgressCardHandler {
             case SABOTEUR:
                 break;
             case SPY:
+                // look at another player's hand of progress cards. you may choose 1 card to take and add to your hand
+                
+                ArrayList<Player> opponents = new ArrayList<>();
+                for (Player p : aSessionController.getPlayers()) {
+                    if (!p.equals(currentP)) { opponents.add(p); }
+                }
+                
+                // multistep move to prompt player to choose another player
+                MultiStepMove choosePlayerForProgressCard = new MultiStepMove();
+                
+                choosePlayerForProgressCard.<Player>addMove(chosenPlayer -> {
+                    // sends request to chosen player to look at they hand of progress cards
+                    TargetedShowProgressCardsRequest request = TargetedShowProgressCardsRequest.newInstance(currentP.getUsername(), chosenPlayer.getUsername());
+                    CatanGame.client.sendTCP(request);
+                });
+                
+                aSessionController.getSessionScreen().chooseOtherPlayer(opponents, choosePlayerForProgressCard);
+                
                 break;
             case WARLORD:
                 break;
@@ -286,12 +307,103 @@ public class ProgressCardHandler {
 
                 break;
             case MERCHANTFLEET:
+                // you may use one resource or commodity of your choice to make any number of 2:1 trades with the supply 
+                // during the turn that you play this card.
+                
+                // multistep move to prompt player to choose a commodity or resource
+                MultiStepMove chooseTradeSupply = new MultiStepMove();
+                
+                chooseTradeSupply.<ResourceKind>addMove(kind -> {
+                    // set chosen temporary 2:1 trade of current player to kind
+                    currentP.setTemporaryResourceKindTrade(kind);
+                    
+                    // ends the move
+                    aSessionController.getSessionScreen().interractionDone();
+                });
+                
+                // begin the multistepmove 
+                aSessionController.getSessionScreen().chooseResource(Arrays.asList(ResourceKind.values()), chooseTradeSupply);
+                
                 break;
             case MERCHANT:
                 break;
             case RESOURCEMONOPOLY:
+                // name a resource. each player must give you 2 of that type of resource if they have them
+                ArrayList<ResourceKind> resources = new ArrayList<>();
+                resources.add(ResourceKind.BRICK);
+                resources.add(ResourceKind.GRAIN);
+                resources.add(ResourceKind.ORE);
+                resources.add(ResourceKind.WOOD);
+                resources.add(ResourceKind.WOOL);
+                
+                // multistep move to prompt player to choose a resource, and take 1 card of that commodity from each player
+                MultiStepMove chooseResourceKind = new MultiStepMove();
+                
+                chooseResourceKind.<ResourceKind>addMove(resource -> {
+                    // resources taken from each player with at least one chosen resource card
+                    ResourceMap resourceTake = new ResourceMap();
+                    resourceTake.put(resource, 2);
+                    
+                    for (Player p : aSessionController.getPlayers()) {
+                        // if the opponent player has at least one card of the chosen commodity, take one such card
+                        if (!p.equals(currentP) && p.getResources().get(resource) > 0) {
+                            // if player only has one card of chosen resources, only take one card
+                            if (p.getResources().get(resource) == 1) { resourceTake.put(resource, 1); }
+                            
+                            // takes card from player
+                            TakeResources request = TakeResources.newInstance(resourceTake, CatanGame.account.getUsername(), p.getUsername());
+                            CatanGame.client.sendTCP(request);
+                            
+                            // gives card to current player
+                            currentP.addResources(resourceTake);
+                        }
+                    }
+                    // updates the sessionscreen resources of current player
+                    aSessionController.getSessionScreen().updateResourceBar(currentP.getResources());
+                    
+                    // ends the move
+                    aSessionController.getSessionScreen().interractionDone();
+                });
+                
+                // begin the multistepmove
+                aSessionController.getSessionScreen().chooseResource(resources, chooseResourceKind);
+                
                 break;
-            case TRADEMONOPOLY:
+            case TRADEMONOPOLY: // name a commodity (coin paper cloth). each player must give you 1 commodity of that type if they have them
+                ArrayList<ResourceKind> commodities = new ArrayList<>();
+                commodities.add(ResourceKind.CLOTH);
+                commodities.add(ResourceKind.COIN);
+                commodities.add(ResourceKind.PAPER);
+                
+                // multistep move to prompt player to choose a commodity, and take 1 card of that commodity from each player
+                MultiStepMove chooseCommodityType = new MultiStepMove();
+                
+                chooseCommodityType.<ResourceKind>addMove(commodity -> {
+                    // resources taken from each player with at least one chosen commodity card
+                    ResourceMap commodityTake = new ResourceMap();
+                    commodityTake.put(commodity, 1);
+                    
+                    for (Player p : aSessionController.getPlayers()) {
+                        // if the opponent player has at least one card of the chosen commodity, take one such card
+                        if (!p.equals(currentP) && p.getResources().get(commodity) > 0) {
+                            // takes card from player
+                            TakeResources request = TakeResources.newInstance(commodityTake, CatanGame.account.getUsername(), p.getUsername());
+                            CatanGame.client.sendTCP(request);
+                            
+                            // gives card to current player
+                            currentP.addResources(commodityTake);
+                        }
+                    }
+                    // updates the sessionscreen resources of current player
+                    aSessionController.getSessionScreen().updateResourceBar(currentP.getResources());
+                    
+                    // ends the move
+                    aSessionController.getSessionScreen().interractionDone();
+                });
+                
+                // begin the multistepmove
+                aSessionController.getSessionScreen().chooseResource(commodities, chooseCommodityType);
+                
                 break;
         }
     }

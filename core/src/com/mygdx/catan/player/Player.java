@@ -28,11 +28,12 @@ public class Player {
     private List<Village> villages;
     private List<Knight> knights; //TODO: keep track of knights for each player
     private int defenderOfCatanPoints;
+    private ResourceKind temporaryTradeKind; //temporary 2:1 trade when playing MERCHANTFLEET
 
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
     private CityImprovements cityImprovements;
-    private EnumMap<ProgressCardType, Integer> hand;
+    private ArrayList<ProgressCardType> hand;
     private FishTokenMap fishTokenHand;
 
     private int availableSettlements;
@@ -49,7 +50,7 @@ public class Player {
         resourceMap = new ResourceMap();
         cityImprovements = new CityImprovements();
         fishTokenHand = new FishTokenMap();
-        hand = new EnumMap<>(ProgressCardType.class);
+        hand = new ArrayList<>();
 
 
         // Set the default number of available pieces
@@ -133,7 +134,7 @@ public class Player {
      * @param card type that gets added to the Player's hand
      */
     public void addProgressCard(ProgressCardType card) {
-        hand.put(card, hand.get(card) + 1);
+        hand.add(card);
     }
 
     /**
@@ -142,7 +143,11 @@ public class Player {
      * @param card type that gets removed from the Player's hand
      */
     public void removeProgressCard(ProgressCardType card) {
-        hand.put(card, hand.get(card) - 1);
+        hand.remove(card);
+    }
+    
+    public ArrayList<ProgressCardType> getProgressCardHand() {
+        return hand;
     }
 
     public int getDefenderOfCatanPoints() {
@@ -329,6 +334,24 @@ public class Player {
 
     public int chooseResourceIndex(int maxIndex) {
         throw new RuntimeException("chooseResourceIndex not yet implemented");
+    }
+    
+    /**
+     * sets the temporary resource trade for when player plays the MERCHANTFLEET progress card
+     * */
+    public void setTemporaryResourceKindTrade(ResourceKind kind) {
+        temporaryTradeKind = kind;
+    }
+    
+    public ResourceKind getTemporaryResourceKindTrade() {
+        return temporaryTradeKind;
+    }
+    
+    /**
+     * when a turn has ended, call this method to reset all turn temporary states of player
+     * */
+    public void endTurn() {
+        temporaryTradeKind = null;
     }
 
     /**

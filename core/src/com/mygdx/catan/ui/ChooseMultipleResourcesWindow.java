@@ -103,7 +103,7 @@ public class ChooseMultipleResourcesWindow extends Window {
 	}
 
 	public interface ChooseCardsListener {
-        void onMapChosen(EnumMap<ResourceKind,Integer> map);
+        void onMapChosen(ResourceMap map);
     }
 	
 }

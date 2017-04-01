@@ -294,6 +294,10 @@ public class GameBoard {
 		aRoadsAndShips.add(eu);
 	}
 	
+	public void removeRoadOrShip(EdgeUnit eu) {
+	    aRoadsAndShips.remove(eu);
+	}
+	
 	public ArrayList<EdgeUnit> getRoadsAndShips() {
 		return aRoadsAndShips;
 	}

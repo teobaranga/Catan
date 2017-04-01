@@ -150,21 +150,32 @@ public class SessionController {
 
                         }
                     });
-                } else if (object instanceof MoveShip) {
+                } else if (object instanceof MoveEdge) {
                     Gdx.app.postRunnable(() -> {
-                        final MoveShip shipMoved = (MoveShip) object;
-                        aSessionScreen.addGameMessage(shipMoved.username + " moved a ship");
-                        Pair<Integer, Integer> originfirstCor = shipMoved.getOriginleftPos();
-                        Pair<Integer, Integer> originsecondCor = shipMoved.getOriginrightPos();
-                        Pair<Integer, Integer> newfirstCor = shipMoved.getnewleftPos();
-                        Pair<Integer, Integer> newsecondCor = shipMoved.getnewrightPos();
+                        final MoveEdge edgeMoved = (MoveEdge) object;
+                        aSessionScreen.addGameMessage(edgeMoved.username + " moved a ship");
+                        Pair<Integer, Integer> originfirstCor = edgeMoved.getOriginleftPos();
+                        Pair<Integer, Integer> originsecondCor = edgeMoved.getOriginrightPos();
+                        Pair<Integer, Integer> newfirstCor = edgeMoved.getnewleftPos();
+                        Pair<Integer, Integer> newsecondCor = edgeMoved.getnewrightPos();
 
                         CoordinatePair originfirstPos = aGameBoardManager.getCoordinatePairFromCoordinates(originfirstCor.getLeft(), originfirstCor.getRight());
                         CoordinatePair originsecondPos = aGameBoardManager.getCoordinatePairFromCoordinates(originsecondCor.getLeft(), originsecondCor.getRight());
                         CoordinatePair newfirstPos = aGameBoardManager.getCoordinatePairFromCoordinates(newfirstCor.getLeft(), newfirstCor.getRight());
                         CoordinatePair newsecondPos = aGameBoardManager.getCoordinatePairFromCoordinates(newsecondCor.getLeft(), newsecondCor.getRight());
 
-                        moveShip(originfirstPos, originsecondPos, newfirstPos, newsecondPos, shipMoved.getOwner(), true);
+                        moveEdge(originfirstPos, originsecondPos, newfirstPos, newsecondPos, edgeMoved.getOwner(), edgeMoved.getKind(), true);
+                    });
+                } else if (object instanceof DisplaceRoadRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        final DisplaceRoadRequest displaceRoad = (DisplaceRoadRequest) object;
+                        aSessionScreen.addGameMessage(displaceRoad.username+ " has displaced a road");
+                        
+                        CoordinatePair firstCoordinate = aGameBoardManager.getCoordinatePairFromCoordinates(displaceRoad.getFirstCoordinate().getLeft(), displaceRoad.getFirstCoordinate().getRight());
+                        CoordinatePair secondCoordinate = aGameBoardManager.getCoordinatePairFromCoordinates(displaceRoad.getSecondCoordinate().getLeft(), displaceRoad.getSecondCoordinate().getRight());
+
+                        displaceEdgeUnit(firstCoordinate, secondCoordinate);
+                        
                     });
                 } else if (object instanceof SwitchHexDiceNumbers) {
                   Gdx.app.postRunnable(() -> {
@@ -270,6 +281,29 @@ public class SessionController {
                         aSessionScreen.addGameMessage(progressCardsTaken.sender + " stole your progress card(s)");
                         
                         localPlayer.removeProgressCard(progressCardsTaken.getProgressCard());
+                    });
+                } else if (object instanceof DiscardHalfRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        final DiscardHalfRequest discardHalf = (DiscardHalfRequest) object;
+                        aSessionScreen.addGameMessage(discardHalf.sender + " has forced you to discard half of your hand");
+                        
+                        int cardsToDiscard = localPlayer.getResourceHandSize() / 2;
+                        
+                        // multistep move that will prompt player to discard half their hand
+                        MultiStepMove discard = new MultiStepMove();
+                        discard.<ResourceMap>addMove(cards -> {
+                            aTransactionManager.payPlayerToBank(localPlayer, cards);
+                            aSessionScreen.updateResourceBar(localPlayer.getResources());
+                            aSessionScreen.interractionDone();
+                        });
+                        
+                        if (cardsToDiscard > 0) {
+                            aSessionScreen.addGameMessage("You must discard " + cardsToDiscard + " cards");
+                            aSessionScreen.chooseMultipleResource(localPlayer.getResources(), cardsToDiscard, discard);
+                        } else {
+                            aSessionScreen.addGameMessage("Lucky for you, you have no cards to discard");
+                        }
+                        
                     });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
@@ -1034,7 +1068,7 @@ public class SessionController {
      * @fromPeer              indicates whether the method was called from the owner of new settlement, or from a peer
      * @return true if successful
      * */
-    public boolean moveShip(CoordinatePair firstOriginPos, CoordinatePair secondOriginPos, CoordinatePair newFirstPos, CoordinatePair newSecondPos, PlayerColor owner, boolean fromPeer) {
+    public boolean moveEdge(CoordinatePair firstOriginPos, CoordinatePair secondOriginPos, CoordinatePair newFirstPos, CoordinatePair newSecondPos, PlayerColor owner, EdgeUnitKind kind, boolean fromPeer) {
     	Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
     	EdgeUnit shipToMove = null;
 
@@ -1053,18 +1087,44 @@ public class SessionController {
     		    Pair<Integer,Integer> originrightPos = new ImmutablePair<>(secondOriginPos.getLeft(), secondOriginPos.getRight());
     		    Pair<Integer,Integer> newleftPos = new ImmutablePair<>(newFirstPos.getLeft(), newFirstPos.getRight());
     		    Pair<Integer,Integer> newrightPos = new ImmutablePair<>(newSecondPos.getLeft(), newSecondPos.getRight());
-    		    MoveShip request = MoveShip.newInstance(originleftPos, originrightPos, newleftPos, newrightPos, owner, CatanGame.account.getUsername());
+    		    MoveEdge request = MoveEdge.newInstance(originleftPos, originrightPos, newleftPos, newrightPos, owner, kind, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
     		} else {
     		    // remove old position of ship from client GUI
                 aSessionScreen.removeEdgeUnit(firstOriginPos.getLeft(), firstOriginPos.getRight(), secondOriginPos.getLeft(), secondOriginPos.getRight());
     		}
 
-    		shipToMove.moveShip(newFirstPos, newSecondPos);
-            aSessionScreen.updateEdge(newFirstPos, newSecondPos, EdgeUnitKind.SHIP, owner);
+    		shipToMove.moveEdge(newFirstPos, newSecondPos);
+            aSessionScreen.updateEdge(newFirstPos, newSecondPos, kind, owner);
 
     		return true;
     	}
+    }
+    
+    /**
+     * Finds the ship with given CoordinatePairs as its endpoints, and puts it back in that unit's owner's inventory
+     * @param firstCor first CoordinatePair of edge to displace
+     * @param secondCor second CoordinatePair of edge to displace
+     * @return true if successful
+     * */
+    public void displaceEdgeUnit(CoordinatePair firstCor, CoordinatePair secondCor) {
+        EdgeUnit roadToDisplace = aGameBoardManager.getEdgeUnitFromCoordinatePairs(firstCor, secondCor);
+        
+        // removes the road from the gameboard and from the players list of edgeunits
+        aGameBoardManager.displaceRoad(roadToDisplace);
+        
+        // notify session screen of changes
+        aSessionScreen.removeEdgeUnit(firstCor.getLeft(), firstCor.getRight(), secondCor.getLeft(), secondCor.getRight());
+        
+        // if owner is local player, update available game pieces
+        Player owner = roadToDisplace.getOwner();
+        if (owner.equals(localPlayer)) {
+            aSessionScreen.addGameMessage("Your edge unit was displaced, it has been returned to your inventory");
+            aSessionScreen.updateAvailableGamePieces(owner.getAvailableSettlements(), owner.getAvailableCities(), owner.getAvailableRoads(), owner.getAvailableShips());
+        } else {
+            aSessionScreen.addGameMessage(owner.getUsername() + "'s edge unit was displaced");
+        }
+        
     }
 
     public void buildInitialVillageAndRoad(CoordinatePair villagePos, CoordinatePair firstEdgePos, CoordinatePair secondEdgePos, VillageKind kind, EdgeUnitKind edgeKind) {
@@ -1211,7 +1271,7 @@ public class SessionController {
     }
 
     //The event die yields a trade,science, or politics. eligible players choose progress card
-    private void eventDieProgressCardHandle(EventKind eventDieResult, int redDie) {
+    public void eventDieProgressCardHandle(EventKind eventDieResult, int redDie) {
         for (Player p : aSessionManager.getPlayers()) {
 
             int level = p.getImprovementLevelByType(eventDieResult);
@@ -1243,7 +1303,7 @@ public class SessionController {
             }
         }
     }
-    private void barbarianHandleAttack() {
+    public void barbarianHandleAttack() {
 
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
         int activeKnightStrength = 0;
@@ -1467,6 +1527,7 @@ public class SessionController {
 
 //                aSessionManager.getSession().barbarianPosition = 1;
 
+                // IF ANY OF THE FOLLOWING IS CHANGED, THEN SAME CHANGES NEED TO BE MADE IN ALCHEMIST PROGRESS CARD HANDLE
                 if (eventDieResult == EventKind.BARBARIAN) {
                     aSessionManager.decreaseBarbarianPosition();
                     if (aSessionManager.getSession().barbarianPosition == 0) {

@@ -387,6 +387,15 @@ public class Player {
     public void addEdgeUnit(EdgeUnit unit) {
         roadsAndShips.add(unit);
     }
+    
+    /**
+     * removes given EdgeUnit from roadsAndShips
+     * 
+     * @param unit to remove
+     * */
+    public void removeEdgeUnit(EdgeUnit unit) {
+        roadsAndShips.remove(unit);
+    }
 
     /**
      * adds given village to villages. Its position and and type is assumed to be legal.

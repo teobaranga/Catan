@@ -45,12 +45,12 @@ public class EdgeUnit {
 	}
 	
 	/**
-	 * moves this edge unit to new coordinates. If unit is not a ship, or the two given coordinates are not adjacent, unit is not moved
+	 * moves this edge unit to new coordinates. If the two given coordinates are not adjacent, unit is not moved
 	 * */
-	public void moveShip (CoordinatePair newFirstCoordinate, CoordinatePair newSecondCoordinate) {
+	public void moveEdge (CoordinatePair newFirstCoordinate, CoordinatePair newSecondCoordinate) {
 		
 		boolean areAdjacent = (Math.abs(newFirstCoordinate.getLeft() - newSecondCoordinate.getLeft()) + Math.abs(newFirstCoordinate.getRight() - newSecondCoordinate.getRight()) == 2 && newFirstCoordinate.getRight() != newSecondCoordinate.getRight()); 
-		if (kind != EdgeUnitKind.SHIP || !areAdjacent) {return;}
+		if (!areAdjacent) {return;}
 		
 		aFirstCoordinate = newFirstCoordinate;
 		aSecondCoordinate = newSecondCoordinate;

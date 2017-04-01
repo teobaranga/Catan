@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.FishTokenMap;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.*;
@@ -28,6 +29,8 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.ui.*;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -502,7 +505,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.SPY);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.ALCHEMIST);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -862,6 +865,22 @@ public class SessionScreen implements Screen {
         });
         aSessionStage.addActor(chooseResourcesCardWindow);
     }
+    
+    /**
+     * Opens a window that prompts the client to choose the red and yellow dice numbers
+     * @param move whose next move to perform will be called once the two dice numbers have been chosen
+     * */
+    public void chooseDiceNumbers(MultiStepMove move) {
+        // disable all possible actions
+        disableAllButtons();
+        
+        final ChooseDiceResultWindow chooseDiceNumberWindow = new ChooseDiceResultWindow("Choose the results of the red and yellow die", CatanGame.skin);
+        chooseDiceNumberWindow.setChooseDiceResultsListener((redDiceResult, yellowDiceResult) -> {
+            //performs the given move
+            move.performNextMove(DiceRollPair.newRoll(redDiceResult, yellowDiceResult));
+        });
+        aSessionStage.addActor(chooseDiceNumberWindow);
+    }
 
     /**
      * Called after a multi step move has been fully performed, sets the mode of the GUI to CHOOSEACTIONMODE
@@ -1132,7 +1151,7 @@ public class SessionScreen implements Screen {
                     // adds move that will move the ship once a new edge is chosen
                     currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenDest -> {
                         Pair<CoordinatePair, CoordinatePair> ship = ((MultiStepMovingshipMove) currentlyPerformingMove).getShipToMove();
-                        aSessionController.moveShip(ship.getLeft(), ship.getRight(), chosenDest.getLeft(), chosenDest.getRight(), aSessionController.getPlayerColor(), false);
+                        aSessionController.moveEdge(ship.getLeft(), ship.getRight(), chosenDest.getLeft(), chosenDest.getRight(), aSessionController.getPlayerColor(), EdgeUnitKind.SHIP, false);
 
                         aMode = SessionScreenModes.CHOOSEACTIONMODE;
                         moveShipButton.setText("Move Ship");
@@ -1769,7 +1788,7 @@ public class SessionScreen implements Screen {
         availableShips.setText("Available Ships: " + newAvailShips);
     }
 
-    public void showDice(int yellowDice, int redDice) {
+    public void showDice(int redDice, int yellowDice) {
 
         Table yellow = new Table();
         Table red = new Table();
@@ -1843,7 +1862,7 @@ public class SessionScreen implements Screen {
      *
      * @param message message
      */
-    void addGameMessage(String message) {
+    public void addGameMessage(String message) {
         final Table table = (Table) gameLog.getChildren().get(0);
         table.add(new Label(message, CatanGame.skin)).left();
         table.row();

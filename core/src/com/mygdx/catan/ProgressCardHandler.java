@@ -6,7 +6,10 @@ import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.*;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.request.DiscardHalfRequest;
+import com.mygdx.catan.request.DisplaceRoadRequest;
 import com.mygdx.catan.request.GiveResources;
+import com.mygdx.catan.request.RollDice;
 import com.mygdx.catan.request.SwitchHexDiceNumbers;
 import com.mygdx.catan.request.TakeResources;
 import com.mygdx.catan.request.TargetedChooseResourceCardRequest;
@@ -19,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class ProgressCardHandler {
@@ -42,12 +46,49 @@ public class ProgressCardHandler {
         //aSessionManager.incrementProgressCardMap(pType);
         //SessionManager.getInstance().incrementProgressCardMap(pType);
         aSessionManager.setCurrentlyExecutingProgressCard(pType);
+        //TODO: call finishCurrentlyExecutingProgressCard() every time interractionDone is called at the end of a multistepaction (note network stuff!), and at the end of  handling a card without any interactions
         ArrayList<Player> playersWithMoreVP = new ArrayList<>();
 
         switch(pType) {
             case ALCHEMIST:
+                // choose the results of both production dice. then roll the event die as normal and resolve event
+                
+                CatanRandom random = CatanRandom.getInstance();
+                EventKind eventDieResult = random.rollEventDieBarbarian(); // TODO roll using the correct method
+                 
+                MultiStepMove chooseDieResults = new MultiStepMove();
+                chooseDieResults.<DiceRollPair>addMove(diceResults -> {
+                    System.out.println("you chose: " + diceResults.getRed() + ", " + diceResults.getYellow());
+                    
+                    // handle roll
+                    if (eventDieResult == EventKind.BARBARIAN) {
+                        aSessionManager.decreaseBarbarianPosition();
+                        if (aSessionManager.getSession().barbarianPosition == 0) {
+                            //barbarians attack!
+                            aSessionController.barbarianHandleAttack();
+                        }
+                    } else if (eventDieResult == EventKind.TRADE || eventDieResult == EventKind.POLITICS || eventDieResult == EventKind.SCIENCE) {
+                        aSessionController.eventDieProgressCardHandle(eventDieResult, diceResults.getRed());
+                    }
+
+                    aSessionController.getSessionScreen().addGameMessage(String.format("Rolled a %s", eventDieResult));
+
+                    // Create the message that informs the other users of the dice roll
+                    RollDice request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
+                    CatanGame.client.sendTCP(request);
+                    
+                    aSessionController.getSessionScreen().interractionDone();
+                });
+                
+                aSessionController.getSessionScreen().chooseDiceNumbers(chooseDieResults);
+                
+               
+                
                 break;
             case CRANE:
+                // you can build a city improvement (abbey, town hall, etc.) for 1
+                // commodity less than normal
+                
                 break;
             case ENGINEER:
                 // Adds a city wall to selected city for free
@@ -176,7 +217,7 @@ public class ProgressCardHandler {
                     
                     // re initializes validEdges 
                     validEdges.clear();
-                    updateValidEdges(validEdges, chosenEdge);
+                    updateValidEdges(validEdges);
                     
                     // prompts the player to choose the second edge with updated valid edges
                     aSessionController.getSessionScreen().initChooseEdgeMove(validEdges, move);
@@ -197,7 +238,7 @@ public class ProgressCardHandler {
                 
                 break;
             //you may promote 2 knights 1 level each for free
-            //todo: you may only promote a "strong" knight if you have the fortress city improvement
+            //TODO: you may only promote a "strong" knight if you have the fortress city improvement
             case SMITH:
                 ArrayList<CoordinatePair> validKnights = new ArrayList<>();
                 List<Knight> listOfKnights = currentP.getKnights();
@@ -237,10 +278,99 @@ public class ProgressCardHandler {
             case DESERTER:
                 break;
             case DIPLOMAT:
+                // you may remove an "open" road (without another road or another piece at one end)
+                // if you remove your own road, you may immediately place it somewhere else on the board for free
+                // TODO : you may choose not to place the road immediately after in which case it is returned to your inventory
+                
+                // initialize list of valid edges to choose from
+                ArrayList<Pair<CoordinatePair, CoordinatePair>> openRoads = new ArrayList<>();
+                int firstEndAdj, secondEndAdj;
+                for (EdgeUnit edge : aGameBoardManager.getRoadsAndShips()) {
+                    firstEndAdj = 0; 
+                    secondEndAdj = 0;
+                    
+                    // count the number of adjacent roads to the first and second endpoint
+                    for (EdgeUnit other : aGameBoardManager.getRoadsAndShips()) {
+                        if (!edge.equals(other) && other.hasEndpoint(edge.getAFirstCoordinate())) {
+                            firstEndAdj++;
+                        }
+                        if (!edge.equals(other) && other.hasEndpoint(edge.getASecondCoordinate())) {
+                            secondEndAdj ++;
+                        }
+                    }
+                    
+                    // count the number of adjacent villages to the first and second endpoint
+                    for (Village village : aGameBoardManager.getVillages()) {
+                        if (edge.getAFirstCoordinate().equals(village.getPosition())) {
+                            firstEndAdj++;
+                        }
+                        if (edge.getASecondCoordinate().equals(village.getPosition())) {
+                            secondEndAdj++;
+                        }
+                    }
+                    
+                    // if either one of the endpoints has an empty adjacent count, the road is open
+                    if ((secondEndAdj == 0 || firstEndAdj == 0) && edge.getKind() == EdgeUnitKind.ROAD) {
+                        openRoads.add(new ImmutablePair<>(edge.getAFirstCoordinate(), edge.getASecondCoordinate()));
+                    }
+                }
+                
+                // multistep move that will either let the player choose new position of owned road, or simply displace opponent road
+                MultiStepMove displaceRoad = new MultiStepMove();
+                
+                displaceRoad.<Pair<CoordinatePair,CoordinatePair>>addMove(chosenEdgeCor -> {
+                    // find the EdgeUnit piece that corresponds to the chosen edge
+                    EdgeUnit chosenEdge = aGameBoardManager.getEdgeUnitFromCoordinatePairs(chosenEdgeCor.getLeft(), chosenEdgeCor.getRight());
+                    
+                    // if player owns chosenEdge, they will be given the possibility to immediately move it
+                    if (chosenEdge.getOwner().equals(currentP)) {
+                        // initialize valid move positions
+                        ArrayList<Pair<CoordinatePair,CoordinatePair>> validMoveRoadPos = new ArrayList<>();
+                        updateValidMoveRoad(validMoveRoadPos, chosenEdgeCor);
+                        
+                        // add move to displaceRoad that moves chosenEdge to chosenEdgePos and inform the network
+                        displaceRoad.<Pair<CoordinatePair,CoordinatePair>>addMove(moveToPos -> {
+                            
+                            CoordinatePair originfirstPos = aGameBoardManager.getCoordinatePairFromCoordinates(chosenEdgeCor.getLeft().getLeft(), chosenEdgeCor.getLeft().getRight());
+                            CoordinatePair originsecondPos = aGameBoardManager.getCoordinatePairFromCoordinates(chosenEdgeCor.getRight().getLeft(), chosenEdgeCor.getRight().getRight());
+                            CoordinatePair newfirstPos = aGameBoardManager.getCoordinatePairFromCoordinates(moveToPos.getLeft().getLeft(), moveToPos.getLeft().getRight());
+                            CoordinatePair newsecondPos = aGameBoardManager.getCoordinatePairFromCoordinates(moveToPos.getRight().getLeft(), moveToPos.getRight().getRight());
+                            
+                            aSessionController.moveEdge(originfirstPos, originsecondPos, newfirstPos, newsecondPos, currentP.getColor(), EdgeUnitKind.ROAD, false);
+                            
+                            aSessionController.getSessionScreen().interractionDone();
+                        });
+                        
+                        aSessionController.getSessionScreen().removeEdgeUnit(chosenEdgeCor.getLeft().getLeft(), chosenEdgeCor.getLeft().getRight(), chosenEdgeCor.getRight().getLeft(), chosenEdgeCor.getRight().getRight());
+                        aSessionController.getSessionScreen().initChooseEdgeMove(validMoveRoadPos, displaceRoad);
+                        
+                    } else { // if player does not own edge, it is simply displaced unto opponent inventory
+                        ImmutablePair<Integer,Integer> firstCor = new ImmutablePair<>(chosenEdgeCor.getLeft().getLeft(), chosenEdgeCor.getLeft().getRight());
+                        ImmutablePair<Integer,Integer> secondCor = new ImmutablePair<>(chosenEdgeCor.getRight().getLeft(), chosenEdgeCor.getRight().getRight());
+                        DisplaceRoadRequest request = DisplaceRoadRequest.newInstance(firstCor, secondCor, currentP.getUsername());
+                        CatanGame.client.sendTCP(request);
+                        aSessionController.getSessionScreen().interractionDone();
+                    }
+                });
+                
+                aSessionController.getSessionScreen().initChooseEdgeMove(openRoads, displaceRoad);
+                
+                
                 break;
             case INTRIGUE:
                 break;
             case SABOTEUR:
+                // when you play this card, each player who has as many or more victory points than you must 
+                // discard half (round down) of his cards to the bank (resource/commodity cards)
+                
+                // initialize list of players with as many or more victory points
+                updatePlayersWithMoreOrEqualVP(playersWithMoreVP, currentP);
+                
+                for (Player p : playersWithMoreVP) {
+                    DiscardHalfRequest request = DiscardHalfRequest.newInstance(currentP.getUsername(), p.getUsername());
+                    CatanGame.client.sendTCP(request);
+                }
+                
                 break;
             case SPY:
                 // look at another player's hand of progress cards. you may choose 1 card to take and add to your hand
@@ -408,8 +538,47 @@ public class ProgressCardHandler {
         }
     }
 
+    private void updateValidMoveRoad(List<Pair<CoordinatePair,CoordinatePair>> validRoadPos, Pair<CoordinatePair,CoordinatePair> roadToMove) {
+        HashSet<CoordinatePair> validRoadEndpoints = aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor());
+
+        // removes the end point at the intersection not connected to ships other than validShip
+        for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
+            if (i.equals(roadToMove.getLeft()) || i.equals(roadToMove.getRight())) {
+                boolean hasOtherEndpoint = false;
+                for (CoordinatePair j : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
+                    if (aSessionController.isAdjacent(i, j) && !(j.equals(roadToMove.getLeft()) || j.equals(roadToMove.getRight()))) {
+                        hasOtherEndpoint = true;
+                        break;
+                    }
+                }
+                if (!hasOtherEndpoint) {
+                    validRoadEndpoints.remove(i);
+                }
+            }
+        }
+
+
+        for (CoordinatePair i : validRoadEndpoints) {
+            for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
+                if (aSessionController.isAdjacent(i, j) && aSessionController.isOnLand(i, j)) {
+
+                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
+                    validRoadPos.add(edge);
+
+                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                            validRoadPos.remove(edge);
+                        }
+                    }
+                }
+            }
+        }
+
+        // add the valid ship position to validEdges
+        validRoadPos.add(roadToMove);
+    }
     
-    private void updateValidEdges(List<Pair<CoordinatePair,CoordinatePair>> validEdges, Pair<CoordinatePair,CoordinatePair> chosenEdge) {
+    private void updateValidEdges(List<Pair<CoordinatePair,CoordinatePair>> validEdges) {
      // loops through valid road end points and adds valid edges (both ships and roads)
         for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
             for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) { 
@@ -430,9 +599,18 @@ public class ProgressCardHandler {
 
     private void updatePlayersWithMoreVP(List<Player> playersWithMoreVPlist, Player currentPlayer) {
         playersWithMoreVPlist.clear();
-        for (Player p : aSessionManager.getPlayers()) {
+        for (Player p : aSessionManager.getPlayers()) { //TODO: uncomment after testing all progress cards is done
             if (!p.equals(currentPlayer) /*&& aSessionController.currentVP(p) > aSessionController.currentVP(currentPlayer)*/) {
                 playersWithMoreVPlist.add(p);
+            }
+        }
+    }
+    
+    private void updatePlayersWithMoreOrEqualVP(List<Player> playersWithMoreVPList, Player currentPlayer) {
+        playersWithMoreVPList.clear();
+        for (Player p : aSessionManager.getPlayers()) { //TODO: uncomment after testing all progress cards is done
+            if (!p.equals(currentPlayer) /*&& aSessionController.currentVP(p) >= aSessionController.currentVP(currentPlayer)*/) {
+                playersWithMoreVPList.add(p);
             }
         }
     }

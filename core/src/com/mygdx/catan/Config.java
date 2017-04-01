@@ -81,13 +81,15 @@ public class Config {
         kryo.register(UpdateResources.class);
         kryo.register(SwitchHexDiceNumbers.class);
         kryo.register(BuildEdge.class);
-        kryo.register(MoveShip.class);
+        kryo.register(MoveEdge.class);
         kryo.register(EndTurn.class);
         kryo.register(TradeProposal.class);
         kryo.register(TradeOfferAccept.class);
         kryo.register(TradeOfferCancel.class);
         kryo.register(TradeCancel.class);
         kryo.register(UpdateVP.class);
+        kryo.register(DiscardHalfRequest.class);
+        kryo.register(DisplaceRoadRequest.class);
         kryo.register(UpdateOldBoot.class);
         kryo.register(LinkedHashMap.class);
         kryo.register(ArrayList.class);

@@ -40,6 +40,10 @@ public class GameBoardManager {
     public ArrayList<EdgeUnit> getRoadsAndShips() {
         return aGameBoard.getRoadsAndShips();
     }
+    
+    public List<Village> getVillages() {
+        return aGameBoard.getVillages();
+    }
 
     public ArrayList<Hex> getHexes() {
         return aGameBoard.getHexes();
@@ -167,7 +171,7 @@ public class GameBoardManager {
     }
 
     public void buildCityWall(Player player, CoordinatePair myCityWall) {
-
+        throw new RuntimeException("buildCityWall not yet implemented");
     }
 
     public void buildBasicKnight(Player player, CoordinatePair myKnightPosition) {
@@ -176,8 +180,23 @@ public class GameBoardManager {
         aGameBoard.addKnight(myKnight);
     }
 
-
-
+    /**
+     * removes given edge unit from the board, and back into players inventory 
+     * @param unit to remove from board
+     * */
+    public void displaceRoad(EdgeUnit unit) {
+        // removes edge from board
+        aGameBoard.removeRoadOrShip(unit);
+        
+        // removed edge from players list of edges, and increments appropriate available game piece
+        unit.getOwner().removeEdgeUnit(unit);
+        if (unit.getKind() == EdgeUnitKind.ROAD) {
+            unit.getOwner().incrementAvailableRoads();
+        } else {
+            unit.getOwner().incrementAvailableShips();
+        }
+    }
+    
 
     /**TODO: you may move an active knight to another intersection. in order for the knight to move, you must have built roads
      * linking the intersection the knight is moving from to the intersection that he is moving to
@@ -417,6 +436,21 @@ public class GameBoardManager {
         for (Hex hex : aGameBoard.getHexes()) {
             if (hex.getLeftCoordinate() == leftCoordinate && hex.getRightCoordinate() == rightCoordinate) {
                 return hex;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * @precondition it is assumed firstCoordinatePair and secondCoordinatePair are distinct
+     * @param firstCoordinatePair first CoordinatePair of Road
+     * @param secondCoordinatePair second CoordinatePair of Road
+     * @return the EdgeUnit on board with given endpoints, null if such an edge does not exist 
+     * */
+    public EdgeUnit getEdgeUnitFromCoordinatePairs(CoordinatePair firstCoordinatePair, CoordinatePair secondCoordinatePair) {
+        for (EdgeUnit edge : aGameBoard.getRoadsAndShips()) {
+            if (edge.hasEndpoint(firstCoordinatePair) && edge.hasEndpoint(secondCoordinatePair)) {
+                return edge;
             }
         }
         return null;

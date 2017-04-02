@@ -21,7 +21,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 import static com.mygdx.catan.enums.GamePhase.*;
 import static com.mygdx.catan.enums.ResourceKind.*;
@@ -1336,6 +1335,63 @@ public class SessionController {
             }
         }
     }
+
+    public void robberHandle() {
+        List<Hex> hexesToChooseFrom = new ArrayList<>();
+        List<Hex> boardHexes = aGameBoardManager.getHexes();
+        for (Hex h : boardHexes) {
+            if (h.getKind() != TerrainKind.SEA) {
+                hexesToChooseFrom.add(h);
+            }
+        }
+
+        MultiStepMove moveRobber = new MultiStepMove();
+
+        moveRobber.<Hex>addMove(hex -> {
+            final Hex chosenHex =  hex;
+            ArrayList<Player> potentialVictims = new ArrayList<>();
+            List<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(chosenHex);
+
+            for(Village v : adjacentVillages) {
+                potentialVictims.add(v.getOwner());
+            }
+
+            moveRobber.<Player>addMove(victim -> {
+                final Player chosenVictim = victim;
+
+                //get hand
+                ResourceMap playerHand = victim.getResources();
+                int playerHandSize = victim.getResourceHandSize();
+
+                int randomCardIndex = new Random().nextInt(playerHandSize)+1;
+
+                //choose a random card to steal from victim's hand
+                ResourceKind cardToTake;
+                ResourceMap cardToSteal = new ResourceMap();
+                for(ResourceKind kind : ResourceKind.values()) {
+                    int numCards = playerHand.get(kind);
+                    if (numCards > 0) {
+                        randomCardIndex -= numCards;
+                        if (randomCardIndex <= 0) {
+                            cardToTake = kind;
+                            cardToSteal.put(cardToTake, 1);
+                            //update local player's resources
+                            localPlayer.addResources(cardToSteal);
+                            aSessionScreen.updateResourceBar(localPlayer.getResources());
+                            //update opponent hand
+                            TakeResources request = TakeResources.newInstance(cardToSteal, localPlayer.getUsername(), chosenVictim.getUsername());
+                            CatanGame.client.sendTCP(request);
+                            aSessionScreen.interractionDone();
+                            break;
+                        }
+                    }
+                }
+            });
+            aSessionScreen.chooseOtherPlayer(potentialVictims, moveRobber);
+        });
+        aSessionScreen.initChooseHexMove(hexesToChooseFrom, moveRobber);
+    }
+
     public void barbarianHandleAttack() {
 
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();

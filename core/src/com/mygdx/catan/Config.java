@@ -89,6 +89,7 @@ public class Config {
         kryo.register(TradeCancel.class);
         kryo.register(UpdateVP.class);
         kryo.register(DiscardHalfRequest.class);
+        kryo.register(MoveMerchantRequest.class);
         kryo.register(DisplaceRoadRequest.class);
         kryo.register(UpdateOldBoot.class);
         kryo.register(LinkedHashMap.class);

@@ -36,6 +36,7 @@ public class GameRules {
 	private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
 	private HashMap<Integer,Integer> defaultDiceNumberMap = new HashMap<Integer,Integer>();
 	private HashMap<Integer,HarbourKind> defaultHarbourMap = new HashMap<Integer,HarbourKind>();
+	private HashMap<TerrainKind, ResourceKind> producingResourcemap = new HashMap<>();
 
 	private ArrayList<Pair<Integer, Integer>> smallFisheryPosition = new ArrayList<>();
 
@@ -44,7 +45,7 @@ public class GameRules {
 	private int cityVp = 2;
 	private int metropolisVp = 2;
 
-	private final int SIZE = 7;
+	public static final int SIZE = 7;
 
 	// private int genericTradeRatio = 4;
 	// private int specialTradeRation = 3;
@@ -68,6 +69,7 @@ public class GameRules {
 		setupBuildBasicKnightCost();
 		setupActivateKnightCost();
 		setupPromoteKnightCost();
+		setupProducingResourcesmap();
 	}
 
 	/**
@@ -126,6 +128,14 @@ public class GameRules {
         smallFisheryPosition.add(new ImmutablePair<>(0,4));
         smallFisheryPosition.add(new ImmutablePair<>(2,4));
     }
+	
+	private void setupProducingResourcesmap() {
+	    producingResourcemap.put(TerrainKind.FIELDS, ResourceKind.GRAIN);
+	    producingResourcemap.put(TerrainKind.FOREST, ResourceKind.WOOD);
+	    producingResourcemap.put(TerrainKind.HILLS, ResourceKind.BRICK);
+	    producingResourcemap.put(TerrainKind.MOUNTAINS, ResourceKind.ORE);
+	    producingResourcemap.put(TerrainKind.PASTURE, ResourceKind.WOOL);
+	}
 
     public Pair getSmallFisheryPair(int index) {
 	    return smallFisheryPosition.get(index);
@@ -359,6 +369,10 @@ public class GameRules {
 	    return (p.getKey() + 30) * 10 + (p.getValue() + 30);
     }
 
+    public ResourceKind getProducingResource(TerrainKind kind) {
+        return producingResourcemap.get(kind);
+    }
+    
 	/**
 	 * @return singleton instance of GameRules
 	 * */

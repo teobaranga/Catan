@@ -92,6 +92,22 @@ public class GameBoardManager {
 
     }
 
+    public void setMerchantOwner(Player newOwner) {
+        aGameBoard.setMerchantOwner(newOwner);
+    }
+    
+    public Player getMerchantOwner() {
+        return aGameBoard.getMerchantOwner();
+    }
+    
+    public void setMerchantPosition(Hex pos) {
+        aGameBoard.setMerchantPosition(pos);
+    }
+    
+    public Hex getMerchantPosition() {
+        return aGameBoard.getMerchantPosition();
+    }
+    
     /**
      *
      * Checks if the given player suffers from the Old Boot malus.

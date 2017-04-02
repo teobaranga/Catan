@@ -20,6 +20,7 @@ import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.FishTokenMap;
+import com.mygdx.catan.GameRules;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
@@ -81,6 +82,9 @@ public class SessionScreen implements Screen {
 
     /** The Robber */
     private PolygonSprite robberSprite;
+    
+    /** The Merchant */
+    private PolygonRegion merchantRegion;
 
     /** The origin of the the hex board */
     private MutablePair<Integer, Integer> boardOrigin;
@@ -505,7 +509,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.ALCHEMIST);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.MERCHANT);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -675,6 +679,9 @@ public class SessionScreen implements Screen {
         if (robberPos != null) {
             placeRobber(robberPos.getLeftCoordinate(), robberPos.getRightCoordinate());
         }
+        
+        // places merchant at initial position (off the board)
+        placeMerchant(GameRules.SIZE / 2 + 5, - (GameRules.SIZE / 2));
 
         // Create the Game Log table
         float pad = 10f;
@@ -1265,6 +1272,7 @@ public class SessionScreen implements Screen {
             }
         }
         robberSprite.draw(polyBatch);
+        polyBatch.draw(merchantRegion, boardOrigin.getLeft(), boardOrigin.getRight());
 
         polyBatch.end();
 
@@ -1367,13 +1375,24 @@ public class SessionScreen implements Screen {
      * @param xCor left coordinate
      * @param yCor right coordinate
      */
-    private void placeRobber(int xCor, int yCor) {
+    public void placeRobber(int xCor, int yCor) {
 
         float xPos = xCor * OFFX;
         float yPos = -yCor * OFFY;
 
         robberSprite.setPosition(boardOrigin.getLeft() + xPos - robberSprite.getWidth() / 2f,
                 boardOrigin.getRight() + yPos - robberSprite.getHeight() / 2f);
+    }
+    
+    /**
+     * Places Merchant on given coordinates
+     * 
+     * @param xCor left coordinate
+     * @param yCor right coordinate
+     * */
+    public void placeMerchant(int xCor, int yCor) {
+        
+        merchantRegion = gamePieces.createMerchant(xCor, yCor, OFFX, OFFY, PIECEBASE);
     }
 
     /**

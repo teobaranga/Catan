@@ -193,7 +193,7 @@ class GamePieces {
         return new PolygonRegion(new TextureRegion(aTexture),
                 new float[]{      // Six vertices
                         xPos - highlightBase, yPos - highlightLength / 2,             // Vertex 0                4
-                        xPos, yPos - highlightLength,                              // Vertex 1           5         3
+                        xPos, yPos - highlightLength,                                 // Vertex 1           5         3
                         xPos + highlightBase, yPos - highlightLength / 2,             // Vertex 2
                         xPos + highlightBase, yPos + highlightLength / 2,             // Vertex 3           0         2
                         xPos, yPos + highlightLength,                                 // Vertex 4                1
@@ -204,6 +204,23 @@ class GamePieces {
                 1, 2, 3,
                 1, 3, 4
         });
+    }
+    
+    PolygonRegion createMerchant(int xCor, int yCor, int xOff, int yOff, int piecebase) {
+        Texture merchantTexture = setupTextureSolid(Color.valueOf("660066"));
+        
+        float xPos = +(xCor * xOff);
+        float yPos = -(yCor * yOff);
+        
+        return new PolygonRegion(new TextureRegion (merchantTexture), 
+                new float[]{
+                        xPos - piecebase/2f, yPos + piecebase/2f,                // Vertex 0               2
+                        xPos + piecebase/2f, yPos + piecebase/2f,                // Vertex 1
+                        xPos, yPos + 2*piecebase                                 // Vertex 2             0   1
+                        
+                }, new short[]{
+                0, 1, 2,
+        }); 
     }
 
     PolygonSprite createRobber() {

@@ -217,6 +217,15 @@ public class SessionController {
                       }
 
                   });
+                } else if (object instanceof MoveMerchantRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        final MoveMerchantRequest merchantMoved = (MoveMerchantRequest) object;
+                        aSessionScreen.addGameMessage(merchantMoved.username + " moved and now owns the merchant");
+                        
+                        Hex newPos = aGameBoardManager.getHexFromCoordinates(merchantMoved.getNewPos().getLeft(), merchantMoved.getNewPos().getRight());
+                        
+                        moveMerchant(newPos, merchantMoved.getOwner(), true);
+                    });
                 } else if (object instanceof GiveResources) {
                     Gdx.app.postRunnable(() -> {
                         final GiveResources resourcesGiven = (GiveResources) object;
@@ -1056,6 +1065,30 @@ public class SessionController {
         //TODO: as described above
         return false;
     }
+    
+    /**
+     * Requests the GameBoardManager to move the merchant to given position. If fromPeer is false, SessionController sends a message to the network notifying 
+     * other peers of board change.
+     * @param newPosition       new merchant position
+     * @param newOwner          player who now owns the merchant
+     * @param fromPeer          indicates whether method was called from localPlayer or peer
+     * */
+    public boolean moveMerchant(Hex newPosition, PlayerColor newOwner, boolean fromPeer) {
+        Player owner = aSessionManager.getCurrentPlayerFromColor(newOwner);
+       
+        aGameBoardManager.setMerchantOwner(owner);
+        aGameBoardManager.setMerchantPosition(newPosition);
+        aSessionScreen.placeMerchant(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate());
+        
+        if (!fromPeer) {
+            MoveMerchantRequest request = MoveMerchantRequest.newInstance(new ImmutablePair<Integer,Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), newOwner, localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+        }
+        
+        CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
+        
+        return true;
+    }
 
 
     /**
@@ -1625,6 +1658,15 @@ public class SessionController {
             
             // if localPlayer has played MERCHANTFLEET and chosen resourceKind, set ratio to 2
             if (resourceKind == localPlayer.getTemporaryResourceKindTrade()) { ratio = 2; }
+            
+            // if localPlayer owns the merchant, and merchant is on hex of kind resourceKind, set ratio to 2
+            Hex merchantPos = aGameBoardManager.getMerchantPosition();
+            Player merchantOwner = aGameBoardManager.getMerchantOwner();
+            if (merchantPos != null && merchantOwner != null) {
+               if (merchantOwner.equals(localPlayer) && resourceKind == aGameRules.getProducingResource(merchantPos.getKind())) {
+                   ratio = 2;
+               }
+            }
             
             if (localPlayer.hasEnoughOfResource(resourceKind, ratio)) {
                 tradeRatios.put(resourceKind, ratio);

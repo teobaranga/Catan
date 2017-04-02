@@ -456,6 +456,31 @@ public class ProgressCardHandler {
                 
                 break;
             case MERCHANT:
+                // place the merchant on a land hex next to your settlement or city
+                
+                ArrayList<Hex> validMerchantMovePositions = new ArrayList<>();
+                for (Hex hex : aGameBoardManager.getHexes()) {
+                    for (Village v : aGameBoardManager.getAdjacentVillages(hex)) {
+                        if (v.getOwner().equals(currentP) && 
+                                hex.getKind() != TerrainKind.BIG_FISHERY && 
+                                hex.getKind() != TerrainKind.SEA && 
+                                hex.getKind() != TerrainKind.SMALL_FISHERY &&
+                                hex.getKind() != TerrainKind.GOLDFIELD){
+                            validMerchantMovePositions.add(hex);
+                            break;
+                        }
+                    }
+                }
+                
+                MultiStepMove moveMerchant = new MultiStepMove();
+                
+                moveMerchant.<Hex>addMove(hex -> {
+                    aSessionController.moveMerchant(hex, currentP.getColor(), false);
+                    aSessionController.getSessionScreen().interractionDone();
+                });
+                
+                aSessionController.getSessionScreen().initChooseHexMove(validMerchantMovePositions, moveMerchant);
+                
                 break;
             case RESOURCEMONOPOLY:
                 // name a resource. each player must give you 2 of that type of resource if they have them

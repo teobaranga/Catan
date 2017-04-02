@@ -88,6 +88,7 @@ public class Config {
         kryo.register(TradeOfferCancel.class);
         kryo.register(TradeCancel.class);
         kryo.register(SpecialTradeRequest.class);
+        kryo.register(MoveRobberRequest.class);
         kryo.register(UpdateVP.class);
         kryo.register(DiscardHalfRequest.class);
         kryo.register(MoveMerchantRequest.class);

@@ -108,6 +108,10 @@ public class GameBoardManager {
         return aGameBoard.getMerchantPosition();
     }
     
+    public void setRobberPosition(Hex pos) {
+        aGameBoard.setRobberPosition(pos);
+    }
+    
     /**
      *
      * Checks if the given player suffers from the Old Boot malus.

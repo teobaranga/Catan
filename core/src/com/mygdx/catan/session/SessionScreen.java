@@ -517,7 +517,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.COMMERCIALHARBOUR);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.BISHOP);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -592,77 +592,6 @@ public class SessionScreen implements Screen {
         menuTable.pad(10);
         menuTable.pack();
 
-
-        // TODO: delete when done (buttons for testing)
-        /*
-        TextButton chooseKindButton = new TextButton("Choose Kind", CatanGame.skin);
-        chooseKindButton.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				MultiStepMove chooseKindMove = new MultiStepMove();
-				chooseKindMove.addMove(new Move<ProgressCardKind>() {
-					@Override
-					public void doMove(ProgressCardKind kind) {
-						System.out.println(kind.toString().toLowerCase());
-						interractionDone();
-					}
-				});
-				chooseProgressCardKind(chooseKindMove);
-			}
-        });
-        menuTable.add(chooseKindButton);
-        */
-        /*
-        TextButton chooseTypeButton = new TextButton("Choose Progress Card", CatanGame.skin);
-        chooseTypeButton.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				MultiStepMove chooseTypeMove = new MultiStepMove();
-				chooseTypeMove.addMove(new Move<ProgressCardType>() {
-					@Override
-					public void doMove(ProgressCardType type) {
-						System.out.println(type.toString().toLowerCase());
-						interractionDone();
-					}
-				});
-				
-				EnumMap<ProgressCardType, Integer> cards = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
-				cards.put(ProgressCardType.ALCHEMIST, 3);
-				cards.put(ProgressCardType.BISHOP, 4);
-				cards.put(ProgressCardType.COMMERCIALHARBOUR, 2);
-				cards.put(ProgressCardType.CONSTITUTION, 0);
-				cards.put(ProgressCardType.CRANE, 7);
-				chooseProgressCard(cards, chooseTypeMove);
-			}
-        });
-        menuTable.add(chooseTypeButton);*/
-        /*
-        TextButton chooseTypeButton = new TextButton("Choose Resources", CatanGame.skin);
-        chooseTypeButton.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				MultiStepMove chooseTypeMove = new MultiStepMove();
-				chooseTypeMove.addMove(new Move<ResourceMap>() {
-					@Override
-					public void doMove(ResourceMap map) {
-						for (Entry<ResourceKind, Integer> entry : map.entrySet()) {
-							if (entry.getValue() > 0) {
-								System.out.println(entry.getKey().toString().toLowerCase() + " : " + entry.getValue());
-							}
-						}
-						interractionDone();
-					}
-				});
-				
-				ResourceMap map = new ResourceMap();;
-				map.add(ResourceKind.BRICK, 3);
-				map.add(ResourceKind.GRAIN, 5);
-				map.add(ResourceKind.WOOD, 1);
-				chooseMultipleResource(map, 4, chooseTypeMove);
-			}
-        });
-        menuTable.add(chooseTypeButton); */
-
         // sets center of board
         int offsetX, offsetY;
 
@@ -689,7 +618,7 @@ public class SessionScreen implements Screen {
         }
         
         // places merchant at initial position (off the board)
-        placeMerchant(GameRules.SIZE / 2 + 5, - (GameRules.SIZE / 2));
+        // placeMerchant(GameRules.SIZE / 2 + 5, - (GameRules.SIZE / 2));
 
         // Create the Game Log table
         float pad = 10f;
@@ -813,10 +742,11 @@ public class SessionScreen implements Screen {
         aMode = SessionScreenModes.CHOOSEEDGEMODE;
     }
 
+    //TODO: change this to take in list of progressCardKinds!
     /**
      * Opens a window that prompts the client to choose a progress card kind
      * 
-     * @param move whose next move to perform will be called once an ProgressCardType has been chosen
+     * @param move whose next move to perform will be called once an ProgressCardKind has been chosen
      * */
     public void chooseProgressCardKind(MultiStepMove move) {
     	// disable all possible actions
@@ -1281,7 +1211,9 @@ public class SessionScreen implements Screen {
             }
         }
         robberSprite.draw(polyBatch);
-        polyBatch.draw(merchantRegion, boardOrigin.getLeft(), boardOrigin.getRight());
+        if (merchantRegion != null) {
+            polyBatch.draw(merchantRegion, boardOrigin.getLeft(), boardOrigin.getRight());
+        }
 
         polyBatch.end();
 

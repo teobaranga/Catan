@@ -226,6 +226,15 @@ public class SessionController {
                         
                         moveMerchant(newPos, merchantMoved.getOwner(), true);
                     });
+                } else if (object instanceof MoveRobberRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        final MoveRobberRequest robberMoved = (MoveRobberRequest) object;
+                        aSessionScreen.addGameMessage(robberMoved.username + " moved the robber");
+                        
+                        Hex newPos = aGameBoardManager.getHexFromCoordinates(robberMoved.getNewPos().getLeft(), robberMoved.getNewPos().getRight());
+                        
+                        moveRobber(newPos, true);
+                    });
                 } else if (object instanceof SpecialTradeRequest) {
                     Gdx.app.postRunnable(() -> {
                         final SpecialTradeRequest specialTrade = (SpecialTradeRequest) object;
@@ -1093,13 +1102,19 @@ public class SessionController {
     }
 
     /**
-     * Requests the GameBoardManager to move the robber to given location. If fromPeer is false, the SessionController verifies that the position is valid.
-     * If valid finds adjacent players to the new position and initiates prompts player who moved the robber to choose a victim.
-     * Informs SessionScreen of new robber position
+     * Requests the GameBoardManager to move the robber to given location. If fromPeer is false, the SessionController sends message to network notifying 
+     * other peers about board change
      */
     public boolean moveRobber(Hex newPosition, boolean fromPeer) {
-        //TODO: as described above
-        return false;
+        aGameBoardManager.setRobberPosition(newPosition);
+        aSessionScreen.placeRobber(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate());
+        
+        if (!fromPeer) {
+            MoveRobberRequest request = MoveRobberRequest.newInstance(new ImmutablePair<Integer,Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+        }
+        
+        return true;
     }
     
     /**
@@ -1377,7 +1392,7 @@ public class SessionController {
         List<Hex> hexesToChooseFrom = new ArrayList<>();
         List<Hex> boardHexes = aGameBoardManager.getHexes();
         for (Hex h : boardHexes) {
-            if (h.getKind() != TerrainKind.SEA) {
+            if (h.getKind() != TerrainKind.SEA && h.getKind() != TerrainKind.BIG_FISHERY && h.getKind() != TerrainKind.SMALL_FISHERY) {
                 hexesToChooseFrom.add(h);
             }
         }
@@ -1390,41 +1405,51 @@ public class SessionController {
             List<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(chosenHex);
 
             for(Village v : adjacentVillages) {
-                potentialVictims.add(v.getOwner());
+                if (!localPlayer.equals(v.getOwner()) && !potentialVictims.contains(v.getOwner())) {
+                    potentialVictims.add(v.getOwner());
+                }
             }
 
-            moveRobber.<Player>addMove(victim -> {
-                final Player chosenVictim = victim;
+            moveRobber(hex, false);
+            
+            // if there is a potential victim, let the local player choose a victim to steal random card from
+            if (!potentialVictims.isEmpty()) {
+                moveRobber.<Player>addMove(victim -> {
+                    final Player chosenVictim = victim;
 
-                //get hand
-                ResourceMap playerHand = victim.getResources();
-                int playerHandSize = victim.getResourceHandSize();
+                    //get hand
+                    ResourceMap playerHand = victim.getResources();
+                    int playerHandSize = victim.getResourceHandSize();
 
-                int randomCardIndex = new Random().nextInt(playerHandSize)+1;
+                    int randomCardIndex = new Random().nextInt(playerHandSize)+1;
 
-                //choose a random card to steal from victim's hand
-                ResourceKind cardToTake;
-                ResourceMap cardToSteal = new ResourceMap();
-                for(ResourceKind kind : ResourceKind.values()) {
-                    int numCards = playerHand.get(kind);
-                    if (numCards > 0) {
-                        randomCardIndex -= numCards;
-                        if (randomCardIndex <= 0) {
-                            cardToTake = kind;
-                            cardToSteal.put(cardToTake, 1);
-                            //update local player's resources
-                            localPlayer.addResources(cardToSteal);
-                            aSessionScreen.updateResourceBar(localPlayer.getResources());
-                            //update opponent hand
-                            TakeResources request = TakeResources.newInstance(cardToSteal, localPlayer.getUsername(), chosenVictim.getUsername());
-                            CatanGame.client.sendTCP(request);
-                            aSessionScreen.interractionDone();
-                            break;
+                    //choose a random card to steal from victim's hand
+                    ResourceKind cardToTake;
+                    ResourceMap cardToSteal = new ResourceMap();
+                    for(ResourceKind kind : ResourceKind.values()) {
+                        int numCards = playerHand.get(kind);
+                        if (numCards > 0) {
+                            randomCardIndex -= numCards;
+                            if (randomCardIndex <= 0) {
+                                cardToTake = kind;
+                                cardToSteal.put(cardToTake, 1);
+                                //update local player's resources
+                                localPlayer.addResources(cardToSteal);
+                                aSessionScreen.updateResourceBar(localPlayer.getResources());
+                                //update opponent hand
+                                TakeResources request = TakeResources.newInstance(cardToSteal, localPlayer.getUsername(), chosenVictim.getUsername());
+                                CatanGame.client.sendTCP(request);
+                                aSessionScreen.interractionDone();
+                                break;
+                            }
                         }
                     }
-                }
-            });
-            aSessionScreen.chooseOtherPlayer(potentialVictims, moveRobber);
+                });
+                aSessionScreen.chooseOtherPlayer(potentialVictims, moveRobber);
+            } else {
+                aSessionScreen.interractionDone();
+            }
+            
         });
         aSessionScreen.initChooseHexMove(hexesToChooseFrom, moveRobber);
     }

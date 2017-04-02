@@ -11,7 +11,6 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.DiscardHalfRequest;
 import com.mygdx.catan.request.DisplaceRoadRequest;
-import com.mygdx.catan.request.GiveResources;
 import com.mygdx.catan.request.RollDice;
 import com.mygdx.catan.request.SpecialTradeRequest;
 import com.mygdx.catan.request.SwitchHexDiceNumbers;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Map.Entry;
 
 public class ProgressCardHandler {
@@ -276,6 +276,73 @@ public class ProgressCardHandler {
                 aSessionController.getSessionScreen().interractionDone();
                 break;
             case BISHOP:
+                // Move the robber, following the normal rules. Draw 1 random resource/commodity card from each player who has a settlement or
+                // city next to the robber's new hex
+                
+                List<Hex> validRobberHexes = new ArrayList<>();
+                List<Hex> boardHexes = aGameBoardManager.getHexes();
+                for (Hex h : boardHexes) {
+                    if (h.getKind() != TerrainKind.SEA && h.getKind() != TerrainKind.BIG_FISHERY && h.getKind() != TerrainKind.SMALL_FISHERY) {
+                        validRobberHexes.add(h);
+                    }
+                }
+
+                MultiStepMove moveRobber = new MultiStepMove();
+                
+                moveRobber.<Hex>addMove(hex -> {
+                    // moves robber to chosen hex
+                    aSessionController.moveRobber(hex, false);
+                    
+                    // initializes list of victims
+                    ArrayList<Player> victims = new ArrayList<>();
+                    List<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(hex);
+                    for(Village v : adjacentVillages) {
+                        if (!currentP.equals(v.getOwner()) && !victims.contains(v.getOwner())) {
+                            victims.add(v.getOwner());
+                        }
+                    }
+                    
+                    // for each victim, pick a random card from their hand
+                    for(Player victim : victims) {
+                      //get hand
+                        ResourceMap playerHand = victim.getResources();
+                        int playerHandSize = victim.getResourceHandSize();
+
+                        int randomCardIndex = new Random().nextInt(playerHandSize)+1;
+
+                        //choose a random card to steal from victim's hand
+                        ResourceKind cardToTake;
+                        ResourceMap cardToSteal = new ResourceMap();
+                        for(ResourceKind kind : ResourceKind.values()) {
+                            int numCards = playerHand.get(kind);
+                            
+                            if (numCards > 0) {
+                                randomCardIndex -= numCards;
+                                
+                                if (randomCardIndex <= 0) {
+                                    cardToTake = kind;
+                                    cardToSteal.put(cardToTake, 1);
+                                    
+                                    //update local player's resources
+                                    currentP.addResources(cardToSteal);
+                                    aSessionController.getSessionScreen().updateResourceBar(currentP.getResources());
+                                    
+                                    //update opponent hand
+                                    TakeResources request = TakeResources.newInstance(cardToSteal, currentP.getUsername(), victim.getUsername());
+                                    CatanGame.client.sendTCP(request);
+                                   
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    aSessionController.getSessionScreen().interractionDone();
+                });
+                
+                aSessionController.getSessionScreen().initChooseHexMove(validRobberHexes, moveRobber);
+                
+                
                 break;
             case CONSTITUTION:
                 aSessionManager.incrementTokenVP(currentP);

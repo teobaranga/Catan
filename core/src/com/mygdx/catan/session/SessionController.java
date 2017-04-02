@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import static com.mygdx.catan.enums.GamePhase.*;
 import static com.mygdx.catan.enums.ResourceKind.*;
@@ -224,6 +225,42 @@ public class SessionController {
                         Hex newPos = aGameBoardManager.getHexFromCoordinates(merchantMoved.getNewPos().getLeft(), merchantMoved.getNewPos().getRight());
                         
                         moveMerchant(newPos, merchantMoved.getOwner(), true);
+                    });
+                } else if (object instanceof SpecialTradeRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        final SpecialTradeRequest specialTrade = (SpecialTradeRequest) object;
+                        aSessionScreen.addGameMessage(specialTrade.sender + " has forced you to make a special trade, and has given you a " + specialTrade.getKind().toString().toLowerCase());
+                        
+                        // creates a list of commodities to choose from 
+                        ArrayList<ResourceKind> commodities = new ArrayList<>();
+                        for (Entry<ResourceKind, Integer> entry : localPlayer.getResources().entrySet()) {
+                            if (entry.getValue() > 0 && (entry.getKey() == ResourceKind.CLOTH || entry.getKey() == ResourceKind.COIN || entry.getKey() == ResourceKind.PAPER)) {
+                                commodities.add(entry.getKey());
+                            }
+                        }
+                        
+                        // add given resource to local inventory
+                        ResourceMap resourceGiven = new ResourceMap();
+                        resourceGiven.put(specialTrade.getKind(), 1);
+                        localPlayer.addResources(resourceGiven);
+                        aSessionScreen.updateResourceBar(localPlayer.getResources());
+                        
+                        MultiStepMove forceTrade = new MultiStepMove();
+                        forceTrade.<ResourceKind>addMove(kind -> {
+                            ResourceMap commodityGiven = new ResourceMap();
+                            commodityGiven.put(kind, 1);
+                            
+                            localPlayer.removeResources(commodityGiven);
+                            aSessionScreen.updateResourceBar(localPlayer.getResources());
+
+                            // send targeted message back to sender to give them chosen commodity
+                            GiveResources request = GiveResources.newInstance(commodityGiven, localPlayer.getUsername(), specialTrade.sender);
+                            CatanGame.client.sendTCP(request);
+                            
+                            aSessionScreen.interractionDone();
+                        });
+                        
+                        aSessionScreen.chooseResource(commodities, forceTrade);
                     });
                 } else if (object instanceof GiveResources) {
                     Gdx.app.postRunnable(() -> {

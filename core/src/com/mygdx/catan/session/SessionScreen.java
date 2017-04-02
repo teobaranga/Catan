@@ -122,6 +122,9 @@ public class SessionScreen implements Screen {
     private Table currentPlayer;
     private Label currentPlayerLabel;
 
+    /** A table that contains all temporary functionality */
+    private Table temporaryFunctionalityTable;
+    
     /**
      * Three tables that keep track of the players' VPs.
      */
@@ -331,6 +334,11 @@ public class SessionScreen implements Screen {
         Table menuTable = new Table(CatanGame.skin);
         menuTable.setBackground("resTableBackground");
         menuTable.setPosition(10, 10);
+         
+        temporaryFunctionalityTable = new Table(CatanGame.skin);
+        temporaryFunctionalityTable.setBackground("resTableBackground");
+        temporaryFunctionalityTable.setSize(200, 0);
+        temporaryFunctionalityTable.setPosition(Gdx.graphics.getWidth() - 360, Gdx.graphics.getHeight() - 10);
 
         //end turn table 
         Table turnTable = new Table(CatanGame.skin);
@@ -509,7 +517,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.MERCHANT);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.COMMERCIALHARBOUR);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -702,6 +710,7 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(menuTable);
         aSessionStage.addActor(turnTable);
         aSessionStage.addActor(currentPlayer);
+        aSessionStage.addActor(temporaryFunctionalityTable);
         for (int i = 0; i < playersVP.length; i++) {
             aSessionStage.addActor(playersVP[i]);
         }
@@ -1413,6 +1422,28 @@ public class SessionScreen implements Screen {
     }
 
     /**
+     * adds a button to the temporary functionality table which on change executes given listener. All these buttons are removed
+     * at the end of a turn 
+     * @param listener       to temporary button
+     * @param functionality  name of temporary functionality
+     * */
+    public void addTemporaryFunctionality(TextButton temp) {
+        temporaryFunctionalityTable.setSize(temporaryFunctionalityTable.getWidth(), temporaryFunctionalityTable.getHeight() + 40);
+        temporaryFunctionalityTable.setPosition(Gdx.graphics.getWidth() - 360, Gdx.graphics.getHeight() - (temporaryFunctionalityTable.getHeight() + 10));
+        
+        temporaryFunctionalityTable.add(temp).pad(5).row();
+    }
+    
+    /**
+     * removes all temporary functionality buttons from the temporary functionality table
+     * */
+    private void removeTemporaryFunctionalities() {
+        temporaryFunctionalityTable.clearChildren();
+        temporaryFunctionalityTable.setSize(200, 0);
+        temporaryFunctionalityTable.setPosition(Gdx.graphics.getWidth() - 360, Gdx.graphics.getHeight() - 10);
+    }
+    
+    /**
      * @param xCor left coordinate of intersection
      * @param yCor right coordinate of intersection
      * @return PolygonRegion of intersection piece which lies on intersection with coordinates xCor and yCor, null if no game piece lies on that space
@@ -1655,6 +1686,8 @@ public class SessionScreen implements Screen {
         rollDiceButton.setDisabled(true);
         domesticTradeButton.setDisabled(true);
         endTurnButton.setDisabled(true);
+        
+        removeTemporaryFunctionalities();
     }
 
     /**

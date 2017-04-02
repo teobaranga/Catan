@@ -1,5 +1,8 @@
 package com.mygdx.catan;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
@@ -10,6 +13,7 @@ import com.mygdx.catan.request.DiscardHalfRequest;
 import com.mygdx.catan.request.DisplaceRoadRequest;
 import com.mygdx.catan.request.GiveResources;
 import com.mygdx.catan.request.RollDice;
+import com.mygdx.catan.request.SpecialTradeRequest;
 import com.mygdx.catan.request.SwitchHexDiceNumbers;
 import com.mygdx.catan.request.TakeResources;
 import com.mygdx.catan.request.TargetedChooseResourceCardRequest;
@@ -24,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 
 public class ProgressCardHandler {
 
@@ -407,6 +412,87 @@ public class ProgressCardHandler {
 
                 break;
             case COMMERCIALHARBOUR:
+                // you may force each of the other players to make a special trade. you may offer each opponent any 1 resource card
+                // from your hand. He must exchange it for any 1 commodity card of his choice from his hand, if he has any. 
+                
+                // set the initial list of trading players to all players with at least one commodity card
+                ArrayList<Player> tradingPlayers = new ArrayList<>();
+                for (Player p : aSessionManager.getPlayers()) {
+                    if (!p.equals(currentP) && 
+                           (p.getResources().get(ResourceKind.CLOTH) > 0 || 
+                            p.getResources().get(ResourceKind.COIN) > 0  || 
+                            p.getResources().get(ResourceKind.PAPER) > 0  )) {
+                        tradingPlayers.add(p);
+                    }
+                }
+                
+                // set the initial list of available Resources local player can choose from
+                ArrayList<ResourceKind> availableResources = new ArrayList<>();
+                for (Entry<ResourceKind, Integer> entry : currentP.getResources().entrySet()) {
+                    if (entry.getValue() > 0 && entry.getKey() != ResourceKind.CLOTH && entry.getKey() != ResourceKind.COIN && entry.getKey() != ResourceKind.PAPER) {
+                        availableResources.add(entry.getKey());
+                    }
+                }
+                
+                // init button that will be added temporarily to local sessionscreen
+                TextButton initForceTrade = new TextButton("Force Trade", CatanGame.skin);
+                if (tradingPlayers.isEmpty()) {
+                    initForceTrade.setDisabled(true);
+                    aSessionController.getSessionScreen().addGameMessage("No players are available for forcing a special trade");
+                }
+                if (availableResources.isEmpty()) {
+                    initForceTrade.setDisabled(true);
+                    aSessionController.getSessionScreen().addGameMessage("You do not have any resources to trade");
+                }
+                
+                
+                // add listener to button that will start the multistep move
+                initForceTrade.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        
+                        MultiStepMove forceTrade = new MultiStepMove();
+                        forceTrade.<Player>addMove(chosenPlayer -> {
+                            
+                            // update list of players to choose from
+                            tradingPlayers.remove(chosenPlayer);
+                            if (tradingPlayers.isEmpty()) {
+                                initForceTrade.setDisabled(true);
+                                aSessionController.getSessionScreen().addGameMessage("No more players are available for forcing a special trade after this"); 
+                            }
+                            
+                            forceTrade.<ResourceKind>addMove(kind -> {
+                                // update list of resources currentP can choose from
+                                if (currentP.getResources().get(kind) == 0) {
+                                    availableResources.remove(kind);
+                                }
+                                if (availableResources.isEmpty()) {
+                                    initForceTrade.setDisabled(true);
+                                    aSessionController.getSessionScreen().addGameMessage("You do not have any more resources to trade after this");
+                                }
+                                
+                                // remove chosen kind from local inventory
+                                ResourceMap resourceGiven = new ResourceMap();
+                                resourceGiven.put(kind, 1);
+                                currentP.removeResources(resourceGiven);
+                                aSessionController.getSessionScreen().updateResourceBar(currentP.getResources());
+                                
+                                // sends request to chosen player with chosen kind that will force them to send back a commodity
+                                SpecialTradeRequest request = SpecialTradeRequest.newInstance(kind, currentP.getUsername(), chosenPlayer.getUsername());
+                                CatanGame.client.sendTCP(request);
+                                
+                                aSessionController.getSessionScreen().interractionDone();
+                            });
+                            
+                            aSessionController.getSessionScreen().chooseResource(availableResources, forceTrade);
+                        });
+                        
+                        aSessionController.getSessionScreen().chooseOtherPlayer(tradingPlayers, forceTrade);
+                    }
+                });
+                
+                aSessionController.getSessionScreen().addTemporaryFunctionality(initForceTrade);
+                
                 break;
             case MASTERMERCHANT:
                 // adds all the players with more VP points than current player

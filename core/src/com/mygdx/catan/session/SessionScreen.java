@@ -1,9 +1,6 @@
 package com.mygdx.catan.session;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
@@ -255,6 +252,15 @@ public class SessionScreen implements Screen {
                             return true;
                         }
                     }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean keyUp(int keycode) {
+                if (keycode == Input.Keys.ESCAPE) {
+                    aGame.switchScreen(ScreenKind.MAIN_MENU);
+                    return true;
                 }
                 return false;
             }

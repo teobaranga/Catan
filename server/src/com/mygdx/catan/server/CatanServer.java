@@ -7,14 +7,19 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.mygdx.catan.Config;
+import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.GameRules;
+import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
+import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.game.Game;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
+import com.mygdx.catan.request.game.BrowseGames;
 import com.mygdx.catan.response.*;
+import com.mygdx.catan.response.game.GameList;
 import com.mygdx.catan.session.Session;
 import com.mygdx.catan.session.SessionManager;
-import com.mygdx.catan.DiceRollPair;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +35,8 @@ class CatanServer {
     /** Name of the file storing the game accounts */
     private static final String ACCOUNTS_DB = "accounts.bin";
 
+    private static final String SAVED_GAMES_DB = "games.bin";
+
     private static final List<Account> defaultAccounts;
 
     static {
@@ -41,6 +48,10 @@ class CatanServer {
         defaultAccounts.add(new Account("emma", null));
         defaultAccounts.add(new Account("teo", null));
         defaultAccounts.add(new Account("teo test", null));
+
+        defaultAccounts.add(new Account("Player 1", null));
+        defaultAccounts.add(new Account("Player 2", null));
+        defaultAccounts.add(new Account("Player 3", null));
     }
 
     private final Server server;
@@ -50,6 +61,8 @@ class CatanServer {
      * For the moment, a player is limited to only one game.
      */
     private final Map<String, Game> gamesMap;
+
+    private final List<Game> savedGames;
 
     private final List<Account> accounts;
 
@@ -69,10 +82,24 @@ class CatanServer {
             output.close();
         }
 
+        // Create the test save games if they don't exist
+        File saveGameDatabase = new File(SAVED_GAMES_DB);
+        if (!saveGameDatabase.exists()) {
+            Output output = new Output(new FileOutputStream(SAVED_GAMES_DB));
+            kryo.writeObject(output, createTestSavedGames());
+            output.close();
+        }
+
         // Load the accounts database
         Input input = new Input(new FileInputStream(ACCOUNTS_DB));
         //noinspection unchecked
         accounts = kryo.readObject(input, ArrayList.class);
+        input.close();
+
+        // Load the test games
+        input = new Input(new FileInputStream(SAVED_GAMES_DB));
+        //noinspection unchecked
+        savedGames = kryo.readObject(input, ArrayList.class);
         input.close();
 
         // Load the games TODO complete this
@@ -106,6 +133,8 @@ class CatanServer {
                     response = getRandomGame(connection, ((JoinRandomGame) object).account);
                 } else if (object instanceof CreateGame) {
                     response = createNewGame(connection, ((CreateGame) object).account);
+                } else if (object instanceof BrowseGames) {
+                    response = GameList.newInstance(savedGames);
                 }
 
                 if (object instanceof TargetedRequest) {
@@ -306,6 +335,35 @@ class CatanServer {
             }
         }
         return null;
+    }
+
+    private List<Game> createTestSavedGames() {
+        List<Game> savedGames = new ArrayList<>();
+
+        Account player1 = defaultAccounts.get(6);
+        Account player2 = defaultAccounts.get(7);
+        Account player3 = defaultAccounts.get(8);
+
+        Account[] accounts = {player1, player2, player3};
+
+        // Years of plenty saved game ----------------------------------------------
+        Game yearsOfPlenty = new Game();
+        yearsOfPlenty.name = "Years of Plenty";
+        for (Account account : accounts) {
+            yearsOfPlenty.addPlayer(account, -1);
+            yearsOfPlenty.markAsReady(account.getUsername());
+        }
+        yearsOfPlenty.session = Session.newInstance(yearsOfPlenty.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
+
+        ResourceMap resourceMap = new ResourceMap();
+        for (ResourceKind resourceKind : ResourceKind.values())
+            resourceMap.add(resourceKind, 20);
+        for (Player player : yearsOfPlenty.session.getPlayers())
+            player.setResources(resourceMap);
+
+        savedGames.add(yearsOfPlenty);
+
+        return savedGames;
     }
 
     void stop() {

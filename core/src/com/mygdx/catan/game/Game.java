@@ -22,6 +22,8 @@ public class Game {
      */
     private final Map<Account, Boolean> readyStatus;
 
+    public String name;
+
     public Session session;
 
     /** The admin of the game, ie. the player who created this game */
@@ -142,5 +144,10 @@ public class Game {
             }
         }
         return playerAccount;
+    }
+
+    @Override
+    public String toString() {
+        return (name == null ? "Unnamed" : name) + " ID:" + Integer.toHexString(hashCode());
     }
 }

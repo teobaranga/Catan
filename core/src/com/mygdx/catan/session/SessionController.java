@@ -54,10 +54,14 @@ public class SessionController {
     private boolean myTurn;
 
     SessionController(SessionScreen sessionScreen) {
-        final Game currentGame = GameManager.getInstance().getCurrentGame();
+        Game currentGame = GameManager.getInstance().getCurrentGame();
+        if (currentGame == null) {
+            currentGame = GameManager.newPlaceholderGame();
+            GameManager.getInstance().setCurrentGame(currentGame);
+        }
 
         aGameBoardManager = GameBoardManager.getInstance();
-        aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
+        aSessionManager = SessionManager.getInstance(currentGame.session);
         aTransactionManager = TransactionManager.getInstance(aSessionManager);
         tradeManager = TradeManager.getInstance(aTransactionManager);
         aProgressCardHandler = new ProgressCardHandler(this);

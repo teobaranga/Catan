@@ -15,11 +15,17 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.request.CreateGame;
 import com.mygdx.catan.request.JoinRandomGame;
+import com.mygdx.catan.request.game.BrowseGames;
 import com.mygdx.catan.response.GameResponse;
+import com.mygdx.catan.response.game.GameList;
 import com.mygdx.catan.ui.CatanWindow;
+import com.mygdx.catan.ui.window.menu.BrowseGamesWindow;
+
+import java.util.List;
 
 public class MenuScreen implements Screen {
 
@@ -72,19 +78,40 @@ public class MenuScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Setup the window
-                CatanWindow window = new CatanWindow("Browse Games", CatanGame.skin);
-                window.setWidth(3f / 4f * Gdx.graphics.getWidth());
-                window.setHeight(3f / 4f * Gdx.graphics.getHeight());
-                window.setPosition(Gdx.graphics.getWidth() / 2 - window.getWidth() / 2, Gdx.graphics.getHeight() / 2 - window.getHeight() / 2);
+                BrowseGamesWindow window = new BrowseGamesWindow();
+
+                Listener listener = new Listener() {
+                    @Override
+                    public void received(Connection connection, Object object) {
+                        if (object instanceof GameList) {
+                            Gdx.app.postRunnable(() -> {
+                                List<Game> games = ((GameList) object).getGames();
+                                window.setGames(games);
+                                CatanGame.client.removeListener(this);
+                            });
+                        }
+                    }
+                };
+
+                window.setGameListener(game -> {
+                    // Set the current game
+                    GameManager.getInstance().setCurrentGame(game);
+                    // Start the game
+                    if (CatanGame.client.isConnected()) {
+                        aGame.switchScreen(ScreenKind.IN_GAME);
+                    }
+                });
                 window.setWindowCloseListener(() -> {
-                    window.remove();
                     aGame.clickSound.play(0.2F);
+                    CatanGame.client.removeListener(listener);
                 });
 
                 // Display the window
                 aMenuStage.addActor(window);
 
-                // TODO: display a list of servers
+                CatanGame.client.addListener(listener);
+
+                CatanGame.client.sendTCP(new BrowseGames());
             }
         });
 

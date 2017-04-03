@@ -41,7 +41,7 @@ public class ProgressCardHandler {
     public ProgressCardHandler(SessionController sessionController) {
         aSessionController = sessionController;
         final Game currentGame = GameManager.getInstance().getCurrentGame();
-        aSessionManager = SessionManager.getInstance(currentGame == null ? null : currentGame.session);
+        aSessionManager = SessionManager.getInstance(currentGame.session);
         aGameBoardManager = GameBoardManager.getInstance();
         // aSessionScreen = aSessionController.getSessionScreen();
     }

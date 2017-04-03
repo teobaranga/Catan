@@ -21,7 +21,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 import static com.mygdx.catan.enums.GamePhase.*;
 import static com.mygdx.catan.enums.ResourceKind.*;
@@ -242,7 +241,7 @@ public class SessionController {
                         
                         // creates a list of commodities to choose from 
                         ArrayList<ResourceKind> commodities = new ArrayList<>();
-                        for (Entry<ResourceKind, Integer> entry : localPlayer.getResources().entrySet()) {
+                        for (Map.Entry<ResourceKind, Integer> entry : localPlayer.getResources().entrySet()) {
                             if (entry.getValue() > 0 && (entry.getKey() == ResourceKind.CLOTH || entry.getKey() == ResourceKind.COIN || entry.getKey() == ResourceKind.PAPER)) {
                                 commodities.add(entry.getKey());
                             }
@@ -980,6 +979,7 @@ public class SessionController {
     KnightActor buildKnight(CoordinatePair position, boolean fromPeer) {
         // TODO: Add knight to gameboard state
         final Knight knight = new Knight(localPlayer, position);
+        localPlayer.addKnight(knight);
 
         // Display the knight
         KnightActor knightActor = gamePieces.createKnight(knight);

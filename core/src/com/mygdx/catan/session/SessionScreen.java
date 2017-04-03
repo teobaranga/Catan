@@ -9,19 +9,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.DiceRollPair;
-import com.mygdx.catan.FishTokenMap;
-import com.mygdx.catan.GameRules;
-import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.*;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
@@ -30,15 +24,12 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.ui.*;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.List;
-
-// Happy April Fools' Day! :)
 
 public class SessionScreen implements Screen {
 
@@ -160,6 +151,9 @@ public class SessionScreen implements Screen {
     /** The currently active trade window, may be null */
     private TradeWindow tradeWindow;
 
+    /** Set of popup windows */
+    private HashSet<Window> popups;
+
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
      * any other of the stage actors. Used for choosing village positions, road positions, etc.
@@ -181,6 +175,7 @@ public class SessionScreen implements Screen {
         knights = new ArrayList<>();
         cityWalls = new ArrayList<>();
         highlightedPositions = new ArrayList<>();
+        popups = new HashSet<>();
         boardOrigin = new MutablePair<>();
         resourceLabelMap = new EnumMap<>(ResourceKind.class);
         polyBatch = new PolygonSpriteBatch();
@@ -192,9 +187,21 @@ public class SessionScreen implements Screen {
         // sets the initializing mode of the session screen (VIEWMODE). set to CHOOSEACTIONMODE for testing purposes 
         aMode = SessionScreenModes.CHOOSEACTIONMODE;
 
+
         inputAdapter = new InputAdapter() {
+            final Vector3 hitPosition = new Vector3();
+
             @Override
             public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+                // Check if the user clicked outside any of the windows, if so, dismiss them all
+                hitPosition.set(gamePiecesStage.getCamera().unproject(hitPosition.set(screenX, screenY, 0)));
+                final Actor hit = gamePiecesStage.hit(hitPosition.x, hitPosition.y, false);
+                if (hit == null || !(hit instanceof Window)) {
+                    for (Window popup : popups)
+                        popup.remove();
+                    popups.clear();
+                }
+
                 if (aMode == SessionScreenModes.CHOOSEINTERSECTIONMODE) {
                     for (CoordinatePair validIntersection : validIntersections) {
                         if (screenX > boardOrigin.getLeft() + validIntersection.getLeft() * BASE - 10 &&
@@ -452,10 +459,22 @@ public class SessionScreen implements Screen {
                             boardOrigin.getLeft() + chosenIntersection.getLeft() * OFFX,
                             boardOrigin.getRight() + chosenIntersection.getRight() * -LENGTH / 2, null);
                     KnightActor knightActor = aSessionController.buildKnight(intersection, false);
-                    knightActor.addListener(new ClickListener() {
+                    knightActor.addListener(new ChangeListener() {
                         @Override
-                        public void clicked(InputEvent event, float x, float y) {
-                            System.out.println("You clicked an actor");
+                        public void changed(ChangeEvent event, Actor actor) {
+                            KnightActionsWindow actionWindow = knightActor.displayActions();
+                            actionWindow.setWindowCloseListener(() -> popups.remove(actionWindow));
+                            actionWindow.setOnKnightActivateClick(knightActor1 -> {
+                                // TODO check for resources
+                                knightActor.getKnight().setActive(true);
+                                return true;
+                            });
+                            actionWindow.setOnKnightUpgradeClick(knightActor1 -> {
+                                // TODO check for resources
+                                knightActor.getKnight().upgrade();
+                                return true;
+                            });
+                            popups.add(actionWindow);
                         }
                     });
                     knights.add(knightActor);
@@ -1229,6 +1248,7 @@ public class SessionScreen implements Screen {
         aSessionStage.act(delta);
         aSessionStage.draw();
 
+        gamePiecesStage.act(delta);
         gamePiecesStage.draw();
     }
 
@@ -1262,6 +1282,7 @@ public class SessionScreen implements Screen {
     @Override
     public void dispose() {
         aSessionStage.dispose();
+        gamePiecesStage.dispose();
     }
 
     /**

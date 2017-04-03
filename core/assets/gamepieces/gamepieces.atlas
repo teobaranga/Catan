@@ -4,6 +4,13 @@ size: 2048,512
 format: RGBA8888
 filter: MipMapLinearLinear,MipMapLinearLinear
 repeat: none
+bg_knight
+  rotate: false
+  xy: 2, 132
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
 cityWall
   rotate: false
   xy: 2, 2
@@ -13,42 +20,42 @@ cityWall
   index: -1
 k_basic
   rotate: false
-  xy: 2, 132
+  xy: 260, 132
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 k_basic_inactive
   rotate: false
-  xy: 260, 132
+  xy: 518, 132
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 k_mighty
   rotate: false
-  xy: 518, 132
+  xy: 776, 132
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 k_mighty_inactive
   rotate: false
-  xy: 776, 132
+  xy: 1034, 132
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 k_strong
   rotate: false
-  xy: 1034, 132
+  xy: 1292, 132
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 k_strong_inactive
   rotate: false
-  xy: 1292, 132
+  xy: 1550, 132
   size: 256, 256
   orig: 256, 256
   offset: 0, 0

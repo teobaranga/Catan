@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.enums.HarbourKind;
@@ -19,7 +20,7 @@ import com.mygdx.catan.ui.KnightActor;
  * Helper class that returns PolygonRegions representing various game pieces
  * such as hexes, cities, roads, etc.
  */
-class GamePieces {
+public class GamePieces {
 
     private static GamePieces instance;
 
@@ -33,7 +34,7 @@ class GamePieces {
      * i = 1 -> Strong
      * i = 2 -> Mighty
      */
-    private final TextureAtlas.AtlasRegion[] knightActive;
+    public final TextureRegionDrawable[] knightActive;
 
     /**
      * Array of regions representing the inactive knight states for each level.
@@ -41,7 +42,9 @@ class GamePieces {
      * i = 1 -> Strong
      * i = 2 -> Mighty
      */
-    private final TextureAtlas.AtlasRegion[] knightInactive;
+    public final TextureRegionDrawable[] knightInactive;
+
+    public final TextureAtlas.AtlasRegion knightBg;
 
     private final TextureAtlas.AtlasRegion cityWall;
 
@@ -79,14 +82,15 @@ class GamePieces {
         assetManager.load("gamepieces/gamepieces.atlas", TextureAtlas.class);
         assetManager.finishLoading();
         TextureAtlas gamePieces = assetManager.get("gamepieces/gamepieces.atlas", TextureAtlas.class);
-        knightActive = new TextureAtlas.AtlasRegion[3];
-        knightInactive = new TextureAtlas.AtlasRegion[3];
-        knightActive[0] = gamePieces.findRegion("k_basic");
-        knightActive[1] = gamePieces.findRegion("k_strong");
-        knightActive[2] = gamePieces.findRegion("k_mighty");
-        knightInactive[0] = gamePieces.findRegion("k_basic_inactive");
-        knightInactive[1] = gamePieces.findRegion("k_strong_inactive");
-        knightInactive[2] = gamePieces.findRegion("k_mighty_inactive");
+        knightActive = new TextureRegionDrawable[3];
+        knightInactive = new TextureRegionDrawable[3];
+        knightActive[0] = new TextureRegionDrawable(gamePieces.findRegion("k_basic"));
+        knightActive[1] = new TextureRegionDrawable(gamePieces.findRegion("k_strong"));
+        knightActive[2] = new TextureRegionDrawable(gamePieces.findRegion("k_mighty"));
+        knightInactive[0] = new TextureRegionDrawable(gamePieces.findRegion("k_basic_inactive"));
+        knightInactive[1] = new TextureRegionDrawable(gamePieces.findRegion("k_strong_inactive"));
+        knightInactive[2] = new TextureRegionDrawable(gamePieces.findRegion("k_mighty_inactive"));
+        knightBg = gamePieces.findRegion("bg_knight");
 
         cityWall = gamePieces.findRegion("cityWall");
 
@@ -235,7 +239,7 @@ class GamePieces {
      * @param knight the knight associated with this actor
      */
     KnightActor createKnight(Knight knight) {
-        KnightActor knightActor = new KnightActor(knight, knightActive, knightInactive);
+        KnightActor knightActor = new KnightActor(knight);
 
         // Scale down the image
         final float knightScale = 1 / 8f;

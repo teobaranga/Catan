@@ -43,6 +43,8 @@ public class Session {
 
     private Player[] players;
     private ResourceMap bank;
+
+    public boolean firstBarbarianAttack;
     
     /** Describes the currently executing progress card. Null if no progress card is executing */
     private ProgressCardType currentlyExecutingProgressCard;

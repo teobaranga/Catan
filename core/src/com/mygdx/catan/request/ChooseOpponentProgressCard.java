@@ -1,17 +1,17 @@
 package com.mygdx.catan.request;
 
-import java.util.ArrayList;
-
 import com.mygdx.catan.enums.ProgressCardType;
+
+import java.util.List;
 
 /**
  * Forwarded request for target player to choose a progress card from given hand
  * */
 public class ChooseOpponentProgressCard extends TargetedRequest {
     
-    private ArrayList<ProgressCardType> hand;
+    private List<ProgressCardType> hand;
     
-    public static ChooseOpponentProgressCard newInstance(ArrayList<ProgressCardType> hand, String sender, String target) {
+    public static ChooseOpponentProgressCard newInstance(List<ProgressCardType> hand, String sender, String target) {
         ChooseOpponentProgressCard request = new ChooseOpponentProgressCard();
         
         request.hand = hand;
@@ -21,7 +21,7 @@ public class ChooseOpponentProgressCard extends TargetedRequest {
         return request;
     }
     
-    public ArrayList<ProgressCardType> getHand() {
+    public List<ProgressCardType> getHand() {
         return hand;
     }
     

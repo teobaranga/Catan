@@ -343,9 +343,9 @@ public class SessionController {
                     Gdx.app.postRunnable(() -> {
                         final DiscardHalfRequest discardHalf = (DiscardHalfRequest) object;
                         aSessionScreen.addGameMessage(discardHalf.sender + " has forced you to discard half of your hand");
-                        
+
                         int cardsToDiscard = localPlayer.getResourceHandSize() / 2;
-                        
+
                         // multistep move that will prompt player to discard half their hand
                         MultiStepMove discard = new MultiStepMove();
                         discard.<ResourceMap>addMove(cards -> {
@@ -353,14 +353,14 @@ public class SessionController {
                             aSessionScreen.updateResourceBar(localPlayer.getResources());
                             aSessionScreen.interractionDone();
                         });
-                        
+
                         if (cardsToDiscard > 0) {
                             aSessionScreen.addGameMessage("You must discard " + cardsToDiscard + " cards");
                             aSessionScreen.chooseMultipleResource(localPlayer.getResources(), cardsToDiscard, discard);
                         } else {
                             aSessionScreen.addGameMessage("Lucky for you, you have no cards to discard");
                         }
-                        
+
                     });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
@@ -1392,7 +1392,19 @@ public class SessionController {
         }
     }
 
-    public void robberHandle() {
+    public void robberHandleBeforeBarbarian() {
+        //called when a 7 is rolled until the first barbarian attack
+        //check players with hand greater than or equal to 7
+        for (Player p : aSessionManager.getPlayers()) {
+            if(p.getResourceHandSize() >= 7) {
+                DiscardHalfRequest request = DiscardHalfRequest.newInstance(localPlayer.getUsername(), p.getUsername());
+                CatanGame.client.sendTCP(request);
+            }
+        }
+    }
+
+    public void robberHandleAfterBarbarian() {
+        //happens when 7 is rolled AND after the barbarians reach island of catan for the first time
         List<Hex> hexesToChooseFrom = new ArrayList<>();
         List<Hex> boardHexes = aGameBoardManager.getHexes();
         for (Hex h : boardHexes) {
@@ -1419,7 +1431,6 @@ public class SessionController {
             // if there is a potential victim, let the local player choose a victim to steal random card from
             if (!potentialVictims.isEmpty()) {
                 moveRobber.<Player>addMove(victim -> {
-                    final Player chosenVictim = victim;
 
                     //get hand
                     ResourceMap playerHand = victim.getResources();
@@ -1441,7 +1452,7 @@ public class SessionController {
                                 localPlayer.addResources(cardToSteal);
                                 aSessionScreen.updateResourceBar(localPlayer.getResources());
                                 //update opponent hand
-                                TakeResources request = TakeResources.newInstance(cardToSteal, localPlayer.getUsername(), chosenVictim.getUsername());
+                                TakeResources request = TakeResources.newInstance(cardToSteal, localPlayer.getUsername(), victim.getUsername());
                                 CatanGame.client.sendTCP(request);
                                 aSessionScreen.interractionDone();
                                 break;
@@ -1459,6 +1470,7 @@ public class SessionController {
     }
 
     public void barbarianHandleAttack() {
+        System.out.println("barbarians attacked");
 
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
         int activeKnightStrength = 0;
@@ -1496,10 +1508,7 @@ public class SessionController {
                     }
                 }
             }
-            //TODO: get cities to pillage from barbarians and village. deal with city walls.
             for (Player p : worstPlayers) {
-                //TODO:send message to worstplayer to select a city
-
                 ArrayList<CoordinatePair> validCityIntersections = new ArrayList<>();
                 List<Village> listOfVillages = p.getVillages();
                 for (Village v : listOfVillages) {
@@ -1509,33 +1518,29 @@ public class SessionController {
                 }
 
                 MultiStepMove pillageVillageMove = new MultiStepMove();
-                pillageVillageMove.addMove(new Move<CoordinatePair>() {
-
-                    @Override
-                    public void doMove(CoordinatePair cityPosition) {
-                        //pillage a village if it is a city, make to settlement
-                        Village city = cityPosition.getOccupyingVillage();
-                        //if the city has city walls then these are removed 
-                        if (city.hasCityWalls()) {
-                           city.setCityWalls(false);
-                        } else {
-                            city.setVillageKind(VillageKind.SETTLEMENT);
-                            p.incrementAvailableCities();
-                            p.decrementAvailableSettlements();
-                        }
-                      //TODO: reflect changes in GUI.
-                        //unlock gui
-                        aSessionScreen.interractionDone();
+                pillageVillageMove.addMove((Move<CoordinatePair>) cityPosition -> {
+                    //pillage a village if it is a city, make to settlement
+                    Village city = cityPosition.getOccupyingVillage();
+                    //if the city has city walls then these are removed
+                    if (city.hasCityWalls()) {
+                       city.setCityWalls(false);
+                    } else {
+                        city.setVillageKind(VillageKind.SETTLEMENT);
+                        p.incrementAvailableCities();
+                        p.decrementAvailableSettlements();
                     }
-
+                  //TODO: reflect changes in GUI locally and for the other players (sessionscreen)
+                    CatanGame.client.sendTCP(UpdateVillage.newInstance(localPlayer.getUsername(), city));
+                    aSessionScreen.interractionDone();
                 });
                 aSessionScreen.initChooseIntersectionMove(validCityIntersections, pillageVillageMove);
             }
 
-        } else if (activeKnightStrength >= barbarianStrength) {
+        } else {
+            aSessionScreen.addGameMessage("Islanders Win!");
             //islanders win
             int maxKnightLevel = 0;
-            List<Player> bestPlayers = new ArrayList<Player>();
+            List<Player> bestPlayers = new ArrayList<>();
 
             for (Player p : aSessionManager.getPlayers()) {
                 int playerKnightLevel = 0;
@@ -1550,13 +1555,14 @@ public class SessionController {
                     bestPlayers.add(p);
                 }
             }
-            //TODO: deal with defender of catan points here
+
+            System.out.println(bestPlayers.size());
+
             if (bestPlayers.size() == 1) {
                 //this player is the defender of catan
-                //TODO: do we set them as the defender somehow?
                 Player bestPlayer = bestPlayers.get(0);
                 bestPlayer.incrementDefenderOfCatanPoints(1);
-                //TODO: present with a defender of catan vp card. 
+                aSessionScreen.addGameMessage(bestPlayer.getUsername() + " got a defender of catan point");
             } else {
                 //no player will be declared defender of Catan. 
                 //each eligible player will draw in CW order 1 card from any of the 3 PC decks
@@ -1573,18 +1579,17 @@ public class SessionController {
                             card = aGameBoardManager.drawProgressCard();
                         }
 
-                        aProgressCardHandler.handle(card, bp.getColor());
                         bp.addProgressCard(card);
+                        //TODO: inform the gui of the new pc
                         CatanGame.client.sendTCP(DrawProgressCard.newInstance(card));
                         aSessionScreen.interractionDone();
                     });
                     aSessionScreen.chooseProgressCardKind(handleProgressCardKind);
                 }
             }
-        } else {
-            //regardless of outcome, barbarians go home. 
-            aSessionManager.resetBarbarianPosition();
         }
+        //regardless of outcome, barbarians go home.
+        aSessionManager.resetBarbarianPosition();
     }
     private void resourceProduction(int diceRoll) {
         // Get the hexes having a dice number equal to the dice roll
@@ -1667,8 +1672,6 @@ public class SessionController {
         DiceRollPair diceResults = random.rollTwoDice();
         RollDice request = null;
 
-//        aSessionManager.setCurrentPhase(TURN_FIRST_PHASE); // TODO REMOVE THIS
-
         switch (aSessionManager.getCurrentPhase()) {
             case SETUP_PHASE_ONE:
                 // We're at the phase where we have to determine who rolled the highest number
@@ -1688,9 +1691,23 @@ public class SessionController {
                     if (aSessionManager.getSession().barbarianPosition == 0) {
                         //barbarians attack!
                         barbarianHandleAttack();
+                        if (!aSessionManager.getSession().firstBarbarianAttack) {
+                            aSessionManager.getSession().firstBarbarianAttack = true;
+                        }
                     }
                 } else if (eventDieResult == EventKind.TRADE || eventDieResult == EventKind.POLITICS || eventDieResult == EventKind.SCIENCE) {
                     eventDieProgressCardHandle(eventDieResult, diceResults.getRed());
+                }
+
+                int sum = diceResults.getSum();
+                if (sum == 7) {
+                    if (aSessionManager.getSession().firstBarbarianAttack) {
+                        robberHandleAfterBarbarian();
+                    } else {
+                        robberHandleBeforeBarbarian();
+                    }
+                } else {
+                    resourceProduction(sum); // this works bitchiz
                 }
 
                 aSessionScreen.addGameMessage(String.format("Rolled a %d %d %s", diceResults.getRed(), diceResults.getYellow(), eventDieResult));

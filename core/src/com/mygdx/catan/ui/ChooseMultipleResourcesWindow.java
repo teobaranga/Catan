@@ -1,21 +1,20 @@
 package com.mygdx.catan.ui;
 
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map.Entry;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.ResourceKind;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map.Entry;
 
 public class ChooseMultipleResourcesWindow extends Window {
 
@@ -48,7 +47,7 @@ public class ChooseMultipleResourcesWindow extends Window {
         confirm.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				if (chooseCardsListener != null && getResourceCount() == number) {
+                if (chooseCardsListener != null && getResourceCount() == number) {
 					chooseCardsListener.onMapChosen(getResources());
                     remove();
                 } 

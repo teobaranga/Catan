@@ -33,7 +33,7 @@ public class Player {
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
     private CityImprovements cityImprovements;
-    private ArrayList<ProgressCardType> hand;
+    private List<ProgressCardType> hand;
     private FishTokenMap fishTokenHand;
 
     private int availableSettlements;
@@ -51,7 +51,6 @@ public class Player {
         cityImprovements = new CityImprovements();
         fishTokenHand = new FishTokenMap();
         hand = new ArrayList<>();
-
 
         // Set the default number of available pieces
         tokenVictoryPoints = 0;
@@ -146,7 +145,7 @@ public class Player {
         hand.remove(card);
     }
     
-    public ArrayList<ProgressCardType> getProgressCardHand() {
+    public List<ProgressCardType> getProgressCardHand() {
         return hand;
     }
 
@@ -290,7 +289,7 @@ public class Player {
     }
 
     public int getProgressCardCount() {
-        throw new RuntimeException("getProgressCardCount not yet implemented");
+        return hand.size();
     }
 
 	/*public ProgressCardType chooseProgressCardType() {

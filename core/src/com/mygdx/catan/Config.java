@@ -94,6 +94,7 @@ public class Config {
         kryo.register(SpecialTradeRequest.class);
         kryo.register(MoveRobberRequest.class);
         kryo.register(UpdateVP.class);
+        kryo.register(UpdateVillage.class);
         kryo.register(DiscardHalfRequest.class);
         kryo.register(MoveMerchantRequest.class);
         kryo.register(DisplaceRoadRequest.class);

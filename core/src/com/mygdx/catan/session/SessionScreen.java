@@ -794,7 +794,7 @@ public class SessionScreen implements Screen {
     	// disable all possible actions
         disableAllButtons();
 
-        final ChooseFromEnumCollectionWindow<ProgressCardType> chooseProgressCardWindow = new ChooseFromEnumCollectionWindow<ProgressCardType>("Choose Progress Card", CatanGame.skin, cards);
+        final ChooseFromEnumCollectionWindow<ProgressCardType> chooseProgressCardWindow = new ChooseFromEnumCollectionWindow<>("Choose Progress Card", CatanGame.skin, cards);
         chooseProgressCardWindow.setChooseCardListener((type) -> {
         	//performs the given move with type
         	move.performNextMove(type);

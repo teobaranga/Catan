@@ -345,14 +345,9 @@ public class GameRules {
 	 *	Initializes the occurrences of each FishToken type.
 	 */
 	private void initializeFishTokens() {
-//		fishTokenOccurences.put(FishTokenType.ONE_FISH, 11);
-//		fishTokenOccurences.put(FishTokenType.TWO_FISH, 10);
-//		fishTokenOccurences.put(FishTokenType.THREE_FISH, 8);
-//		fishTokenOccurences.put(FishTokenType.OLD_BOOT, 1);
-
-		fishTokenOccurences.put(FishTokenType.ONE_FISH, 1);
-		fishTokenOccurences.put(FishTokenType.TWO_FISH, 1);
-		fishTokenOccurences.put(FishTokenType.THREE_FISH, 1);
+		fishTokenOccurences.put(FishTokenType.ONE_FISH, 11);
+		fishTokenOccurences.put(FishTokenType.TWO_FISH, 10);
+		fishTokenOccurences.put(FishTokenType.THREE_FISH, 8);
 		fishTokenOccurences.put(FishTokenType.OLD_BOOT, 1);
 	}
 

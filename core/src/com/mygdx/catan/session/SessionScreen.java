@@ -1827,7 +1827,9 @@ public class SessionScreen implements Screen {
     }
 
     void showWinner(Player p) {
+        disableAllButtons();
         WinnerWindow winnerWindow = new WinnerWindow("We have a WINNER", CatanGame.skin,p);
+        aSessionStage.addActor(winnerWindow);
     }
 
     /**

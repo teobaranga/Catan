@@ -20,6 +20,7 @@ import com.mygdx.catan.moves.MultiStepInitMove;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.request.UpdateOldBoot;
 import com.mygdx.catan.ui.*;
 import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -136,6 +137,7 @@ public class SessionScreen implements Screen {
      */
     private Table bootOwner;
     private Label bootOwnerLabel;
+    private Button giveBoot;
 
     /**
      * labels that keeps track of available game pieces to build
@@ -259,12 +261,16 @@ public class SessionScreen implements Screen {
             @Override
             public boolean keyUp(int keycode) {
                 if (keycode == Input.Keys.ESCAPE) {
-                    aGame.switchScreen(ScreenKind.MAIN_MENU);
+                    quitGame();
                     return true;
                 }
                 return false;
             }
         };
+    }
+
+    private void quitGame(){
+        aGame.switchScreen(ScreenKind.MAIN_MENU);
     }
 
     public void setValidMoveShipPositions(Pair<CoordinatePair, CoordinatePair> validShip) {
@@ -381,11 +387,43 @@ public class SessionScreen implements Screen {
 
         //Old Boot Table
         bootOwnerLabel = new Label("Boot Owner: No one", CatanGame.skin);
+        giveBoot = new TextButton("Give Boot", CatanGame.skin);
+        giveBoot.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+
+                Player localPlayer = aSessionController.getLocalPlayer();
+                //addGameMessage("owner is " + aSessionController.getBootOwner().getUsername());
+                // Finds the suitable Players
+                addGameMessage("" + aSessionController.getBootMalus(localPlayer));
+                if (aSessionController.getBootMalus(localPlayer) != 1) {
+                    addGameMessage("Luckily you don't have the boot");
+                    return;
+                }
+
+                ArrayList<Player> opponents =  aSessionController.getValidBootRecepients();
+
+                if (opponents.isEmpty()){
+                    addGameMessage("You are the best player");
+                    addGameMessage("So you have to keep the Boot");
+                    return;
+                }
+
+                MultiStepMove choosePlayerToGiveBoot = new MultiStepMove();
+                choosePlayerToGiveBoot.<Player>addMove(chosenPlayer -> {
+                    UpdateOldBoot request = UpdateOldBoot.newInstance(chosenPlayer.getUsername());
+                    CatanGame.client.sendTCP(request);
+                    interractionDone();
+                });
+                chooseOtherPlayer(opponents, choosePlayerToGiveBoot);
+            }
+        });
         bootOwner = new Table(CatanGame.skin);
-        bootOwner.setSize(200, 40);
-        bootOwner.setPosition(10, Gdx.graphics.getHeight() - 300);
+        bootOwner.setSize(200, 80);
+        bootOwner.setPosition(10, Gdx.graphics.getHeight() - 290);
         bootOwner.setBackground(CatanGame.skin.newDrawable("white", Color.BLACK));
-        bootOwner.add(bootOwnerLabel);
+        bootOwner.add(bootOwnerLabel).pad(5).row();
+        bootOwner.add(giveBoot).pad(5).row();
 
         // available game pieces table
         Table availableGamePiecesTable = new Table(CatanGame.skin);
@@ -1383,13 +1421,11 @@ public class SessionScreen implements Screen {
     /**
      * adds a button to the temporary functionality table which on change executes given listener. All these buttons are removed
      * at the end of a turn 
-     * @param listener       to temporary button
-     * @param functionality  name of temporary functionality
+     * @param temp  temporary button
      * */
     public void addTemporaryFunctionality(TextButton temp) {
         temporaryFunctionalityTable.setSize(temporaryFunctionalityTable.getWidth(), temporaryFunctionalityTable.getHeight() + 40);
         temporaryFunctionalityTable.setPosition(Gdx.graphics.getWidth() - 360, Gdx.graphics.getHeight() - (temporaryFunctionalityTable.getHeight() + 10));
-        
         temporaryFunctionalityTable.add(temp).pad(5).row();
     }
     
@@ -1558,6 +1594,7 @@ public class SessionScreen implements Screen {
         endTurnButton.setDisabled(true);
         moveShipButton.setDisabled(true);
         rollDiceButton.setDisabled(true);
+        giveBoot.setDisabled(true);
     }
 
     /**
@@ -1576,6 +1613,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
+                giveBoot.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1589,6 +1627,7 @@ public class SessionScreen implements Screen {
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
+                giveBoot.setDisabled(true);
 
                 initialize(true);
                 break;
@@ -1602,6 +1641,7 @@ public class SessionScreen implements Screen {
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
+                giveBoot.setDisabled(true);
 
                 initialize(false);
                 break;
@@ -1614,6 +1654,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
+                giveBoot.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1626,6 +1667,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(false);
                 endTurnButton.setDisabled(false);
                 moveShipButton.setDisabled(false);
+                giveBoot.setDisabled(false);
 
                 rollDiceButton.setDisabled(true);
                 break;
@@ -1782,6 +1824,10 @@ public class SessionScreen implements Screen {
             playersVPLabel[i].setText(players[i].getUsername() + ": " + aSessionController.currentVP(players[i]));
             setPlayerTableColor(playersVP[i], players[i].getColor());
         }
+    }
+
+    void showWinner(Player p) {
+        WinnerWindow winnerWindow = new WinnerWindow("We have a WINNER", CatanGame.skin,p);
     }
 
     /**

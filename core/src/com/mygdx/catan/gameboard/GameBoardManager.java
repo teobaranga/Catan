@@ -120,10 +120,17 @@ public class GameBoardManager {
      * @return 1 if malus applies, 0 otherwise.
      */
     public int getBootMalus(Player player) {
-        if (player.equals(aGameBoard.getaBootOwner())) {
+        if(aGameBoard.getaBootOwner() == null){
+            return 0;
+        }
+        if (player.getUsername().equals(aGameBoard.getaBootOwner().getUsername())) {
             return 1;
         }
         return 0;
+    }
+
+    public Player getBootOwner(){
+        return aGameBoard.getaBootOwner();
     }
 
     public void setaBootOwner(Player newOwner) {

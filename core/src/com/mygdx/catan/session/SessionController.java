@@ -402,14 +402,18 @@ public class SessionController {
                     Gdx.app.postRunnable(() -> {
                         UpdateOldBoot updateOldBoot = (UpdateOldBoot) object;
                         aSessionScreen.updateBootOwner(updateOldBoot.username);
-                        for (Player p: aSessionManager.getPlayers())
+                        for (Player p : getPlayers()) {
                             if (p.getUsername().equals(updateOldBoot.username)) {
                                 setBootOwner(p);
                             }
+                        }
                     });
                 } else if (object instanceof UpdateVP){
                     Gdx.app.postRunnable(() -> {
                         aSessionScreen.updateVpTables();
+                        if(isWinner(localPlayer)) {
+                            aSessionScreen.showWinner(localPlayer);
+                        }
                     });
                 } else if (object instanceof DrawProgressCard) {
                     Gdx.app.postRunnable(() -> {
@@ -1338,6 +1342,10 @@ public class SessionController {
         return currentVP;
     }
 
+    private boolean isWinner(Player p){
+        return currentVP(p) > aGameRules.getVpToWin() + getBootMalus(p);
+    }
+
     /**
      * Adds resources to the bank.
      *
@@ -1656,12 +1664,24 @@ public class SessionController {
         aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
 
-    public int getBootMalus(Player player) {
+    int getBootMalus(Player player) {
         return aGameBoardManager.getBootMalus(player);
     }
 
-    public void setBootOwner(Player newOwner) {
+
+    void setBootOwner(Player newOwner) {
         aGameBoardManager.setaBootOwner(newOwner);
+    }
+
+    ArrayList<Player> getValidBootRecepients(){
+        ArrayList<Player> result = new ArrayList<Player>(Arrays.asList(getPlayers()));
+        result.remove(localPlayer);
+        for (Player p : result) {
+            if (currentVP(p) < currentVP(localPlayer)) {
+                result.remove(p);
+            }
+        }
+        return result;
     }
 
     /**

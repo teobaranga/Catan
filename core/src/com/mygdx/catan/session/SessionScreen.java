@@ -8,9 +8,12 @@ import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.catan.*;
 import com.mygdx.catan.enums.*;
@@ -87,6 +90,9 @@ public class SessionScreen implements Screen {
     /** Contains the currently performing multi step move */
     private MultiStepMove currentlyPerformingMove;
 
+    /** Map that associates each progress card type to its image */
+    private EnumMap<ProgressCardType,Image> progressCardMap; 
+    
     /**
      * The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE
      */
@@ -110,6 +116,9 @@ public class SessionScreen implements Screen {
      */
     private Table currentPlayer;
     private Label currentPlayerLabel;
+    
+    /** A table that will contain all the progress card images */
+    private Table progressCardTable;
 
     /** A table that contains all temporary functionality */
     private Table temporaryFunctionalityTable;
@@ -193,6 +202,7 @@ public class SessionScreen implements Screen {
         resourceLabelMap = new EnumMap<>(ResourceKind.class);
         polyBatch = new PolygonSpriteBatch();
         highlightBatch = new PolygonSpriteBatch();
+        progressCardMap = new EnumMap<>(ProgressCardType.class);
         gamePieces = GamePieces.getInstance();
         robberSprite = gamePieces.createRobber();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -404,45 +414,7 @@ public class SessionScreen implements Screen {
         }
         updateVpTables();
 
-        //Old Boot Table
-        bootOwnerLabel = new Label("Boot Owner: No one", CatanGame.skin);
-        giveBoot = new TextButton("Give Boot", CatanGame.skin);
-        giveBoot.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-
-                Player localPlayer = aSessionController.getLocalPlayer();
-                //addGameMessage("owner is " + aSessionController.getBootOwner().getUsername());
-                // Finds the suitable Players
-                addGameMessage("" + aSessionController.getBootMalus(localPlayer));
-                if (aSessionController.getBootMalus(localPlayer) != 1) {
-                    addGameMessage("Luckily you don't have the boot");
-                    return;
-                }
-
-                ArrayList<Player> opponents =  aSessionController.getValidBootRecepients();
-
-                if (opponents.isEmpty()){
-                    addGameMessage("You are the best player");
-                    addGameMessage("So you have to keep the Boot");
-                    return;
-                }
-
-                MultiStepMove choosePlayerToGiveBoot = new MultiStepMove();
-                choosePlayerToGiveBoot.<Player>addMove(chosenPlayer -> {
-                    UpdateOldBoot request = UpdateOldBoot.newInstance(chosenPlayer.getUsername());
-                    CatanGame.client.sendTCP(request);
-                    interractionDone();
-                });
-                chooseOtherPlayer(opponents, choosePlayerToGiveBoot);
-            }
-        });
-        bootOwner = new Table(CatanGame.skin);
-        bootOwner.setSize(200, 80);
-        bootOwner.setPosition(10, Gdx.graphics.getHeight() - 290);
-        bootOwner.setBackground(CatanGame.skin.newDrawable("white", Color.BLACK));
-        bootOwner.add(bootOwnerLabel).pad(5).row();
-        bootOwner.add(giveBoot).pad(5).row();
+        
 
         // available game pieces table
         Table availableGamePiecesTable = new Table(CatanGame.skin);
@@ -706,6 +678,78 @@ public class SessionScreen implements Screen {
         // Pack the menu table to make it fit all its children
         menuTable.pad(10);
         menuTable.pack();
+        
+        //Old Boot Table
+        bootOwnerLabel = new Label("Boot Owner: No one", CatanGame.skin);
+        giveBoot = new TextButton("Give Boot", CatanGame.skin);
+        giveBoot.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+
+                Player localPlayer = aSessionController.getLocalPlayer();
+                //addGameMessage("owner is " + aSessionController.getBootOwner().getUsername());
+                // Finds the suitable Players
+                addGameMessage("" + aSessionController.getBootMalus(localPlayer));
+                if (aSessionController.getBootMalus(localPlayer) != 1) {
+                    addGameMessage("Luckily you don't have the boot");
+                    return;
+                }
+
+                ArrayList<Player> opponents =  aSessionController.getValidBootRecepients();
+
+                if (opponents.isEmpty()){
+                    addGameMessage("You are the best player");
+                    addGameMessage("So you have to keep the Boot");
+                    return;
+                }
+
+                MultiStepMove choosePlayerToGiveBoot = new MultiStepMove();
+                choosePlayerToGiveBoot.<Player>addMove(chosenPlayer -> {
+                    UpdateOldBoot request = UpdateOldBoot.newInstance(chosenPlayer.getUsername());
+                    CatanGame.client.sendTCP(request);
+                    interractionDone();
+                });
+                chooseOtherPlayer(opponents, choosePlayerToGiveBoot);
+            }
+        });
+        bootOwner = new Table(CatanGame.skin);
+        bootOwner.setSize(200, 80);
+        bootOwner.setPosition(10, menuTable.getHeight() + 20);
+        bootOwner.setBackground(CatanGame.skin.newDrawable("white", Color.BLACK));
+        bootOwner.add(bootOwnerLabel).pad(5).row();
+        bootOwner.add(giveBoot).pad(5).row();
+        
+        // initialize each progress card image
+        for (ProgressCardType type : ProgressCardType.values()) {
+            progressCardMap.put(type, gamePieces.createProgressCard(type, LENGTH*4/3f, LENGTH*2)); //TODO make this a scale rather than w & h
+        }
+        
+        // progress card table
+        progressCardTable = new Table(CatanGame.skin);
+        progressCardTable.setSize(0, 2 * LENGTH);
+      
+        //TODO remove after testing
+        addCardToHand(ProgressCardType.COMMERCIALHARBOUR);
+        addCardToHand(ProgressCardType.ALCHEMIST);
+        ArrayList<ProgressCardType> testingHand = new ArrayList<>();
+        testingHand.add(ProgressCardType.COMMERCIALHARBOUR);
+        testingHand.add(ProgressCardType.ALCHEMIST);
+        
+        progressCardTable.setDebug(true);
+        progressCardTable.setPosition(Gdx.graphics.getWidth() / 2 - resourcesTable.getWidth()* 3 / 4, resourcesTable.getHeight() + 20);
+        progressCardTable.setTouchable(Touchable.enabled); 
+        progressCardTable.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                final PlayProgressCardWindow playProgressCard = new PlayProgressCardWindow("Hand", CatanGame.skin, testingHand, progressCardMap, aSessionController.getCurrentGamePhase(), aSessionController.isMyTurn());
+                playProgressCard.setPlayProgressCardListener((type) -> {
+                    // plays the chosen progress card
+                    aSessionController.playProgressCard(type);
+                });
+                aSessionStage.addActor(playProgressCard);
+            }
+        });
+        
 
         // sets center of board
         int offsetX, offsetY;
@@ -755,6 +799,7 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(turnTable);
         aSessionStage.addActor(currentPlayer);
         aSessionStage.addActor(temporaryFunctionalityTable);
+        aSessionStage.addActor(progressCardTable);
         for (int i = 0; i < playersVP.length; i++) {
             aSessionStage.addActor(playersVP[i]);
         }
@@ -1638,6 +1683,15 @@ public class SessionScreen implements Screen {
         if (edgeUnit != null)
             edgeUnits.add(edgeUnit);
     }
+    
+    /**
+     * adds image to given progress card type to hand on the board
+     * */
+    public void addCardToHand(ProgressCardType type) {
+        Image cardImage = progressCardMap.get(type);
+        progressCardTable.add(cardImage).pad(5);
+        progressCardTable.setSize(progressCardTable.getWidth() + cardImage.getWidth(), progressCardTable.getHeight());
+    }
 
     private void disableAllButtons() {
         buildSettlementButton.setDisabled(true);
@@ -1748,7 +1802,6 @@ public class SessionScreen implements Screen {
         domesticTradeButton.setDisabled(true);
         endTurnButton.setDisabled(true);
         buildMetropolisButton.setDisabled(true);
-
         removeTemporaryFunctionalities();
 
     }

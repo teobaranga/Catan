@@ -106,5 +106,9 @@ public class Config {
         kryo.register(TradeImprovementRequest.class);
         kryo.register(ScienceImprovementRequest.class);
         kryo.register(PoliticsImprovementRequest.class);
+        kryo.register(BuildKnightRequest.class);
+        kryo.register(MoveKnightRequest.class);
+        kryo.register(ActivateKnightRequest.class);
+        kryo.register(ChangeKnightStatus.class);
     }
 }

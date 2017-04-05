@@ -706,6 +706,26 @@ public class SessionController {
         return canBuild;
     }
 
+    public boolean requestTradeImprovement(PlayerColor owner) {
+        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        int currentTradeLevel = getCurrentPlayer().getCityImprovements().getTradeLevel();
+        boolean canImprove = currentP.hasEnoughResources(GameRules.getGameRulesInstance().getTradeCityImprovementCost(currentTradeLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
+        return canImprove;
+
+    }
+
+    public boolean requestScienceImprovement(PlayerColor owner) {
+        Player currentP = getCurrentPlayer();
+        int currentScienceLevel = getCurrentPlayer().getCityImprovements().getScienceLevel();
+        return currentP.hasEnoughResources(GameRules.getGameRulesInstance().getScienceCityImprovementCost(currentScienceLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
+    }
+
+    public boolean requestPoliticsImprovement(PlayerColor owner) {
+        Player currentP = getCurrentPlayer();
+        int currentPoliticsLevel = getCurrentPlayer().getCityImprovements().getPoliticsLevel();
+        return currentP.hasEnoughResources(GameRules.getGameRulesInstance().getPoliticsCityImprovementCost(currentPoliticsLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
+    }
+
     //returns true if progress card play is valid based on game rules
     public boolean controlPlayProgressCard(PlayerColor owner) {
         return true;
@@ -772,6 +792,19 @@ public class SessionController {
             validUpgradeIntersections.add(v.getPosition());
         }
         return validUpgradeIntersections;
+    }
+
+    //TODO: generate valid metropolis intersections
+
+    public ArrayList<CoordinatePair> requestValidMetropolisIntersections(PlayerColor owner) {
+        Player currentP = aSessionManager.getCurrentPlayer();
+        ArrayList<CoordinatePair> validMetropolisIntersections = new ArrayList<>();
+        for (Village v: aSessionManager.getCurrentPlayer().getVillages()) {
+            if(v.getVillageKind() == CITY) {
+                validMetropolisIntersections.add(v.getPosition());
+            }
+        }
+        return validMetropolisIntersections;
     }
 
     /**
@@ -1027,7 +1060,7 @@ public class SessionController {
         CoordinatePair position = myKnight.getPosition();
 
         //change knight status
-        ChangeKnightStatus request = ChangeKnightStatus.newInstance(true, owner, CatanGame.account.getUsername(), new ImmutablePair<>(position.getLeft(), position.getRight()));
+        ActivateKnightRequest request = ActivateKnightRequest.newInstance(true, owner, CatanGame.account.getUsername(), new ImmutablePair<>(position.getLeft(), position.getRight()));
         CatanGame.client.sendTCP(request);
         /* TODO: update display, inform other players, check sufficient resources */
         return true;
@@ -1892,4 +1925,35 @@ public class SessionController {
             throw new RuntimeException("wrong number of fish was given");
         }
     }
+
+    public void tradeCityImprovement(PlayerColor owner) {
+        Player currentP = getCurrentPlayer();
+        currentP.getCityImprovements().upgradeTradeLevel();
+        int level = currentP.getCityImprovements().getTradeLevel();
+        aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getTradeCityImprovementCost(level, aSessionManager.getCurrentlyExecutingProgressCard()));
+        aSessionScreen.updateTradeImprovements(level);
+        TradeImprovementRequest request = TradeImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
+        CatanGame.client.sendTCP(request);
+    }
+
+    public void scienceCityImprovement(PlayerColor owner) {
+        Player currentP = getCurrentPlayer();
+        currentP.getCityImprovements().upgradeScienceLevel();
+        int level = currentP.getCityImprovements().getScienceLevel();
+        aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getScienceCityImprovementCost(level, aSessionManager.getCurrentlyExecutingProgressCard()));
+        aSessionScreen.updateScienceImprovements(level);
+        ScienceImprovementRequest request = ScienceImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
+        CatanGame.client.sendTCP(request);
+    }
+
+    public void politicsCityImprovement(PlayerColor owner) {
+        Player currentP = getCurrentPlayer();
+        currentP.getCityImprovements().upgradePoliticsLevel();
+        int level = currentP.getCityImprovements().getPoliticsLevel();
+        aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getPoliticsCityImprovementCost(level, aSessionManager.getCurrentlyExecutingProgressCard()));
+        aSessionScreen.updatePoliticsImprovements(level);
+        PoliticsImprovementRequest request = PoliticsImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
+        CatanGame.client.sendTCP(request);
+    }
+
 }

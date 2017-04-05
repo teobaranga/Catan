@@ -1,16 +1,11 @@
 package com.mygdx.catan;
 
-import com.mygdx.catan.enums.FishTokenType;
-import com.mygdx.catan.enums.HarbourKind;
-import com.mygdx.catan.enums.ProgressCardKind;
-import com.mygdx.catan.enums.ProgressCardType;
-import com.mygdx.catan.enums.ResourceKind;
-import com.mygdx.catan.enums.TerrainKind;
-import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.Hex;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -30,13 +25,43 @@ public class GameRules {
 	private ResourceMap activateKnightCost = new ResourceMap();
 	private ResourceMap promoteKnightCost = new ResourceMap();
 
+	//City improvement costs
+    private ResourceMap tradeLevel1= new ResourceMap();
+    private ResourceMap tradeLevel2= new ResourceMap();
+    private ResourceMap tradeLevel3= new ResourceMap();
+    private ResourceMap tradeLevel4= new ResourceMap();
+    private ResourceMap tradeLevel5= new ResourceMap();
+
+    private ResourceMap scienceLevel1= new ResourceMap();
+    private ResourceMap scienceLevel2= new ResourceMap();
+    private ResourceMap scienceLevel3= new ResourceMap();
+    private ResourceMap scienceLevel4= new ResourceMap();
+    private ResourceMap scienceLevel5= new ResourceMap();
+
+    private ResourceMap politicsLevel1= new ResourceMap();
+    private ResourceMap politicsLevel2= new ResourceMap();
+    private ResourceMap politicsLevel3= new ResourceMap();
+    private ResourceMap politicsLevel4= new ResourceMap();
+    private ResourceMap politicsLevel5= new ResourceMap();
+
+
 	private EnumMap<ProgressCardType, Integer> progressCardOccurences = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
 	private EnumMap<ProgressCardType, ProgressCardKind> progressCardKind = new EnumMap<ProgressCardType, ProgressCardKind>(ProgressCardType.class);
 	private EnumMap<FishTokenType, Integer> fishTokenOccurences = new EnumMap<FishTokenType, Integer>(FishTokenType.class);
-	private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
+
+	private EnumMap<CityImprovementTypeTrade, ResourceMap> tradeImprovementCosts = new EnumMap<CityImprovementTypeTrade, ResourceMap>(CityImprovementTypeTrade.class);
+    private EnumMap<CityImprovementTypePolitics, ResourceMap> politicsImprovementCosts = new EnumMap<CityImprovementTypePolitics, ResourceMap>(CityImprovementTypePolitics.class);
+    private EnumMap<CityImprovementTypeScience, ResourceMap> scienceImprovementCosts = new EnumMap<CityImprovementTypeScience, ResourceMap>(CityImprovementTypeScience.class);
+
+    private HashMap<Integer, CityImprovementTypeTrade> tradeImprovementLevelMap = new HashMap<Integer, CityImprovementTypeTrade>();
+    private HashMap<Integer, CityImprovementTypePolitics> politicsImprovementLevelMap = new HashMap<Integer, CityImprovementTypePolitics>();
+    private HashMap<Integer, CityImprovementTypeScience> scienceImprovementLevelMap = new HashMap<Integer, CityImprovementTypeScience>();
+
+    private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
 	private HashMap<Integer,Integer> defaultDiceNumberMap = new HashMap<Integer,Integer>();
 	private HashMap<Integer,HarbourKind> defaultHarbourMap = new HashMap<Integer,HarbourKind>();
 	private HashMap<TerrainKind, ResourceKind> producingResourcemap = new HashMap<>();
+
 
 	private ArrayList<Pair<Integer, Integer>> smallFisheryPosition = new ArrayList<>();
 
@@ -69,6 +94,10 @@ public class GameRules {
 		setupBuildBasicKnightCost();
 		setupActivateKnightCost();
 		setupPromoteKnightCost();
+		setupCityImprovementCosts();
+
+		initializeCityImprovementCostMap();
+        initializeCityImprovementLevelMaps();
 		setupProducingResourcesmap();
 	}
 
@@ -120,6 +149,26 @@ public class GameRules {
 		promoteKnightCost.put(ResourceKind.ORE, 1);
 	}
 
+	private void setupCityImprovementCosts() {
+	    tradeLevel1.put(ResourceKind.CLOTH, 1);
+        tradeLevel2.put(ResourceKind.CLOTH, 2);
+        tradeLevel3.put(ResourceKind.CLOTH, 3);
+        tradeLevel4.put(ResourceKind.CLOTH, 4);
+        tradeLevel5.put(ResourceKind.CLOTH, 5);
+
+        politicsLevel1.put(ResourceKind.COIN, 1);
+        politicsLevel2.put(ResourceKind.COIN, 2);
+        politicsLevel3.put(ResourceKind.COIN, 3);
+        politicsLevel4.put(ResourceKind.COIN, 4);
+        politicsLevel5.put(ResourceKind.COIN, 5);
+
+        scienceLevel1.put(ResourceKind.PAPER, 1);
+        scienceLevel2.put(ResourceKind.PAPER, 2);
+        scienceLevel3.put(ResourceKind.PAPER, 3);
+        scienceLevel4.put(ResourceKind.PAPER, 4);
+        scienceLevel5.put(ResourceKind.PAPER, 5);
+    }
+
 	private void setupDefaultSmallFisheryPair() {
 	    smallFisheryPosition.add(new ImmutablePair<>(-7,1));
         smallFisheryPosition.add(new ImmutablePair<>(7,1));
@@ -128,7 +177,7 @@ public class GameRules {
         smallFisheryPosition.add(new ImmutablePair<>(0,4));
         smallFisheryPosition.add(new ImmutablePair<>(2,4));
     }
-	
+
 	private void setupProducingResourcesmap() {
 	    producingResourcemap.put(TerrainKind.FIELDS, ResourceKind.GRAIN);
 	    producingResourcemap.put(TerrainKind.FOREST, ResourceKind.WOOD);
@@ -351,6 +400,47 @@ public class GameRules {
 		fishTokenOccurences.put(FishTokenType.OLD_BOOT, 1);
 	}
 
+	private void initializeCityImprovementCostMap() {
+	    tradeImprovementCosts.put(CityImprovementTypeTrade.MARKET, tradeLevel1);
+        tradeImprovementCosts.put(CityImprovementTypeTrade.TRADINGHOUSE, tradeLevel2);
+        tradeImprovementCosts.put(CityImprovementTypeTrade.MERCHANTGUILD, tradeLevel3);
+        tradeImprovementCosts.put(CityImprovementTypeTrade.BANK, tradeLevel4);
+        tradeImprovementCosts.put(CityImprovementTypeTrade.GREATEXCHANGE, tradeLevel5);
+
+        politicsImprovementCosts.put(CityImprovementTypePolitics.TOWNHALL, politicsLevel1);
+        politicsImprovementCosts.put(CityImprovementTypePolitics.CHURCH, politicsLevel2);
+        politicsImprovementCosts.put(CityImprovementTypePolitics.FORTRESS, politicsLevel3);
+        politicsImprovementCosts.put(CityImprovementTypePolitics.CATHEDRAL, politicsLevel4);
+        politicsImprovementCosts.put(CityImprovementTypePolitics.HIGHASSEMBLY, politicsLevel5);
+
+        scienceImprovementCosts.put(CityImprovementTypeScience.ABBEY, scienceLevel1);
+        scienceImprovementCosts.put(CityImprovementTypeScience.LIBRARY, scienceLevel2);
+        scienceImprovementCosts.put(CityImprovementTypeScience.AQUEDUCT, scienceLevel3);
+        scienceImprovementCosts.put(CityImprovementTypeScience.THEATER, scienceLevel4);
+        scienceImprovementCosts.put(CityImprovementTypeScience.UNIVERSITY, scienceLevel5);
+
+    }
+
+    private void initializeCityImprovementLevelMaps() {
+        tradeImprovementLevelMap.put(1, CityImprovementTypeTrade.MARKET);
+        tradeImprovementLevelMap.put(2, CityImprovementTypeTrade.TRADINGHOUSE);
+        tradeImprovementLevelMap.put(3, CityImprovementTypeTrade.MERCHANTGUILD);
+        tradeImprovementLevelMap.put(4, CityImprovementTypeTrade.BANK);
+        tradeImprovementLevelMap.put(5, CityImprovementTypeTrade.GREATEXCHANGE);
+
+        politicsImprovementLevelMap.put(1, CityImprovementTypePolitics.TOWNHALL);
+        politicsImprovementLevelMap.put(2, CityImprovementTypePolitics.CHURCH);
+        politicsImprovementLevelMap.put(3, CityImprovementTypePolitics.FORTRESS);
+        politicsImprovementLevelMap.put(4, CityImprovementTypePolitics.CATHEDRAL);
+        politicsImprovementLevelMap.put(5, CityImprovementTypePolitics.HIGHASSEMBLY);
+
+        scienceImprovementLevelMap.put(1, CityImprovementTypeScience.ABBEY);
+        scienceImprovementLevelMap.put(2, CityImprovementTypeScience.LIBRARY);
+        scienceImprovementLevelMap.put(3, CityImprovementTypeScience.AQUEDUCT);
+        scienceImprovementLevelMap.put(4, CityImprovementTypeScience.THEATER);
+        scienceImprovementLevelMap.put(5, CityImprovementTypeScience.UNIVERSITY);
+    }
+
 
 	/**
 	 * @param x left coordinate
@@ -372,7 +462,7 @@ public class GameRules {
     public ResourceKind getProducingResource(TerrainKind kind) {
         return producingResourcemap.get(kind);
     }
-    
+
 	/**
 	 * @return singleton instance of GameRules
 	 * */
@@ -659,5 +749,87 @@ public class GameRules {
         }
     }
 
+    public ResourceMap getScienceCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {
+        if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
+            ResourceMap costWithCrane = new ResourceMap();
+            costWithCrane.put(ResourceKind.PAPER, level - 1);
+        } else {
+            switch (level) {
+                case 1:
+                    return scienceLevel1;
+                case 2:
+                    return scienceLevel2;
+                case 3:
+                    return scienceLevel3;
+                case 4:
+                    return scienceLevel4;
+                case 5:
+                    return scienceLevel5;
+                default:
+                    return new ResourceMap();
+            }
+        }
+        return null;
+    }
+
+    public ResourceMap getPoliticsCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {
+        if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
+            ResourceMap costWithCrane = new ResourceMap();
+            costWithCrane.put(ResourceKind.COIN, level - 1);
+        } else {
+            switch (level) {
+                case 1:
+                    return politicsLevel1;
+                case 2:
+                    return politicsLevel2;
+                case 3:
+                    return politicsLevel3;
+                case 4:
+                    return politicsLevel4;
+                case 5:
+                    return politicsLevel5;
+                default:
+                    return new ResourceMap();
+            }
+        }
+        return null;
+    }
+
+    public ResourceMap getTradeCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {
+        if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
+            ResourceMap costWithCrane = new ResourceMap();
+            costWithCrane.put(ResourceKind.CLOTH, level - 1);
+        } else {
+            switch (level) {
+                case 1:
+                    return tradeLevel1;
+                case 2:
+                    return tradeLevel2;
+                case 3:
+                    return tradeLevel3;
+                case 4:
+                    return tradeLevel4;
+                case 5:
+                    return tradeLevel5;
+                default:
+                    return new ResourceMap();
+            }
+        }
+        return null;
+    }
+
+    public CityImprovementTypeScience getScienceImprovmentType(int level) {
+	    return scienceImprovementLevelMap.get(level);
+    }
+
+    public CityImprovementTypePolitics getPoliticsImprovementType(int level) {
+	    return politicsImprovementLevelMap.get(level);
+    }
+
+    public CityImprovementTypeTrade getTradeImprovementType(int level) {
+	    return tradeImprovementLevelMap.get(level);
+    }
 
 }
+
+

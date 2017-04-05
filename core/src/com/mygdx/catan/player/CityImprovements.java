@@ -1,10 +1,18 @@
 package com.mygdx.catan.player;
 
+import com.mygdx.catan.enums.CityImprovementTypePolitics;
+import com.mygdx.catan.enums.CityImprovementTypeScience;
+import com.mygdx.catan.enums.CityImprovementTypeTrade;
+
 public class CityImprovements {
     /** Maximum level of improvement */
-    private static final int MAX_LEVEL = 4;
+    private static final int MAX_LEVEL = 5;
 
     private int trade, science, politics;
+
+//    private CityImprovementTypeTrade trade;
+//    private CityImprovementTypePolitics science;
+//    private CityImprovementTypeScience politics;
 
     public int getTradeLevel() {
         return trade;

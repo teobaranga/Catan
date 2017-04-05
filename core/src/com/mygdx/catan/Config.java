@@ -103,5 +103,8 @@ public class Config {
         kryo.register(ArrayList.class);
         kryo.register(ImmutablePair.class);
         kryo.register(EnumMap.class);
+        kryo.register(TradeImprovementRequest.class);
+        kryo.register(ScienceImprovementRequest.class);
+        kryo.register(PoliticsImprovementRequest.class);
     }
 }

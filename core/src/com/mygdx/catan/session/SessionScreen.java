@@ -71,7 +71,7 @@ public class SessionScreen implements Screen {
 
     /** The Robber */
     private PolygonSprite robberSprite;
-    
+
     /** The Merchant */
     private PolygonRegion merchantRegion;
 
@@ -96,7 +96,7 @@ public class SessionScreen implements Screen {
 
     // Menu Buttons
     private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton, buildKnightButton,
-            buildCityWallButton;
+            buildCityWallButton, buildMetropolisButton;
     private TextButton rollDiceButton, endTurnButton;
     private TextButton domesticTradeButton, tradeButton;
     private TextButton moveShipButton;
@@ -113,7 +113,7 @@ public class SessionScreen implements Screen {
 
     /** A table that contains all temporary functionality */
     private Table temporaryFunctionalityTable;
-    
+
     /**
      * Three tables that keep track of the players' VPs.
      */
@@ -132,6 +132,20 @@ public class SessionScreen implements Screen {
     private Label oneFishCountLabel;
     private Label twoFishCountLabel;
     private Label threeFishCountLabel;
+
+    /**
+     * Development Flip Chart Table
+     */
+    private Table tradeImprovement;
+    private Table politicsImprovement;
+    private Table scienceImprovement;
+    private Label tradeImprovementLevel;
+    private Label politicsImprovementLevel;
+    private Label scienceImprovementLevel;
+    private Label tradeImprovementLabel;
+    private Label politicsImprovementLabel;
+    private Label scienceImprovementLabel;
+
     /**
      * Table to show the Old Boot Owner.
      */
@@ -348,12 +362,17 @@ public class SessionScreen implements Screen {
         initFishTable(fishTable);
         fishTable.setPosition(resourcesTable.getX() + resourcesTable.getWidth() + 25, 10);
 
+        //development flip chart table
+        Table developmentFlipChart = new Table(CatanGame.skin);
+        initDevelopmentFlipChartTable(developmentFlipChart);
+        developmentFlipChart.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 10f, Align.top);
+
 
         // menu table
         Table menuTable = new Table(CatanGame.skin);
         menuTable.setBackground("resTableBackground");
         menuTable.setPosition(10, 10);
-         
+
         temporaryFunctionalityTable = new Table(CatanGame.skin);
         temporaryFunctionalityTable.setBackground("resTableBackground");
         temporaryFunctionalityTable.setSize(200, 0);
@@ -533,6 +552,36 @@ public class SessionScreen implements Screen {
         buildKnightButton.pad(0, 10, 0, 10);
         menuTable.add(buildKnightButton).padBottom(10).row();
 
+        buildMetropolisButton = new TextButton("Build Metropolis", CatanGame.skin);
+        buildMetropolisButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                //create a new multi step move to allow the player to build a metropolis
+                currentlyPerformingMove = new MultiStepMove();
+
+                final SessionScreenModes prevMode = aMode;
+
+                aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+
+                for(CoordinatePair intersection: aSessionController.requestValidMetropolisIntersections(aSessionController.getPlayerColor())) {
+                    validIntersections.add(intersection);
+                    highlightedPositions.add(gamePieces.createSettlement(intersection.getLeft(), intersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                }
+
+                currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
+                    // Clear the highlighted positions
+                    validIntersections.clear();
+                    highlightedPositions.clear();
+                    // Build the metropolis
+                    updateIntersection(chosenIntersection, aSessionController.getPlayerColor(), VillageKind.TRADE_METROPOLIS);
+                    // Go back to the previous mode
+                    aMode = prevMode;
+                    // re-enable all appropriate actions
+                    enablePhase(aSessionController.getCurrentGamePhase());
+                });
+            }
+        });
+
         buildCityWallButton = new TextButton("Build City Wall", CatanGame.skin);
         buildCityWallButton.addListener(new ChangeListener() {
             @Override
@@ -574,13 +623,16 @@ public class SessionScreen implements Screen {
         buildCityWallButton.pad(0, 10, 0, 10);
         menuTable.add(buildCityWallButton).padBottom(10).row();
 
+        buildMetropolisButton.pad(0,10,0,10);
+        menuTable.add(buildMetropolisButton).padBottom(10).row();
+
         moveShipButton = new TextButton("Move Ship", CatanGame.skin);
         setupMoveShipButton(moveShipButton);
         moveShipButton.pad(0, 10, 0, 10);
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.BISHOP);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.MASTERMERCHANT);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -608,7 +660,7 @@ public class SessionScreen implements Screen {
 
         // Add the barbarian label
         barbarianPositionLabel = new Label("Barbarian position: " + 0, CatanGame.skin);
-        barbarianPositionLabel.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 20f, Align.top);
+        barbarianPositionLabel.setPosition(Gdx.graphics.getWidth() / 4f, Gdx.graphics.getHeight() - 20f, Align.top);
         aSessionStage.addActor(barbarianPositionLabel);
 
         // Add maritime trade button
@@ -679,7 +731,7 @@ public class SessionScreen implements Screen {
         if (robberPos != null) {
             placeRobber(robberPos.getLeftCoordinate(), robberPos.getRightCoordinate());
         }
-        
+
         // places merchant at initial position (off the board)
         // placeMerchant(GameRules.SIZE / 2 + 5, - (GameRules.SIZE / 2));
 
@@ -708,6 +760,7 @@ public class SessionScreen implements Screen {
         }
         aSessionStage.addActor(bootOwner);
         aSessionStage.addActor(gameLog);
+        aSessionStage.addActor(developmentFlipChart);
 
         // Notify the controller that the session screen is displayed
         aSessionController.onScreenShown();
@@ -874,7 +927,7 @@ public class SessionScreen implements Screen {
         });
         aSessionStage.addActor(chooseResourcesCardWindow);
     }
-    
+
     /**
      * Opens a window that prompts the client to choose the red and yellow dice numbers
      * @param move whose next move to perform will be called once the two dice numbers have been chosen
@@ -882,7 +935,7 @@ public class SessionScreen implements Screen {
     public void chooseDiceNumbers(MultiStepMove move) {
         // disable all possible actions
         disableAllButtons();
-        
+
         final ChooseDiceResultWindow chooseDiceNumberWindow = new ChooseDiceResultWindow("Choose the results of the red and yellow die", CatanGame.skin);
         chooseDiceNumberWindow.setChooseDiceResultsListener((redDiceResult, yellowDiceResult) -> {
             //performs the given move
@@ -1389,15 +1442,15 @@ public class SessionScreen implements Screen {
         robberSprite.setPosition(boardOrigin.getLeft() + xPos - robberSprite.getWidth() / 2f,
                 boardOrigin.getRight() + yPos - robberSprite.getHeight() / 2f);
     }
-    
+
     /**
      * Places Merchant on given coordinates
-     * 
+     *
      * @param xCor left coordinate
      * @param yCor right coordinate
      * */
     public void placeMerchant(int xCor, int yCor) {
-        
+
         merchantRegion = gamePieces.createMerchant(xCor, yCor, OFFX, OFFY, PIECEBASE);
     }
 
@@ -1423,6 +1476,7 @@ public class SessionScreen implements Screen {
      * at the end of a turn 
      * @param temp  temporary button
      * */
+
     public void addTemporaryFunctionality(TextButton temp) {
         temporaryFunctionalityTable.setSize(temporaryFunctionalityTable.getWidth(), temporaryFunctionalityTable.getHeight() + 40);
         temporaryFunctionalityTable.setPosition(Gdx.graphics.getWidth() - 360, Gdx.graphics.getHeight() - (temporaryFunctionalityTable.getHeight() + 10));
@@ -1594,6 +1648,7 @@ public class SessionScreen implements Screen {
         endTurnButton.setDisabled(true);
         moveShipButton.setDisabled(true);
         rollDiceButton.setDisabled(true);
+        buildMetropolisButton.setDisabled(true);
         giveBoot.setDisabled(true);
     }
 
@@ -1613,6 +1668,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
+                buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
@@ -1627,6 +1683,7 @@ public class SessionScreen implements Screen {
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
+                buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
 
                 initialize(true);
@@ -1641,6 +1698,7 @@ public class SessionScreen implements Screen {
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
+                buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
 
                 initialize(false);
@@ -1654,6 +1712,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
+                buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
@@ -1667,6 +1726,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(false);
                 endTurnButton.setDisabled(false);
                 moveShipButton.setDisabled(false);
+                buildMetropolisButton.setDisabled(false);
                 giveBoot.setDisabled(false);
 
                 rollDiceButton.setDisabled(true);
@@ -1687,8 +1747,10 @@ public class SessionScreen implements Screen {
         rollDiceButton.setDisabled(true);
         domesticTradeButton.setDisabled(true);
         endTurnButton.setDisabled(true);
-        
+        buildMetropolisButton.setDisabled(true);
+
         removeTemporaryFunctionalities();
+
     }
 
     /**
@@ -1878,6 +1940,25 @@ public class SessionScreen implements Screen {
         }
     }
 
+    /** refresh city improvement table */
+    public void updateScienceImprovements(int level) {
+        String improvement = GameRules.getGameRulesInstance().getScienceImprovmentType(level).toString().toLowerCase();
+        scienceImprovementLabel.setText(improvement);
+        scienceImprovementLevel.setText("Level: " + Integer.toString(level) + "\n" + improvement);
+    }
+
+    public void updateTradeImprovements(int level) {
+        String improvement = GameRules.getGameRulesInstance().getTradeImprovementType(level).toString().toLowerCase();
+        tradeImprovementLabel.setText(improvement);
+        tradeImprovementLevel.setText("Level: " + Integer.toString(level) + "\n" + improvement);
+    }
+
+    public void updatePoliticsImprovements(int level) {
+        String improvement = GameRules.getGameRulesInstance().getPoliticsImprovementType(level).toString().toLowerCase();
+        politicsImprovementLabel.setText(improvement);
+        politicsImprovementLevel.setText("Level: " + Integer.toString(level) + "\n" + improvement);
+    }
+
     void initFishTable(Table fishTable) {
         oneFishCount = new Table(CatanGame.skin);
         twoFishCount = new Table(CatanGame.skin);
@@ -1910,6 +1991,101 @@ public class SessionScreen implements Screen {
             oneFishCountLabel.setText(newTokenCount.getOneFish() + "");
             twoFishCountLabel.setText(newTokenCount.getTwoFish() + "");
             threeFishCountLabel.setText(newTokenCount.getThreeFish() + "");
+    }
+
+    void initDevelopmentFlipChartTable(Table developmentFlipChart) {
+        tradeImprovement = new Table(CatanGame.skin);
+        scienceImprovement = new Table(CatanGame.skin);
+        politicsImprovement = new Table(CatanGame.skin);
+
+        tradeImprovementLevel = new Label("Level: 0",CatanGame.skin);
+        scienceImprovementLevel = new Label("Level: 0",CatanGame.skin);
+        politicsImprovementLevel = new Label("Level: 0",CatanGame.skin);
+
+        tradeImprovementLabel = new Label("", CatanGame.skin);
+        scienceImprovementLabel = new Label("", CatanGame.skin);
+        politicsImprovementLabel = new Label("", CatanGame.skin);
+
+        tradeImprovement.add(new Label("Trade", CatanGame.skin)).row();
+        scienceImprovement.add(new Label("Science", CatanGame.skin)).row();
+        politicsImprovement.add(new Label("Politics", CatanGame.skin)).row();
+
+//        tradeImprovement.add(tradeImprovementLabel);
+//        scienceImprovement.add(scienceImprovementLabel);
+//        politicsImprovement.add(politicsImprovement);
+
+        tradeImprovement.add(tradeImprovementLevel).row();
+        scienceImprovement.add(scienceImprovementLevel).row();
+        politicsImprovement.add(politicsImprovementLevel).row();
+
+        tradeImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.YELLOW));
+        scienceImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.GREEN));
+        politicsImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
+
+        Button improveTrade = new TextButton("Improve", CatanGame.skin);
+        improveTrade.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!aSessionController.requestTradeImprovement(aSessionController.getPlayerColor())) {
+                    addGameMessage("Not enough resources to improve your cities in the area of trade");
+                    return;
+                } else {
+                    //aSessionController.getCurrentPlayer().getCityImprovements().upgradeTradeLevel();
+                    aSessionController.tradeCityImprovement(aSessionController.getCurrentPlayer().getColor());
+                    updateTradeImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getTradeLevel());
+                    updateResourceBar(aSessionController.getCurrentPlayer().getResources());
+                    interractionDone();
+                }
+            }
+        });
+
+        Button improvePolitics = new TextButton("Improve", CatanGame.skin);
+        improvePolitics.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!aSessionController.requestPoliticsImprovement(aSessionController.getPlayerColor())) {
+                    addGameMessage("Not enough resources to improve your cities in the area of politics");
+                    return;
+                } else {
+                    //aSessionController.getCurrentPlayer().getCityImprovements().upgradePoliticsLevel();
+                    aSessionController.politicsCityImprovement(aSessionController.getCurrentPlayer().getColor());
+                    updatePoliticsImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getPoliticsLevel());
+                    updateResourceBar(aSessionController.getCurrentPlayer().getResources());
+                    interractionDone();
+                }
+            }
+        });
+
+        Button improveScience = new TextButton("Improve", CatanGame.skin);
+        improveScience.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!aSessionController.requestScienceImprovement(aSessionController.getPlayerColor())) {
+                    addGameMessage("Not enough resources to improve your cities in the area of science");
+                    return;
+                } else {
+                    //aSessionController.getCurrentPlayer().getCityImprovements().upgradeScienceLevel();
+                    aSessionController.scienceCityImprovement(aSessionController.getCurrentPlayer().getColor());
+                    updateScienceImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getScienceLevel());
+                    updateResourceBar(aSessionController.getCurrentPlayer().getResources());
+                    interractionDone();
+                }
+
+            }
+        });
+
+        tradeImprovement.add(improveTrade);
+        scienceImprovement.add(improveScience);
+        politicsImprovement.add(improvePolitics);
+
+        developmentFlipChart.add(tradeImprovement).width(80).height(100).pad(5);
+        developmentFlipChart.add(scienceImprovement).width(80).height(100).pad(5);
+        developmentFlipChart.add(politicsImprovement).width(80).height(100).pad(5);
+
+        developmentFlipChart.setBackground("resTableBackground");
+        developmentFlipChart.pad(5);
+        developmentFlipChart.pack();
+
     }
 
     void updateBootOwner(String username) {

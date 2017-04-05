@@ -17,6 +17,8 @@ import com.mygdx.catan.request.SwitchHexDiceNumbers;
 import com.mygdx.catan.request.TakeResources;
 import com.mygdx.catan.request.TargetedChooseResourceCardRequest;
 import com.mygdx.catan.request.TargetedShowProgressCardsRequest;
+import com.mygdx.catan.request.*;
+import com.mygdx.catan.session.Session;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionManager;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -253,7 +255,6 @@ public class ProgressCardHandler {
                     }
                 }
                 MultiStepMove playSmith = new MultiStepMove();
-                aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
                 playSmith.<CoordinatePair>addMove(myKnightCoordinates -> {
                     for (Knight k: listOfKnights) {
                         if (k.getPosition().equals(myKnightCoordinates)) {
@@ -270,10 +271,11 @@ public class ProgressCardHandler {
                             k.upgrade();
                         }
                     }
+                    aSessionController.getSessionScreen().interractionDone();
                 });
 
+                aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
                 //revert back to choose action mode and enable buttons
-                aSessionController.getSessionScreen().interractionDone();
                 break;
             case BISHOP:
                 // Move the robber, following the normal rules. Draw 1 random resource/commodity card from each player who has a settlement or
@@ -465,6 +467,11 @@ public class ProgressCardHandler {
                 
                 break;
             case WARLORD:
+                for (Knight k: currentP.getKnights()) {
+                    aSessionController.activateKnight(currentP.getColor(), k, false);
+                    ActivateKnightRequest request = ActivateKnightRequest.newInstance(true, currentPColor, currentP.getUsername(), k.getPosition());
+                    CatanGame.client.sendTCP(request);
+                }
                 break;
             case WEDDING:
                 

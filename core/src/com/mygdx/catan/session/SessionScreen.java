@@ -1,6 +1,10 @@
 package com.mygdx.catan.session;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
@@ -15,8 +19,22 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.mygdx.catan.*;
-import com.mygdx.catan.enums.*;
+import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.DiceRollPair;
+import com.mygdx.catan.FishTokenMap;
+import com.mygdx.catan.GameRules;
+import com.mygdx.catan.ResourceMap;
+import com.mygdx.catan.enums.EdgeUnitKind;
+import com.mygdx.catan.enums.GamePhase;
+import com.mygdx.catan.enums.HarbourKind;
+import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ProgressCardType;
+import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.enums.SessionScreenModes;
+import com.mygdx.catan.enums.TerrainKind;
+import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.moves.MultiStepInitMove;
@@ -24,13 +42,27 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.UpdateOldBoot;
-import com.mygdx.catan.ui.*;
+import com.mygdx.catan.ui.ChooseDiceResultWindow;
+import com.mygdx.catan.ui.ChooseDraw;
+import com.mygdx.catan.ui.ChooseFromEnumCollectionWindow;
+import com.mygdx.catan.ui.ChooseMultipleResourcesWindow;
+import com.mygdx.catan.ui.ChoosePlayerWindow;
+import com.mygdx.catan.ui.ChooseProgressCardKindWindow;
+import com.mygdx.catan.ui.DomesticTradeWindow;
+import com.mygdx.catan.ui.KnightActor;
+import com.mygdx.catan.ui.PlayProgressCardWindow;
+import com.mygdx.catan.ui.TradeWindow;
+import com.mygdx.catan.ui.WinnerWindow;
 import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class SessionScreen implements Screen {
 
@@ -113,7 +145,7 @@ public class SessionScreen implements Screen {
      */
     private Table currentPlayer;
     private Label currentPlayerLabel;
-    
+
     /** A table that will contain all the progress card images */
     private Table progressCardTable;
 
@@ -410,7 +442,6 @@ public class SessionScreen implements Screen {
         }
         updateVpTables();
 
-        
 
         // available game pieces table
         Table availableGamePiecesTable = new Table(CatanGame.skin);
@@ -674,7 +705,7 @@ public class SessionScreen implements Screen {
         // Pack the menu table to make it fit all its children
         menuTable.pad(10);
         menuTable.pack();
-        
+
         //Old Boot Table
         bootOwnerLabel = new Label("Boot Owner: No one", CatanGame.skin);
         giveBoot = new TextButton("Give Boot", CatanGame.skin);
@@ -714,14 +745,14 @@ public class SessionScreen implements Screen {
         bootOwner.setBackground(CatanGame.skin.newDrawable("white", Color.BLACK));
         bootOwner.add(bootOwnerLabel).pad(5).row();
         bootOwner.add(giveBoot).pad(5).row();
-        
+
         // progress card table
         progressCardTable = new Table(CatanGame.skin);
         progressCardTable.setSize(10, 2 * LENGTH);
-        
+
         progressCardTable.setDebug(true);
         progressCardTable.setPosition(Gdx.graphics.getWidth() / 2 - resourcesTable.getWidth()* 3 / 4, resourcesTable.getHeight() + 20);
-        progressCardTable.setTouchable(Touchable.enabled); 
+        progressCardTable.setTouchable(Touchable.enabled);
         progressCardTable.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -733,7 +764,7 @@ public class SessionScreen implements Screen {
                 aSessionStage.addActor(playProgressCard);
             }
         });
-        
+
 
         // sets center of board
         int offsetX, offsetY;
@@ -887,10 +918,10 @@ public class SessionScreen implements Screen {
         aMode = SessionScreenModes.CHOOSEEDGEMODE;
     }
 
-    
+
     /**
      * Opens a window that prompts the client to choose a progress card kind
-     * 
+     *
      * @param move whose next move to perform will be called once an ProgressCardKind has been chosen
      * */
     public void chooseProgressCardKind(MultiStepMove move) {
@@ -904,9 +935,9 @@ public class SessionScreen implements Screen {
         });
         aSessionStage.addActor(chooseKindWindow);
     }
-    
+
     /**
-     * Opens a window that prompts the player to accept drawing a progress card 
+     * Opens a window that prompts the player to accept drawing a progress card
      * */
     public void chooseDraw(MultiStepMove move) {
      // disable all possible actions
@@ -1518,7 +1549,7 @@ public class SessionScreen implements Screen {
 
     /**
      * adds a button to the temporary functionality table which on change executes given listener. All these buttons are removed
-     * at the end of a turn 
+     * at the end of a turn
      * @param temp  temporary button
      * */
 
@@ -1527,7 +1558,7 @@ public class SessionScreen implements Screen {
         temporaryFunctionalityTable.setPosition(Gdx.graphics.getWidth() - 360, Gdx.graphics.getHeight() - (temporaryFunctionalityTable.getHeight() + 10));
         temporaryFunctionalityTable.add(temp).pad(5).row();
     }
-    
+
     /**
      * removes all temporary functionality buttons from the temporary functionality table
      * */
@@ -1536,7 +1567,7 @@ public class SessionScreen implements Screen {
         temporaryFunctionalityTable.setSize(200, 0);
         temporaryFunctionalityTable.setPosition(Gdx.graphics.getWidth() - 360, Gdx.graphics.getHeight() - 10);
     }
-    
+
     /**
      * @param xCor left coordinate of intersection
      * @param yCor right coordinate of intersection
@@ -1683,7 +1714,7 @@ public class SessionScreen implements Screen {
         if (edgeUnit != null)
             edgeUnits.add(edgeUnit);
     }
-    
+
     /**
      * adds image with given progress card type to hand on the board
      * */
@@ -1691,7 +1722,7 @@ public class SessionScreen implements Screen {
         progressCardTable.add(gamePieces.createProgressCard(type, LENGTH * 4/3f, LENGTH * 2)).pad(5);
         progressCardTable.pack();
     }
-    
+
     /**
      * removes image with given progress card type from hand on the board
      * */
@@ -1971,7 +2002,13 @@ public class SessionScreen implements Screen {
 
     void showWinner(Player p) {
         disableAllButtons();
-        WinnerWindow winnerWindow = new WinnerWindow("We have a WINNER", CatanGame.skin,p);
+        MultiStepMove quit = new MultiStepMove();
+        quit.addMove(o -> quitGame());
+        WinnerWindow winnerWindow = new WinnerWindow("We have a winner !", CatanGame.skin, p);
+        winnerWindow.setWindowCloseListener(() -> {
+            // performs the given move with player
+            quit.performNextMove(new Object());
+        });
         aSessionStage.addActor(winnerWindow);
     }
 

@@ -9,14 +9,6 @@ import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.*;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
-import com.mygdx.catan.request.DiscardHalfRequest;
-import com.mygdx.catan.request.DisplaceRoadRequest;
-import com.mygdx.catan.request.RollDice;
-import com.mygdx.catan.request.SpecialTradeRequest;
-import com.mygdx.catan.request.SwitchHexDiceNumbers;
-import com.mygdx.catan.request.TakeResources;
-import com.mygdx.catan.request.TargetedChooseResourceCardRequest;
-import com.mygdx.catan.request.TargetedShowProgressCardsRequest;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.session.Session;
 import com.mygdx.catan.session.SessionController;
@@ -53,6 +45,7 @@ public class ProgressCardHandler {
         //aSessionManager.incrementProgressCardMap(pType);
         //SessionManager.getInstance().incrementProgressCardMap(pType);
         aSessionManager.setCurrentlyExecutingProgressCard(pType);
+        currentP.removeProgressCard(pType);
         //TODO: call finishCurrentlyExecutingProgressCard() every time interractionDone is called at the end of a multistepaction (note network stuff!), and at the end of  handling a card without any interactions
         ArrayList<Player> playersWithMoreVP = new ArrayList<>();
 
@@ -61,11 +54,11 @@ public class ProgressCardHandler {
                 // choose the results of both production dice. then roll the event die as normal and resolve event
                 
                 CatanRandom random = CatanRandom.getInstance();
-                EventKind eventDieResult = random.rollEventDieBarbarian(); // TODO roll using the correct method
+                EventKind eventDieResult = random.rollEventDie();
                  
                 MultiStepMove chooseDieResults = new MultiStepMove();
                 chooseDieResults.<DiceRollPair>addMove(diceResults -> {
-                    System.out.println("you chose: " + diceResults.getRed() + ", " + diceResults.getYellow());
+                    aSessionController.getSessionScreen().addGameMessage("you chose: " + diceResults.getRed() + ", " + diceResults.getYellow());
                     
                     // handle roll
                     if (eventDieResult == EventKind.BARBARIAN) {
@@ -73,9 +66,13 @@ public class ProgressCardHandler {
                         if (aSessionManager.getSession().barbarianPosition == 0) {
                             //barbarians attack!
                             aSessionController.barbarianHandleAttack();
+                            if (!aSessionManager.getSession().firstBarbarianAttack) {
+                                aSessionManager.getSession().firstBarbarianAttack = true;
+                            }
                         }
-                    } else if (eventDieResult == EventKind.TRADE || eventDieResult == EventKind.POLITICS || eventDieResult == EventKind.SCIENCE) {
-                        aSessionController.eventDieProgressCardHandle(eventDieResult, diceResults.getRed());
+                    } else {
+                        DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults.getRed(), currentP.getUsername());
+                        CatanGame.client.sendTCP(drawRequest);
                     }
 
                     aSessionController.getSessionScreen().addGameMessage(String.format("Rolled a %s", eventDieResult));
@@ -107,12 +104,19 @@ public class ProgressCardHandler {
                     }
                 }
                 MultiStepMove playEngineer = new MultiStepMove();
-                aSessionController.getSessionScreen().initChooseIntersectionMove(validCityWallIntersections, playEngineer);
+
                 playEngineer.<CoordinatePair>addMove(myCityWallCoordinates -> {
                     aSessionController.buildCityWall(currentPColor, myCityWallCoordinates, true);
                     //revert back to choose action mode and enable buttons
                     aSessionController.getSessionScreen().interractionDone();
                 });
+                
+                if (!validCityWallIntersections.isEmpty()) {
+                    aSessionController.getSessionScreen().initChooseIntersectionMove(validCityWallIntersections, playEngineer);
+                } else {
+                    aSessionController.getSessionScreen().addGameMessage("You have nothing to choose from, that was a dumb move");
+                }
+                
                 break;
             case INVENTOR:
                 ArrayList<Hex> validHexes = new ArrayList<>();
@@ -128,7 +132,6 @@ public class ProgressCardHandler {
                 playInventor.<Hex>addMove(chosenFirstHex -> {
                     final Hex firstHex = chosenFirstHex;
                     validHexes.remove(chosenFirstHex);
-                    aSessionController.getSessionScreen().initChooseHexMove(validHexes, playInventor);
 
                     playInventor.<Hex>addMove(chosenSecondHex -> {
                         int firstDiceNumber = firstHex.getDiceNumber();
@@ -143,11 +146,12 @@ public class ProgressCardHandler {
                         SwitchHexDiceNumbers request = SwitchHexDiceNumbers.newInstance(firstHexPos, secondHexPos, CatanGame.account.getUsername());
                         CatanGame.client.sendTCP(request);
                     });
+                    
+                    aSessionController.getSessionScreen().initChooseHexMove(validHexes, playInventor);
 
                 });
 
                 aSessionController.getSessionScreen().initChooseHexMove(validHexes, playInventor);
-                aSessionManager.finishCurrentlyExecutingProgressCard();
 
                 break;
             case IRRIGATION:
@@ -172,12 +176,19 @@ public class ProgressCardHandler {
                     }
                 }
                 MultiStepMove playMedicine = new MultiStepMove();
-                aSessionController.getSessionScreen().initChooseIntersectionMove(validUpgradeIntersections, playMedicine);
                 playMedicine.<CoordinatePair>addMove(myCityCoordinates -> {
                     aSessionController.buildCityWall(currentPColor, myCityCoordinates, true);
                     //revert back to choose action mode and enable buttons
                     aSessionController.getSessionScreen().interractionDone();
                 });
+                
+                if (!validUpgradeIntersections.isEmpty()) {
+                    aSessionController.getSessionScreen().initChooseIntersectionMove(validUpgradeIntersections, playMedicine);
+                } else {
+                    aSessionController.getSessionScreen().addGameMessage("You have nothing to choose from, that was a dumb move");
+                }
+                
+
                 break;
             case MINING:
                 int numOreCards = 0;
@@ -196,6 +207,7 @@ public class ProgressCardHandler {
                 aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             case ROADBUILDING:
+                //TODO: COULD have a cancelling option for the second road. not necessary
                 ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
                 
             	// loops through valid road end points and adds valid edges (both ships and roads)
@@ -231,7 +243,12 @@ public class ProgressCardHandler {
                     updateValidEdges(validEdges);
                     
                     // prompts the player to choose the second edge with updated valid edges
-                    aSessionController.getSessionScreen().initChooseEdgeMove(validEdges, move);
+                    if (!validEdges.isEmpty()) {
+                        aSessionController.getSessionScreen().initChooseEdgeMove(validEdges, move);
+                    } else {
+                        aSessionController.getSessionScreen().addGameMessage("You do not have an available edge for the second piece");
+                        aSessionController.getSessionScreen().interractionDone();
+                    }
                 });
                 
                 move.<Pair<CoordinatePair,CoordinatePair>>addMove(chosenEdge -> {
@@ -245,7 +262,11 @@ public class ProgressCardHandler {
                     aSessionController.getSessionScreen().interractionDone();
                 });
                 
-                aSessionController.getSessionScreen().initChooseEdgeMove(validEdges, move);
+                if (!validEdges.isEmpty()) {
+                    aSessionController.getSessionScreen().initChooseEdgeMove(validEdges, move);
+                } else {
+                    aSessionController.getSessionScreen().addGameMessage("You have no available edges to build a road, that was a dumb move");
+                }
                 
                 break;
             //you may promote 2 knights 1 level each for free
@@ -267,7 +288,13 @@ public class ProgressCardHandler {
                     }
                     validKnights.clear();
                     updateValidKnights(validKnights, myKnightCoordinates);
-
+                    
+                    if (!validKnights.isEmpty()) {
+                        aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+                    } else {
+                        aSessionController.getSessionScreen().addGameMessage("You have no more knights to promote");
+                        aSessionController.getSessionScreen().interractionDone();
+                    }
                 });
                 playSmith.<CoordinatePair>addMove(mySecondKnightCoordinates -> {
                     for (Knight k: listOfKnights) {
@@ -278,12 +305,22 @@ public class ProgressCardHandler {
                     aSessionController.getSessionScreen().interractionDone();
                 });
 
-                aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+                if (!validKnights.isEmpty()) {
+                    aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+                } else {
+                    aSessionController.getSessionScreen().addGameMessage("You have no knights to promote. That was a dumb move");
+                }
+                
                 //revert back to choose action mode and enable buttons
                 break;
             case BISHOP:
                 // Move the robber, following the normal rules. Draw 1 random resource/commodity card from each player who has a settlement or
                 // city next to the robber's new hex
+                
+                if (!aSessionManager.getSession().firstBarbarianAttack) { 
+                    aSessionManager.finishCurrentlyExecutingProgressCard();
+                    break;
+                }
                 
                 List<Hex> validRobberHexes = new ArrayList<>();
                 List<Hex> boardHexes = aGameBoardManager.getHexes();
@@ -454,8 +491,11 @@ public class ProgressCardHandler {
                     }
                 });
                 
-                aSessionController.getSessionScreen().initChooseEdgeMove(openRoads, displaceRoad);
-                
+                if (!openRoads.isEmpty()) {
+                    aSessionController.getSessionScreen().initChooseEdgeMove(openRoads, displaceRoad);
+                } else {
+                    aSessionController.getSessionScreen().addGameMessage("There are no open roads to choose from. Read the cards before you play them!");
+                }
                 
                 break;
             case INTRIGUE:

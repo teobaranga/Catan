@@ -58,7 +58,7 @@ public class GameBoardManager {
     /**
      * @return top of science progress card stack, null if stack is empty
      */
-    public ProgressCardType drawProgressCard() {
+    public ProgressCardType drawScienceProgressCard() {
         return aGameBoard.popScienceProgressCardStack();
     }
 

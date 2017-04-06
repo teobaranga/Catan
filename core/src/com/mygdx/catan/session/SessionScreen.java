@@ -90,9 +90,6 @@ public class SessionScreen implements Screen {
     /** Contains the currently performing multi step move */
     private MultiStepMove currentlyPerformingMove;
 
-    /** Map that associates each progress card type to its image */
-    private EnumMap<ProgressCardType,Image> progressCardMap; 
-    
     /**
      * The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE
      */
@@ -202,7 +199,6 @@ public class SessionScreen implements Screen {
         resourceLabelMap = new EnumMap<>(ResourceKind.class);
         polyBatch = new PolygonSpriteBatch();
         highlightBatch = new PolygonSpriteBatch();
-        progressCardMap = new EnumMap<>(ProgressCardType.class);
         gamePieces = GamePieces.getInstance();
         robberSprite = gamePieces.createRobber();
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -719,21 +715,9 @@ public class SessionScreen implements Screen {
         bootOwner.add(bootOwnerLabel).pad(5).row();
         bootOwner.add(giveBoot).pad(5).row();
         
-        // initialize each progress card image
-        for (ProgressCardType type : ProgressCardType.values()) {
-            progressCardMap.put(type, gamePieces.createProgressCard(type, LENGTH*4/3f, LENGTH*2)); //TODO make this a scale rather than w & h
-        }
-        
         // progress card table
         progressCardTable = new Table(CatanGame.skin);
-        progressCardTable.setSize(0, 2 * LENGTH);
-      
-        //TODO remove after testing
-        addCardToHand(ProgressCardType.COMMERCIALHARBOUR);
-        addCardToHand(ProgressCardType.ALCHEMIST);
-        ArrayList<ProgressCardType> testingHand = new ArrayList<>();
-        testingHand.add(ProgressCardType.COMMERCIALHARBOUR);
-        testingHand.add(ProgressCardType.ALCHEMIST);
+        progressCardTable.setSize(10, 2 * LENGTH);
         
         progressCardTable.setDebug(true);
         progressCardTable.setPosition(Gdx.graphics.getWidth() / 2 - resourcesTable.getWidth()* 3 / 4, resourcesTable.getHeight() + 20);
@@ -741,7 +725,7 @@ public class SessionScreen implements Screen {
         progressCardTable.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                final PlayProgressCardWindow playProgressCard = new PlayProgressCardWindow("Hand", CatanGame.skin, testingHand, progressCardMap, aSessionController.getCurrentGamePhase(), aSessionController.isMyTurn());
+                final PlayProgressCardWindow playProgressCard = new PlayProgressCardWindow("Hand", CatanGame.skin, aSessionController.getCurrentPlayer().getProgressCardHand(), aSessionController.getCurrentGamePhase(), aSessionController.isMyTurn());
                 playProgressCard.setPlayProgressCardListener((type) -> {
                     // plays the chosen progress card
                     aSessionController.playProgressCard(type);
@@ -903,7 +887,7 @@ public class SessionScreen implements Screen {
         aMode = SessionScreenModes.CHOOSEEDGEMODE;
     }
 
-    //TODO: change this to take in list of progressCardKinds!
+    
     /**
      * Opens a window that prompts the client to choose a progress card kind
      * 
@@ -919,6 +903,21 @@ public class SessionScreen implements Screen {
             move.performNextMove(kind);
         });
         aSessionStage.addActor(chooseKindWindow);
+    }
+    
+    /**
+     * Opens a window that prompts the player to accept drawing a progress card 
+     * */
+    public void chooseDraw(MultiStepMove move) {
+     // disable all possible actions
+        disableAllButtons();
+
+        final ChooseDraw chooseDrawWindow = new ChooseDraw("Do you want to draw a progress card?", CatanGame.skin);
+        chooseDrawWindow.setChooseDrawListener((answer) -> {
+            // performs the given move with kind
+            move.performNextMove(answer);
+        });
+        aSessionStage.addActor(chooseDrawWindow);
     }
 
     /**
@@ -1686,12 +1685,18 @@ public class SessionScreen implements Screen {
     }
     
     /**
-     * adds image to given progress card type to hand on the board
+     * adds image with given progress card type to hand on the board
      * */
     public void addCardToHand(ProgressCardType type) {
-        Image cardImage = progressCardMap.get(type);
-        progressCardTable.add(cardImage).pad(5);
-        progressCardTable.setSize(progressCardTable.getWidth() + cardImage.getWidth(), progressCardTable.getHeight());
+        progressCardTable.add(gamePieces.createProgressCard(type, LENGTH * 4/3f, LENGTH * 2)).pad(5);
+        progressCardTable.pack();
+    }
+    
+    /**
+     * removes image with given progress card type from hand on the board
+     * */
+    public void removeCardFromHand(ProgressCardType type) {
+        //TODO : aina needs help with this :(
     }
 
     private void disableAllButtons() {
@@ -1705,6 +1710,9 @@ public class SessionScreen implements Screen {
         rollDiceButton.setDisabled(true);
         buildMetropolisButton.setDisabled(true);
         giveBoot.setDisabled(true);
+        buildKnightButton.setDisabled(true);
+        buildCityWallButton.setDisabled(true);
+        tradeButton.setDisabled(true);
     }
 
     /**
@@ -1725,6 +1733,9 @@ public class SessionScreen implements Screen {
                 moveShipButton.setDisabled(true);
                 buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
+                buildKnightButton.setDisabled(true);
+                buildCityWallButton.setDisabled(true);
+                tradeButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1740,6 +1751,9 @@ public class SessionScreen implements Screen {
                 moveShipButton.setDisabled(true);
                 buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
+                buildKnightButton.setDisabled(true);
+                buildCityWallButton.setDisabled(true);
+                tradeButton.setDisabled(true);
 
                 initialize(true);
                 break;
@@ -1755,6 +1769,9 @@ public class SessionScreen implements Screen {
                 moveShipButton.setDisabled(true);
                 buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
+                buildKnightButton.setDisabled(true);
+                buildCityWallButton.setDisabled(true);
+                tradeButton.setDisabled(true);
 
                 initialize(false);
                 break;
@@ -1769,6 +1786,9 @@ public class SessionScreen implements Screen {
                 moveShipButton.setDisabled(true);
                 buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
+                buildKnightButton.setDisabled(true);
+                buildCityWallButton.setDisabled(true);
+                tradeButton.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1783,6 +1803,9 @@ public class SessionScreen implements Screen {
                 moveShipButton.setDisabled(false);
                 buildMetropolisButton.setDisabled(false);
                 giveBoot.setDisabled(false);
+                buildKnightButton.setDisabled(false);
+                buildCityWallButton.setDisabled(false);
+                tradeButton.setDisabled(false);
 
                 rollDiceButton.setDisabled(true);
                 break;
@@ -1803,6 +1826,9 @@ public class SessionScreen implements Screen {
         domesticTradeButton.setDisabled(true);
         endTurnButton.setDisabled(true);
         buildMetropolisButton.setDisabled(true);
+        buildKnightButton.setDisabled(true);
+        buildCityWallButton.setDisabled(true);
+        tradeButton.setDisabled(true);
         removeTemporaryFunctionalities();
 
     }

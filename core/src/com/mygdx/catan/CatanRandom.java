@@ -37,6 +37,11 @@ public class CatanRandom {
     public EventKind rollEventDieBarbarian() {
         return EventKind.BARBARIAN;
     }
+    
+    /** TEST METHOD, REMOVE THIS WHEN DONE */
+    public EventKind rollEventDiePolitics() {
+        return EventKind.POLITICS;
+    }
 
     private int nextDie() {
         return rand.nextInt(6) + 1;

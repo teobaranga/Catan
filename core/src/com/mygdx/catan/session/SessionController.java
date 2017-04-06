@@ -330,7 +330,13 @@ public class SessionController {
                         });
                         
                         // prompt local player to choose progress card from given hand
-                        aSessionScreen.chooseProgressCard(chooseCardtoSteal.getHand(), stealCard);
+                        if (!chooseCardtoSteal.getHand().isEmpty()) {
+                            aSessionScreen.chooseProgressCard(chooseCardtoSteal.getHand(), stealCard);
+                        } else {
+                            aSessionScreen.addGameMessage("chosen opponent does not have any progress cards in hand");
+                            aSessionScreen.interractionDone();
+                        }
+                        
                     });
                 } else if (object instanceof TakeProgressCard) {
                     Gdx.app.postRunnable(() -> {
@@ -415,12 +421,42 @@ public class SessionController {
                             aSessionScreen.showWinner(localPlayer);
                         }
                     });
-                } else if (object instanceof DrawProgressCard) {
+                } else if (object instanceof OpponentDrawnProgressCard) {
                     Gdx.app.postRunnable(() -> {
-                        DrawProgressCard drawProgressCard = (DrawProgressCard) object;
-                        ProgressCardType card = drawProgressCard.getCard();
+                        OpponentDrawnProgressCard opponentDrawnProgressCard = (OpponentDrawnProgressCard) object;
+                        aSessionScreen.addGameMessage(opponentDrawnProgressCard.toString().toLowerCase() + " drew a progress card");
+                        ProgressCardType card = opponentDrawnProgressCard.getCard();
                         ProgressCardKind cardKind = aGameRules.getProgressCardKind(card);
                         aGameBoardManager.removeProgressCard(card, cardKind);
+                    });
+                } else if (object instanceof DrawProgressCard) {
+                    Gdx.app.postRunnable(() -> {
+                        DrawProgressCard handleEventDie = (DrawProgressCard) object;
+                        aSessionScreen.addGameMessage("You may be able to draw a progress card");
+                        eventDieProgressCardHandle(handleEventDie.getEventKind(), handleEventDie.getRedDie());
+                    });
+                } else if (object instanceof BestPlayersWin) {
+                    Gdx.app.postRunnable(() -> {
+                        aSessionScreen.addGameMessage("You were one of the best players against the Barbarian attack, and get to choose a progress card to draw");
+                        
+                        MultiStepMove drawProgressCard = new MultiStepMove();
+                        drawProgressCard.<ProgressCardKind>addMove((kind) -> {
+                            drawProgressCard(kind);
+                            aSessionScreen.interractionDone();
+                        });
+                        
+                        aSessionScreen.chooseProgressCardKind(drawProgressCard);
+                    });
+                } else if (object instanceof DefenderOfCatan) {
+                    Gdx.app.postRunnable(() -> {
+                        DefenderOfCatan defenderOfCatan = (DefenderOfCatan) object;
+                        
+                        Player winner = aSessionManager.getCurrentPlayerFromColor(defenderOfCatan.getWinner());
+                        aSessionScreen.addGameMessage(winner.getUsername() + " is the Defender of Catan!");
+                        
+                        winner.incrementDefenderOfCatanPoints();
+                        aSessionScreen.updateVpTables();
+                        
                     });
                 }
             }
@@ -1170,7 +1206,7 @@ public class SessionController {
      * */
     public void playProgressCard(ProgressCardType type) {
         aProgressCardHandler.handle(type, localPlayer.getColor());
-        //TODO: update gui about removed card
+        aSessionScreen.removeCardFromHand(type);
     }
     
     /**
@@ -1413,39 +1449,74 @@ public class SessionController {
         aSessionManager.removeFromBank(cost);
         return cost;
     }
+    
+    /**
+     * Local player draws a progress card from given progress card kind deck. The network is notified of stack change
+     * */
+    private void drawProgressCard(ProgressCardKind kind) {
+        ProgressCardType drawnCard;
+        OpponentDrawnProgressCard request;
+        switch(kind) {
+        case POLITICS:
+            drawnCard = aGameBoardManager.drawPoliticsProgressCard();
+            localPlayer.addProgressCard(drawnCard);
+            
+            // updates the stacks of peers
+            request = OpponentDrawnProgressCard.newInstance(drawnCard, localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+            break;
+        case SCIENCE:
+            drawnCard = aGameBoardManager.drawScienceProgressCard();
+            localPlayer.addProgressCard(drawnCard);
+            
+            // updates the stacks of peers
+            request = OpponentDrawnProgressCard.newInstance(drawnCard, localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+            break;
+        case TRADE:
+            drawnCard = aGameBoardManager.drawPoliticsProgressCard();
+            localPlayer.addProgressCard(drawnCard);
+            
+            // updates the stacks of peers
+            request = OpponentDrawnProgressCard.newInstance(drawnCard, localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+            break;
+        default:
+            break;
+        }
+    }
 
-    //The event die yields a trade,science, or politics. eligible players choose progress card
+    //The event die yields a trade,science, or politics.
     public void eventDieProgressCardHandle(EventKind eventDieResult, int redDie) {
-        for (Player p : aSessionManager.getPlayers()) {
-
-            int level = p.getImprovementLevelByType(eventDieResult);
+            int level = localPlayer.getImprovementLevelByType(eventDieResult);
             //player is eligible
             if (redDie <= level) {
-                if (p.getProgressCardCount() != 4) {
+                if (localPlayer.getProgressCardCount() != 4) {
 
                     MultiStepMove chooseProgressCard = new MultiStepMove();
-                    chooseProgressCard.addMove(new Move<ProgressCardKind>() {
+                    chooseProgressCard.<Boolean>addMove((choice) -> {
 
-                        @Override
-                        public void doMove(ProgressCardKind kind) {
-                            ProgressCardType card;
-                            if (kind == ProgressCardKind.TRADE) {
-                                card = aGameBoardManager.drawTradeProgressCard();
-                            } else if (kind == ProgressCardKind.POLITICS) {
-                                card = aGameBoardManager.drawPoliticsProgressCard();
-                            } else {
-                                card = aGameBoardManager.drawProgressCard();
+                            if (choice) {
+                                switch(eventDieResult) {
+                                case POLITICS:
+                                    drawProgressCard(ProgressCardKind.POLITICS);
+                                    break;
+                                case SCIENCE:
+                                    drawProgressCard(ProgressCardKind.SCIENCE);
+                                    break;
+                                case TRADE:
+                                    drawProgressCard(ProgressCardKind.TRADE);
+                                    break;
+                                default:
+                                    break;
+                                }
                             }
-                            aProgressCardHandler.handle(card, p.getColor());
-                            p.addProgressCard(card);
-                            CatanGame.client.sendTCP(DrawProgressCard.newInstance(card));
                             aSessionScreen.interractionDone();
-                        }
                     });
-                    aSessionScreen.chooseProgressCardKind(chooseProgressCard);
+                    
+                    aSessionScreen.chooseDraw(chooseProgressCard);
                 }
             }
-        }
     }
 
     public void robberHandleBeforeBarbarian() {
@@ -1617,31 +1688,18 @@ public class SessionController {
             if (bestPlayers.size() == 1) {
                 //this player is the defender of catan
                 Player bestPlayer = bestPlayers.get(0);
-                bestPlayer.incrementDefenderOfCatanPoints(1);
-                aSessionScreen.addGameMessage(bestPlayer.getUsername() + " got a defender of catan point");
+                
+                // send message accross network about defender of catan
+                DefenderOfCatan request = DefenderOfCatan.newInstance(bestPlayer.getColor(), localPlayer.getUsername());
+                CatanGame.client.sendTCP(request);
             } else {
                 //no player will be declared defender of Catan. 
                 //each eligible player will draw in CW order 1 card from any of the 3 PC decks
                 for (Player bp : bestPlayers) {
-                    MultiStepMove handleProgressCardKind = new MultiStepMove();
-                    handleProgressCardKind.addMove((Move<ProgressCardKind>) kind -> {
-                        //get type and handle it accordingly
-                        ProgressCardType card;
-                        if (kind == ProgressCardKind.POLITICS) {
-                            card = aGameBoardManager.drawPoliticsProgressCard();
-                        } else if (kind == ProgressCardKind.TRADE) {
-                            card = aGameBoardManager.drawTradeProgressCard();
-                        } else {
-                            card = aGameBoardManager.drawProgressCard();
-                        }
-
-                        bp.addProgressCard(card);
-                        //TODO: inform the gui of the new pc
-                        CatanGame.client.sendTCP(DrawProgressCard.newInstance(card));
-                        aSessionScreen.interractionDone();
-                    });
-                    aSessionScreen.chooseProgressCardKind(handleProgressCardKind);
-                }
+                    // send a targeted request to that player that will make them choose a progress card kind, and draw
+                    BestPlayersWin request = BestPlayersWin.newInstance(localPlayer.getUsername(), bp.getUsername());
+                    CatanGame.client.sendTCP(request);
+                } 
             }
         }
         //regardless of outcome, barbarians go home.
@@ -1749,7 +1807,8 @@ public class SessionController {
             case TURN_FIRST_PHASE:
                 // We're at the phase where we the player rolls the dice and everyone gets appropriate resources
                 // Roll the event die as well
-                EventKind eventDieResult = random.rollEventDieBarbarian(); // TODO roll using the correct method
+                // EventKind eventDieResult = random.rollEventDieBarbarian(); // TODO roll using the correct method
+                EventKind eventDieResult = random.rollEventDiePolitics();
 
 //                aSessionManager.getSession().barbarianPosition = 1;
 
@@ -1763,8 +1822,9 @@ public class SessionController {
                             aSessionManager.getSession().firstBarbarianAttack = true;
                         }
                     }
-                } else if (eventDieResult == EventKind.TRADE || eventDieResult == EventKind.POLITICS || eventDieResult == EventKind.SCIENCE) {
-                    eventDieProgressCardHandle(eventDieResult, diceResults.getRed());
+                } else {
+                    DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults.getRed(), localPlayer.getUsername());
+                    CatanGame.client.sendTCP(drawRequest);
                 }
 
                 int sum = diceResults.getSum();

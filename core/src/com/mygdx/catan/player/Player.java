@@ -166,8 +166,8 @@ public class Player {
         knights.add(knight);
     }
 
-    public void incrementDefenderOfCatanPoints(int defenderOfCatanPoints) {
-        this.defenderOfCatanPoints = defenderOfCatanPoints;
+    public void incrementDefenderOfCatanPoints() {
+        this.defenderOfCatanPoints++;
     }
 
     public int getImprovementLevelByType(EventKind eventDieResult) {

@@ -19,14 +19,15 @@ public class PlayProgressCardWindow extends CatanWindow {
     
     private PlayProgressCardListener playProgressCardListener;
     
-    public PlayProgressCardWindow(String title, Skin skin, List<ProgressCardType> hand, EnumMap<ProgressCardType, Image> cardMap, GamePhase currentPhase, boolean isMyTurn) {
+    public PlayProgressCardWindow(String title, Skin skin, List<ProgressCardType> hand, GamePhase currentPhase, boolean isMyTurn) {
         super(title, skin);
         
         // adds images of the card and the associated button that will play the card
         for (ProgressCardType type : hand) {
             Table cardTable = new Table(CatanGame.skin);
             
-            cardTable.add(cardMap.get(type)).padBottom(10).row();
+            // TODO: add image of correct progress card
+            // cardTable.add(cardMap.get(type)).padBottom(10).row();
             
             TextButton playCard = new TextButton("Play " + type.toString().toLowerCase(), CatanGame.skin);
             playCard.addListener(new ChangeListener() {
@@ -40,9 +41,9 @@ public class PlayProgressCardWindow extends CatanWindow {
             });
             playCard.setDisabled(!isLegalPlay(type, currentPhase, isMyTurn)); 
             
-            cardTable.add(playCard).padBottom(10);
+            cardTable.add(playCard).pad(5);
             
-            add(cardTable).padRight(5).padLeft(5);
+            add(cardTable).pad(5);
         }
         
         pack();

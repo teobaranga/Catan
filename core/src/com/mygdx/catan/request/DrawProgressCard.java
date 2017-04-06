@@ -1,22 +1,29 @@
 package com.mygdx.catan.request;
 
-import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.enums.ProgressCardType;
+import com.mygdx.catan.enums.EventKind;
 
-/**
- * Created by emmaakouri on 2017-03-26.
- */
 public class DrawProgressCard extends ForwardedRequest {
-    private ProgressCardType card;
-
-    public static DrawProgressCard newInstance(ProgressCardType card) {
-        DrawProgressCard drawProgressCard = new DrawProgressCard();
-        drawProgressCard.username = CatanGame.account.getUsername();
-        drawProgressCard.card = card;
-        return drawProgressCard;
+    
+    private int redDie;
+    private EventKind event;
+    
+    public static DrawProgressCard newInstance(EventKind event, int redDie, String username) {
+        DrawProgressCard request = new DrawProgressCard();
+        
+        request.username = username;
+        request.redDie = redDie;
+        request.event = event;
+        request.universal = true;
+        
+        return request;
+    }
+    
+    public EventKind getEventKind() {
+        return event;
+    }
+    
+    public int getRedDie() {
+        return redDie;
     }
 
-    public ProgressCardType getCard() {
-        return card;
-    }
 }

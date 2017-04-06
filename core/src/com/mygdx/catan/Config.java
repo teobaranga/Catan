@@ -11,6 +11,7 @@ import com.mygdx.catan.response.*;
 import com.mygdx.catan.response.game.GameList;
 import com.mygdx.catan.session.Session;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.objenesis.strategy.SerializingInstantiatorStrategy;
 
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ public class Config {
         kryo.register(Player.class);
         kryo.register(CityImprovements.class);
         kryo.register(Player[].class);
+        kryo.register(ImmutablePair.class);
+        kryo.register(Pair.class);
         kryo.register(DiceRollPair.class);
         kryo.register(ResourceKind.class);
         kryo.register(ResourceMap.class);
@@ -68,6 +71,9 @@ public class Config {
         kryo.register(MarkedAsReady.class);
         kryo.register(ForwardedRequest.class);
         kryo.register(TargetedRequest.class);
+        kryo.register(LinkedHashMap.class);
+        kryo.register(ArrayList.class);
+        kryo.register(EnumMap.class);
         kryo.register(ChooseResourceCardRequest.class);
         kryo.register(TargetedChooseResourceCardRequest.class);
         kryo.register(GiveResources.class);
@@ -81,6 +87,7 @@ public class Config {
         kryo.register(RollDice.class);
         kryo.register(DiceRolled.class);
         kryo.register(DrawProgressCard.class);
+        kryo.register(OpponentDrawnProgressCard.class);
         kryo.register(BuildIntersection.class);
         kryo.register(UpdateResources.class);
         kryo.register(SwitchHexDiceNumbers.class);
@@ -95,14 +102,12 @@ public class Config {
         kryo.register(MoveRobberRequest.class);
         kryo.register(UpdateVP.class);
         kryo.register(UpdateVillage.class);
+        kryo.register(BestPlayersWin.class);
+        kryo.register(DefenderOfCatan.class);
         kryo.register(DiscardHalfRequest.class);
         kryo.register(MoveMerchantRequest.class);
         kryo.register(DisplaceRoadRequest.class);
         kryo.register(UpdateOldBoot.class);
-        kryo.register(LinkedHashMap.class);
-        kryo.register(ArrayList.class);
-        kryo.register(ImmutablePair.class);
-        kryo.register(EnumMap.class);
         kryo.register(TradeImprovementRequest.class);
         kryo.register(ScienceImprovementRequest.class);
         kryo.register(PoliticsImprovementRequest.class);

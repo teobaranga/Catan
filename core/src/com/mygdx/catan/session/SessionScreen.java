@@ -496,6 +496,13 @@ public class SessionScreen implements Screen {
         buildKnightButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                // TODO uncomment this
+                // Make sure the player has everything required to build a knight
+//                if (!aSessionController.requestBuildKnight()) {
+//                    addGameMessage("You can't build a knight (not enough resources or no valid positions)");
+//                    return;
+//                }
+
                 // Create a new multi-step move to allow the player to place a knight
                 currentlyPerformingMove = new MultiStepMove();
 
@@ -520,7 +527,7 @@ public class SessionScreen implements Screen {
                     CoordinatePair intersection = CoordinatePair.of(
                             boardOrigin.getLeft() + chosenIntersection.getLeft() * OFFX,
                             boardOrigin.getRight() + chosenIntersection.getRight() * -LENGTH / 2, null);
-                    KnightActor knightActor = aSessionController.buildKnight(intersection, false);
+                    KnightActor knightActor = aSessionController.buildKnight(intersection);
                     knightActor.addListener(new ChangeListener() {
                         @Override
                         public void changed(ChangeEvent event, Actor actor) {
@@ -1764,7 +1771,7 @@ public class SessionScreen implements Screen {
                 moveShipButton.setDisabled(true);
                 buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
-                buildKnightButton.setDisabled(true);
+//                buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
                 tradeButton.setDisabled(true);
 

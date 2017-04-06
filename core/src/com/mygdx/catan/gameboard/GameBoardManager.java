@@ -53,7 +53,9 @@ public class GameBoardManager {
         return aGameBoard.getRobberPosition();
     }
 
-    public GameBoard getGameBoard() {return this.aGameBoard;}
+    public GameBoard getGameBoard() {
+        return aGameBoard;
+    }
 
     /**
      * @return top of science progress card stack, null if stack is empty
@@ -201,10 +203,19 @@ public class GameBoardManager {
         throw new RuntimeException("buildCityWall not yet implemented");
     }
 
-    public void buildBasicKnight(Player player, CoordinatePair myKnightPosition) {
+    /**
+     * Creates a new knight and adds it to the game board. By default, the knight created has
+     * basic strength and is inactive.
+     *
+     * @param player           owner of the knight
+     * @param myKnightPosition location of the knight
+     * @return the knight that was build
+     */
+    public Knight buildKnight(Player player, CoordinatePair myKnightPosition) {
         Knight myKnight = new Knight(player, myKnightPosition);
         player.addKnight(myKnight);
         aGameBoard.addKnight(myKnight);
+        return myKnight;
     }
 
     /**

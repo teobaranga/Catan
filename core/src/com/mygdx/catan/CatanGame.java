@@ -12,6 +12,8 @@ import com.esotericsoftware.kryonet.Client;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.account.AccountManager;
 import com.mygdx.catan.enums.ScreenKind;
+import com.mygdx.catan.injection.component.AppComponent;
+import com.mygdx.catan.injection.component.DaggerAppComponent;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
@@ -20,6 +22,9 @@ import com.mygdx.catan.session.SessionScreen;
 import java.io.IOException;
 
 public class CatanGame extends Game {
+
+    public static final AppComponent appComponent;
+
     /** The Client representing the current user */
     public static final Client client;
 
@@ -31,6 +36,8 @@ public class CatanGame extends Game {
     public static Account account;
 
     static {
+        appComponent = DaggerAppComponent.builder().build();
+
         client = new Client();
 
         // Register request & response classes (needed for networking)

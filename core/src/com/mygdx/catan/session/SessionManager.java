@@ -109,7 +109,7 @@ public class SessionManager {
         aSession.currentPhase = phase;
     }
 
-    public Player getCurrentPlayerFromColor(PlayerColor c) {
+    public Player getPlayerFromColor(PlayerColor c) {
         Player currentP = null;
         for (Player p : getPlayers()) {
             if (p.getColor().equals(c)) {

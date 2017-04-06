@@ -46,6 +46,10 @@ public class Knight {
         return strength.value;
     }
 
+    public boolean is(Strength strength) {
+        return this.strength == strength;
+    }
+
     public CoordinatePair getPosition() { return position; }
 
     /** Upgrade this knight */

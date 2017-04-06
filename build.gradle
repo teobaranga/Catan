@@ -11,6 +11,7 @@ buildscript {
 
 plugins {
     id 'com.github.ben-manes.versions' version '0.14.0'
+    id "net.ltgt.apt" version "0.10"
 }
 
 allprojects {
@@ -52,6 +53,7 @@ project(":server") {
 }
 
 project(":core") {
+    apply plugin: "net.ltgt.apt"
     apply plugin: "java"
 
     dependencies {
@@ -62,6 +64,9 @@ project(":core") {
         compile "org.objenesis:objenesis:2.5.1"
         compile "com.esotericsoftware:kryo:4.0.1-SNAPSHOT"
         compile("com.esotericsoftware:kryonet:2.22.0-RC1") { exclude module: 'kryo' }
+
+        compile 'com.google.dagger:dagger:2.10'
+        apt 'com.google.dagger:dagger-compiler:2.10'
     }
 }
 

@@ -11,6 +11,8 @@ import com.mygdx.catan.enums.*;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.*;
+import com.mygdx.catan.injection.component.SessionComponent;
+import com.mygdx.catan.injection.module.SessionModule;
 import com.mygdx.catan.moves.Move;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
@@ -53,12 +55,18 @@ public class SessionController {
     /** Flag indicating whether it's the turn of the player logged in */
     private boolean myTurn;
 
+    private final KnightController knightController;
+
+    final SessionComponent sessionComponent;
+
     SessionController(SessionScreen sessionScreen) {
         Game currentGame = GameManager.getInstance().getCurrentGame();
         if (currentGame == null) {
             currentGame = GameManager.newPlaceholderGame();
             GameManager.getInstance().setCurrentGame(currentGame);
         }
+
+        sessionComponent = CatanGame.appComponent.plus(new SessionModule(currentGame.session));
 
         aGameBoardManager = GameBoardManager.getInstance();
         aSessionManager = SessionManager.getInstance(currentGame.session);
@@ -78,6 +86,9 @@ public class SessionController {
                 break;
             }
         }
+
+        // Create the sub-controllers once the local player was found
+        knightController = new KnightController(this);
 
         aSessionListener = new Listener() {
             @Override
@@ -173,12 +184,12 @@ public class SessionController {
                     Gdx.app.postRunnable(() -> {
                         final DisplaceRoadRequest displaceRoad = (DisplaceRoadRequest) object;
                         aSessionScreen.addGameMessage(displaceRoad.username+ " has displaced a road");
-                        
+
                         CoordinatePair firstCoordinate = aGameBoardManager.getCoordinatePairFromCoordinates(displaceRoad.getFirstCoordinate().getLeft(), displaceRoad.getFirstCoordinate().getRight());
                         CoordinatePair secondCoordinate = aGameBoardManager.getCoordinatePairFromCoordinates(displaceRoad.getSecondCoordinate().getLeft(), displaceRoad.getSecondCoordinate().getRight());
 
                         displaceEdgeUnit(firstCoordinate, secondCoordinate);
-                        
+
                     });
                 } else if (object instanceof SwitchHexDiceNumbers) {
                   Gdx.app.postRunnable(() -> {
@@ -224,25 +235,25 @@ public class SessionController {
                     Gdx.app.postRunnable(() -> {
                         final MoveMerchantRequest merchantMoved = (MoveMerchantRequest) object;
                         aSessionScreen.addGameMessage(merchantMoved.username + " moved and now owns the merchant");
-                        
+
                         Hex newPos = aGameBoardManager.getHexFromCoordinates(merchantMoved.getNewPos().getLeft(), merchantMoved.getNewPos().getRight());
-                        
+
                         moveMerchant(newPos, merchantMoved.getOwner(), true);
                     });
                 } else if (object instanceof MoveRobberRequest) {
                     Gdx.app.postRunnable(() -> {
                         final MoveRobberRequest robberMoved = (MoveRobberRequest) object;
                         aSessionScreen.addGameMessage(robberMoved.username + " moved the robber");
-                        
+
                         Hex newPos = aGameBoardManager.getHexFromCoordinates(robberMoved.getNewPos().getLeft(), robberMoved.getNewPos().getRight());
-                        
+
                         moveRobber(newPos, true);
                     });
                 } else if (object instanceof SpecialTradeRequest) {
                     Gdx.app.postRunnable(() -> {
                         final SpecialTradeRequest specialTrade = (SpecialTradeRequest) object;
                         aSessionScreen.addGameMessage(specialTrade.sender + " has forced you to make a special trade, and has given you a " + specialTrade.getKind().toString().toLowerCase());
-                        
+
                         // creates a list of commodities to choose from 
                         ArrayList<ResourceKind> commodities = new ArrayList<>();
                         for (Map.Entry<ResourceKind, Integer> entry : localPlayer.getResources().entrySet()) {
@@ -250,28 +261,28 @@ public class SessionController {
                                 commodities.add(entry.getKey());
                             }
                         }
-                        
+
                         // add given resource to local inventory
                         ResourceMap resourceGiven = new ResourceMap();
                         resourceGiven.put(specialTrade.getKind(), 1);
                         localPlayer.addResources(resourceGiven);
                         aSessionScreen.updateResourceBar(localPlayer.getResources());
-                        
+
                         MultiStepMove forceTrade = new MultiStepMove();
                         forceTrade.<ResourceKind>addMove(kind -> {
                             ResourceMap commodityGiven = new ResourceMap();
                             commodityGiven.put(kind, 1);
-                            
+
                             localPlayer.removeResources(commodityGiven);
                             aSessionScreen.updateResourceBar(localPlayer.getResources());
 
                             // send targeted message back to sender to give them chosen commodity
                             GiveResources request = GiveResources.newInstance(commodityGiven, localPlayer.getUsername(), specialTrade.sender);
                             CatanGame.client.sendTCP(request);
-                            
+
                             aSessionScreen.interractionDone();
                         });
-                        
+
                         aSessionScreen.chooseResource(commodities, forceTrade);
                     });
                 } else if (object instanceof GiveResources) {
@@ -290,22 +301,22 @@ public class SessionController {
 
                         localPlayer.removeResources(resourcesTaken.getResources());
                         aSessionScreen.updateResourceBar(localPlayer.getResources());
-                        
+
                     });
                 } else if (object instanceof UpdateResources) {
                     Gdx.app.postRunnable(() -> {
                         final UpdateResources resourcesUpdated = (UpdateResources) object;
-                        
-                        Player peer = aSessionManager.getCurrentPlayerFromColor(resourcesUpdated.getResourceOwner());
+
+                        Player peer = aSessionManager.getPlayerFromColor(resourcesUpdated.getResourceOwner());
                         peer.setResources(resourcesUpdated.getUpdatedResources());
-                        
+
                         aSessionScreen.addGameMessage(resourcesUpdated.username + " now has " + peer.getResourceHandSize() + " resource and commodities cards");
                     });
                 } else if (object instanceof TargetedShowProgressCardsRequest) {
                     Gdx.app.postRunnable(() -> {
                         final TargetedShowProgressCardsRequest showProgressCards = (TargetedShowProgressCardsRequest) object;
                         aSessionScreen.addGameMessage("you show your progress card hand to " + showProgressCards.sender);
-                        
+
                         // send progress card hand back to sender
                         ChooseOpponentProgressCard request = ChooseOpponentProgressCard.newInstance(localPlayer.getProgressCardHand(), localPlayer.getUsername(), showProgressCards.sender);
                         CatanGame.client.sendTCP(request);
@@ -314,21 +325,21 @@ public class SessionController {
                     Gdx.app.postRunnable(() -> {
                         final ChooseOpponentProgressCard chooseCardtoSteal = (ChooseOpponentProgressCard) object;
                         aSessionScreen.addGameMessage("choose progress card to steal from " + chooseCardtoSteal.sender);
-                        
+
                         // multistep move that will steal chosen progress card
                         MultiStepMove stealCard = new MultiStepMove();
-                        
+
                         stealCard.<ProgressCardType>addMove(type -> {
                             // take progress card from sender
                             TakeProgressCard request = TakeProgressCard.newInstance(type, localPlayer.getUsername(), chooseCardtoSteal.sender);
                             CatanGame.client.sendTCP(request);
-                            
+
                             // add card to local player hand
                             localPlayer.addProgressCard(type);
-                            
+
                             aSessionScreen.interractionDone();
                         });
-                        
+
                         // prompt local player to choose progress card from given hand
                         if (!chooseCardtoSteal.getHand().isEmpty()) {
                             aSessionScreen.chooseProgressCard(chooseCardtoSteal.getHand(), stealCard);
@@ -336,13 +347,13 @@ public class SessionController {
                             aSessionScreen.addGameMessage("chosen opponent does not have any progress cards in hand");
                             aSessionScreen.interractionDone();
                         }
-                        
+
                     });
                 } else if (object instanceof TakeProgressCard) {
                     Gdx.app.postRunnable(() -> {
                         final TakeProgressCard progressCardsTaken = (TakeProgressCard) object;
                         aSessionScreen.addGameMessage(progressCardsTaken.sender + " stole your progress card(s)");
-                        
+
                         localPlayer.removeProgressCard(progressCardsTaken.getProgressCard());
                     });
                 } else if (object instanceof DiscardHalfRequest) {
@@ -438,25 +449,25 @@ public class SessionController {
                 } else if (object instanceof BestPlayersWin) {
                     Gdx.app.postRunnable(() -> {
                         aSessionScreen.addGameMessage("You were one of the best players against the Barbarian attack, and get to choose a progress card to draw");
-                        
+
                         MultiStepMove drawProgressCard = new MultiStepMove();
                         drawProgressCard.<ProgressCardKind>addMove((kind) -> {
                             drawProgressCard(kind);
                             aSessionScreen.interractionDone();
                         });
-                        
+
                         aSessionScreen.chooseProgressCardKind(drawProgressCard);
                     });
                 } else if (object instanceof DefenderOfCatan) {
                     Gdx.app.postRunnable(() -> {
                         DefenderOfCatan defenderOfCatan = (DefenderOfCatan) object;
-                        
-                        Player winner = aSessionManager.getCurrentPlayerFromColor(defenderOfCatan.getWinner());
+
+                        Player winner = aSessionManager.getPlayerFromColor(defenderOfCatan.getWinner());
                         aSessionScreen.addGameMessage(winner.getUsername() + " is the Defender of Catan!");
-                        
+
                         winner.incrementDefenderOfCatanPoints();
                         aSessionScreen.updateVpTables();
-                        
+
                     });
                 }
             }
@@ -584,7 +595,7 @@ public class SessionController {
     public PlayerColor getPlayerColor() {
         return localPlayer.getColor();
     }
-    
+
     public Player getLocalPlayer() {
         return localPlayer;
     }
@@ -628,11 +639,11 @@ public class SessionController {
     public Hex getRobberPosition() {
         return aGameBoardManager.getRobberPosition();
     }
-    
+
     public List<ProgressCardType> getProgressCardHand() {
         return localPlayer.getProgressCardHand();
     }
-    
+
     /**
      * @param a one interesection
      * @param b another intersection
@@ -666,7 +677,7 @@ public class SessionController {
      */
     public boolean requestBuildVillage(PlayerColor owner, VillageKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         boolean canBuild = false;
 
         if (kind == VillageKind.SETTLEMENT) {
@@ -718,6 +729,7 @@ public class SessionController {
         }
         return canBuild;
     }
+
     /**
      * @param owner of request
      * @param kind  of edge unit requested to be built
@@ -725,7 +737,7 @@ public class SessionController {
      */
     public boolean requestBuildEdgeUnit(PlayerColor owner, EdgeUnitKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         boolean hasAvailableShips = currentP.getAvailableShips() > 0;
         boolean hasAvailableRoads = currentP.getAvailableRoads() > 0;
         boolean canBuild = false;
@@ -749,8 +761,12 @@ public class SessionController {
         return canBuild;
     }
 
+    public boolean requestBuildKnight() {
+        return knightController.requestBuildKnight();
+    }
+
     public boolean requestTradeImprovement(PlayerColor owner) {
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         int currentTradeLevel = getCurrentPlayer().getCityImprovements().getTradeLevel();
         boolean canImprove = currentP.hasEnoughResources(GameRules.getGameRulesInstance().getTradeCityImprovementCost(currentTradeLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
         return canImprove;
@@ -779,7 +795,7 @@ public class SessionController {
      * @return a list of all the intersections that are (1) connected to road owned by player and (2) not adjacent to another village and (3) on land (3) unoccupied
      */
     public ArrayList<CoordinatePair> requestValidBuildIntersections(PlayerColor owner) {
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         List<EdgeUnit> listOfEdgeUnits = currentP.getRoadsAndShips();
 
         ArrayList<CoordinatePair> validIntersections = new ArrayList<>();
@@ -829,7 +845,7 @@ public class SessionController {
     public ArrayList<CoordinatePair> requestValidCityUpgradeIntersections(PlayerColor owner) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         ArrayList<CoordinatePair> validUpgradeIntersections = new ArrayList<>();
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         List<Village> listOfVillages = currentP.getVillages();
         for (Village v : listOfVillages) {
             validUpgradeIntersections.add(v.getPosition());
@@ -858,7 +874,7 @@ public class SessionController {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         HashSet<CoordinatePair> validRoadEndpoints = new HashSet<>();
 
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
 
         for (Village v : currentP.getVillages()) {
             if (!validRoadEndpoints.contains(v.getPosition())) {
@@ -888,7 +904,7 @@ public class SessionController {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         HashSet<CoordinatePair> validShipEndpoints = new HashSet<>();
 
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
 
         for (Village v : currentP.getVillages()) {
             if (!validShipEndpoints.contains(v.getPosition()) && aGameBoardManager.isOnSea(v.getPosition())) {
@@ -914,7 +930,7 @@ public class SessionController {
      * */
     public ArrayList<EdgeUnit> requestValidShips(PlayerColor owner) {
 
-    	Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+    	Player currentP = aSessionManager.getPlayerFromColor(owner);
     	ArrayList<EdgeUnit> validShips = new ArrayList<EdgeUnit>();
 
 
@@ -972,7 +988,7 @@ public class SessionController {
     /** produces a list of cities that are eligible for a city wall i.e. must be a city without a city wall */
     public ArrayList<CoordinatePair> requestValidCityWallIntersections(PlayerColor owner) {
         ArrayList<CoordinatePair> validCityWallIntersections = new ArrayList<>();
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         List<Village> listOfVillages = currentP.getVillages();
         for (Village v : listOfVillages) {
             if (v.getVillageKind() == VillageKind.CITY && !v.hasCityWalls()) {
@@ -984,7 +1000,7 @@ public class SessionController {
 
     public ArrayList<CoordinatePair> requestValidActivateKnightIntersections(PlayerColor owner) {
         ArrayList<CoordinatePair> validInactiveKnights = new ArrayList<>();
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         for (Knight k : aGameBoardManager.getGameBoard().getKnights()) {
             if (currentP.equals(k.getOwner()) && !k.isActive()) {
                 validInactiveKnights.add(k.getPosition());
@@ -1005,7 +1021,7 @@ public class SessionController {
      * @return true if building the village was successful, false otherwise
      */
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer, boolean init) {
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
 
         if (kind == VillageKind.SETTLEMENT) {
             aGameBoardManager.buildSettlement(currentP, position);
@@ -1056,22 +1072,15 @@ public class SessionController {
         return true;
     }
 
-    /**
-     * Build a new basic knight for the local player.
-     * TODO: placeholder method only for the moment
-     */
-    KnightActor buildKnight(CoordinatePair position, boolean fromPeer) {
-        // TODO: Add knight to gameboard state
-        final Knight knight = new Knight(localPlayer, position);
-        localPlayer.addKnight(knight);
 
-        // Display the knight
-        KnightActor knightActor = gamePieces.createKnight(knight);
-        knightActor.setPosition(position.getLeft() - knightActor.getOriginX(), position.getRight() - knightActor.getOriginY());
+    /** Build a new basic knight for the local player. */
+    KnightActor buildKnight(CoordinatePair position) {
+        return knightController.buildKnight(position);
+    }
 
-        // TODO: inform other players
-
-        return knightActor;
+    /** Build a new basic knight for a given player */
+    KnightActor buildKnight(CoordinatePair position, PlayerColor color) {
+        return knightController.buildKnight(position, color);
     }
 
     Image buildCityWall(CoordinatePair position, boolean fromPeer) {
@@ -1087,7 +1096,7 @@ public class SessionController {
     }
 
     public boolean buildKnight(PlayerColor owner, CoordinatePair position, boolean fromPeer) {
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         aTransactionManager.payBankToPlayer(currentP, GameRules.getGameRulesInstance().getActivateKnightCost(aSessionManager.getCurrentlyExecutingProgressCard()));
 
         //send request
@@ -1097,7 +1106,7 @@ public class SessionController {
     }
 
     public boolean activateKnight(PlayerColor owner, Knight myKnight, boolean fromPeer) {
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getActivateKnightCost(aSessionManager.getCurrentlyExecutingProgressCard()));
         aGameBoardManager.activateKnight(myKnight);
         CoordinatePair position = myKnight.getPosition();
@@ -1111,7 +1120,7 @@ public class SessionController {
 
     //todo: update gameboard, inform players of move
     public boolean moveKnight(PlayerColor owner, Knight k, CoordinatePair newPosition) {
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         aGameBoardManager.moveKnight(currentP, k, newPosition);
         k.setActive(false);
         //update session screen
@@ -1134,7 +1143,7 @@ public class SessionController {
      * @return true if building the unit was successful, false otherwise
      */
     public boolean buildEdgeUnit(PlayerColor owner, CoordinatePair firstPosition, CoordinatePair secondPosition, EdgeUnitKind kind, boolean fromPeer, boolean init) {
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         aGameBoardManager.buildEdgeUnit(currentP, firstPosition, secondPosition, kind);
         aSessionScreen.updateEdge(firstPosition, secondPosition, kind, owner);
 
@@ -1178,7 +1187,7 @@ public class SessionController {
 
     //TODO: build city wall this is where messages will happen, will tell GUI to show city wall
     public boolean buildCityWall(PlayerColor owner, CoordinatePair myWall, boolean fromPeer){
-        Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         aGameBoardManager.buildCityWall(currentP, myWall);
         //need to change city has wall to true
         //aSessionScreen.updateCity();
@@ -1186,21 +1195,21 @@ public class SessionController {
     }
 
     /**
-     * Requests the GameBoardManager to move the robber to given location. If fromPeer is false, the SessionController sends message to network notifying 
+     * Requests the GameBoardManager to move the robber to given location. If fromPeer is false, the SessionController sends message to network notifying
      * other peers about board change
      */
     public boolean moveRobber(Hex newPosition, boolean fromPeer) {
         aGameBoardManager.setRobberPosition(newPosition);
         aSessionScreen.placeRobber(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate());
-        
+
         if (!fromPeer) {
             MoveRobberRequest request = MoveRobberRequest.newInstance(new ImmutablePair<Integer,Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), localPlayer.getUsername());
             CatanGame.client.sendTCP(request);
         }
-        
+
         return true;
     }
-    
+
     /**
      * Plays the given progress card type
      * */
@@ -1208,28 +1217,28 @@ public class SessionController {
         aProgressCardHandler.handle(type, localPlayer.getColor());
         aSessionScreen.removeCardFromHand(type);
     }
-    
+
     /**
-     * Requests the GameBoardManager to move the merchant to given position. If fromPeer is false, SessionController sends a message to the network notifying 
+     * Requests the GameBoardManager to move the merchant to given position. If fromPeer is false, SessionController sends a message to the network notifying
      * other peers of board change.
      * @param newPosition       new merchant position
      * @param newOwner          player who now owns the merchant
      * @param fromPeer          indicates whether method was called from localPlayer or peer
      * */
     public boolean moveMerchant(Hex newPosition, PlayerColor newOwner, boolean fromPeer) {
-        Player owner = aSessionManager.getCurrentPlayerFromColor(newOwner);
-       
+        Player owner = aSessionManager.getPlayerFromColor(newOwner);
+
         aGameBoardManager.setMerchantOwner(owner);
         aGameBoardManager.setMerchantPosition(newPosition);
         aSessionScreen.placeMerchant(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate());
-        
+
         if (!fromPeer) {
             MoveMerchantRequest request = MoveMerchantRequest.newInstance(new ImmutablePair<Integer,Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), newOwner, localPlayer.getUsername());
             CatanGame.client.sendTCP(request);
         }
-        
+
         CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
-        
+
         return true;
     }
 
@@ -1245,7 +1254,7 @@ public class SessionController {
      * @return true if successful
      * */
     public boolean moveEdge(CoordinatePair firstOriginPos, CoordinatePair secondOriginPos, CoordinatePair newFirstPos, CoordinatePair newSecondPos, PlayerColor owner, EdgeUnitKind kind, boolean fromPeer) {
-    	Player currentP = aSessionManager.getCurrentPlayerFromColor(owner);
+    	Player currentP = aSessionManager.getPlayerFromColor(owner);
     	EdgeUnit shipToMove = null;
 
     	for (EdgeUnit eu : currentP.getRoadsAndShips()) {
@@ -1276,7 +1285,7 @@ public class SessionController {
     		return true;
     	}
     }
-    
+
     /**
      * Finds the ship with given CoordinatePairs as its endpoints, and puts it back in that unit's owner's inventory
      * @param firstCor first CoordinatePair of edge to displace
@@ -1285,13 +1294,13 @@ public class SessionController {
      * */
     public void displaceEdgeUnit(CoordinatePair firstCor, CoordinatePair secondCor) {
         EdgeUnit roadToDisplace = aGameBoardManager.getEdgeUnitFromCoordinatePairs(firstCor, secondCor);
-        
+
         // removes the road from the gameboard and from the players list of edgeunits
         aGameBoardManager.displaceRoad(roadToDisplace);
-        
+
         // notify session screen of changes
         aSessionScreen.removeEdgeUnit(firstCor.getLeft(), firstCor.getRight(), secondCor.getLeft(), secondCor.getRight());
-        
+
         // if owner is local player, update available game pieces
         Player owner = roadToDisplace.getOwner();
         if (owner.equals(localPlayer)) {
@@ -1300,7 +1309,7 @@ public class SessionController {
         } else {
             aSessionScreen.addGameMessage(owner.getUsername() + "'s edge unit was displaced");
         }
-        
+
     }
 
     public void buildInitialVillageAndRoad(CoordinatePair villagePos, CoordinatePair firstEdgePos, CoordinatePair secondEdgePos, VillageKind kind, EdgeUnitKind edgeKind) {
@@ -1449,7 +1458,7 @@ public class SessionController {
         aSessionManager.removeFromBank(cost);
         return cost;
     }
-    
+
     /**
      * Local player draws a progress card from given progress card kind deck. The network is notified of stack change
      * */
@@ -1460,7 +1469,7 @@ public class SessionController {
         case POLITICS:
             drawnCard = aGameBoardManager.drawPoliticsProgressCard();
             localPlayer.addProgressCard(drawnCard);
-            
+
             // updates the stacks of peers
             request = OpponentDrawnProgressCard.newInstance(drawnCard, localPlayer.getUsername());
             CatanGame.client.sendTCP(request);
@@ -1468,7 +1477,7 @@ public class SessionController {
         case SCIENCE:
             drawnCard = aGameBoardManager.drawScienceProgressCard();
             localPlayer.addProgressCard(drawnCard);
-            
+
             // updates the stacks of peers
             request = OpponentDrawnProgressCard.newInstance(drawnCard, localPlayer.getUsername());
             CatanGame.client.sendTCP(request);
@@ -1476,7 +1485,7 @@ public class SessionController {
         case TRADE:
             drawnCard = aGameBoardManager.drawPoliticsProgressCard();
             localPlayer.addProgressCard(drawnCard);
-            
+
             // updates the stacks of peers
             request = OpponentDrawnProgressCard.newInstance(drawnCard, localPlayer.getUsername());
             CatanGame.client.sendTCP(request);
@@ -1513,7 +1522,7 @@ public class SessionController {
                             }
                             aSessionScreen.interractionDone();
                     });
-                    
+
                     aSessionScreen.chooseDraw(chooseProgressCard);
                 }
             }
@@ -1554,7 +1563,7 @@ public class SessionController {
             }
 
             moveRobber(hex, false);
-            
+
             // if there is a potential victim, let the local player choose a victim to steal random card from
             if (!potentialVictims.isEmpty()) {
                 moveRobber.<Player>addMove(victim -> {
@@ -1591,7 +1600,7 @@ public class SessionController {
             } else {
                 aSessionScreen.interractionDone();
             }
-            
+
         });
         aSessionScreen.initChooseHexMove(hexesToChooseFrom, moveRobber);
     }
@@ -1688,7 +1697,7 @@ public class SessionController {
             if (bestPlayers.size() == 1) {
                 //this player is the defender of catan
                 Player bestPlayer = bestPlayers.get(0);
-                
+
                 // send message accross network about defender of catan
                 DefenderOfCatan request = DefenderOfCatan.newInstance(bestPlayer.getColor(), localPlayer.getUsername());
                 CatanGame.client.sendTCP(request);
@@ -1699,7 +1708,7 @@ public class SessionController {
                     // send a targeted request to that player that will make them choose a progress card kind, and draw
                     BestPlayersWin request = BestPlayersWin.newInstance(localPlayer.getUsername(), bp.getUsername());
                     CatanGame.client.sendTCP(request);
-                } 
+                }
             }
         }
         //regardless of outcome, barbarians go home.
@@ -1922,10 +1931,10 @@ public class SessionController {
             // Get the min number of resources of this type that the player
             // needs to give in order to receive any other resource
             int ratio = localPlayer.getHighestHarbourLevel(resourceKind);
-            
+
             // if localPlayer has played MERCHANTFLEET and chosen resourceKind, set ratio to 2
             if (resourceKind == localPlayer.getTemporaryResourceKindTrade()) { ratio = 2; }
-            
+
             // if localPlayer owns the merchant, and merchant is on hex of kind resourceKind, set ratio to 2
             Hex merchantPos = aGameBoardManager.getMerchantPosition();
             Player merchantOwner = aGameBoardManager.getMerchantOwner();
@@ -1934,7 +1943,7 @@ public class SessionController {
                    ratio = 2;
                }
             }
-            
+
             if (localPlayer.hasEnoughOfResource(resourceKind, ratio)) {
                 tradeRatios.put(resourceKind, ratio);
             } else {

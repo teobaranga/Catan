@@ -1,19 +1,28 @@
 package com.mygdx.catan.ui.window;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.ui.CatanWindow;
 import com.mygdx.catan.ui.KnightActor;
 
+import static com.mygdx.catan.gameboard.Knight.Strength.MIGHTY;
+
 public class KnightActionsWindow extends CatanWindow {
 
     private KnightActivationListener knightActivationListener;
     private KnightUpgradeListener knightUpgradeListener;
 
+    private final TextButton upgrade;
+
+    private final KnightActor knightActor;
+
     public KnightActionsWindow(KnightActor knightActor) {
         super("Actions", CatanGame.skin);
+
+        this.knightActor = knightActor;
 
         TextButton activate = new TextButton("Activate", CatanGame.skin);
         activate.addListener(new ChangeListener() {
@@ -29,7 +38,7 @@ public class KnightActionsWindow extends CatanWindow {
         });
         add(activate).padTop(10).padBottom(5).padLeft(30).padRight(30).row();
 
-        TextButton upgrade = new TextButton("Upgrade", CatanGame.skin);
+        upgrade = new TextButton("Upgrade", CatanGame.skin);
         upgrade.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -46,6 +55,14 @@ public class KnightActionsWindow extends CatanWindow {
         setModal(false);
         setMovable(true);
         pack();
+    }
+
+    @Override
+    protected void setStage(Stage stage) {
+        super.setStage(stage);
+        // Every time this window is displayed, do these checks...
+        if (knightActor.getKnight().is(MIGHTY))
+            upgrade.setDisabled(true);
     }
 
     public void setOnKnightActivateClick(KnightActivationListener knightActivationListener) {

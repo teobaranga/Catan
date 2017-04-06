@@ -1,6 +1,7 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.HarbourKind;
+import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.gameboard.Village;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -11,6 +12,7 @@ public class CoordinatePair extends Pair<Integer, Integer> {
     private Integer y;
     private HarbourKind aHarbourKind;
     private Village occupyingVillage;
+    private Knight occupyingKnight;
 
     public static CoordinatePair of(Integer x, Integer y, HarbourKind harbourKind) {
         final CoordinatePair coordinatePair = new CoordinatePair();
@@ -65,7 +67,7 @@ public class CoordinatePair extends Pair<Integer, Integer> {
     }
 
     public boolean isOccupied() {
-        return occupyingVillage != null;
+        return occupyingVillage != null || occupyingKnight != null;
     }
 
     /**
@@ -76,6 +78,10 @@ public class CoordinatePair extends Pair<Integer, Integer> {
         return occupyingVillage;
     }
 
+    public Knight getOccupyingKnight() {
+        return occupyingKnight;
+    }
+
     /**
      * Puts a village on this coordinate pair. Assert that this CoordinatePair represents
      * an intersection. Does nothing if the intersection is already occupied. Sets the
@@ -83,5 +89,9 @@ public class CoordinatePair extends Pair<Integer, Integer> {
      */
     public void putVillage(Village village) {
         occupyingVillage = village;
+    }
+
+    public void putKnight(Knight knight) {
+        occupyingKnight = knight;
     }
 }

@@ -38,6 +38,7 @@ public class GameBoard {
 		aIntersectionPositions = new ArrayList<>();
 		aRoadsAndShips = new ArrayList<>();
 		villages = new ArrayList<>();
+		knights = new ArrayList<>();
         aScienceProgressCardStack = new Stack<>();
         aPoliticsProgressCardStack = new Stack<>();
         aTradeProgressCardStack = new Stack<>();
@@ -312,8 +313,11 @@ public class GameBoard {
 	    return villages;
     }
 
-    void addKnight(Knight knight) {knights.add(knight);}
+	void addKnight(Knight knight) {
+		knights.add(knight);
+	}
 
-    public ArrayList<Knight> getKnights() { return knights; }
-
+	public List<Knight> getKnights() {
+		return knights;
+	}
 }

@@ -269,7 +269,7 @@ public class GameBoard {
 	}
 
 	/**
-	 * @return Hex: robber position. If null Merchant not in play yet.
+	 * @return Hex: getMerchantPosition position. If null Merchant not in play yet.
 	 * */
 	public Hex getMerchantPosition() {
 		return aMerchantPosition;

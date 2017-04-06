@@ -48,7 +48,7 @@ public class SessionController {
 
     /** The random number generator for dice rolls */
     private final CatanRandom random;
-    
+
     /** int that represents the number of players who have chosen a village to pillage during a barbarian attack */
     private int villagesPillaged;
 
@@ -125,7 +125,7 @@ public class SessionController {
                 } else if (object instanceof DistributeResources) {
                     Gdx.app.postRunnable(() -> {
                         final DistributeResources distributeRequest = (DistributeResources) object;
-                        
+
                         resourceProduction(distributeRequest.getDiceResults().getSum());
                     });
                 } else if (object instanceof BuildIntersection) {
@@ -463,7 +463,7 @@ public class SessionController {
                             drawProgressCard(kind);
                             aSessionScreen.interractionDone();
                         });
-                        
+
                         aSessionScreen.chooseProgressCardKind(drawProgressCard, Arrays.asList(ProgressCardKind.values()));
                     });
                 } else if (object instanceof DefenderOfCatan) {
@@ -480,32 +480,32 @@ public class SessionController {
                 } else if (object instanceof PoliticsImprovementRequest) {
                     Gdx.app.postRunnable(() -> {
                         PoliticsImprovementRequest politicsImproved = (PoliticsImprovementRequest) object;
-                        
+
                         Player owner = aSessionManager.getPlayerFromColor(politicsImproved.getOwner());
                         owner.getCityImprovements().upgradePoliticsLevel();
                     });
                 } else if (object instanceof TradeImprovementRequest) {
                     Gdx.app.postRunnable(() -> {
                         TradeImprovementRequest tradeImproved = (TradeImprovementRequest) object;
-                        
+
                         Player owner = aSessionManager.getPlayerFromColor(tradeImproved.getOwner());
                         owner.getCityImprovements().upgradeTradeLevel();
                     });
                 } else if (object instanceof ScienceImprovementRequest) {
                     Gdx.app.postRunnable(() -> {
                         ScienceImprovementRequest scienceImproved = (ScienceImprovementRequest) object;
-                        
+
                         Player owner = aSessionManager.getPlayerFromColor(scienceImproved.getOwner());
                         owner.getCityImprovements().upgradeScienceLevel();
                     });
                 } else if (object instanceof UpdateVillage) {
                     Gdx.app.postRunnable(() -> {
                         UpdateVillage villageUpdated = (UpdateVillage) object;
-                        
+
                         Pair<Integer,Integer> coord = villageUpdated.getVillageCoord();
                         CoordinatePair villageCoord = aGameBoardManager.getCoordinatePairFromCoordinates(coord.getLeft(), coord.getRight());
                         Village villageToUpdate = villageCoord.getOccupyingVillage();
-                        
+
                         if (villageToUpdate.hasCityWalls()) {
                             villageToUpdate.setCityWalls(false);
                             //TODO remove city walls on session screen
@@ -519,7 +519,7 @@ public class SessionController {
                 } else if(object instanceof PillageVillageRequest) {
                     Gdx.app.postRunnable(() -> {
                         PillageVillageRequest pillage = (PillageVillageRequest) object;
-                        
+
                         ArrayList<CoordinatePair> validCityIntersections = new ArrayList<>();
                         List<Village> listOfVillages = localPlayer.getVillages();
                         for (Village v : listOfVillages) {
@@ -543,15 +543,15 @@ public class SessionController {
                                 aSessionScreen.updateIntersection(city.getPosition(), city.getOwner().getColor(), VillageKind.SETTLEMENT);
                                 aSessionScreen.updateAvailableGamePieces(localPlayer.getAvailableSettlements(), localPlayer.getAvailableCities(), localPlayer.getAvailableRoads(), localPlayer.getAvailableShips());
                             }
-                            
+
                             CatanGame.client.sendTCP(UpdateVillage.newInstance(localPlayer.getUsername(), new ImmutablePair<Integer,Integer>(city.getPosition().getLeft(), city.getPosition().getRight())));
                             aSessionScreen.interractionDone();
-                            
+
                             // send message back to sender to tell them one of their villages was pillaged
                             VillagePillaged request = VillagePillaged.newInstance(localPlayer.getUsername(), pillage.sender, pillage.getDiceResults(), pillage.getTotalWorstPlayers());
                             CatanGame.client.sendTCP(request);
                         });
-                        
+
                         if (!validCityIntersections.isEmpty()) {
                             aSessionScreen.initChooseIntersectionMove(validCityIntersections, pillageVillageMove);
                         } else {
@@ -559,20 +559,20 @@ public class SessionController {
                             VillagePillaged request = VillagePillaged.newInstance(localPlayer.getUsername(), pillage.sender, pillage.getDiceResults(), pillage.getTotalWorstPlayers());
                             CatanGame.client.sendTCP(request);
                         }
-                        
+
                     });
                 } else if (object instanceof VillagePillaged) {
                     Gdx.app.postRunnable(() -> {
                         VillagePillaged pillaged = (VillagePillaged) object;
-                        
+
                         villagesPillaged++;
-                        
+
                         // if all the worst players have had their villages pillaged, we can finally handle the dice roll
                         if (villagesPillaged == pillaged.getTotalWorstPlayers()) {
                             diceResultHandle(pillaged.getDiceResults());
                             villagesPillaged = 0;
                         }
-                        
+
                     });
                 }
             }
@@ -1644,9 +1644,9 @@ public class SessionController {
             CatanGame.client.sendTCP(drawRequest);
         }
 
-        
+
     }
-    
+
     /**
      * handles result of the red and yellow dice. If their sum is seven, robber is handled, otherwise resources are distributed
      * */
@@ -1665,7 +1665,7 @@ public class SessionController {
             // resourceProduction(sum); // this works bitchiz
         }
     }
-    
+
     /**
      * handles robber before the first barbarian attack. All players with at least 7 cards must discard half their hand.
      * */
@@ -1702,7 +1702,7 @@ public class SessionController {
             List<Village> adjacentVillages = aGameBoardManager.getAdjacentVillages(chosenHex);
 
             for(Village v : adjacentVillages) {
-                if (!localPlayer.equals(v.getOwner()) && !potentialVictims.contains(v.getOwner())) {
+                if (!localPlayer.equals(v.getOwner()) && !potentialVictims.contains(v.getOwner()) && v.getOwner().getResourceHandSize() != 0) {
                     potentialVictims.add(v.getOwner());
                 }
             }
@@ -1711,43 +1711,47 @@ public class SessionController {
 
             // if there is a potential victim, let the local player choose a victim to steal random card from
             if (!potentialVictims.isEmpty()) {
-                moveRobber.<Player>addMove(victim -> {
-
-                    //get hand
-                    ResourceMap playerHand = victim.getResources();
-                    int playerHandSize = victim.getResourceHandSize();
-
-                    int randomCardIndex = new Random().nextInt(playerHandSize)+1;
-
-                    //choose a random card to steal from victim's hand
-                    ResourceKind cardToTake;
-                    ResourceMap cardToSteal = new ResourceMap();
-                    for(ResourceKind kind : ResourceKind.values()) {
-                        int numCards = playerHand.get(kind);
-                        if (numCards > 0) {
-                            randomCardIndex -= numCards;
-                            if (randomCardIndex <= 0) {
-                                cardToTake = kind;
-                                cardToSteal.put(cardToTake, 1);
-                                //update local player's resources
-                                localPlayer.addResources(cardToSteal);
-                                aSessionScreen.updateResourceBar(localPlayer.getResources());
-                                //update opponent hand
-                                TakeResources request = TakeResources.newInstance(cardToSteal, localPlayer.getUsername(), victim.getUsername());
-                                CatanGame.client.sendTCP(request);
-                                aSessionScreen.interractionDone();
-                                break;
-                            }
-                        }
-                    }
-                });
-                aSessionScreen.chooseOtherPlayer(potentialVictims, moveRobber);
+                chooseSteal(moveRobber);
+                aSessionScreen.chooseOtherPlayer(potentialVictims,moveRobber);
             } else {
                 aSessionScreen.interractionDone();
             }
 
         });
         aSessionScreen.initChooseHexMove(hexesToChooseFrom, moveRobber);
+    }
+
+    private void chooseSteal(MultiStepMove robber){
+        robber.<Player>addMove(victim -> {
+
+            //get hand
+            ResourceMap playerHand = victim.getResources();
+            int playerHandSize = victim.getResourceHandSize();
+
+            int randomCardIndex = new Random().nextInt(playerHandSize)+1;
+
+            //choose a random card to steal from victim's hand
+            ResourceKind cardToTake;
+            ResourceMap cardToSteal = new ResourceMap();
+            for(ResourceKind kind : ResourceKind.values()) {
+                int numCards = playerHand.get(kind);
+                if (numCards > 0) {
+                    randomCardIndex -= numCards;
+                    if (randomCardIndex <= 0) {
+                        cardToTake = kind;
+                        cardToSteal.put(cardToTake, 1);
+                        //update local player's resources
+                        localPlayer.addResources(cardToSteal);
+                        aSessionScreen.updateResourceBar(localPlayer.getResources());
+                        //update opponent hand
+                        TakeResources request = TakeResources.newInstance(cardToSteal, localPlayer.getUsername(), victim.getUsername());
+                        CatanGame.client.sendTCP(request);
+                        aSessionScreen.interractionDone();
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -1792,11 +1796,11 @@ public class SessionController {
                     }
                 }
             }
-            
-            
+
+
             // loop through each worst player and send them a request to pillage one of their villages. (this request may be sent back to localPlayer)
-            // each request will respond with a VillagePillaged response. Local player will keep track of the number of pillaged villages, and will only 
-            // call handle dice roll results after all the worst players have sent back a response. 
+            // each request will respond with a VillagePillaged response. Local player will keep track of the number of pillaged villages, and will only
+            // call handle dice roll results after all the worst players have sent back a response.
             for (Player p : worstPlayers) {
                 PillageVillageRequest request = PillageVillageRequest.newInstance(localPlayer.getUsername(), p.getUsername(), diceResults, worstPlayers.size());
                 CatanGame.client.sendTCP(request);
@@ -1840,14 +1844,14 @@ public class SessionController {
                     CatanGame.client.sendTCP(request);
                 }
             }
-            
+
             // if islanders win, dice result handle can happen at the same time as defender of catan / best players
             diceResultHandle(diceResults);
         }
         //regardless of outcome, barbarians go home.
         aSessionManager.resetBarbarianPosition();
     }
-    
+
     /**
      * distributes resources according to dice roll to local player
      * */
@@ -1936,7 +1940,7 @@ public class SessionController {
         return result;
     }
 
-    
+
     /**
      * Roll the dice according to the phase of the game/session.
      */
@@ -1963,7 +1967,7 @@ public class SessionController {
              // Create the message that informs the other users of the dice roll
                 request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
-                
+
                 handleRoll(diceResults, eventDieResult);
 
                 aSessionScreen.addGameMessage(String.format("Rolled a %d %d %s", diceResults.getRed(), diceResults.getYellow(), eventDieResult));
@@ -2096,7 +2100,6 @@ public class SessionController {
 
     void fishActionHandle(FishTokenMap consumedFishToken) {
         int fishCount = 0;
-        localPlayer.removeFishToken(consumedFishToken);
         for (Map.Entry<FishTokenType, Integer> entry: consumedFishToken.entrySet()) {
             switch(entry.getKey()){
                 case ONE_FISH:
@@ -2112,18 +2115,49 @@ public class SessionController {
                     break;
             }
         }
+        if (fishCount < 2){
+            aSessionScreen.addGameMessage("You have not given enough Fish!");
+            return;
+        }
+        localPlayer.removeFishToken(consumedFishToken);
+        aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());
         if (fishCount >= 7) {
-            aSessionScreen.chooseProgressCardKind(new MultiStepMove(),Arrays.asList(ProgressCardKind.values()));  // TODO use UI window to let player choose between Progress Card types
+            MultiStepMove drawProgressCard = new MultiStepMove();
+            drawProgressCard.<ProgressCardKind>addMove((kind) -> {
+                drawProgressCard(kind);
+                aSessionScreen.interractionDone();
+            });
+            aSessionScreen.chooseProgressCardKind(drawProgressCard, Arrays.asList(ProgressCardKind.values()));
         } else if (fishCount >= 5) {
-            aSessionScreen.buildEdgeUnitForFree(EdgeUnitKind.ROAD); // TODO use UI window to let player choose between ROAD and SHIP
+            aProgressCardHandler.handle(ProgressCardType.ROADBUILDING, localPlayer.getColor());
         } else if (fishCount >= 4) {
-            aSessionScreen.chooseResource(new ArrayList<>(), new MultiStepMove()); //TODO check if correct
+            ArrayList<ResourceKind> choice = new ArrayList<>();
+            choice.add(WOOD);
+            choice.add(WOOL);
+            choice.add(BRICK);
+            choice.add(GRAIN);
+            choice.add(ORE);
+            MultiStepMove getCardFromBank = new MultiStepMove();
+            getCardFromBank.<ResourceKind>addMove(resourcekind -> {
+                ResourceMap toAdd = new ResourceMap();
+                toAdd.add(resourcekind,1);
+                localPlayer.addResources(toAdd);
+            });
+            aSessionScreen.chooseResource(choice, getCardFromBank);
+            aSessionScreen.updateResourceBar(localPlayer.getResources());
         } else if (fishCount >= 3) {
-            //stealResource();
+            ArrayList<Player> victims = new ArrayList<>(Arrays.asList(getPlayers()));
+            victims.remove(localPlayer);
+            for (Player p : victims) {
+                if (p.getResourceHandSize() == 0){
+                    victims.remove(p);
+                }
+            }
+            MultiStepMove rob = new MultiStepMove();
+            aSessionScreen.chooseOtherPlayer(victims,rob);
+
         } else if (fishCount >= 2) {
-            //moveRobberOutOfBoard()
-        } else {
-            throw new RuntimeException("wrong number of fish was given");
+            aSessionScreen.placeRobber(-15,-10 ); //TODO make this better seriously, arnaud.
         }
     }
 

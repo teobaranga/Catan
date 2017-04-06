@@ -50,11 +50,11 @@ import com.mygdx.catan.ui.ChooseMultipleResourcesWindow;
 import com.mygdx.catan.ui.ChoosePlayerWindow;
 import com.mygdx.catan.ui.ChooseProgressCardKindWindow;
 import com.mygdx.catan.ui.DomesticTradeWindow;
+import com.mygdx.catan.ui.FishTradeWindow;
 import com.mygdx.catan.ui.KnightActor;
 import com.mygdx.catan.ui.PlayProgressCardWindow;
 import com.mygdx.catan.ui.TradeWindow;
 import com.mygdx.catan.ui.WinnerWindow;
-import com.mygdx.catan.ui.FishTradeWindow;
 import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -411,8 +411,17 @@ public class SessionScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
                 // Get fish token counts
                 final FishTokenMap fishHand = aSessionController.getLocalPlayer().getFishTokenHand();
+                //defining the following move
+                MultiStepMove fishTrade = new MultiStepMove();
+                fishTrade.<FishTokenMap>addMove(givenFishToken -> {
+                    aSessionController.fishActionHandle(givenFishToken);
+                    interractionDone();
+                });
                 // Create the Window
                 final FishTradeWindow window = new FishTradeWindow("Fish Trade", CatanGame.skin, fishHand);
+                window.setTradeTokenListener(givenToken -> {
+                    fishTrade.performNextMove(givenToken);
+                });
 
                 aSessionStage.addActor(window);
             }

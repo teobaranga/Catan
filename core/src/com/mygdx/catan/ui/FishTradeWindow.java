@@ -15,7 +15,7 @@ import java.util.List;
 public class FishTradeWindow extends CatanWindow {
 
     private FishTable offerTable;
-
+    private TradeTokenListener tradeTokenListener;
     private Button acceptButton;
 
     public FishTradeWindow(String title, Skin skin, FishTokenMap hand) {
@@ -74,12 +74,25 @@ public class FishTradeWindow extends CatanWindow {
         acceptButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                close();
+
+                if (tradeTokenListener != null) {
+                    tradeTokenListener.withGivenToken(offerTable.getFishtoken());
+                    remove();
+                }
             }});
         add(acceptButton);
 
 
     }
+
+    public void setTradeTokenListener(TradeTokenListener listener) {
+        tradeTokenListener = listener;
+    }
+
+    public interface TradeTokenListener {
+        void withGivenToken(FishTokenMap givenToken);
+    }
+
     private class FishTable extends Table {
 
         private List<FishTokenWidget> fishTokenWidgets;

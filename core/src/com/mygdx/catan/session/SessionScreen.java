@@ -725,7 +725,7 @@ public class SessionScreen implements Screen {
         progressCardTable.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                final PlayProgressCardWindow playProgressCard = new PlayProgressCardWindow("Hand", CatanGame.skin, aSessionController.getCurrentPlayer().getProgressCardHand(), aSessionController.getCurrentGamePhase(), aSessionController.isMyTurn());
+                final PlayProgressCardWindow playProgressCard = new PlayProgressCardWindow("Hand", CatanGame.skin, aSessionController.getLocalPlayer().getProgressCardHand(), aSessionController.getCurrentGamePhase(), aSessionController.isMyTurn());
                 playProgressCard.setPlayProgressCardListener((type) -> {
                     // plays the chosen progress card
                     aSessionController.playProgressCard(type);
@@ -1828,6 +1828,7 @@ public class SessionScreen implements Screen {
         buildMetropolisButton.setDisabled(true);
         buildKnightButton.setDisabled(true);
         buildCityWallButton.setDisabled(true);
+        moveShipButton.setDisabled(true);
         tradeButton.setDisabled(true);
         removeTemporaryFunctionalities();
 

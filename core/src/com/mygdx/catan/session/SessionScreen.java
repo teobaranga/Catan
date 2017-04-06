@@ -53,6 +53,7 @@ import com.mygdx.catan.ui.KnightActor;
 import com.mygdx.catan.ui.PlayProgressCardWindow;
 import com.mygdx.catan.ui.TradeWindow;
 import com.mygdx.catan.ui.WinnerWindow;
+import com.mygdx.catan.ui.FishTradeWindow;
 import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -170,6 +171,11 @@ public class SessionScreen implements Screen {
     private Label oneFishCountLabel;
     private Label twoFishCountLabel;
     private Label threeFishCountLabel;
+
+    /**
+     * Fish Button
+     */
+    private Button tradeFish;
 
     /**
      * Development Flip Chart Table
@@ -397,6 +403,21 @@ public class SessionScreen implements Screen {
 
         //fish table
         Table fishTable = new Table(CatanGame.skin);
+
+        tradeFish = new TextButton("Fish Trade", CatanGame.skin);
+        tradeFish.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // Get fish token counts
+                final FishTokenMap fishHand = aSessionController.getLocalPlayer().getFishTokenHand();
+                // Create the Window
+                final FishTradeWindow window = new FishTradeWindow("Fish Trade", CatanGame.skin, fishHand);
+
+                aSessionStage.addActor(window);
+            }
+        });
+        fishTable.add(tradeFish).colspan(3).row();
+
         initFishTable(fishTable);
         fishTable.setPosition(resourcesTable.getX() + resourcesTable.getWidth() + 25, 10);
 
@@ -716,7 +737,6 @@ public class SessionScreen implements Screen {
                 Player localPlayer = aSessionController.getLocalPlayer();
                 //addGameMessage("owner is " + aSessionController.getBootOwner().getUsername());
                 // Finds the suitable Players
-                addGameMessage("" + aSessionController.getBootMalus(localPlayer));
                 if (aSessionController.getBootMalus(localPlayer) != 1) {
                     addGameMessage("Luckily you don't have the boot");
                     return;

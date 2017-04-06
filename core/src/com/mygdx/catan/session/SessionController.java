@@ -1968,7 +1968,7 @@ public class SessionController {
         }
     }
 
-    void fishActionHandle(EnumMap<FishTokenType, Integer> consumedFishToken) {
+    void fishActionHandle(FishTokenMap consumedFishToken) {
         int fishCount = 0;
         localPlayer.removeFishToken(consumedFishToken);
         for (Map.Entry<FishTokenType, Integer> entry: consumedFishToken.entrySet()) {

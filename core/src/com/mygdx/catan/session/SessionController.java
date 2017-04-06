@@ -432,6 +432,9 @@ public class SessionController {
         return aSessionScreen;
     }
 
+    public SessionManager getSessionManager() {
+        return aSessionManager;
+    }
     public ProgressCardHandler getProgressCardHandler() {
         return aProgressCardHandler;
     }

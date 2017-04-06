@@ -147,6 +147,7 @@ public class ProgressCardHandler {
                 });
 
                 aSessionController.getSessionScreen().initChooseHexMove(validHexes, playInventor);
+                aSessionManager.finishCurrentlyExecutingProgressCard();
 
                 break;
             case IRRIGATION:
@@ -159,6 +160,7 @@ public class ProgressCardHandler {
                 ResourceMap newGrains = new ResourceMap();
                 newGrains.add(ResourceKind.GRAIN, numGrainCards);
                 currentP.addResources(newGrains);
+                aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             //allows player to upgrade a settlement to a city for 2 ore and 1 grain
             case MEDICINE:
@@ -187,9 +189,11 @@ public class ProgressCardHandler {
                 ResourceMap newOre = new ResourceMap();
                 newOre.add(ResourceKind.GRAIN, numOreCards);
                 currentP.addResources(newOre);
+                aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             case PRINTER:
                 aSessionManager.incrementTokenVP(currentP);
+                aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             case ROADBUILDING:
                 ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
@@ -348,8 +352,31 @@ public class ProgressCardHandler {
                 break;
             case CONSTITUTION:
                 aSessionManager.incrementTokenVP(currentP);
+                aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             case DESERTER:
+//                ArrayList<Player> myOpponents = new ArrayList<>();
+//                for (Player p : aSessionController.getPlayers()) {
+//                    if (!p.equals(currentP)) { myOpponents.add(p); }
+//                }
+//
+//                //First choose player and get valid player knights
+//                MultiStepMove playDeserter = new MultiStepMove();
+//                playDeserter.<Player>addMove((Player chosenPlayer) ->{
+//                    ArrayList opponentKnights = new ArrayList();
+//                    for (Knight k: chosenPlayer.getKnights()) {
+//                        opponentKnights.add(k);
+//                    }
+//
+//                    //initchooseintersection
+//                    aSessionController.getSessionScreen().initChooseIntersectionMove(opponentKnights, playDeserter);
+//
+//                    playDeserter.<CoordinatePair>addMove((CoordinatePair knightCoords) -> {
+//                        GameBoardManager.getInstance().removeKnight(knightCoords);
+//                    });
+//
+//                    aSessionController.getSessionScreen().chooseOtherPlayer(myOpponents, playDeserter);
+//                });
                 break;
             case DIPLOMAT:
                 // you may remove an "open" road (without another road or another piece at one end)
@@ -444,6 +471,7 @@ public class ProgressCardHandler {
                     DiscardHalfRequest request = DiscardHalfRequest.newInstance(currentP.getUsername(), p.getUsername());
                     CatanGame.client.sendTCP(request);
                 }
+                aSessionManager.finishCurrentlyExecutingProgressCard();
                 
                 break;
             case SPY:
@@ -464,6 +492,7 @@ public class ProgressCardHandler {
                 });
                 
                 aSessionController.getSessionScreen().chooseOtherPlayer(opponents, choosePlayerForProgressCard);
+                aSessionManager.finishCurrentlyExecutingProgressCard();
                 
                 break;
             case WARLORD:
@@ -472,6 +501,7 @@ public class ProgressCardHandler {
                     ActivateKnightRequest request = ActivateKnightRequest.newInstance(true, currentPColor, currentP.getUsername(), k.getPosition());
                     CatanGame.client.sendTCP(request);
                 }
+                aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             case WEDDING:
                 
@@ -483,6 +513,7 @@ public class ProgressCardHandler {
                     TargetedChooseResourceCardRequest request = TargetedChooseResourceCardRequest.newInstance(2, CatanGame.account.getUsername(), p.getUsername());
                     CatanGame.client.sendTCP(request);
                 }
+                aSessionManager.finishCurrentlyExecutingProgressCard();
 
                 break;
             case COMMERCIALHARBOUR:

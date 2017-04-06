@@ -960,6 +960,7 @@ public class SessionScreen implements Screen {
     	if (aSessionController.isMyTurn()) {
         	enablePhase(aSessionController.getCurrentGamePhase());
         }
+        aSessionController.getSessionManager().finishCurrentlyExecutingProgressCard();
     }
 
     private void setupPlayProgressCardButton(TextButton playButton, String buttonText, ProgressCardType type) {

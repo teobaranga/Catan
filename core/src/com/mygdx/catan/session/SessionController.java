@@ -48,6 +48,9 @@ public class SessionController {
 
     /** The random number generator for dice rolls */
     private final CatanRandom random;
+    
+    /** int that represents the number of players who have chosen a village to pillage during a barbarian attack */
+    private int villagesPillaged;
 
     /** The local player */
     private Player localPlayer;
@@ -113,12 +116,17 @@ public class SessionController {
                                 }
                                 break;
                             case TURN_FIRST_PHASE:
-                                resourceProduction(diceRolled.getDiceRoll().getSum());
                                 endPhase(TURN_FIRST_PHASE);
                                 break;
                             default:
                                 break;
                         }
+                    });
+                } else if (object instanceof DistributeResources) {
+                    Gdx.app.postRunnable(() -> {
+                        final DistributeResources distributeRequest = (DistributeResources) object;
+                        
+                        resourceProduction(distributeRequest.getDiceResults().getSum());
                     });
                 } else if (object instanceof BuildIntersection) {
                     Gdx.app.postRunnable(() -> {
@@ -455,8 +463,8 @@ public class SessionController {
                             drawProgressCard(kind);
                             aSessionScreen.interractionDone();
                         });
-
-                        aSessionScreen.chooseProgressCardKind(drawProgressCard);
+                        
+                        aSessionScreen.chooseProgressCardKind(drawProgressCard, Arrays.asList(ProgressCardKind.values()));
                     });
                 } else if (object instanceof DefenderOfCatan) {
                     Gdx.app.postRunnable(() -> {
@@ -468,6 +476,103 @@ public class SessionController {
                         winner.incrementDefenderOfCatanPoints();
                         aSessionScreen.updateVpTables();
 
+                    });
+                } else if (object instanceof PoliticsImprovementRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        PoliticsImprovementRequest politicsImproved = (PoliticsImprovementRequest) object;
+                        
+                        Player owner = aSessionManager.getPlayerFromColor(politicsImproved.getOwner());
+                        owner.getCityImprovements().upgradePoliticsLevel();
+                    });
+                } else if (object instanceof TradeImprovementRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        TradeImprovementRequest tradeImproved = (TradeImprovementRequest) object;
+                        
+                        Player owner = aSessionManager.getPlayerFromColor(tradeImproved.getOwner());
+                        owner.getCityImprovements().upgradeTradeLevel();
+                    });
+                } else if (object instanceof ScienceImprovementRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        ScienceImprovementRequest scienceImproved = (ScienceImprovementRequest) object;
+                        
+                        Player owner = aSessionManager.getPlayerFromColor(scienceImproved.getOwner());
+                        owner.getCityImprovements().upgradeScienceLevel();
+                    });
+                } else if (object instanceof UpdateVillage) {
+                    Gdx.app.postRunnable(() -> {
+                        UpdateVillage villageUpdated = (UpdateVillage) object;
+                        
+                        Pair<Integer,Integer> coord = villageUpdated.getVillageCoord();
+                        CoordinatePair villageCoord = aGameBoardManager.getCoordinatePairFromCoordinates(coord.getLeft(), coord.getRight());
+                        Village villageToUpdate = villageCoord.getOccupyingVillage();
+                        
+                        if (villageToUpdate.hasCityWalls()) {
+                            villageToUpdate.setCityWalls(false);
+                            //TODO remove city walls on session screen
+                         } else {
+                             villageToUpdate.setVillageKind(VillageKind.SETTLEMENT);
+                             villageToUpdate.getOwner().incrementAvailableCities();
+                             villageToUpdate.getOwner().decrementAvailableSettlements();
+                             aSessionScreen.updateIntersection(villageToUpdate.getPosition(), villageToUpdate.getOwner().getColor(), VillageKind.SETTLEMENT);
+                         }
+                    });
+                } else if(object instanceof PillageVillageRequest) {
+                    Gdx.app.postRunnable(() -> {
+                        PillageVillageRequest pillage = (PillageVillageRequest) object;
+                        
+                        ArrayList<CoordinatePair> validCityIntersections = new ArrayList<>();
+                        List<Village> listOfVillages = localPlayer.getVillages();
+                        for (Village v : listOfVillages) {
+                            if (v.getVillageKind() == VillageKind.CITY) {
+                                validCityIntersections.add(v.getPosition());
+                            }
+                        }
+
+                        MultiStepMove pillageVillageMove = new MultiStepMove();
+                        pillageVillageMove.addMove((Move<CoordinatePair>) cityPosition -> {
+                            //pillage a village if it is a city, make to settlement
+                            Village city = cityPosition.getOccupyingVillage();
+                            //if the city has city walls then these are removed
+                            if (city.hasCityWalls()) {
+                               city.setCityWalls(false);
+                               //TODO remove city walls on session screen
+                            } else {
+                                city.setVillageKind(VillageKind.SETTLEMENT);
+                                localPlayer.incrementAvailableCities();
+                                localPlayer.decrementAvailableSettlements();
+                                aSessionScreen.updateIntersection(city.getPosition(), city.getOwner().getColor(), VillageKind.SETTLEMENT);
+                                aSessionScreen.updateAvailableGamePieces(localPlayer.getAvailableSettlements(), localPlayer.getAvailableCities(), localPlayer.getAvailableRoads(), localPlayer.getAvailableShips());
+                            }
+                            
+                            CatanGame.client.sendTCP(UpdateVillage.newInstance(localPlayer.getUsername(), new ImmutablePair<Integer,Integer>(city.getPosition().getLeft(), city.getPosition().getRight())));
+                            aSessionScreen.interractionDone();
+                            
+                            // send message back to sender to tell them one of their villages was pillaged
+                            VillagePillaged request = VillagePillaged.newInstance(localPlayer.getUsername(), pillage.sender, pillage.getDiceResults(), pillage.getTotalWorstPlayers());
+                            CatanGame.client.sendTCP(request);
+                        });
+                        
+                        if (!validCityIntersections.isEmpty()) {
+                            aSessionScreen.initChooseIntersectionMove(validCityIntersections, pillageVillageMove);
+                        } else {
+                            // send message back to sender to tell them one of their villages was "pillaged" (since there was no city to choose)
+                            VillagePillaged request = VillagePillaged.newInstance(localPlayer.getUsername(), pillage.sender, pillage.getDiceResults(), pillage.getTotalWorstPlayers());
+                            CatanGame.client.sendTCP(request);
+                        }
+                        
+                    });
+                } else if (object instanceof VillagePillaged) {
+                    Gdx.app.postRunnable(() -> {
+                        VillagePillaged pillaged = (VillagePillaged) object;
+                        
+                        villagesPillaged++;
+                        
+                        // if all the worst players have had their villages pillaged, we can finally handle the dice roll
+                        if (villagesPillaged == pillaged.getTotalWorstPlayers()) {
+                            diceResultHandle(pillaged.getDiceResults());
+                            villagesPillaged = 0;
+                        }
+                        
                     });
                 }
             }
@@ -1528,7 +1633,53 @@ public class SessionController {
             }
     }
 
-    public void robberHandleBeforeBarbarian() {
+    /**
+     * handles the roll of the two dices and the event die. To be called only from current player.
+     * */
+    void handleRoll(DiceRollPair diceResults, EventKind eventDieResult) {
+        if (eventDieResult == EventKind.BARBARIAN) {
+            aSessionManager.decreaseBarbarianPosition();
+            if (aSessionManager.getSession().barbarianPosition == 0) {
+                //barbarians attack!
+                if (!aSessionManager.getSession().firstBarbarianAttack) {
+                    aSessionManager.getSession().firstBarbarianAttack = true;
+                }
+                barbarianHandleAttack(diceResults);
+            } else {
+                diceResultHandle(diceResults);
+            }
+        } else {
+            diceResultHandle(diceResults);
+            DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults.getRed(), localPlayer.getUsername());
+            CatanGame.client.sendTCP(drawRequest);
+        }
+
+        
+    }
+    
+    /**
+     * handles result of the red and yellow dice. If their sum is seven, robber is handled, otherwise resources are distributed
+     * */
+    private void diceResultHandle(DiceRollPair diceResults) {
+        int sum = diceResults.getSum();
+        if (sum == 7) {
+            if (aSessionManager.getSession().firstBarbarianAttack) {
+                robberHandleAfterBarbarian();
+            } else {
+                robberHandleBeforeBarbarian();
+            }
+        } else {
+            // sends message to all peers to distribute resources
+            DistributeResources request = DistributeResources.newInstance(diceResults, localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+            // resourceProduction(sum); // this works bitchiz
+        }
+    }
+    
+    /**
+     * handles robber before the first barbarian attack. All players with at least 7 cards must discard half their hand.
+     * */
+    private void robberHandleBeforeBarbarian() {
         //called when a 7 is rolled until the first barbarian attack
         //check players with hand greater than or equal to 7
         for (Player p : aSessionManager.getPlayers()) {
@@ -1539,7 +1690,11 @@ public class SessionController {
         }
     }
 
-    public void robberHandleAfterBarbarian() {
+    /**
+     * handles the robber after the first barbarian attack.
+     * Player may move the robber, current player may steal a resource from any opponent player whose village is adjacent to the new position
+     * */
+    private void robberHandleAfterBarbarian() {
         //happens when 7 is rolled AND after the barbarians reach island of catan for the first time
         List<Hex> hexesToChooseFrom = new ArrayList<>();
         List<Hex> boardHexes = aGameBoardManager.getHexes();
@@ -1605,7 +1760,10 @@ public class SessionController {
         aSessionScreen.initChooseHexMove(hexesToChooseFrom, moveRobber);
     }
 
-    public void barbarianHandleAttack() {
+    /**
+     * handles barbarian attack and the result of the two dice (each are handled sequentially)
+     * */
+    private void barbarianHandleAttack(DiceRollPair diceResults) {
         System.out.println("barbarians attacked");
 
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
@@ -1644,32 +1802,14 @@ public class SessionController {
                     }
                 }
             }
+            
+            
+            // loop through each worst player and send them a request to pillage one of their villages. (this request may be sent back to localPlayer)
+            // each request will respond with a VillagePillaged response. Local player will keep track of the number of pillaged villages, and will only 
+            // call handle dice roll results after all the worst players have sent back a response. 
             for (Player p : worstPlayers) {
-                ArrayList<CoordinatePair> validCityIntersections = new ArrayList<>();
-                List<Village> listOfVillages = p.getVillages();
-                for (Village v : listOfVillages) {
-                    if (v.getVillageKind() == VillageKind.CITY) {
-                        validCityIntersections.add(v.getPosition());
-                    }
-                }
-
-                MultiStepMove pillageVillageMove = new MultiStepMove();
-                pillageVillageMove.addMove((Move<CoordinatePair>) cityPosition -> {
-                    //pillage a village if it is a city, make to settlement
-                    Village city = cityPosition.getOccupyingVillage();
-                    //if the city has city walls then these are removed
-                    if (city.hasCityWalls()) {
-                       city.setCityWalls(false);
-                    } else {
-                        city.setVillageKind(VillageKind.SETTLEMENT);
-                        p.incrementAvailableCities();
-                        p.decrementAvailableSettlements();
-                    }
-                  //TODO: reflect changes in GUI locally and for the other players (sessionscreen)
-                    CatanGame.client.sendTCP(UpdateVillage.newInstance(localPlayer.getUsername(), city));
-                    aSessionScreen.interractionDone();
-                });
-                aSessionScreen.initChooseIntersectionMove(validCityIntersections, pillageVillageMove);
+                PillageVillageRequest request = PillageVillageRequest.newInstance(localPlayer.getUsername(), p.getUsername(), diceResults, worstPlayers.size());
+                CatanGame.client.sendTCP(request);
             }
 
         } else {
@@ -1710,10 +1850,17 @@ public class SessionController {
                     CatanGame.client.sendTCP(request);
                 }
             }
+            
+            // if islanders win, dice result handle can happen at the same time as defender of catan / best players
+            diceResultHandle(diceResults);
         }
         //regardless of outcome, barbarians go home.
         aSessionManager.resetBarbarianPosition();
     }
+    
+    /**
+     * distributes resources according to dice roll to local player
+     * */
     private void resourceProduction(int diceRoll) {
         // Get the hexes having a dice number equal to the dice roll
         List<Hex> producingHexes = aGameBoardManager.getProducingHexes(diceRoll);
@@ -1799,6 +1946,7 @@ public class SessionController {
         return result;
     }
 
+    
     /**
      * Roll the dice according to the phase of the game/session.
      */
@@ -1812,51 +1960,28 @@ public class SessionController {
                 // We're at the phase where we have to determine who rolled the highest number
                 // We don't need to do anything else
                 request = RollDice.newInstance(diceResults, CatanGame.account.getUsername());
+                CatanGame.client.sendTCP(request);
                 break;
             case TURN_FIRST_PHASE:
                 // We're at the phase where we the player rolls the dice and everyone gets appropriate resources
                 // Roll the event die as well
                 // EventKind eventDieResult = random.rollEventDieBarbarian(); // TODO roll using the correct method
-                EventKind eventDieResult = random.rollEventDiePolitics();
+                EventKind eventDieResult = random.rollEventDieBarbarian();
 
 //                aSessionManager.getSession().barbarianPosition = 1;
 
-                // IF ANY OF THE FOLLOWING IS CHANGED, THEN SAME CHANGES NEED TO BE MADE IN ALCHEMIST PROGRESS CARD HANDLE
-                if (eventDieResult == EventKind.BARBARIAN) {
-                    aSessionManager.decreaseBarbarianPosition();
-                    if (aSessionManager.getSession().barbarianPosition == 0) {
-                        //barbarians attack!
-                        barbarianHandleAttack();
-                        if (!aSessionManager.getSession().firstBarbarianAttack) {
-                            aSessionManager.getSession().firstBarbarianAttack = true;
-                        }
-                    }
-                } else {
-                    DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults.getRed(), localPlayer.getUsername());
-                    CatanGame.client.sendTCP(drawRequest);
-                }
-
-                int sum = diceResults.getSum();
-                if (sum == 7) {
-                    if (aSessionManager.getSession().firstBarbarianAttack) {
-                        robberHandleAfterBarbarian();
-                    } else {
-                        robberHandleBeforeBarbarian();
-                    }
-                } else {
-                    resourceProduction(sum); // this works bitchiz
-                }
+             // Create the message that informs the other users of the dice roll
+                request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
+                CatanGame.client.sendTCP(request);
+                
+                handleRoll(diceResults, eventDieResult);
 
                 aSessionScreen.addGameMessage(String.format("Rolled a %d %d %s", diceResults.getRed(), diceResults.getYellow(), eventDieResult));
 
-                // Create the message that informs the other users of the dice roll
-                request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
+                break;
+            default:
                 break;
         }
-
-        // Inform the server / other users of the roll
-        if (request != null)
-            CatanGame.client.sendTCP(request);
     }
 
     /**
@@ -1996,7 +2121,7 @@ public class SessionController {
             }
         }
         if (fishCount >= 7) {
-            aSessionScreen.chooseProgressCardKind(new MultiStepMove());  // TODO use UI window to let player choose between Progress Card types
+            aSessionScreen.chooseProgressCardKind(new MultiStepMove(),Arrays.asList(ProgressCardKind.values()));  // TODO use UI window to let player choose between Progress Card types
         } else if (fishCount >= 5) {
             aSessionScreen.buildEdgeUnitForFree(EdgeUnitKind.ROAD); // TODO use UI window to let player choose between ROAD and SHIP
         } else if (fishCount >= 4) {
@@ -2015,6 +2140,7 @@ public class SessionController {
         currentP.getCityImprovements().upgradeTradeLevel();
         int level = currentP.getCityImprovements().getTradeLevel();
         aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getTradeCityImprovementCost(level, aSessionManager.getCurrentlyExecutingProgressCard()));
+        aSessionScreen.updateResourceBar(currentP.getResources());
         aSessionScreen.updateTradeImprovements(level);
         TradeImprovementRequest request = TradeImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
         CatanGame.client.sendTCP(request);
@@ -2025,6 +2151,7 @@ public class SessionController {
         currentP.getCityImprovements().upgradeScienceLevel();
         int level = currentP.getCityImprovements().getScienceLevel();
         aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getScienceCityImprovementCost(level, aSessionManager.getCurrentlyExecutingProgressCard()));
+        aSessionScreen.updateResourceBar(currentP.getResources());
         aSessionScreen.updateScienceImprovements(level);
         ScienceImprovementRequest request = ScienceImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
         CatanGame.client.sendTCP(request);
@@ -2035,6 +2162,7 @@ public class SessionController {
         currentP.getCityImprovements().upgradePoliticsLevel();
         int level = currentP.getCityImprovements().getPoliticsLevel();
         aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getPoliticsCityImprovementCost(level, aSessionManager.getCurrentlyExecutingProgressCard()));
+        aSessionScreen.updateResourceBar(currentP.getResources());
         aSessionScreen.updatePoliticsImprovements(level);
         PoliticsImprovementRequest request = PoliticsImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
         CatanGame.client.sendTCP(request);

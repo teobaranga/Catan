@@ -753,6 +753,7 @@ public class GameRules {
         if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
             ResourceMap costWithCrane = new ResourceMap();
             costWithCrane.put(ResourceKind.PAPER, level - 1);
+            return costWithCrane;
         } else {
             switch (level) {
                 case 1:
@@ -769,13 +770,13 @@ public class GameRules {
                     return new ResourceMap();
             }
         }
-        return null;
     }
 
     public ResourceMap getPoliticsCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {
         if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
             ResourceMap costWithCrane = new ResourceMap();
             costWithCrane.put(ResourceKind.COIN, level - 1);
+            return costWithCrane;
         } else {
             switch (level) {
                 case 1:
@@ -792,13 +793,13 @@ public class GameRules {
                     return new ResourceMap();
             }
         }
-        return null;
     }
 
     public ResourceMap getTradeCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {
         if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
             ResourceMap costWithCrane = new ResourceMap();
             costWithCrane.put(ResourceKind.CLOTH, level - 1);
+            return costWithCrane;
         } else {
             switch (level) {
                 case 1:
@@ -815,7 +816,6 @@ public class GameRules {
                     return new ResourceMap();
             }
         }
-        return null;
     }
 
     public CityImprovementTypeScience getScienceImprovmentType(int level) {

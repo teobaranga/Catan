@@ -1,8 +1,13 @@
-package com.mygdx.catan;
+package com.mygdx.catan.session;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.CatanRandom;
+import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.DiceRollPair;
+import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.game.GameManager;
@@ -10,9 +15,7 @@ import com.mygdx.catan.gameboard.*;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
-import com.mygdx.catan.session.Session;
-import com.mygdx.catan.session.SessionController;
-import com.mygdx.catan.session.SessionManager;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -61,19 +64,7 @@ public class ProgressCardHandler {
                     aSessionController.getSessionScreen().addGameMessage("you chose: " + diceResults.getRed() + ", " + diceResults.getYellow());
                     
                     // handle roll
-                    if (eventDieResult == EventKind.BARBARIAN) {
-                        aSessionManager.decreaseBarbarianPosition();
-                        if (aSessionManager.getSession().barbarianPosition == 0) {
-                            //barbarians attack!
-                            aSessionController.barbarianHandleAttack();
-                            if (!aSessionManager.getSession().firstBarbarianAttack) {
-                                aSessionManager.getSession().firstBarbarianAttack = true;
-                            }
-                        }
-                    } else {
-                        DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults.getRed(), currentP.getUsername());
-                        CatanGame.client.sendTCP(drawRequest);
-                    }
+                    aSessionController.handleRoll(diceResults, eventDieResult);
 
                     aSessionController.getSessionScreen().addGameMessage(String.format("Rolled a %s", eventDieResult));
 
@@ -92,6 +83,38 @@ public class ProgressCardHandler {
             case CRANE:
                 // you can build a city improvement (abbey, town hall, etc.) for 1
                 // commodity less than normal
+                
+                // Make a list of kinds the player may improve with new reduced cost
+                ArrayList<ProgressCardKind> improvableCities = new ArrayList<>();
+                if (aSessionController.requestTradeImprovement(currentP.getColor())) { improvableCities.add(ProgressCardKind.TRADE); }
+                if (aSessionController.requestScienceImprovement(currentP.getColor())) { improvableCities.add(ProgressCardKind.SCIENCE); }
+                if (aSessionController.requestPoliticsImprovement(currentP.getColor())) { improvableCities.add(ProgressCardKind.POLITICS); }
+                
+                // MulstiStepMove that will upgrade chosen improvement with reduced cost
+                MultiStepMove buildImprovement = new MultiStepMove();
+                
+                buildImprovement.<ProgressCardKind>addMove((improvementType) -> {
+                    switch(improvementType) {
+                    case POLITICS:
+                        aSessionController.politicsCityImprovement(currentP.getColor());
+                        break;
+                    case SCIENCE:
+                        aSessionController.scienceCityImprovement(currentP.getColor());
+                        break;
+                    case TRADE:
+                        aSessionController.tradeCityImprovement(currentP.getColor());
+                        break;
+                    default:
+                        break;
+                    }
+                    aSessionController.getSessionScreen().interractionDone();
+                });
+                
+                if (!improvableCities.isEmpty()) {
+                    aSessionController.getSessionScreen().chooseProgressCardKind(buildImprovement, improvableCities);
+                } else {
+                    aSessionController.getSessionScreen().addGameMessage("Even with the cheaper cost, you do not have enough commodities to build any city improvement. That was a dumb move!");
+                }
                 
                 break;
             case ENGINEER:
@@ -114,7 +137,7 @@ public class ProgressCardHandler {
                 if (!validCityWallIntersections.isEmpty()) {
                     aSessionController.getSessionScreen().initChooseIntersectionMove(validCityWallIntersections, playEngineer);
                 } else {
-                    aSessionController.getSessionScreen().addGameMessage("You have nothing to choose from, that was a dumb move");
+                    aSessionController.getSessionScreen().addGameMessage("You have no cities to choose from, that was a dumb move");
                 }
                 
                 break;

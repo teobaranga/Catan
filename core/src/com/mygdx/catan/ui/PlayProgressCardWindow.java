@@ -1,11 +1,10 @@
 package com.mygdx.catan.ui;
 
-import java.util.EnumMap;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -13,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.ProgressCardType;
-import com.mygdx.catan.session.SessionController;
 
 public class PlayProgressCardWindow extends CatanWindow {
     
@@ -21,6 +19,10 @@ public class PlayProgressCardWindow extends CatanWindow {
     
     public PlayProgressCardWindow(String title, Skin skin, List<ProgressCardType> hand, GamePhase currentPhase, boolean isMyTurn) {
         super(title, skin);
+        
+        if (hand.isEmpty()) {
+            add(new Label("Your hand is empty", skin)).pad(10);
+        }
         
         // adds images of the card and the associated button that will play the card
         for (ProgressCardType type : hand) {

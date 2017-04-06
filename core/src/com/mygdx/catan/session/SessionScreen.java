@@ -29,6 +29,7 @@ import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.enums.ScreenKind;
@@ -659,7 +660,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.MASTERMERCHANT);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.CRANE);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -951,11 +952,11 @@ public class SessionScreen implements Screen {
      *
      * @param move whose next move to perform will be called once an ProgressCardKind has been chosen
      * */
-    public void chooseProgressCardKind(MultiStepMove move) {
+    public void chooseProgressCardKind(MultiStepMove move, List<ProgressCardKind> kindsToChooseFrom) {
     	// disable all possible actions
         disableAllButtons();
 
-        final ChooseProgressCardKindWindow chooseKindWindow = new ChooseProgressCardKindWindow("Choose Progress Card Kind", CatanGame.skin);
+        final ChooseProgressCardKindWindow chooseKindWindow = new ChooseProgressCardKindWindow("Choose Progress Card Kind", kindsToChooseFrom, CatanGame.skin);
         chooseKindWindow.setChooseProgressCardKindListener((kind) -> {
             // performs the given move with kind
             move.performNextMove(kind);

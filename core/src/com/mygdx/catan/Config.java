@@ -76,6 +76,7 @@ public class Config {
         kryo.register(EnumMap.class);
         kryo.register(ChooseResourceCardRequest.class);
         kryo.register(TargetedChooseResourceCardRequest.class);
+        kryo.register(DistributeResources.class);
         kryo.register(GiveResources.class);
         kryo.register(TakeResources.class);
         kryo.register(TakeProgressCard.class);
@@ -86,6 +87,8 @@ public class Config {
         kryo.register(PlayerLeft.class);
         kryo.register(RollDice.class);
         kryo.register(DiceRolled.class);
+        kryo.register(VillagePillaged.class);
+        kryo.register(PillageVillageRequest.class);
         kryo.register(DrawProgressCard.class);
         kryo.register(OpponentDrawnProgressCard.class);
         kryo.register(BuildIntersection.class);

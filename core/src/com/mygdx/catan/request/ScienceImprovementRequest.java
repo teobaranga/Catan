@@ -18,4 +18,12 @@ public class ScienceImprovementRequest extends ForwardedRequest {
 
         return request;
     }
+    
+    public PlayerColor getOwner() {
+        return owner;
+    }
+    
+    public int getNewLevel() {
+        return level;
+    }
 }

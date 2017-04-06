@@ -1,5 +1,7 @@
 package com.mygdx.catan.ui;
 
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -16,7 +18,7 @@ public class ChooseProgressCardKindWindow extends Window {
     
     private final float width, height;
 	
-	public ChooseProgressCardKindWindow(String title, Skin skin) {
+	public ChooseProgressCardKindWindow(String title, List<ProgressCardKind> kindsToChooseFrom, Skin skin) {
 		super(title, skin);
 		
 		// create content table for buttons
@@ -29,7 +31,7 @@ public class ChooseProgressCardKindWindow extends Window {
         setHeight(height);
         
         // create button with listener for each kind
-        for (ProgressCardKind kind : ProgressCardKind.values()) {
+        for (ProgressCardKind kind : kindsToChooseFrom) {
             TextButton kindButton = new TextButton(kind.toString().toLowerCase(), skin);
             switch (kind) {
 			case POLITICS:

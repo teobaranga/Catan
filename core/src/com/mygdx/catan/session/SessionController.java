@@ -1200,16 +1200,6 @@ public class SessionController {
         return cityWall;
     }
 
-    public boolean buildKnight(PlayerColor owner, CoordinatePair position, boolean fromPeer) {
-        Player currentP = aSessionManager.getPlayerFromColor(owner);
-        aTransactionManager.payBankToPlayer(currentP, GameRules.getGameRulesInstance().getActivateKnightCost(aSessionManager.getCurrentlyExecutingProgressCard()));
-
-        //send request
-        BuildKnightRequest request = BuildKnightRequest.newInstance(false, 1, owner, CatanGame.account.getUsername(), new ImmutablePair<>(position.getLeft(), position.getRight()));
-        CatanGame.client.sendTCP(request);
-        return true;
-    }
-
     public boolean activateKnight(PlayerColor owner, Knight myKnight, boolean fromPeer) {
         Player currentP = aSessionManager.getPlayerFromColor(owner);
         aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getActivateKnightCost(aSessionManager.getCurrentlyExecutingProgressCard()));
@@ -2085,11 +2075,13 @@ public class SessionController {
     /** Call this when the screen is shown */
     void onScreenShown() {
         CatanGame.client.addListener(aSessionListener);
+        knightController.onScreenShown();
     }
 
     /** Call this when the screen is hidden */
     void onScreenHidden() {
         CatanGame.client.removeListener(aSessionListener);
+        knightController.onScreenHidden();
     }
 
     void getFishToken() {

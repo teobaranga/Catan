@@ -72,10 +72,10 @@ public class SessionScreen implements Screen {
     public static final int LENGTH = 40;                                            // length of an edge of a tile
 
     private final CatanGame aGame;
-    private final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
-    private final int OFFX = BASE;                                            // offset on the x axis
-    private final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
-    private final int PIECEBASE = (int) (LENGTH * 0.4);
+    public static final int BASE = (int) Math.sqrt(Math.pow(LENGTH, 2) - Math.pow(LENGTH / 2, 2)); // length of base of equilateral triangles within a tile
+    public static final int OFFX = BASE;                                            // offset on the x axis
+    public static final int OFFY = LENGTH + LENGTH / 2;                             // offset on the y axis
+    public static final int PIECEBASE = (int) (LENGTH * 0.4);
 
     /** The batch onto which the game piece will be drawn */
     private PolygonSpriteBatch polyBatch; // To assign at the beginning
@@ -546,10 +546,7 @@ public class SessionScreen implements Screen {
                     validIntersections.clear();
                     highlightedPositions.clear();
                     // Build the knight
-                    CoordinatePair intersection = CoordinatePair.of(
-                            boardOrigin.getLeft() + chosenIntersection.getLeft() * OFFX,
-                            boardOrigin.getRight() + chosenIntersection.getRight() * -LENGTH / 2, null);
-                    KnightActor knightActor = aSessionController.buildKnight(intersection);
+                    KnightActor knightActor = aSessionController.buildKnight(chosenIntersection);
                     knightActor.addListener(new ChangeListener() {
                         @Override
                         public void changed(ChangeEvent event, Actor actor) {
@@ -568,8 +565,7 @@ public class SessionScreen implements Screen {
                             popups.add(actionWindow);
                         }
                     });
-                    knights.add(knightActor);
-                    gamePiecesStage.addActor(knightActor);
+                    addKnight(knightActor);
                     // Go back to the previous mode
                     aMode = prevMode;
                     // re-enable all appropriate actions
@@ -2238,6 +2234,11 @@ public class SessionScreen implements Screen {
         bootOwnerLabel.setText("Boot Owner: " + username);
     }
 
+    void addKnight(KnightActor knightActor) {
+        knights.add(knightActor);
+        gamePiecesStage.addActor(knightActor);
+    }
+
     /**
      * Add a message to the game log
      *
@@ -2249,5 +2250,9 @@ public class SessionScreen implements Screen {
         table.row();
         gameLog.layout();
         gameLog.scrollTo(0, 0, 0, 0);
+    }
+
+    public Pair<Integer, Integer> getBoardOrigin() {
+        return boardOrigin;
     }
 }

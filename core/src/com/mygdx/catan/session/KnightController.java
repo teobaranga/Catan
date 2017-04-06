@@ -1,5 +1,9 @@
 package com.mygdx.catan.session;
 
+import com.badlogic.gdx.Gdx;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
+import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.ResourceMap;
@@ -10,18 +14,26 @@ import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.request.BuildKnightRequest;
 import com.mygdx.catan.ui.KnightActor;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.mygdx.catan.session.SessionScreen.LENGTH;
+import static com.mygdx.catan.session.SessionScreen.OFFX;
+
 public class KnightController {
 
     private final SessionScreen sessionScreen;
 
     private final Player localPlayer;
+
+    private final Listener listener;
 
     @Inject TransactionManager transactionManager;
     @Inject SessionManager sessionManager;
@@ -30,9 +42,34 @@ public class KnightController {
     @Inject GameBoardManager gameBoardManager;
 
     KnightController(SessionController sessionController) {
+        sessionController.sessionComponent.inject(this);
+
         sessionScreen = sessionController.getSessionScreen();
         localPlayer = sessionController.getLocalPlayer();
-        sessionController.sessionComponent.inject(this);
+
+        listener = new Listener() {
+            @Override
+            public void received(Connection connection, Object object) {
+                if (object instanceof BuildKnightRequest) {
+                    // Add the knight created by another player
+                    Gdx.app.postRunnable(() -> {
+                        BuildKnightRequest request = (BuildKnightRequest) object;
+                        Pair<Integer, Integer> position = request.getPosition();
+                        CoordinatePair coordinates = gameBoardManager.getCoordinatePairFromCoordinates(position.getLeft(), position.getRight());
+                        KnightActor knightActor = buildKnight(coordinates, request.getOwner());
+                        sessionScreen.addKnight(knightActor);
+                    });
+                }
+            }
+        };
+    }
+
+    void onScreenShown() {
+        CatanGame.client.addListener(listener);
+    }
+
+    void onScreenHidden() {
+        CatanGame.client.removeListener(listener);
     }
 
     /**
@@ -40,7 +77,7 @@ public class KnightController {
      *
      * @return true if the player can build a knight, false otherwise
      */
-    public boolean requestBuildKnight() {
+    boolean requestBuildKnight() {
         // Check if the player has any roads first
         List<EdgeUnit> roads = localPlayer.getRoadsAndShips().stream()
                 .filter(edgeUnit -> edgeUnit.getKind() == EdgeUnitKind.ROAD)
@@ -74,6 +111,10 @@ public class KnightController {
 
     /** Build a new basic knight for a given player */
     KnightActor buildKnight(CoordinatePair position, PlayerColor color) {
+        CoordinatePair intersection = CoordinatePair.of(
+                sessionScreen.getBoardOrigin().getLeft() + position.getLeft() * OFFX,
+                sessionScreen.getBoardOrigin().getRight() + position.getRight() * -LENGTH / 2, null);
+
         // Get the player trying to build this knight
         Player player = sessionManager.getPlayerFromColor(color);
 
@@ -82,9 +123,15 @@ public class KnightController {
 
         // Display the knight
         KnightActor knightActor = gamePieces.createKnight(knight);
-        knightActor.setPosition(position.getLeft() - knightActor.getOriginX(), position.getRight() - knightActor.getOriginY());
+        knightActor.setPosition(intersection.getLeft() - knightActor.getOriginX(),
+                intersection.getRight() - knightActor.getOriginY());
 
-        // TODO: inform other players
+        // Inform other players
+        if (localPlayer.getColor() == color) {
+            Pair<Integer, Integer> knightCoords = new ImmutablePair<>(position.getLeft(), position.getRight());
+            BuildKnightRequest request = BuildKnightRequest.newInstance(localPlayer.getUsername(), color, knightCoords);
+            CatanGame.client.sendTCP(request);
+        }
 
         return knightActor;
     }

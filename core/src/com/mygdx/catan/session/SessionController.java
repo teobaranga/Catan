@@ -592,7 +592,11 @@ public class SessionController {
     public Hex getRobberPosition() {
         return aGameBoardManager.getRobberPosition();
     }
-
+    
+    public List<ProgressCardType> getProgressCardHand() {
+        return localPlayer.getProgressCardHand();
+    }
+    
     /**
      * @param a one interesection
      * @param b another intersection
@@ -1159,6 +1163,14 @@ public class SessionController {
         }
         
         return true;
+    }
+    
+    /**
+     * Plays the given progress card type
+     * */
+    public void playProgressCard(ProgressCardType type) {
+        aProgressCardHandler.handle(type, localPlayer.getColor());
+        //TODO: update gui about removed card
     }
     
     /**

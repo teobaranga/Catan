@@ -12,6 +12,7 @@ import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.ui.KnightActor;
@@ -47,7 +48,7 @@ public class GamePieces {
     public final TextureAtlas.AtlasRegion knightBg;
 
     private final TextureAtlas.AtlasRegion cityWall;
-
+    
     private Texture aSeaTextureSolid;
     private Texture aHillsTextureSolid;
     private Texture aForestTextureSolid;
@@ -163,6 +164,19 @@ public class GamePieces {
                 yOrigin + yPos - region.getRegion().getRegionHeight() / 2f);
         polygonSprite.setScale(2.0f * SessionScreen.LENGTH / region.getRegion().getRegionHeight());
         return polygonSprite;
+    }
+    
+    /** Placeholder method for creating progress cards */
+    Image createProgressCard(ProgressCardType type, float onBoardWidth, float onBoardHeight) {
+        // PlaceHolder image
+        
+        // TODO: make this connect to a progress card atlas 
+        Image progressCardImage = new Image(aSeaTextureSolid);
+
+        // Scale down the image to on board size
+        progressCardImage.setSize(onBoardWidth, onBoardHeight);
+
+        return progressCardImage;    
     }
 
     PolygonRegion createHighlightedIntersection(int xCor, int yCor, int base, int length, int pieceBase, PlayerColor color) {

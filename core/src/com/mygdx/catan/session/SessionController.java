@@ -1864,7 +1864,19 @@ public class SessionController {
         }
 
         localPlayer.addResources(resAndComMap);
+        //aqueduct
+        if (diceRoll != 7
+                && resAndComMap.isEmpty()
+                && aGameRules.getScienceImprovmentType(localPlayer.getCityImprovements().getScienceLevel())== CityImprovementTypeScience.AQUEDUCT) {
 
+            MultiStepMove chooseResource = new MultiStepMove();
+            chooseResource.<ResourceKind>addMove(kind -> {
+                ResourceMap resources = new ResourceMap();
+                resources.add(kind, 1);
+                localPlayer.addResources(resources);
+                aSessionScreen.interractionDone();
+            });
+        }
         aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
 

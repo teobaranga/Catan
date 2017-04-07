@@ -1874,8 +1874,10 @@ public class SessionController {
                 ResourceMap resources = new ResourceMap();
                 resources.add(kind, 1);
                 localPlayer.addResources(resources);
+                aSessionScreen.updateResourceBar(localPlayer.getResources());
                 aSessionScreen.interractionDone();
             });
+            aSessionScreen.chooseResource(Arrays.asList(ResourceKind.values()), chooseResource);
         }
         aSessionScreen.updateResourceBar(localPlayer.getResources());
     }

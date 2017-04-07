@@ -535,7 +535,7 @@ public class SessionController {
                             //if the city has city walls then these are removed
                             if (city.hasCityWalls()) {
                                city.setCityWalls(false);
-                               //TODO remove city walls on session screen
+                               //TODO TEO remove city walls on session screen
                             } else {
                                 city.setVillageKind(VillageKind.SETTLEMENT);
                                 localPlayer.incrementAvailableCities();
@@ -1475,6 +1475,7 @@ public class SessionController {
         currentVP += aGameBoardManager.getMerchantPoint(player);
         currentVP += player.getTokenVictoryPoints();
         currentVP += aGameBoardManager.getVillagePoints(player);
+        currentVP += player.getDefenderOfCatanPoints();
         return currentVP;
     }
 
@@ -1610,7 +1611,6 @@ public class SessionController {
             // sends message to all peers to distribute resources
             DistributeResources request = DistributeResources.newInstance(diceResults, localPlayer.getUsername());
             CatanGame.client.sendTCP(request);
-            // resourceProduction(sum); // this works bitchiz
         }
     }
 
@@ -1621,7 +1621,7 @@ public class SessionController {
         //called when a 7 is rolled until the first barbarian attack
         //check players with hand greater than or equal to 7
         for (Player p : aSessionManager.getPlayers()) {
-            if(p.getResourceHandSize() >= 7) {
+            if (p.getResourceHandSize() >= 7) {
                 DiscardHalfRequest request = DiscardHalfRequest.newInstance(localPlayer.getUsername(), p.getUsername());
                 CatanGame.client.sendTCP(request);
             }
@@ -1907,12 +1907,9 @@ public class SessionController {
             case TURN_FIRST_PHASE:
                 // We're at the phase where we the player rolls the dice and everyone gets appropriate resources
                 // Roll the event die as well
-                // EventKind eventDieResult = random.rollEventDieBarbarian(); // TODO roll using the correct method
-                EventKind eventDieResult = random.rollEventDieBarbarian();
+                EventKind eventDieResult = random.rollEventDie();
 
-//                aSessionManager.getSession().barbarianPosition = 1;
-
-             // Create the message that informs the other users of the dice roll
+                // Create the message that informs the other users of the dice roll
                 request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
 

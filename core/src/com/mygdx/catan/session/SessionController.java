@@ -389,7 +389,7 @@ public class SessionController {
                     });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
-                        System.out.println(((EndTurn) object).username + " ended their turn");
+                        aSessionScreen.addGameMessage(((EndTurn) object).username + " ended its turn");
                         endTurn();
                     });
                 } else if (object instanceof TradeProposal) {
@@ -474,7 +474,7 @@ public class SessionController {
                         aSessionScreen.addGameMessage(winner.getUsername() + " is the Defender of Catan!");
 
                         winner.incrementDefenderOfCatanPoints();
-                        aSessionScreen.updateVpTables();
+                        CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
 
                     });
                 } else if (object instanceof PoliticsImprovementRequest) {
@@ -670,7 +670,7 @@ public class SessionController {
      * End the specified phase
      */
     private void endPhase(GamePhase phase) {
-        System.out.println(phase + " ended");
+        //System.out.println(phase + " ended");
         switch (phase) {
             case SETUP_PHASE_ONE:
                 aSessionManager.setCurrentPhase(SETUP_PHASE_TWO_CLOCKWISE);
@@ -1466,58 +1466,6 @@ public class SessionController {
         aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
 
-    /*
-    /**
-     * Allows the user to place a city and an edge unit and then receive the resources near the city
-     *
-    public void placeCityAndRoads(CoordinatePair cityPos, CoordinatePair edgeUnitPos1, CoordinatePair edgeUnitPos2, boolean isShip, boolean fromPeer, PlayerColor aPlayerColor, VillageKind villageKind) {
-        if (isShip) {
-            buildEdgeUnit(aPlayerColor, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.SHIP, fromPeer);
-        } else {
-            buildEdgeUnit(aPlayerColor, edgeUnitPos1, edgeUnitPos2, EdgeUnitKind.ROAD, fromPeer);
-        }
-
-        buildVillage(cityPos, villageKind, aPlayerColor, fromPeer);
-
-        if (fromPeer) {
-            return;
-        }
-
-        List<Hex> neighbourHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
-
-        ResourceMap cost = new ResourceMap();
-        Integer curr;
-        for (Hex h : neighbourHexes) {
-            switch (h.getKind()) {
-                case FOREST:
-                    curr = cost.get(ResourceKind.WOOD);
-                    cost.put(ResourceKind.WOOD, (curr == null ? 0 : curr) + 1);
-                    break;
-                case MOUNTAINS:
-                    curr = cost.get(ResourceKind.ORE);
-                    cost.put(ResourceKind.ORE, (curr == null ? 0 : curr) + 1);
-                    break;
-                case HILLS:
-                    curr = cost.get(ResourceKind.BRICK);
-                    cost.put(ResourceKind.BRICK, (curr == null ? 0 : curr) + 1);
-                    break;
-                case FIELDS:
-                    curr = cost.get(ResourceKind.GRAIN);
-                    cost.put(ResourceKind.GRAIN, (curr == null ? 0 : curr) + 1);
-                    break;
-                case PASTURE:
-                    curr = cost.get(ResourceKind.WOOL);
-                    cost.put(ResourceKind.WOOL, (curr == null ? 0 : curr) + 1);
-                    break;
-                // GOLDFIELDS ?
-                default:
-                    break;
-            }
-        }
-        // cp.addResources(cost); getPLayerByColor(aPlayerColor).addResources(cost);
-    }
-    */
-
     public int currentVP(Player player) {
         int currentVP = 0;
         Player longestRoadOwner =  aSessionManager.getlongestRoadOwner();
@@ -1758,7 +1706,7 @@ public class SessionController {
      * handles barbarian attack and the result of the two dice (each are handled sequentially)
      * */
     private void barbarianHandleAttack(DiceRollPair diceResults) {
-        System.out.println("barbarians attacked");
+        //System.out.println("barbarians attacked");
 
         int barbarianStrength = aGameBoardManager.getCityCount() + aGameBoardManager.getMetropolisCount();
         int activeKnightStrength = 0;
@@ -1770,7 +1718,7 @@ public class SessionController {
            }
         }
 
-        System.out.println(String.format("Barbarians vs Catan: %d : %d", barbarianStrength, activeKnightStrength));
+        //System.out.println(String.format("Barbarians vs Catan: %d : %d", barbarianStrength, activeKnightStrength));
 
         if (barbarianStrength > activeKnightStrength) {
             //barbarians win
@@ -1826,7 +1774,7 @@ public class SessionController {
                 }
             }
 
-            System.out.println(bestPlayers.size());
+            //System.out.println(bestPlayers.size());
 
             if (bestPlayers.size() == 1) {
                 //this player is the defender of catan

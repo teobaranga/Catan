@@ -413,14 +413,14 @@ public class SessionScreen implements Screen {
                 final FishTokenMap fishHand = aSessionController.getLocalPlayer().getFishTokenHand();
                 //defining the following move
                 MultiStepMove fishTrade = new MultiStepMove();
-                fishTrade.<FishTokenMap>addMove((givenFishToken) -> {
-                    aSessionController.fishActionHandle(givenFishToken);
+                fishTrade.<Pair<FishTokenMap,Integer>>addMove((tokenChoicePair) -> {
+                    aSessionController.fishActionHandle(tokenChoicePair);
                     interractionDone();
                 });
                 // Create the Window
                 final FishTradeWindow window = new FishTradeWindow("Fish Trade", CatanGame.skin, fishHand);
-                window.setTradeTokenListener(givenToken -> {
-                    fishTrade.performNextMove(givenToken);
+                window.setTradeTokenListener((tokenChoicePair) -> {
+                    fishTrade.performNextMove(tokenChoicePair);
                 });
 
                 aSessionStage.addActor(window);

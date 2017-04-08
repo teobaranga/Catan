@@ -2070,9 +2070,11 @@ public class SessionController {
         }
     }
 
-    void fishActionHandle(FishTokenMap consumedFishToken) {
+    void fishActionHandle(Pair<FishTokenMap, Integer> p) {
         int fishCount = 0;
-        boolean failed = false;
+        boolean failed;
+        FishTokenMap consumedFishToken = p.getLeft();
+        int choice = p.getRight();
         for (Map.Entry<FishTokenType, Integer> entry: consumedFishToken.entrySet()) {
             switch(entry.getKey()){
                 case ONE_FISH:
@@ -2088,23 +2090,28 @@ public class SessionController {
                     break;
             }
         }
-        if (fishCount < 2){
+        if (choice < 2){
+            aSessionScreen.addGameMessage("You have not chosen a Trade!");
+            return;
+        }
+        if (choice > fishCount){
             aSessionScreen.addGameMessage("You have not given enough Fish!");
             return;
         }
-        if (fishCount >= 7) {
+
+        if (choice >= 7) {
             chooseCardTypeAndDraw();
-        } else if (fishCount >= 5) {
+        } else if (choice >= 5) {
             aSessionScreen.buildEdgeUnitForFree();
-        } else if (fishCount >= 4) {
+        } else if (choice >= 4) {
             chooseResource();
-        } else if (fishCount >= 3) {
+        } else if (choice >= 3) {
             failed = chooseSteal();
             if (failed) {
                 aSessionScreen.addGameMessage("There is no player you can rob");
                 return;
             }
-        } else if (fishCount >= 2) {
+        } else if (choice >= 2) {
             aSessionScreen.placeRobber(-15,-10 ); //TODO make this better seriously, arnaud.
         }
         localPlayer.removeFishToken(consumedFishToken);

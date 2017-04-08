@@ -59,7 +59,7 @@ public class FishTokenWidget extends WidgetGroup {
         addActor(label);
 
         // Position
-        tokenTable.setPosition(0, label.getHeight() + 50);
+        tokenTable.setPosition(0, label.getHeight() + 30);
 
         // Add the "remove token" button
         TextButton removeButton = new TextButton("-", skin);

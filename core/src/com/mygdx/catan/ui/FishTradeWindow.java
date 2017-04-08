@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.FishTokenMap;
 import com.mygdx.catan.enums.FishTokenType;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,13 @@ public class FishTradeWindow extends CatanWindow {
     private FishTable offerTable;
     private TradeTokenListener tradeTokenListener;
     private Button acceptButton;
+    private int choice;
+    private Button rule2;
+    private Button rule3;
+    private Button rule4;
+    private Button rule5;
+    private Button rule7;
+
 
     public FishTradeWindow(String title, Skin skin, FishTokenMap hand) {
         super(title, skin);
@@ -27,36 +35,22 @@ public class FishTradeWindow extends CatanWindow {
 
         final Table exchangeRules = new Table(skin);
 
-        //TODO this is f* ugly, try to use a loop
-        Table rule2 = new Table(skin);
-        rule2.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
-        rule2.add(new Label("2 Fish\n\nMove Robber out", CatanGame.skin));
-        rule2.pad(5);
-        rule2.pack();
+        rule2 = new TextButton("2 Fish\n\nMove Robber out", skin);
+        initButton(rule2, 2);
 
-        Table rule3 = new Table(skin);
-        rule3.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
-        rule3.add(new Label("3 Fish\n\nSteal a Resource", CatanGame.skin));
-        rule3.pad(5);
-        rule3.pack();
+        rule3 = new TextButton("3 Fish\n\nSteal a Resource", skin);
+        initButton(rule3, 3);
 
-        Table rule4 = new Table(skin);
-        rule4.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
-        rule4.add(new Label("4 Fish\nChoose a Resource\nfrom the Bank", CatanGame.skin));
-        rule4.pad(5);
-        rule4.pack();
+        rule4 = new TextButton("4 Fish\nChoose a Resource\nfrom the Bank", skin);
+        initButton(rule4, 4);
 
-        Table rule5 = new Table(skin);
-        rule5.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
-        rule5.add(new Label("5 Fish\n\nBuild a Ship or Road", CatanGame.skin));
-        rule5.pad(5);
-        rule5.pack();
+        rule5 = new TextButton("5 Fish\n\nBuild a Ship or Road", skin);
+        initButton(rule5, 5);
 
-        Table rule7 = new Table(skin);
-        rule7.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
-        rule7.add(new Label("7 Fish\nChoose a Progress \nCard Type", CatanGame.skin));
-        rule7.pad(5);
-        rule7.pack();
+        rule7 = new TextButton("7 Fish\nChoose a Progress \nCard Type", skin);
+        initButton(rule7,7);
+
+        add(new Label("Choose Trade",CatanGame.skin)).left().padBottom(20).padTop(20).colspan(3).row();
 
         exchangeRules.add(rule2).size(150, 100).pad(5);
         exchangeRules.add(rule3).size(150, 100).pad(5);
@@ -66,6 +60,7 @@ public class FishTradeWindow extends CatanWindow {
 
         add(exchangeRules).colspan(3).row();
 
+        add(new Label("Choose Tokens to Trade", CatanGame.skin)).left().padBottom(20).padTop(50).row();
 
         offerTable = new FishTable(CatanGame.skin, hand);
         add(offerTable).row();
@@ -74,14 +69,35 @@ public class FishTradeWindow extends CatanWindow {
         acceptButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-
                 if (tradeTokenListener != null) {
-                    tradeTokenListener.withGivenToken(offerTable.getFishtoken());
+                    tradeTokenListener.withGivenToken(new ImmutablePair<>(offerTable.getFishtoken(),choice));
                     remove();
                 }
-            }});
+            }
+        });
         add(acceptButton);
+    }
 
+    private void initButton(Button b, int choiceNumber) {
+        b.setColor(Color.BLUE);
+        b.pad(5);
+        b.pack();
+        b.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                choice = choiceNumber;
+                ableall();
+                b.setDisabled(true);
+            }
+        });
+    }
+
+    private void ableall() {
+        rule2.setDisabled(false);
+        rule3.setDisabled(false);
+        rule4.setDisabled(false);
+        rule5.setDisabled(false);
+        rule7.setDisabled(false);
 
     }
 
@@ -90,7 +106,7 @@ public class FishTradeWindow extends CatanWindow {
     }
 
     public interface TradeTokenListener {
-        void withGivenToken(FishTokenMap givenToken);
+        void withGivenToken(ImmutablePair tokenChoicePair);
     }
 
     private class FishTable extends Table {
@@ -108,9 +124,9 @@ public class FishTradeWindow extends CatanWindow {
             fishTokenWidgets.add(widget_one);
             fishTokenWidgets.add(widget_two);
             fishTokenWidgets.add(widget_three);
-            add(widget_one).pad(100);
-            add(widget_two).pad(100);
-            add(widget_three).pad(100);
+            add(widget_one).pad(100).padTop(50).padBottom(30);
+            add(widget_two).pad(100).padTop(50).padBottom(30);
+            add(widget_three).pad(100).padTop(50).padBottom(30);
         }
 
         /**

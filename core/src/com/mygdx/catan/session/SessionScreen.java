@@ -413,7 +413,7 @@ public class SessionScreen implements Screen {
                 final FishTokenMap fishHand = aSessionController.getLocalPlayer().getFishTokenHand();
                 //defining the following move
                 MultiStepMove fishTrade = new MultiStepMove();
-                fishTrade.<FishTokenMap>addMove(givenFishToken -> {
+                fishTrade.<FishTokenMap>addMove((givenFishToken) -> {
                     aSessionController.fishActionHandle(givenFishToken);
                     interractionDone();
                 });
@@ -1178,22 +1178,42 @@ public class SessionScreen implements Screen {
             }
         }
     }
+    private void getValidEdgePosition() {
+        // loops through valid road end points and adds valid edges (both ships and roads)
+        for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
+            for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
+                if (aSessionController.isAdjacent(i, j)) {
+
+                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
+                    validEdges.add(edge);
+
+                    for (EdgeUnit eu : aSessionController.getRoadsAndShips()) {
+                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                            validEdges.remove(edge);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
-    public void buildEdgeUnitForFree(EdgeUnitKind kind){
+    public void buildEdgeUnitForFree(){ //TODO does not work
         // create a MultiStepMove and set session screen current multistepmove
-        currentlyPerformingMove = new MultiStepMove();
-
         if (aMode != SessionScreenModes.CHOOSEEDGEMODE) {
             // the following loop go through requested valid build positions
-            getValidEdgePosition(kind);
+            getValidEdgePosition(EdgeUnitKind.ROAD);
 
             // adds move that will build the village at chosen intersection
+            currentlyPerformingMove = new MultiStepMove();
             currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenEdge -> {
+                EdgeUnitKind kind = EdgeUnitKind.ROAD;
+                if (!aSessionController.isOnLand(chosenEdge.getLeft(), chosenEdge.getRight())) {
+                    kind = EdgeUnitKind.SHIP;
+                }
                 aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, true);
 
                 aMode = SessionScreenModes.CHOOSEACTIONMODE;
-
                 // re-enable all appropriate actions
                 if (aSessionController.isMyTurn()) {
                     enablePhase(aSessionController.getCurrentGamePhase());
@@ -1201,14 +1221,8 @@ public class SessionScreen implements Screen {
             });
 
             // make a sprite that highlights the areas
-            if (kind == EdgeUnitKind.ROAD) {
-                for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
-                    highlightedPositions.add(gamePieces.createRoad(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                }
-            } else {
-                for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
-                    highlightedPositions.add(gamePieces.createShip(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                }
+            for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
+                highlightedPositions.add(gamePieces.createRoad(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
             }
             aMode = SessionScreenModes.CHOOSEEDGEMODE;
             // edgePieceKind = kind;
@@ -1221,6 +1235,7 @@ public class SessionScreen implements Screen {
                 enablePhase(aSessionController.getCurrentGamePhase());
             }
         }
+        addGameMessage("" + highlightedPositions.size());
     }
 
 
@@ -1244,7 +1259,7 @@ public class SessionScreen implements Screen {
                     // the following loop go through requested valid build positions
                     getValidEdgePosition(kind);
 
-                 // adds move that will build the village at chosen intersection
+                 // adds move that will build the edge at chosen intersection
                     currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenEdge -> {
                         aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, false);
 

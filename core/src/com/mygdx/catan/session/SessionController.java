@@ -437,6 +437,7 @@ public class SessionController {
                     Gdx.app.postRunnable(() -> {
                         aSessionScreen.updateVpTables();
                         if(isWinner(localPlayer)) {
+                            aSessionScreen.addGameMessage(localPlayer.getUsername() + "WON");
                             aSessionScreen.showWinner(localPlayer);
                         }
                     });
@@ -608,19 +609,19 @@ public class SessionController {
         aSessionScreen.enablePhase(aSessionManager.getCurrentPhase());
         switch (aSessionManager.getCurrentPhase()) {
             case SETUP_PHASE_ONE:
-                aSessionScreen.addGameMessage("Please roll the dice");
+                aSessionScreen.addGameMessage("Roll the dice");
                 break;
             case SETUP_PHASE_TWO_CLOCKWISE:
-                aSessionScreen.addGameMessage("Please choose a position for your settlement,\n then choose a neighbouring edge for the position of your road");
+                aSessionScreen.addGameMessage("Choose a position for your settlement,\nthen choose a neighbouring edge\nfor the position of your road");
                 break;
             case SETUP_PHASE_TWO_COUNTERCLOCKWISE:
-                aSessionScreen.addGameMessage("Please choose a position for your city,\n then choose a neighbouring edge for the position of your road");
+                aSessionScreen.addGameMessage("Choose a position for your city,\nthen choose a neighbouring edge\nfor the position of your road");
                 break;
             case TURN_FIRST_PHASE:
-                aSessionScreen.addGameMessage("You may now roll the dice to generate the production");
+                aSessionScreen.addGameMessage("You may now roll the dice\nto generate the production");
                 break;
             case TURN_SECOND_PHASE:
-                aSessionScreen.addGameMessage("You may now place new buildings and roads or engage in maritime trade");
+                aSessionScreen.addGameMessage("You may now place new buildings\nand roads or engage\nin maritime trade");
                 break;
             case Completed:
                 break;
@@ -1423,6 +1424,8 @@ public class SessionController {
         List<Hex> neighbouringHexes = aGameBoardManager.getNeighbouringHexes(cityPos);
         ResourceMap playerResourceMap = new ResourceMap();
 
+        boolean receivedFromBigFishery = false;
+
         int pastureCounter = 0;
         int forestCounter = 0;
         int mountainCounter = 0;
@@ -1451,6 +1454,15 @@ public class SessionController {
                     break;
                 case SEA:
                     break;
+                case BIG_FISHERY:
+                    if (receivedFromBigFishery) {
+                        break;
+                    }
+                    localPlayer.addFishToken(aGameBoardManager.drawFishToken());
+                    receivedFromBigFishery = true;
+                    break;
+                case SMALL_FISHERY:
+                    localPlayer.addFishToken(aGameBoardManager.drawFishToken());
                 default:
                     break;
             }
@@ -1464,6 +1476,7 @@ public class SessionController {
 
         localPlayer.addResources(playerResourceMap);
         aSessionScreen.updateResourceBar(localPlayer.getResources());
+        aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());
     }
 
     public int currentVP(Player player) {
@@ -1480,7 +1493,7 @@ public class SessionController {
     }
 
     private boolean isWinner(Player p){
-        return currentVP(p) > aGameRules.getVpToWin() + getBootMalus(p);
+        return currentVP(p) >= aGameRules.getVpToWin() + getBootMalus(p);
     }
 
     /**
@@ -1659,7 +1672,7 @@ public class SessionController {
 
             // if there is a potential victim, let the local player choose a victim to steal random card from
             if (!potentialVictims.isEmpty()) {
-                chooseSteal(moveRobber);
+                steal(moveRobber);
                 aSessionScreen.chooseOtherPlayer(potentialVictims,moveRobber);
             } else {
                 aSessionScreen.interractionDone();
@@ -1669,7 +1682,7 @@ public class SessionController {
         aSessionScreen.initChooseHexMove(hexesToChooseFrom, moveRobber);
     }
 
-    private void chooseSteal(MultiStepMove robber){
+    private void steal(MultiStepMove robber){
         robber.<Player>addMove(victim -> {
 
             //get hand
@@ -2059,6 +2072,7 @@ public class SessionController {
 
     void fishActionHandle(FishTokenMap consumedFishToken) {
         int fishCount = 0;
+        boolean failed = false;
         for (Map.Entry<FishTokenType, Integer> entry: consumedFishToken.entrySet()) {
             switch(entry.getKey()){
                 case ONE_FISH:
@@ -2078,46 +2092,66 @@ public class SessionController {
             aSessionScreen.addGameMessage("You have not given enough Fish!");
             return;
         }
-        localPlayer.removeFishToken(consumedFishToken);
-        aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());
         if (fishCount >= 7) {
-            MultiStepMove drawProgressCard = new MultiStepMove();
-            drawProgressCard.<ProgressCardKind>addMove((kind) -> {
-                drawProgressCard(kind);
-                aSessionScreen.interractionDone();
-            });
-            aSessionScreen.chooseProgressCardKind(drawProgressCard, Arrays.asList(ProgressCardKind.values()));
+            chooseCardTypeAndDraw();
         } else if (fishCount >= 5) {
-            aProgressCardHandler.handle(ProgressCardType.ROADBUILDING, localPlayer.getColor());
+            aSessionScreen.buildEdgeUnitForFree();
         } else if (fishCount >= 4) {
-            ArrayList<ResourceKind> choice = new ArrayList<>();
-            choice.add(WOOD);
-            choice.add(WOOL);
-            choice.add(BRICK);
-            choice.add(GRAIN);
-            choice.add(ORE);
-            MultiStepMove getCardFromBank = new MultiStepMove();
-            getCardFromBank.<ResourceKind>addMove(resourcekind -> {
-                ResourceMap toAdd = new ResourceMap();
-                toAdd.add(resourcekind,1);
-                localPlayer.addResources(toAdd);
-            });
-            aSessionScreen.chooseResource(choice, getCardFromBank);
-            aSessionScreen.updateResourceBar(localPlayer.getResources());
+            chooseResource();
         } else if (fishCount >= 3) {
-            ArrayList<Player> victims = new ArrayList<>(Arrays.asList(getPlayers()));
-            victims.remove(localPlayer);
-            for (Player p : victims) {
-                if (p.getResourceHandSize() == 0){
-                    victims.remove(p);
-                }
+            failed = chooseSteal();
+            if (failed) {
+                aSessionScreen.addGameMessage("There is no player you can rob");
+                return;
             }
-            MultiStepMove rob = new MultiStepMove();
-            aSessionScreen.chooseOtherPlayer(victims,rob);
-
         } else if (fishCount >= 2) {
             aSessionScreen.placeRobber(-15,-10 ); //TODO make this better seriously, arnaud.
         }
+        localPlayer.removeFishToken(consumedFishToken);
+        aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());
+    }
+
+    private boolean chooseSteal(){
+        ArrayList<Player> victims = new ArrayList<>(Arrays.asList(getPlayers()));
+        victims.remove(localPlayer);
+        for (Player p : victims) {
+            if (p.getResourceHandSize() == 0){
+                victims.remove(p);
+            }
+        }
+        if (victims.size() < 1) {
+            return true;
+        }
+        MultiStepMove rob = new MultiStepMove();
+        steal(rob);
+        aSessionScreen.chooseOtherPlayer(victims,rob);
+        return false;
+    }
+
+    private void chooseCardTypeAndDraw() {
+        MultiStepMove chooseProgressCard = new MultiStepMove();
+        chooseProgressCard.<ProgressCardKind>addMove((kind) -> {
+            drawProgressCard(kind);
+            aSessionScreen.interractionDone();
+        });
+        aSessionScreen.chooseProgressCardKind(chooseProgressCard, Arrays.asList(ProgressCardKind.values()));
+    }
+
+    private void chooseResource() {
+        ArrayList<ResourceKind> possiblechoice = new ArrayList<>();
+        possiblechoice.add(WOOD);
+        possiblechoice.add(WOOL);
+        possiblechoice.add(BRICK);
+        possiblechoice.add(GRAIN);
+        possiblechoice.add(ORE);
+        MultiStepMove getCardFromBank = new MultiStepMove();
+        getCardFromBank.<ResourceKind>addMove(resourcekind -> {
+            ResourceMap toAdd = new ResourceMap();
+            toAdd.add(resourcekind,1);
+            aTransactionManager.payBankToPlayer(localPlayer, toAdd);
+            aSessionScreen.updateResourceBar(localPlayer.getResources());
+        });
+        aSessionScreen.chooseResource(possiblechoice, getCardFromBank);
     }
 
     public void tradeCityImprovement(PlayerColor owner) {

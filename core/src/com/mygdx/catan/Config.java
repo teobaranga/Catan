@@ -139,5 +139,6 @@ public class Config {
         kryo.register(MoveKnightRequest.class);
         kryo.register(ActivateKnightRequest.class);
         kryo.register(ChangeKnightStatus.class);
+        kryo.register(BarbarianPositionChange.class);
     }
 }

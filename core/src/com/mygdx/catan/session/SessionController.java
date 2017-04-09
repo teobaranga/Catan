@@ -594,6 +594,23 @@ public class SessionController {
                         }
                         
                     });
+                } else if (object instanceof BarbarianPositionChange) {
+                    Gdx.app.postRunnable(() -> {
+                        BarbarianPositionChange newBarbarianPos = (BarbarianPositionChange) object;
+                        
+                        aSessionManager.getSession().barbarianPosition = newBarbarianPos.getNewBarbarianPosition();
+                        
+                        // show new barbarian position on the sessionscreen
+                        aSessionScreen.updateBarbarianPosition(aSessionManager.getSession().barbarianPosition);
+                        
+                        // if this is the first barbarian attack, set firstBarbarianAttack to true
+                        if (aSessionManager.getSession().barbarianPosition == 0) {
+                            if (!aSessionManager.getSession().firstBarbarianAttack) {
+                                aSessionManager.getSession().firstBarbarianAttack = true;
+                            }
+                        }
+                        
+                    });
                 }
             }
         };
@@ -980,10 +997,12 @@ public class SessionController {
 
     //TODO: generate valid metropolis intersections
 
-    public ArrayList<CoordinatePair> requestValidMetropolisIntersections(PlayerColor owner) {
-        Player currentP = aSessionManager.getCurrentPlayer();
+    /**
+     * @return list of all the intersections of the local player's cities
+     * */
+    public ArrayList<CoordinatePair> requestCityIntersections() {
         ArrayList<CoordinatePair> validMetropolisIntersections = new ArrayList<>();
-        for (Village v: aSessionManager.getCurrentPlayer().getVillages()) {
+        for (Village v: localPlayer.getVillages()) {
             if(v.getVillageKind() == CITY) {
                 validMetropolisIntersections.add(v.getPosition());
             }
@@ -1612,7 +1631,9 @@ public class SessionController {
                                     break;
                                 }
                             }
-                            aSessionScreen.interractionDone();
+                            if (diceResults.getSum() != 7) {
+                                aSessionScreen.interractionDone();
+                            }
                     });
 
                     aSessionScreen.chooseDraw(chooseProgressCard);
@@ -1626,6 +1647,12 @@ public class SessionController {
     void handleRoll(DiceRollPair diceResults, EventKind eventDieResult) {
         if (eventDieResult == EventKind.BARBARIAN) {
             aSessionManager.decreaseBarbarianPosition();
+            // show new barbarian position on the sessionscreen
+            aSessionScreen.updateBarbarianPosition(aSessionManager.getSession().barbarianPosition);
+            // notify server about new barbarian position
+            BarbarianPositionChange request = BarbarianPositionChange.newInstance(aSessionManager.getSession().barbarianPosition, localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+            
             if (aSessionManager.getSession().barbarianPosition == 0) {
                 //barbarians attack!
                 if (!aSessionManager.getSession().firstBarbarianAttack) {
@@ -1846,6 +1873,11 @@ public class SessionController {
         }
         //regardless of outcome, barbarians go home.
         aSessionManager.resetBarbarianPosition();
+        // show new barbarian position on the sessionscreen
+        aSessionScreen.updateBarbarianPosition(aSessionManager.getSession().barbarianPosition);
+        // notify server about new barbarian position
+        BarbarianPositionChange request = BarbarianPositionChange.newInstance(aSessionManager.getSession().barbarianPosition, localPlayer.getUsername());
+        CatanGame.client.sendTCP(request);
     }
 
     /**

@@ -138,6 +138,8 @@ public class SessionScreen implements Screen {
     private TextButton domesticTradeButton, tradeButton;
     private TextButton moveShipButton;
     private TextButton playProgressCardButton;
+    
+    private TextButton improveTrade, improvePolitics, improveScience;
 
     /** A table that keeps track of game messages, mostly used for debugging */
     private ScrollPane gameLog;
@@ -458,27 +460,6 @@ public class SessionScreen implements Screen {
         turnTable.setSize(200, 50);
         turnTable.setPosition(Gdx.graphics.getWidth() - 210, Gdx.graphics.getHeight() - 60);
 
-        // current player table
-        currentPlayer = new Table(CatanGame.skin);
-        currentPlayerLabel = new Label("", CatanGame.skin);
-        currentPlayer.add(currentPlayerLabel);
-        currentPlayer.setSize(200, 50);
-        currentPlayer.setPosition(10, Gdx.graphics.getHeight() - 60);
-        updateCurrentPlayer(aSessionController.getCurrentPlayer());
-
-        // current VPs' table
-        playersVPLabel = new Label[3];
-        playersVP = new Table[3];
-        for (int i = 0; i < playersVPLabel.length; i++) {
-            playersVPLabel[i] = new Label("", CatanGame.skin);
-            Table currentVpTable = new Table(CatanGame.skin);
-            currentVpTable.add(playersVPLabel[i]);
-            currentVpTable.setSize(200, 40);
-            currentVpTable.setPosition(10, Gdx.graphics.getHeight() - 130 - 40 * i);
-            playersVP[i] = currentVpTable;
-        }
-        updateVpTables();
-
         // longest road table
         longestRoad = new Table(CatanGame.skin);
         longestRoad.setBackground("resTableBackground");
@@ -610,7 +591,7 @@ public class SessionScreen implements Screen {
 
                 aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
 
-                for(CoordinatePair intersection: aSessionController.requestValidMetropolisIntersections(aSessionController.getPlayerColor())) {
+                for(CoordinatePair intersection: aSessionController.requestCityIntersections()) {
                     validIntersections.add(intersection);
                     highlightedPositions.add(gamePieces.createSettlement(intersection.getLeft(), intersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                 }
@@ -706,7 +687,7 @@ public class SessionScreen implements Screen {
         turnTable.add(endTurnButton).padBottom(10).row();
 
         // Add the barbarian label
-        barbarianPositionLabel = new Label("Barbarian position: " + 0, CatanGame.skin);
+        barbarianPositionLabel = new Label("Barbarian position: " + 7, CatanGame.skin);
         barbarianPositionLabel.setPosition(Gdx.graphics.getWidth() / 4f, Gdx.graphics.getHeight() - 20f, Align.top);
         aSessionStage.addActor(barbarianPositionLabel);
 
@@ -754,6 +735,27 @@ public class SessionScreen implements Screen {
         menuTable.pad(10);
         menuTable.pack();
 
+        // current player table
+        currentPlayer = new Table(CatanGame.skin);
+        currentPlayerLabel = new Label("", CatanGame.skin);
+        currentPlayer.add(currentPlayerLabel);
+        currentPlayer.setSize(menuTable.getWidth(), 50);
+        currentPlayer.setPosition(10, Gdx.graphics.getHeight() - 60);
+        updateCurrentPlayer(aSessionController.getCurrentPlayer());
+
+        // current VPs' table
+        playersVPLabel = new Label[3];
+        playersVP = new Table[3];
+        for (int i = 0; i < playersVPLabel.length; i++) {
+            playersVPLabel[i] = new Label("", CatanGame.skin);
+            Table currentVpTable = new Table(CatanGame.skin);
+            currentVpTable.add(playersVPLabel[i]);
+            currentVpTable.setSize(menuTable.getWidth(), 40);
+            currentVpTable.setPosition(10, Gdx.graphics.getHeight() - 130 - 40 * i);
+            playersVP[i] = currentVpTable;
+        }
+        updateVpTables();
+        
         //Old Boot Table
         bootOwnerLabel = new Label("Boot Owner: No one", CatanGame.skin);
         giveBoot = new TextButton("Give Boot", CatanGame.skin);
@@ -787,7 +789,7 @@ public class SessionScreen implements Screen {
             }
         });
         bootOwner = new Table(CatanGame.skin);
-        bootOwner.setSize(200, 80);
+        bootOwner.setSize(menuTable.getWidth(), 80);
         bootOwner.setPosition(10, menuTable.getHeight() + 20);
         bootOwner.setBackground(CatanGame.skin.newDrawable("white", Color.BLACK));
         bootOwner.add(bootOwnerLabel).pad(5).row();
@@ -1817,6 +1819,10 @@ public class SessionScreen implements Screen {
         buildKnightButton.setDisabled(true);
         buildCityWallButton.setDisabled(true);
         tradeButton.setDisabled(true);
+        improveTrade.setDisabled(true);
+        improveScience.setDisabled(true);
+        improvePolitics.setDisabled(true);
+        tradeFish.setDisabled(true);
     }
 
     /**
@@ -1840,6 +1846,10 @@ public class SessionScreen implements Screen {
 //                buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
                 tradeButton.setDisabled(true);
+                improveTrade.setDisabled(true);
+                improveScience.setDisabled(true);
+                improvePolitics.setDisabled(true);
+                tradeFish.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1858,6 +1868,10 @@ public class SessionScreen implements Screen {
                 buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
                 tradeButton.setDisabled(true);
+                improveTrade.setDisabled(true);
+                improveScience.setDisabled(true);
+                improvePolitics.setDisabled(true);
+                tradeFish.setDisabled(true);
 
                 initialize(true);
                 break;
@@ -1876,6 +1890,10 @@ public class SessionScreen implements Screen {
                 buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
                 tradeButton.setDisabled(true);
+                improveTrade.setDisabled(true);
+                improveScience.setDisabled(true);
+                improvePolitics.setDisabled(true);
+                tradeFish.setDisabled(true);
 
                 initialize(false);
                 break;
@@ -1893,6 +1911,10 @@ public class SessionScreen implements Screen {
                 buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
                 tradeButton.setDisabled(true);
+                improveTrade.setDisabled(true);
+                improveScience.setDisabled(true);
+                improvePolitics.setDisabled(true);
+                tradeFish.setDisabled(true);
 
                 rollDiceButton.setDisabled(false);
                 break;
@@ -1910,6 +1932,10 @@ public class SessionScreen implements Screen {
                 buildKnightButton.setDisabled(false);
                 buildCityWallButton.setDisabled(false);
                 tradeButton.setDisabled(false);
+                improveTrade.setDisabled(false);
+                improveScience.setDisabled(false);
+                improvePolitics.setDisabled(false);
+                tradeFish.setDisabled(false);
 
                 rollDiceButton.setDisabled(true);
                 break;
@@ -1934,6 +1960,10 @@ public class SessionScreen implements Screen {
         buildCityWallButton.setDisabled(true);
         moveShipButton.setDisabled(true);
         tradeButton.setDisabled(true);
+        improveTrade.setDisabled(true);
+        improveScience.setDisabled(true);
+        improvePolitics.setDisabled(true);
+        tradeFish.setDisabled(true);
         removeTemporaryFunctionalities();
 
     }
@@ -2213,7 +2243,7 @@ public class SessionScreen implements Screen {
         scienceImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.FOREST));
         politicsImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.ROYAL));
 
-        Button improveTrade = new TextButton("Improve", CatanGame.skin);
+        improveTrade = new TextButton("Improve", CatanGame.skin);
         improveTrade.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -2230,7 +2260,7 @@ public class SessionScreen implements Screen {
             }
         });
 
-        Button improvePolitics = new TextButton("Improve", CatanGame.skin);
+        improvePolitics = new TextButton("Improve", CatanGame.skin);
         improvePolitics.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -2247,7 +2277,7 @@ public class SessionScreen implements Screen {
             }
         });
 
-        Button improveScience = new TextButton("Improve", CatanGame.skin);
+        improveScience = new TextButton("Improve", CatanGame.skin);
         improveScience.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

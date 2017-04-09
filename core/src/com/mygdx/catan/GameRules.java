@@ -2,6 +2,7 @@ package com.mygdx.catan;
 
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.Hex;
+import com.sun.javaws.progress.Progress;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -830,6 +831,14 @@ public class GameRules {
     public CityImprovementTypeTrade getTradeImprovementType(int level) {
 	    return tradeImprovementLevelMap.get(level);
     }
+
+    public ArrayList<ProgressCardType> getProgressCardTypes() {
+		ArrayList<ProgressCardType> progressCards = new ArrayList<ProgressCardType>();
+		for(ProgressCardType type: ProgressCardType.values()) {
+			progressCards.add(type);
+		}
+		return progressCards;
+	}
 
 }
 

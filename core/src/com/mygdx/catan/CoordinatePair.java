@@ -1,6 +1,7 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.HarbourKind;
+import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.player.Player;
@@ -108,5 +109,17 @@ public class CoordinatePair extends Pair<Integer, Integer> {
 
     public void putKnight(Knight knight) {
         occupyingKnight = knight;
+    }
+
+    public boolean hasKnight() {
+        for(Knight k: GameBoardManager.getInstance().getGameBoard().getKnights()) {
+            if ((x == (k.getPosition().getLeft())) && (y == (k.getPosition().getRight()))) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
     }
 }

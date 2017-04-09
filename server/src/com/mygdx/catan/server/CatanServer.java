@@ -11,6 +11,7 @@ import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
+import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.game.Game;
 import com.mygdx.catan.gameboard.GameBoard;
@@ -369,7 +370,27 @@ class CatanServer {
 
         savedGames.add(yearsOfPlenty);
 
+        // Progress Card game --------------------------------------------------------
+        Game progressCardGame = new Game();
+        progressCardGame.name = "Progress Card Game";
+        for (Account account: accounts) {
+            progressCardGame.addPlayer(account, -1);
+            progressCardGame.markAsReady(account.getUsername());
+        }
+        progressCardGame.session = Session.newInstance(progressCardGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
+        for(Player player: progressCardGame.session.getPlayers()) {
+            for (ProgressCardType card : GameRules.getGameRulesInstance().getProgressCardTypes()) {
+                player.addProgressCard(card);
+            }
+        }
+
+        savedGames.add(progressCardGame);
+
         return savedGames;
+
+
+
+
     }
 
     void stop() {

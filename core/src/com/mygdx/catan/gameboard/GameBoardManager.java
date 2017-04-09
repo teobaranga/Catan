@@ -560,4 +560,14 @@ public class GameBoardManager {
 
     }
 
+    public ArrayList<CoordinatePair> getEmptyCoordinates(){
+        ArrayList<CoordinatePair> emptyCoordinates = new ArrayList<>();
+        for(CoordinatePair pair: aGameBoard.getIntersectionsAndEdges()) {
+            if(!pair.hasKnight() && !pair.isOccupied()) {
+                emptyCoordinates.add(pair);
+            }
+        }
+        return emptyCoordinates;
+    }
+
 }

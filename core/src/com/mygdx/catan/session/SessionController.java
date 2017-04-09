@@ -1108,6 +1108,18 @@ public class SessionController {
         return validDisplacingKnightIntersections;
     }
 
+    //TODO
+    public ArrayList<Knight> requestValidKnights(PlayerColor owner) {
+        ArrayList<Knight> validKnightIntersections = new ArrayList<>();
+        return validKnightIntersections;
+    }
+
+    //TODO
+    public ArrayList<CoordinatePair> requestValidKnightIntersections(PlayerColor owner) {
+        ArrayList<CoordinatePair> validKnightIntersections = new ArrayList<>();
+        return validKnightIntersections;
+    }
+
 
 
     /** produces a list of cities that are eligible for a city wall i.e. must be a city without a city wall */
@@ -2215,6 +2227,10 @@ public class SessionController {
         aSessionScreen.updatePoliticsImprovements(level);
         PoliticsImprovementRequest request = PoliticsImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
         CatanGame.client.sendTCP(request);
+    }
+
+    public KnightController getKnightController() {
+        return knightController;
     }
 
 }

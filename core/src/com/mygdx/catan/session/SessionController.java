@@ -575,6 +575,24 @@ public class SessionController {
                         }
 
                     });
+                } else if (object instanceof UpdateLongestRoad) {
+                    Gdx.app.postRunnable(() -> {
+                        UpdateLongestRoad longestRoadUpdate = (UpdateLongestRoad) object;
+                        String name = "";
+                        if (longestRoadUpdate.getNewOwner() == null) {
+                            aSessionManager.getSession().longestRoadOwner = null;
+                        } else {
+                            aSessionManager.getSession().longestRoadOwner = aSessionManager.getPlayerFromColor(longestRoadUpdate.getNewOwner());
+                            name = aSessionManager.getPlayerFromColor(longestRoadUpdate.getNewOwner()).getUsername();
+                        }
+                        aSessionScreen.updateLongestRoadOwner(longestRoadUpdate.getNewOwner(), name);
+                        aSessionScreen.updateVpTables();
+                        if(isWinner(localPlayer)) {
+                            aSessionScreen.addGameMessage(localPlayer.getUsername() + "WON");
+                            aSessionScreen.showWinner(localPlayer);
+                        }
+                        
+                    });
                 }
             }
         };
@@ -1253,6 +1271,8 @@ public class SessionController {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getRoadCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(localPlayer.getResources());
                 }
+                
+                aSessionManager.updateLongestRoadOwner();
 
                 // notify peers about board game change
                 BuildEdge request = BuildEdge.newInstance(new ImmutablePair<>(firstPosition.getLeft(), firstPosition.getRight()), new ImmutablePair<>(secondPosition.getLeft(), secondPosition.getRight()), kind, owner, CatanGame.account.getUsername());
@@ -1270,13 +1290,15 @@ public class SessionController {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getShipCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(localPlayer.getResources());
                 }
+                
+                aSessionManager.updateLongestRoadOwner();
 
                 // notify peers about board game change
                 BuildEdge request = BuildEdge.newInstance(new ImmutablePair<>(firstPosition.getLeft(), firstPosition.getRight()), new ImmutablePair<>(secondPosition.getLeft(), secondPosition.getRight()), kind, owner, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
             }
         }
-        //TODO: longest road (fun fact: longest disjoint path problem is NP-hard)
+        
         CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
         return true;
     }
@@ -1483,7 +1505,7 @@ public class SessionController {
         int currentVP = 0;
         Player longestRoadOwner =  aSessionManager.getlongestRoadOwner();
         if (player.equals(longestRoadOwner)) {
-            currentVP++;
+            currentVP = currentVP + 2;
         }
         currentVP += aGameBoardManager.getMerchantPoint(player);
         currentVP += player.getTokenVictoryPoints();

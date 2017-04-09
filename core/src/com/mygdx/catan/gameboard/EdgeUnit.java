@@ -33,6 +33,31 @@ public class EdgeUnit {
 		return (!this.equals(other) && (this.hasEndpoint(other.getAFirstCoordinate()) || this.hasEndpoint(other.getASecondCoordinate())));
 	}
 	
+	/**
+     * @param other EdgeUnit 
+     * @return true iff other and this EdgeUnit share an endpoint AND are not separated by opponent village
+     * */
+	public boolean isConnected(EdgeUnit other) {
+	    boolean isAdjacent = this.isAdjacent(other);
+	    if (isAdjacent && this.getCommonEndpoint(other).isOccupied()) {
+	        return this.getCommonEndpoint(other).isOccupied(this.owner);
+	    }
+	    
+	    return isAdjacent;
+	}
+	
+	/**
+	 * @return the endpoint this EdgeUnit and other have in common.
+	 * @precondition assumes the this and other are adjacent
+	 * */
+	public CoordinatePair getCommonEndpoint(EdgeUnit other) {
+	    if (this.aFirstCoordinate.equals(other.aFirstCoordinate) || this.aFirstCoordinate.equals(other.aSecondCoordinate)) {
+	        return aFirstCoordinate;
+	    } else {
+	        return aSecondCoordinate;
+	    }
+	}
+	
 	public boolean hasEndpoint(CoordinatePair intersection) {
 		return intersection.equals(aFirstCoordinate) || intersection.equals(aSecondCoordinate);
 	}

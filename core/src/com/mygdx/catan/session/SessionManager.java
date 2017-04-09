@@ -1,5 +1,6 @@
 package com.mygdx.catan.session;
 
+import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
@@ -8,6 +9,8 @@ import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.request.UpdateLongestRoad;
+
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.Collection;
@@ -119,6 +122,33 @@ public class SessionManager {
         return currentP;
     }
 
+    public void updateLongestRoadOwner() {
+        int max = 0;
+        if (aSession.longestRoadOwner != null) {
+            max = aSession.longestRoadOwner.getLongestShippingRoute();
+        }
+        for (Player p : aSession.getPlayers()) {
+            int longestRoad = p.getLongestShippingRoute();
+            if (longestRoad > max) {
+                max = longestRoad;
+                if (longestRoad >= 5) {
+                    aSession.longestRoadOwner = p;
+                }
+            }
+        }
+        
+        if (max < 5) {
+            aSession.longestRoadOwner = null;
+        }
+        
+        PlayerColor newOwner = null;
+        if (aSession.longestRoadOwner != null) {
+            newOwner = aSession.longestRoadOwner.getColor();
+        }
+        UpdateLongestRoad request = UpdateLongestRoad.newInstance(newOwner, CatanGame.account.getUsername());
+        CatanGame.client.sendTCP(request);
+    }
+    
     /**
      * Returns the current value of the yellow dice.
      *

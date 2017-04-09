@@ -192,6 +192,12 @@ public class SessionScreen implements Screen {
     private Label scienceImprovementLabel;
 
     /**
+     * Longest road owner table
+     * */
+    private Table longestRoad;
+    private Label longestRoadOwner;
+    
+    /**
      * Table to show the Old Boot Owner.
      */
     private Table bootOwner;
@@ -473,6 +479,14 @@ public class SessionScreen implements Screen {
         }
         updateVpTables();
 
+        // longest road table
+        longestRoad = new Table(CatanGame.skin);
+        longestRoad.setBackground("resTableBackground");
+        longestRoadOwner = new Label("Build an\nunbroken route \nof at least\n5 segments \nto get longest road", CatanGame.skin);
+        longestRoadOwner.setAlignment(2);
+        longestRoad.add(longestRoadOwner);
+        longestRoad.setSize(140, developmentFlipChart.getHeight());
+        longestRoad.setPosition(Gdx.graphics.getWidth() / 2f + developmentFlipChart.getWidth() - 20, Gdx.graphics.getHeight() - 10f, Align.top);
 
         // available game pieces table
         Table availableGamePiecesTable = new Table(CatanGame.skin);
@@ -665,7 +679,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.CRANE);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.ROADBUILDING);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -846,6 +860,7 @@ public class SessionScreen implements Screen {
         aSessionStage.addActor(menuTable);
         aSessionStage.addActor(turnTable);
         aSessionStage.addActor(currentPlayer);
+        aSessionStage.addActor(longestRoad);
         aSessionStage.addActor(temporaryFunctionalityTable);
         aSessionStage.addActor(progressCardTable);
         for (int i = 0; i < playersVP.length; i++) {
@@ -1776,6 +1791,16 @@ public class SessionScreen implements Screen {
      * */
     public void removeCardFromHand(ProgressCardType type) {
         //TODO : aina needs help with this :(
+    }
+    
+    public void updateLongestRoadOwner(PlayerColor newOwner, String name) {
+        if (newOwner == null) {
+            longestRoadOwner.setText("Build an\nunbroken route \nof at least\n5 segments \nto get longest road");
+        } else if (newOwner != aSessionController.getPlayerColor()) {
+            longestRoadOwner.setText(name + "\nowns the\nlongest road");
+        } else {
+            longestRoadOwner.setText("You have the\nlongest road!");
+        }
     }
 
     private void disableAllButtons() {

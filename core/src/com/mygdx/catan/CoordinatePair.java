@@ -3,6 +3,8 @@ package com.mygdx.catan;
 import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.player.Player;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 @SuppressWarnings("serial")
@@ -68,6 +70,19 @@ public class CoordinatePair extends Pair<Integer, Integer> {
 
     public boolean isOccupied() {
         return occupyingVillage != null || occupyingKnight != null;
+    }
+    
+    /**
+     * @return true iff this CoordinatePair is occupied by a village or a knight owned by given Player
+     * */
+    public boolean isOccupied(Player owner) {
+        if (occupyingVillage != null) {
+            return occupyingVillage.getOwner().equals(owner);
+        } else if (occupyingKnight != null) {
+            return occupyingKnight.getOwner().equals(owner);
+        } else {
+            return false;
+        }
     }
 
     /**

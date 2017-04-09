@@ -24,7 +24,7 @@ public class Player {
     private Account account;
 
     private PlayerColor color;
-    private List<EdgeUnit> roadsAndShips;
+    private ArrayList<EdgeUnit> roadsAndShips;
     private List<Village> villages;
     private List<Knight> knights; //TODO: keep track of knights for each player
     private int defenderOfCatanPoints;
@@ -376,6 +376,10 @@ public class Player {
 
     public List<Village> getVillages() {
         return villages;
+    }
+    
+    public int getLongestShippingRoute() {
+        return LongestRouteCalculator.of().calculateLongestRoute(roadsAndShips);
     }
 
     /**

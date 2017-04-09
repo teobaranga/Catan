@@ -66,7 +66,7 @@ public class GameRules {
 	private ArrayList<Pair<Integer, Integer>> smallFisheryPosition = new ArrayList<>();
 
 	//private int vpToWin = 13;
-	private int vpToWin = 4;
+	private int vpToWin = 13;
 	private int settlementVp = 1;
 	private int cityVp = 2;
 	private int metropolisVp = 2;

@@ -2,6 +2,7 @@ package com.mygdx.catan.injection.module;
 
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.TradeAndTransaction.TransactionManager;
+import com.mygdx.catan.gameboard.GameBoard;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.injection.SessionScope;
 import com.mygdx.catan.session.GamePieces;
@@ -14,9 +15,11 @@ import dagger.Provides;
 public class SessionModule {
 
     private final Session session;
+    private final GameBoard gameboard;
 
-    public SessionModule(Session session) {
+    public SessionModule(Session session, GameBoard gameboard) {
         this.session = session;
+        this.gameboard = gameboard;
     }
 
     @Provides
@@ -47,6 +50,6 @@ public class SessionModule {
     @Provides
     @SessionScope
     GameBoardManager provideGameBoardManager() {
-        return GameBoardManager.getInstance();
+        return GameBoardManager.getInstance(gameboard);
     }
 }

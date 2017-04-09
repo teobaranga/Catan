@@ -17,7 +17,7 @@ public class PlayProgressCardWindow extends CatanWindow {
     
     private PlayProgressCardListener playProgressCardListener;
     
-    public PlayProgressCardWindow(String title, Skin skin, List<ProgressCardType> hand, GamePhase currentPhase, boolean isMyTurn) {
+    public PlayProgressCardWindow(String title, Skin skin, List<ProgressCardType> hand, GamePhase currentPhase, boolean isMyTurn, boolean firstBarbarianAttack) {
         super(title, skin);
         
         if (hand.isEmpty()) {
@@ -41,7 +41,7 @@ public class PlayProgressCardWindow extends CatanWindow {
                     } 
                 }
             });
-            playCard.setDisabled(!isLegalPlay(type, currentPhase, isMyTurn)); 
+            playCard.setDisabled(!isLegalPlay(type, currentPhase, isMyTurn, firstBarbarianAttack)); 
             
             cardTable.add(playCard).pad(5);
             
@@ -57,8 +57,12 @@ public class PlayProgressCardWindow extends CatanWindow {
         setMovable(true);
     }
     
-    private boolean isLegalPlay(ProgressCardType type, GamePhase currentPhase, boolean isMyTurn) {
+    private boolean isLegalPlay(ProgressCardType type, GamePhase currentPhase, boolean isMyTurn, boolean firstBarbarianAttack) {
         boolean isLegal = isMyTurn && (currentPhase == GamePhase.TURN_FIRST_PHASE && type == ProgressCardType.ALCHEMIST) || (currentPhase == GamePhase.TURN_SECOND_PHASE && type != ProgressCardType.ALCHEMIST);
+        
+        if (type == ProgressCardType.BISHOP) {
+            isLegal = firstBarbarianAttack;
+        }
         
         return isLegal;
     }

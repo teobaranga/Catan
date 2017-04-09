@@ -1,17 +1,18 @@
 package com.mygdx.catan.request;
 
+import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.enums.EventKind;
 
 public class DrawProgressCard extends ForwardedRequest {
     
-    private int redDie;
+    private DiceRollPair diceResults;
     private EventKind event;
     
-    public static DrawProgressCard newInstance(EventKind event, int redDie, String username) {
+    public static DrawProgressCard newInstance(EventKind event, DiceRollPair diceResults, String username) {
         DrawProgressCard request = new DrawProgressCard();
         
         request.username = username;
-        request.redDie = redDie;
+        request.diceResults = diceResults;
         request.event = event;
         request.universal = true;
         
@@ -22,8 +23,8 @@ public class DrawProgressCard extends ForwardedRequest {
         return event;
     }
     
-    public int getRedDie() {
-        return redDie;
+    public DiceRollPair getDiceResults() {
+        return diceResults;
     }
 
 }

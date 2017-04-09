@@ -3,6 +3,11 @@ package com.mygdx.catan;
 import com.esotericsoftware.kryo.Kryo;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.*;
+import com.mygdx.catan.gameboard.GameBoard;
+import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.gameboard.Knight;
+import com.mygdx.catan.gameboard.Knight.Strength;
+import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.player.CityImprovements;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
@@ -17,6 +22,8 @@ import org.objenesis.strategy.SerializingInstantiatorStrategy;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Stack;
 
 public class Config {
     /** TCP port used when connecting to the server */
@@ -41,6 +48,7 @@ public class Config {
         kryo.setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new SerializingInstantiatorStrategy()));
 
         kryo.register(Account.class);
+        kryo.register(Integer.class);
         kryo.register(PlayerColor.class);
         kryo.register(Player.class);
         kryo.register(CityImprovements.class);
@@ -49,6 +57,7 @@ public class Config {
         kryo.register(Pair.class);
         kryo.register(DiceRollPair.class);
         kryo.register(ResourceKind.class);
+        kryo.register(TerrainKind.class);
         kryo.register(ResourceMap.class);
         kryo.register(ProgressCardType.class);
         kryo.register(FishTokenType.class);
@@ -59,6 +68,16 @@ public class Config {
         kryo.register(GamePhase.class);
         kryo.register(com.mygdx.catan.game.Game.class);
         kryo.register(Session.class);
+        
+        kryo.register(GameBoard.class);
+        kryo.register(HarbourKind.class);
+        kryo.register(Stack.class);
+        kryo.register(Hex.class);
+        kryo.register(CoordinatePair.class);
+        kryo.register(Village.class);
+        kryo.register(Knight.class);
+        kryo.register(Strength.class);
+        
         kryo.register(LoginRequest.class);
         kryo.register(LoginResponse.class);
         kryo.register(BrowseGames.class);
@@ -72,6 +91,7 @@ public class Config {
         kryo.register(ForwardedRequest.class);
         kryo.register(TargetedRequest.class);
         kryo.register(LinkedHashMap.class);
+        kryo.register(List.class);
         kryo.register(ArrayList.class);
         kryo.register(EnumMap.class);
         kryo.register(ChooseResourceCardRequest.class);

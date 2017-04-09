@@ -2,6 +2,7 @@ package com.mygdx.catan.game;
 
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.account.Account;
+import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.session.SessionManager;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class GameManager {
         accounts.add(CatanGame.account);
 
         game.session = SessionManager.newPlaceholderSession(accounts);
+        game.gameboard = GameBoardManager.newDefaultGameboard();
 
         return game;
     }

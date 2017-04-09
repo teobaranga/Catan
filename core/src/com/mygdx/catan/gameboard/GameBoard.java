@@ -13,8 +13,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.*;
 
 public class GameBoard {
-	
-	private GameRules gameRules;
 
 	private ArrayList<Hex> hexes;
 	private ArrayList<CoordinatePair> aIntersectionPositions;			// Villages will be available through the intersection positions
@@ -32,8 +30,12 @@ public class GameBoard {
 	
 	private final int SIZE = GameRules.getGameRulesInstance().getSize();
 	
-	public GameBoard() throws Exception {
-		gameRules = GameRules.getGameRulesInstance();
+	public static GameBoard newInstance() {
+	    GameBoard gameboard = new GameBoard();
+        return gameboard;
+	}
+	
+	private GameBoard() {
 		hexes = new ArrayList<>();
 		aIntersectionPositions = new ArrayList<>();
 		aRoadsAndShips = new ArrayList<>();
@@ -68,18 +70,18 @@ public class GameBoard {
                 if (lDiceNumber != null || lTerrainKind != null) {
                     // multiple dice numbers on the same tile. The dice numbers are constant.
                     if ( lTerrainKind == TerrainKind.BIG_FISHERY){
-                        hexes.add(new Hex(hexCoord,lTerrainKind,2));
-                        hexes.add(new Hex(hexCoord,lTerrainKind,3));
-                        hexes.add(new Hex(hexCoord,lTerrainKind,11));
-                        hexes.add(new Hex(hexCoord,lTerrainKind,12));
+                        hexes.add(Hex.newInstance(hexCoord,lTerrainKind,2));
+                        hexes.add(Hex.newInstance(hexCoord,lTerrainKind,3));
+                        hexes.add(Hex.newInstance(hexCoord,lTerrainKind,11));
+                        hexes.add(Hex.newInstance(hexCoord,lTerrainKind,12));
                     } else {
-                        Hex hex = new Hex(hexCoord,lTerrainKind,lDiceNumber);
+                        Hex hex = Hex.newInstance(hexCoord,lTerrainKind,lDiceNumber);
                         hexes.add(hex);
                     }
                     // NOTE: Robber now starts out of the board
-                } else {
+                } /* else {
                     throw new Exception("Mismatch with GameRules");
-                }
+                }*/
 
                 /*Creates the intersections*/
 
@@ -124,18 +126,18 @@ public class GameBoard {
             TerrainKind lTerrainKind = aHexKindSetup.get(hexCoord.hashCode());
 
             if (lDiceNumber != null || lTerrainKind != null) {
-                Hex hex = new Hex(hexCoord,lTerrainKind,lDiceNumber);
+                Hex hex = Hex.newInstance(hexCoord,lTerrainKind,lDiceNumber);
                 hexes.add(hex);
                 // Robber now starts out of the board
-            } else {
+            } /*else {
                 throw new Exception("Mismatch with GameRules");
-            }
+            }*/
         }
 
         // Fills up the progress card stack and shuffles it
         for (ProgressCardType type : ProgressCardType.values()) {
-        	int occurrence = gameRules.getProgressCardOccurrence(type);
-        	ProgressCardKind kind = gameRules.getProgressCardKind(type);
+        	int occurrence = GameRules.getGameRulesInstance().getProgressCardOccurrence(type);
+        	ProgressCardKind kind = GameRules.getGameRulesInstance().getProgressCardKind(type);
         	for (int i = 0; i<occurrence; i++) {
         		if (kind == ProgressCardKind.POLITICS) {
         			aPoliticsProgressCardStack.push(type);
@@ -158,7 +160,7 @@ public class GameBoard {
 
 	private void fillFishTokenStack() {
         for (FishTokenType type : FishTokenType.values()) {
-            int occurrence = gameRules.getFishTokenOccurrence(type);
+            int occurrence = GameRules.getGameRulesInstance().getFishTokenOccurrence(type);
             for (int i = 0; i<occurrence; i++) {
                 aFishTokenStack.push(type);
             }

@@ -2,6 +2,7 @@ package com.mygdx.catan.game;
 
 import com.mygdx.catan.Config;
 import com.mygdx.catan.account.Account;
+import com.mygdx.catan.gameboard.GameBoard;
 import com.mygdx.catan.session.Session;
 
 import java.util.LinkedHashMap;
@@ -25,6 +26,8 @@ public class Game {
     public String name;
 
     public Session session;
+    
+    public GameBoard gameboard;
 
     /** The admin of the game, ie. the player who created this game */
     private Account admin;

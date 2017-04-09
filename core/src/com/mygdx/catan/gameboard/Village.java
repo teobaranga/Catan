@@ -12,13 +12,21 @@ public class Village {
 	private Player owner;
 	
 	/**
-	 * @param pPosition intersection where this Village will be built
-	 * */
-	public Village(Player pOwner, CoordinatePair pPosition) {
-		position = pPosition;
-		owner = pOwner;
-		cityWall = false;
-		villageKind = VillageKind.SETTLEMENT;
+     * @param pPosition intersection where this Village will be built
+     * */
+	public static Village newInstance(Player pOwner, CoordinatePair pPosition) {
+	    Village village = new Village();
+	    
+	    village.position = pPosition;
+	    village.owner = pOwner;
+	    village.cityWall = false;
+	    village.villageKind = VillageKind.SETTLEMENT;
+	    
+	    return village;
+	}
+	
+	
+	public Village() {
 	}
 	
 	/**

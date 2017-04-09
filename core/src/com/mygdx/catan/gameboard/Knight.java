@@ -6,7 +6,7 @@ import com.mygdx.catan.player.Player;
 public class Knight {
 
     /** Owner of this knight */
-    private final Player owner;
+    private Player owner;
 
     /** Position of the knight on the game board */
     private CoordinatePair position;
@@ -17,10 +17,16 @@ public class Knight {
     /** Strength of the knight. */
     private Strength strength;
 
-    public Knight(Player owner, CoordinatePair position) {
-        this.owner = owner;
-        this.position = position;
-        this.strength = Strength.BASIC;
+    public static Knight newInstance(Player owner, CoordinatePair position) {
+        Knight knight = new Knight();
+        knight.owner = owner;
+        knight.position = position;
+        knight.strength = Strength.BASIC;
+        return knight;
+    }
+    
+    public Knight() {
+        
     }
 
     public boolean isActive() {

@@ -69,10 +69,11 @@ public class SessionController {
             GameManager.getInstance().setCurrentGame(currentGame);
         }
 
-        sessionComponent = CatanGame.appComponent.plus(new SessionModule(currentGame.session));
+        sessionComponent = CatanGame.appComponent.plus(new SessionModule(currentGame.session, currentGame.gameboard));
 
-        aGameBoardManager = GameBoardManager.getInstance();
+        aGameBoardManager = GameBoardManager.getInstance(currentGame.gameboard);
         aSessionManager = SessionManager.getInstance(currentGame.session);
+        
         aTransactionManager = TransactionManager.getInstance(aSessionManager);
         tradeManager = TradeManager.getInstance(aTransactionManager);
         aProgressCardHandler = new ProgressCardHandler(this);
@@ -367,7 +368,7 @@ public class SessionController {
                 } else if (object instanceof DiscardHalfRequest) {
                     Gdx.app.postRunnable(() -> {
                         final DiscardHalfRequest discardHalf = (DiscardHalfRequest) object;
-                        aSessionScreen.addGameMessage(discardHalf.sender + " has forced you to discard half of your hand");
+                        aSessionScreen.addGameMessage("You must discard half of your hand");
 
                         int cardsToDiscard = localPlayer.getResourceHandSize() / 2;
 
@@ -451,9 +452,9 @@ public class SessionController {
                     });
                 } else if (object instanceof DrawProgressCard) {
                     Gdx.app.postRunnable(() -> {
-                        DrawProgressCard handleEventDie = (DrawProgressCard) object;
+                        DrawProgressCard handleNonBarbarianEvent = (DrawProgressCard) object;
                         aSessionScreen.addGameMessage("You may be able to draw a progress card");
-                        eventDieProgressCardHandle(handleEventDie.getEventKind(), handleEventDie.getRedDie());
+                        eventDieProgressCardHandle(handleNonBarbarianEvent.getEventKind(), handleNonBarbarianEvent.getDiceResults());
                     });
                 } else if (object instanceof BestPlayersWin) {
                     Gdx.app.postRunnable(() -> {
@@ -1575,10 +1576,10 @@ public class SessionController {
     }
 
     //The event die yields a trade,science, or politics.
-    public void eventDieProgressCardHandle(EventKind eventDieResult, int redDie) {
+    public void eventDieProgressCardHandle(EventKind eventDieResult, DiceRollPair diceResults) {
             int level = localPlayer.getImprovementLevelByType(eventDieResult);
             //player is eligible
-            if (redDie <= level) {
+            if (diceResults.getRed() <= level) {
                 if (localPlayer.getProgressCardCount() != 4) {
 
                     MultiStepMove chooseProgressCard = new MultiStepMove();
@@ -1624,7 +1625,7 @@ public class SessionController {
             }
         } else {
             diceResultHandle(diceResults);
-            DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults.getRed(), localPlayer.getUsername());
+            DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults, localPlayer.getUsername());
             CatanGame.client.sendTCP(drawRequest);
         }
 

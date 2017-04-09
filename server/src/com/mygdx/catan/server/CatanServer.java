@@ -13,6 +13,7 @@ import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.game.Game;
+import com.mygdx.catan.gameboard.GameBoard;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.request.game.BrowseGames;
@@ -124,7 +125,9 @@ class CatanServer {
             @Override
             public void received(Connection connection, Object object) {
                 Response response = null;
-
+                
+                System.out.println("message received");
+                
                 // Handle the messages sent to only one player
                 if (object instanceof LoginRequest) {
                     // Attempt login
@@ -281,7 +284,7 @@ class CatanServer {
     }
 
     /**
-     * Start a game by creating a new session.
+     * Start a game by creating a new session and a new gameboard.
      *
      * @param username username of the admin player requesting to start the game
      */
@@ -290,7 +293,10 @@ class CatanServer {
         final Game game = gamesMap.get(username);
         // Create its session
         game.session = Session.newInstance(game.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
-        // Return the game response containing the game along with its session
+        // Create its gameboard
+        game.gameboard = GameBoard.newInstance();
+        System.out.println("gameboard created");
+        // Return the game response containing the game along with its session and its gameboard
         return GameResponse.newInstance(game);
     }
 

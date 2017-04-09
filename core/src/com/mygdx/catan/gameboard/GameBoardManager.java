@@ -1,10 +1,15 @@
 package com.mygdx.catan.gameboard;
 
 import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.GameRules;
+import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.session.Session;
+import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.enums.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static java.lang.Math.abs;
@@ -14,23 +19,44 @@ import static java.lang.Math.abs;
  */
 public class GameBoardManager {
 
-    private static GameBoardManager instance;
-    private static GameBoard aGameBoard;
+    private static HashMap<GameBoard, GameBoardManager> gameboardManagerInstances;
 
-    private GameBoardManager() {
+    static {
+        gameboardManagerInstances = new HashMap<>();
+    }
+    
+    /**
+     * The gameboard associated with this gameboard manager.
+     * Must be private at all times.
+     */
+    private final GameBoard aGameBoard;
+
+    private GameBoardManager(GameBoard aGameBoard) {
+        /*
         try {
-            aGameBoard = new GameBoard();
+            this.aGameBoard = aGameBoard;
         } catch (NullPointerException o) {
             o.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        */
+        this.aGameBoard = aGameBoard;
     }
 
-    public static GameBoardManager getInstance() {
-        if (instance == null)
-            instance = new GameBoardManager();
-        return instance;
+    public static GameBoardManager getInstance(GameBoard aGameBoard) {
+        if (!gameboardManagerInstances.containsKey(aGameBoard))
+            gameboardManagerInstances.put(aGameBoard, new GameBoardManager(aGameBoard));
+        return gameboardManagerInstances.get(aGameBoard);
+    }
+    
+    /**
+     * creates the default game board
+     * */
+    public static GameBoard newDefaultGameboard() {
+        GameBoard gameboard = GameBoard.newInstance();
+
+        return gameboard;
     }
 
     public ArrayList<CoordinatePair> getIntersectionsAndEdges() {
@@ -152,7 +178,7 @@ public class GameBoardManager {
      * @return true if building the village was successful, false otherwise
      */
     public boolean buildSettlement(Player player, CoordinatePair position) {
-        Village village = new Village(player, position);
+        Village village = Village.newInstance(player, position);
         position.putVillage(village);
         player.addVillage(village);
         aGameBoard.addVillage(village);
@@ -212,7 +238,7 @@ public class GameBoardManager {
      * @return the knight that was build
      */
     public Knight buildKnight(Player player, CoordinatePair myKnightPosition) {
-        Knight myKnight = new Knight(player, myKnightPosition);
+        Knight myKnight = Knight.newInstance(player, myKnightPosition);
         player.addKnight(myKnight);
         aGameBoard.addKnight(myKnight);
         return myKnight;

@@ -803,7 +803,7 @@ public class SessionScreen implements Screen {
         progressCardTable.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                final PlayProgressCardWindow playProgressCard = new PlayProgressCardWindow("Hand", CatanGame.skin, aSessionController.getLocalPlayer().getProgressCardHand(), aSessionController.getCurrentGamePhase(), aSessionController.isMyTurn());
+                final PlayProgressCardWindow playProgressCard = new PlayProgressCardWindow("Hand", CatanGame.skin, aSessionController.getLocalPlayer().getProgressCardHand(), aSessionController.getCurrentGamePhase(), aSessionController.isMyTurn(), aSessionController.getSessionManager().getSession().firstBarbarianAttack);
                 playProgressCard.setPlayProgressCardListener((type) -> {
                     // plays the chosen progress card
                     aSessionController.playProgressCard(type);

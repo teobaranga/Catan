@@ -39,7 +39,7 @@ public class ProgressCardHandler {
         aSessionController = sessionController;
         final Game currentGame = GameManager.getInstance().getCurrentGame();
         aSessionManager = SessionManager.getInstance(currentGame.session);
-        aGameBoardManager = GameBoardManager.getInstance();
+        aGameBoardManager = GameBoardManager.getInstance(currentGame.gameboard);
         // aSessionScreen = aSessionController.getSessionScreen();
     }
 
@@ -180,7 +180,7 @@ public class ProgressCardHandler {
             case IRRIGATION:
                 int numGrainCards = 0;
                 for(Village v: currentP.getVillages()) {
-                    if (GameBoardManager.getInstance().isAdjacentToCertainHex(TerrainKind.FIELDS, v.getPosition())) {
+                    if (aGameBoardManager.isAdjacentToCertainHex(TerrainKind.FIELDS, v.getPosition())) {
                         numGrainCards+=2;
                     }
                 }
@@ -216,7 +216,7 @@ public class ProgressCardHandler {
             case MINING:
                 int numOreCards = 0;
                 for(Village v: currentP.getVillages()) {
-                    if (GameBoardManager.getInstance().isAdjacentToCertainHex(TerrainKind.MOUNTAINS, v.getPosition())) {
+                    if (aGameBoardManager.isAdjacentToCertainHex(TerrainKind.MOUNTAINS, v.getPosition())) {
                         numOreCards+=2;
                     }
                 }

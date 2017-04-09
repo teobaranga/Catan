@@ -414,29 +414,46 @@ public class ProgressCardHandler {
                 aSessionManager.incrementTokenVP(currentP);
                 aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
+
+            //TODO: need to test
             case DESERTER:
-//                ArrayList<Player> myOpponents = new ArrayList<>();
-//                for (Player p : aSessionController.getPlayers()) {
-//                    if (!p.equals(currentP)) { myOpponents.add(p); }
-//                }
-//
-//                //First choose player and get valid player knights
-//                MultiStepMove playDeserter = new MultiStepMove();
-//                playDeserter.<Player>addMove((Player chosenPlayer) ->{
-//                    ArrayList opponentKnights = new ArrayList();
-//                    for (Knight k: chosenPlayer.getKnights()) {
-//                        opponentKnights.add(k);
-//                    }
-//
-//                    //initchooseintersection
-//                    aSessionController.getSessionScreen().initChooseIntersectionMove(opponentKnights, playDeserter);
-//
-//                    playDeserter.<CoordinatePair>addMove((CoordinatePair knightCoords) -> {
-//                        GameBoardManager.getInstance().removeKnight(knightCoords);
-//                    });
-//
-//                    aSessionController.getSessionScreen().chooseOtherPlayer(myOpponents, playDeserter);
-//                });
+                ArrayList<CoordinatePair> ValidKnightIntersections = aSessionController.requestValidKnightIntersections(currentP.getColor());
+                ArrayList<Player> myOpponents = new ArrayList<>();
+                for (Player p : aSessionController.getPlayers()) {
+                    if (!p.equals(currentP)) { myOpponents.add(p); }
+                }
+
+                //First choose player
+                MultiStepMove playDeserter = new MultiStepMove();
+                playDeserter.<Player>addMove((Player chosenPlayer) -> {
+                    ArrayList opponentKnights = new ArrayList();
+                    for (Knight k: chosenPlayer.getKnights()) {
+                        opponentKnights.add(k);
+                    }
+
+                    playDeserter.<Knight>addMove((Knight knightToRemove) -> {
+                        aGameBoardManager.removeKnight(knightToRemove);
+                        ArrayList<CoordinatePair> myValidKnights = new ArrayList<>();
+                        for(Knight k: aSessionController.requestValidKnights(currentP.getColor())){
+                            if(k.getStrength() > knightToRemove.getStrength()) {
+                                myValidKnights.add(k.getPosition());
+                            }
+                        }
+                    });
+
+                    aSessionController.getSessionScreen().initChooseIntersectionMove(opponentKnights, playDeserter);
+                });
+
+                aSessionController.getSessionScreen().chooseOtherPlayer(myOpponents, playDeserter);
+
+                MultiStepMove placeNewKnight = new MultiStepMove();
+                placeNewKnight.<CoordinatePair>addMove((CoordinatePair newKnightCoords) -> {
+                    ArrayList myValidKnights = new ArrayList();
+                    for (CoordinatePair intersection: aSessionController.requestValidKnightIntersections(currentP.getColor())){
+
+                    }
+                });
+
                 break;
             case DIPLOMAT:
                 // you may remove an "open" road (without another road or another piece at one end)
@@ -521,8 +538,88 @@ public class ProgressCardHandler {
                 }
                 
                 break;
+            //TODO: need to test
             case INTRIGUE:
+                //generate valid intersections for displaced knights
+                ArrayList<CoordinatePair> validKnightsForDisplace = new ArrayList<>();
+                for (EdgeUnit roadOrShip : currentP.getRoadsAndShips()) {
+                    //if the first coordinate of an edge usnit has a knight and that knight is not the current players knight add for list of displacement
+                    if(roadOrShip.getAFirstCoordinate().hasKnight() && !roadOrShip.getAFirstCoordinate().getOccupyingKnight().getOwner().equals(currentP)) {
+                        validKnightsForDisplace.add(roadOrShip.getAFirstCoordinate());
+                    }
+                    if(roadOrShip.getASecondCoordinate().hasKnight() && !roadOrShip.getASecondCoordinate().getOccupyingKnight().getOwner().equals(currentP)) {
+                        validKnightsForDisplace.add(roadOrShip.getASecondCoordinate());
+                    }
+                }
+                //generate valid intersections for the knight to go to
+                ArrayList<CoordinatePair> validPositionsForDisplacedKnight = new ArrayList<>();
+                for(CoordinatePair pair: aGameBoardManager.getEmptyCoordinates()) {
+                    validPositionsForDisplacedKnight.add(pair);
+                }
+
+                //generate valid build intersections for current P to build a knight
+                ArrayList<CoordinatePair> validPositionsForBasicKnight = aSessionController.requestValidKnightIntersections(currentPColor);
+
+
+                MultiStepMove displaceKnight = new MultiStepMove();
+                displaceKnight.<CoordinatePair>addMove(chosenKnightCoord -> {
+                    Knight chosenKnight = chosenKnightCoord.getOccupyingKnight();
+
+
+                    if(validPositionsForDisplacedKnight.size() == 0){
+                        aSessionController.getKnightController().removeKnight(chosenKnightCoord);
+                        //remove knight from owners knights
+                        chosenKnight.getOwner().getKnights().remove(chosenKnight);
+                        //update knight build intersections
+                        updateValidKnights(validPositionsForBasicKnight, chosenKnightCoord);
+
+                        //add move for build basic knight
+                        displaceKnight.<CoordinatePair>addMove(buildKnightCoord -> {
+                            aSessionController.getKnightController().buildKnight(buildKnightCoord, currentPColor);
+                            BuildKnightRequest buildKnightRequest = BuildKnightRequest.newInstance(currentP.getUsername(), currentPColor, buildKnightCoord);
+                            CatanGame.client.sendTCP(buildKnightRequest);
+
+                        });
+
+                        //call a session controller init intersectinos for build basic knight
+                        aSessionController.getSessionScreen().initChooseIntersectionMove(validPositionsForBasicKnight, displaceKnight);
+
+                    }
+                    else {
+                        displaceKnight.<CoordinatePair>addMove(newPosForKnight -> {
+
+                            CoordinatePair originalPos = chosenKnightCoord;
+                            CoordinatePair newPosition = newPosForKnight;
+                            aSessionController.getKnightController().displaceKnight(chosenKnightCoord, newPosForKnight);
+
+                            //if there are no valid positions for the knight remove the knight
+
+                            //otherwise allow player to pick place where they would like knight to go
+
+                            DisplaceKnightRequest request = DisplaceKnightRequest.newInstance(newPosition, currentP.getUsername());
+                            CatanGame.client.sendTCP(request);
+                            //call a session controller init intersectinos for build basic knight
+                        });
+
+                        //add move for build basic knight
+                        displaceKnight.<CoordinatePair>addMove(buildKnightCoord -> {
+                            aSessionController.getKnightController().buildKnight(buildKnightCoord, currentPColor);
+                            BuildKnightRequest buildKnightRequest = BuildKnightRequest.newInstance(currentP.getUsername(), currentPColor, buildKnightCoord);
+                            CatanGame.client.sendTCP(buildKnightRequest);
+
+                        });
+
+                        aSessionController.getSessionScreen().initChooseIntersectionMove(validPositionsForBasicKnight, displaceKnight);
+
+                        aSessionController.getSessionScreen().initChooseIntersectionMove(validPositionsForDisplacedKnight, displaceKnight);
+                    }
+                });
+
+                aSessionController.getSessionScreen().initChooseIntersectionMove(validKnightsForDisplace, displaceKnight);
+
                 break;
+
+
             case SABOTEUR:
                 // when you play this card, each player who has as many or more victory points than you must 
                 // discard half (round down) of his cards to the bank (resource/commodity cards)
@@ -744,15 +841,16 @@ public class ProgressCardHandler {
                 resources.add(ResourceKind.ORE);
                 resources.add(ResourceKind.WOOD);
                 resources.add(ResourceKind.WOOL);
+
                 
                 // multistep move to prompt player to choose a resource, and take 1 card of that commodity from each player
                 MultiStepMove chooseResourceKind = new MultiStepMove();
-                
+
                 chooseResourceKind.<ResourceKind>addMove(resource -> {
                     // resources taken from each player with at least one chosen resource card
                     ResourceMap resourceTake = new ResourceMap();
                     resourceTake.put(resource, 2);
-                    
+
                     for (Player p : aSessionController.getPlayers()) {
                         // if the opponent player has at least one card of the chosen commodity, take one such card
                         if (!p.equals(currentP) && p.getResources().get(resource) > 0) {
@@ -773,7 +871,7 @@ public class ProgressCardHandler {
                     // ends the move
                     aSessionController.getSessionScreen().interractionDone();
                 });
-                
+
                 // begin the multistepmove
                 aSessionController.getSessionScreen().chooseResource(resources, chooseResourceKind);
                 
@@ -783,7 +881,7 @@ public class ProgressCardHandler {
                 commodities.add(ResourceKind.CLOTH);
                 commodities.add(ResourceKind.COIN);
                 commodities.add(ResourceKind.PAPER);
-                
+
                 // multistep move to prompt player to choose a commodity, and take 1 card of that commodity from each player
                 MultiStepMove chooseCommodityType = new MultiStepMove();
                 
@@ -791,7 +889,7 @@ public class ProgressCardHandler {
                     // resources taken from each player with at least one chosen commodity card
                     ResourceMap commodityTake = new ResourceMap();
                     commodityTake.put(commodity, 1);
-                    
+
                     for (Player p : aSessionController.getPlayers()) {
                         // if the opponent player has at least one card of the chosen commodity, take one such card
                         if (!p.equals(currentP) && p.getResources().get(commodity) > 0) {
@@ -812,6 +910,7 @@ public class ProgressCardHandler {
                 
                 // begin the multistepmove
                 aSessionController.getSessionScreen().chooseResource(commodities, chooseCommodityType);
+
                 
                 break;
         }
@@ -900,7 +999,5 @@ public class ProgressCardHandler {
                 validKnights.remove(i);
             }
         }
-
     }
-
 }

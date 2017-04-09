@@ -135,4 +135,14 @@ public class KnightController {
 
         return knightActor;
     }
+
+    //TODO
+    public void displaceKnight(CoordinatePair firstPos, CoordinatePair secondPos) {
+
+    }
+
+    //TODO
+    public void removeKnight(CoordinatePair knightpos) {
+
+    }
 }

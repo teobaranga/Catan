@@ -2209,9 +2209,9 @@ public class SessionScreen implements Screen {
         scienceImprovement.add(scienceImprovementLevel).row();
         politicsImprovement.add(politicsImprovementLevel).row();
 
-        tradeImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.YELLOW));
-        scienceImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.GREEN));
-        politicsImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.BLUE));
+        tradeImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.GOLD));
+        scienceImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.FOREST));
+        politicsImprovement.setBackground(CatanGame.skin.newDrawable("white", Color.ROYAL));
 
         Button improveTrade = new TextButton("Improve", CatanGame.skin);
         improveTrade.addListener(new ChangeListener() {

@@ -253,8 +253,11 @@ public class SessionController {
                         aSessionScreen.addGameMessage(robberMoved.username + " moved the robber");
 
                         Hex newPos = aGameBoardManager.getHexFromCoordinates(robberMoved.getNewPos().getLeft(), robberMoved.getNewPos().getRight());
-
-                        moveRobber(newPos, true);
+                        if (robberMoved.getIfOutOfBoard()) {
+                            moveRobber(null, true);
+                        } else {
+                            moveRobber(newPos, true);
+                        }
                     });
                 } else if (object instanceof SpecialTradeRequest) {
                     Gdx.app.postRunnable(() -> {
@@ -1453,11 +1456,21 @@ public class SessionController {
      * other peers about board change
      */
     public boolean moveRobber(Hex newPosition, boolean fromPeer) {
-        aGameBoardManager.setRobberPosition(newPosition);
-        aSessionScreen.placeRobber(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate());
-
+        if (newPosition == null) {
+            newPosition = Hex.newInstance(CoordinatePair.of(-30,-30, HarbourKind.NONE), TerrainKind.SEA, 0);
+            aGameBoardManager.setRobberPosition(null);
+            aSessionScreen.placeRobber(-30, -30);
+        } else {
+            aGameBoardManager.setRobberPosition(newPosition);
+            aSessionScreen.placeRobber(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate());
+        }
         if (!fromPeer) {
-            MoveRobberRequest request = MoveRobberRequest.newInstance(new ImmutablePair<Integer,Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), localPlayer.getUsername());
+            MoveRobberRequest request;
+            if (newPosition == null) {
+                request = MoveRobberRequest.newInstance(new ImmutablePair<Integer,Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), localPlayer.getUsername(), true);
+            } else {
+                request = MoveRobberRequest.newInstance(new ImmutablePair<Integer,Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), localPlayer.getUsername(), false);
+            }
             CatanGame.client.sendTCP(request);
         }
 
@@ -2283,7 +2296,8 @@ public class SessionController {
         if (choice >= 7) {
             chooseCardTypeAndDraw();
         } else if (choice >= 5) {
-            aSessionScreen.buildEdgeUnitForFree();
+           playProgressCard(ProgressCardType.ROADBUILDING); // this does not work, WHY ?
+            //aSessionScreen.buildEdgeUnitForFree(); // neither does this
         } else if (choice >= 4) {
             chooseResource();
         } else if (choice >= 3) {
@@ -2293,7 +2307,7 @@ public class SessionController {
                 return;
             }
         } else if (choice >= 2) {
-            aSessionScreen.placeRobber(-15,-10 ); //TODO make this better seriously, arnaud.
+            moveRobber(null,false);  //TODO make this better seriously arnaud.
         }
         localPlayer.removeFishToken(consumedFishToken);
         aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());

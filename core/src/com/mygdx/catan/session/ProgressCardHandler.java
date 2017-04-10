@@ -417,7 +417,7 @@ public class ProgressCardHandler {
 
             //TODO: need to test
             case DESERTER:
-                ArrayList<CoordinatePair> ValidKnightIntersections = aSessionController.requestValidKnightIntersections(currentP.getColor());
+                List<CoordinatePair> ValidKnightIntersections = aSessionController.requestValidKnightIntersections(currentP.getColor());
                 ArrayList<Player> myOpponents = new ArrayList<>();
                 for (Player p : aSessionController.getPlayers()) {
                     if (!p.equals(currentP)) { myOpponents.add(p); }
@@ -558,7 +558,7 @@ public class ProgressCardHandler {
                 }
 
                 //generate valid build intersections for current P to build a knight
-                ArrayList<CoordinatePair> validPositionsForBasicKnight = aSessionController.requestValidKnightIntersections(currentPColor);
+                List<CoordinatePair> validPositionsForBasicKnight = aSessionController.requestValidKnightIntersections(currentPColor);
 
 
                 MultiStepMove displaceKnight = new MultiStepMove();
@@ -993,7 +993,7 @@ public class ProgressCardHandler {
         }
     }
 
-    private void updateValidKnights(ArrayList<CoordinatePair> validKnights, CoordinatePair chosenKnight) {
+    private void updateValidKnights(List<CoordinatePair> validKnights, CoordinatePair chosenKnight) {
         for(CoordinatePair i : validKnights) {
             if (i.equals(chosenKnight)) {
                 validKnights.remove(i);

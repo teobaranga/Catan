@@ -15,6 +15,7 @@ import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.gameboard.Knight;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.ui.KnightActor;
 
 /**
@@ -24,10 +25,6 @@ import com.mygdx.catan.ui.KnightActor;
 public class GamePieces {
 
     private static GamePieces instance;
-
-    private final PolygonRegion sea, fishery, hills, forest, mountains, pasture, fields, gold;
-
-    private final PolygonRegion robber;
 
     /**
      * Array of regions representing the active knight states for each level.
@@ -47,8 +44,12 @@ public class GamePieces {
 
     public final TextureAtlas.AtlasRegion knightBg;
 
+    private final PolygonRegion sea, fishery, hills, forest, mountains, pasture, fields, gold;
+
+    private final PolygonRegion robber;
+
     private final TextureAtlas.AtlasRegion cityWall;
-    
+
     private Texture aSeaTextureSolid;
     private Texture aHillsTextureSolid;
     private Texture aForestTextureSolid;
@@ -165,18 +166,18 @@ public class GamePieces {
         polygonSprite.setScale(2.0f * SessionScreen.LENGTH / region.getRegion().getRegionHeight());
         return polygonSprite;
     }
-    
+
     /** Placeholder method for creating progress cards */
     Image createProgressCard(ProgressCardType type, float onBoardWidth, float onBoardHeight) {
         // PlaceHolder image
-        
+
         // TODO: make this connect to a progress card atlas 
         Image progressCardImage = new Image(aSeaTextureSolid);
 
         // Scale down the image to on board size
         progressCardImage.setSize(onBoardWidth, onBoardHeight);
 
-        return progressCardImage;    
+        return progressCardImage;
     }
 
     PolygonRegion createHighlightedIntersection(int xCor, int yCor, int base, int length, int pieceBase, PlayerColor color) {
@@ -223,22 +224,22 @@ public class GamePieces {
                 1, 3, 4
         });
     }
-    
+
     PolygonRegion createMerchant(int xCor, int yCor, int xOff, int yOff, int piecebase) {
         Texture merchantTexture = setupTextureSolid(Color.valueOf("660066"));
-        
+
         float xPos = +(xCor * xOff);
         float yPos = -(yCor * yOff);
-        
-        return new PolygonRegion(new TextureRegion (merchantTexture), 
+
+        return new PolygonRegion(new TextureRegion(merchantTexture),
                 new float[]{
-                        xPos - piecebase/2f, yPos + piecebase/2f,                // Vertex 0               2
-                        xPos + piecebase/2f, yPos + piecebase/2f,                // Vertex 1
-                        xPos, yPos + 2*piecebase                                 // Vertex 2             0   1
-                        
+                        xPos - piecebase / 2f, yPos + piecebase / 2f,              // Vertex 0               2
+                        xPos + piecebase / 2f, yPos + piecebase / 2f,              // Vertex 1
+                        xPos, yPos + 2 * piecebase                                 // Vertex 2             0   1
+
                 }, new short[]{
                 0, 1, 2,
-        }); 
+        });
     }
 
     PolygonSprite createRobber() {
@@ -263,6 +264,46 @@ public class GamePieces {
         knightActor.setOrigin(knightActor.getWidth() / 2f, knightActor.getHeight() / 2f);
 
         return knightActor;
+    }
+
+    /**
+     * Create an image used to highlight valid positions for a knight.
+     *
+     * @param localPlayer the local player, always
+     */
+    Image createKnightPosition(Player localPlayer) {
+        Image knightPos = new Image(knightBg);
+
+        // The highlighted position should be a bit transparent
+        float alpha = 0.75f;
+
+        // It should also take the color of the local player
+        switch (localPlayer.getColor()) {
+            case WHITE:
+                knightPos.setColor(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, alpha);
+                break;
+            case BLUE:
+                knightPos.setColor(Color.BLUE.r, Color.BLUE.g, Color.BLUE.b, alpha);
+                break;
+            case RED:
+                knightPos.setColor(Color.RED.r, Color.RED.g, Color.RED.b, alpha);
+                break;
+            case ORANGE:
+                knightPos.setColor(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, alpha);
+                break;
+            case YELLOW:
+                knightPos.setColor(Color.YELLOW.r, Color.YELLOW.g, Color.YELLOW.b, alpha);
+                break;
+        }
+
+        // Scale down the image
+        final float knightScale = 1 / 8f;
+        knightPos.setSize(knightScale * knightPos.getWidth(), knightScale * knightPos.getHeight());
+
+        // Place the origin in the center of the image to make it easier to draw
+        knightPos.setOrigin(knightPos.getWidth() / 2f, knightPos.getHeight() / 2f);
+
+        return knightPos;
     }
 
     /**
@@ -618,7 +659,7 @@ public class GamePieces {
 
         return new PolygonRegion(new TextureRegion(aTexture),
                 new float[]{
-                        v0[0], v0[1],                                        // Vertex 0                2
+                        v0[0], v0[1],                                                // Vertex 0                2
                         v1[0] + dir * length / 8, v1[1] + diry * length / 10,        // Vertex 1                1          (with rotation)
                         v1[0] - dir * length / 8, v1[1] - diry * length / 10,        // Vertex 2         0
 

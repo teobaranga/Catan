@@ -22,6 +22,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.mygdx.catan.enums.GamePhase.*;
 import static com.mygdx.catan.enums.ResourceKind.*;
@@ -1181,10 +1183,35 @@ public class SessionController {
         return validKnightIntersections;
     }
 
-    //TODO
-    public ArrayList<CoordinatePair> requestValidKnightIntersections(PlayerColor owner) {
-        ArrayList<CoordinatePair> validKnightIntersections = new ArrayList<>();
-        return validKnightIntersections;
+    /** Get the valid positions where the local player can build a knight */
+    List<CoordinatePair> getValidBuildKnightPositions() {
+        return requestValidKnightIntersections(localPlayer.getColor());
+    }
+
+    /** Get the valid positions where the given player can build a knight */
+    List<CoordinatePair> requestValidKnightIntersections(PlayerColor owner) {
+        // TODO duplicate code (same as in knight controller), fix this
+        Player player = aSessionManager.getPlayerFromColor(owner);
+
+        // Check if the player has any roads first
+        List<EdgeUnit> roads = player.getRoadsAndShips().stream()
+                .filter(edgeUnit -> edgeUnit.getKind() == EdgeUnitKind.ROAD)
+                .collect(Collectors.toList());
+
+        if (roads.isEmpty())
+            return new ArrayList<>();
+
+        // Check if the player has any unoccupied intersections (aka valid positions for the knight)
+        List<CoordinatePair> unoccupiedIntersections = roads.stream()
+                .flatMap(edgeUnit -> Stream.of(edgeUnit.getAFirstCoordinate(), edgeUnit.getASecondCoordinate()))
+                .distinct()
+                .filter(coordinatePair -> !coordinatePair.isOccupied())
+                .collect(Collectors.toList());
+
+        if (unoccupiedIntersections.isEmpty())
+            return new ArrayList<>();
+
+        return unoccupiedIntersections;
     }
 
 

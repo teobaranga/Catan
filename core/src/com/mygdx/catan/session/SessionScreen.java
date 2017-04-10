@@ -529,6 +529,36 @@ public class SessionScreen implements Screen {
 //                    return;
 //                }
 
+                // Create the highlighted positions showing where a knight could be placed
+                List<Image> highlightedPositions = new ArrayList<>();
+                List<CoordinatePair> validBuildKnightPositions = aSessionController.getValidBuildKnightPositions();
+
+                if (validBuildKnightPositions.isEmpty()) {
+                    Label msg = new Label("There are no valid positions\nwhere you can build a knight.", CatanGame.skin);
+                    msg.setAlignment(Align.center);
+                    new Dialog("Warning", CatanGame.skin)
+                            .text(msg)
+                            .button("OK")
+                            .show(aSessionStage);
+                    return;
+                }
+
+                for (CoordinatePair position : validBuildKnightPositions) {
+                    validIntersections.add(position);
+
+                    CoordinatePair intersection = CoordinatePair.of(
+                            getBoardOrigin().getLeft() + position.getLeft() * OFFX,
+                            getBoardOrigin().getRight() + position.getRight() * -LENGTH / 2, null);
+
+                    Image knightPosition = gamePieces.createKnightPosition(aSessionController.getLocalPlayer());
+
+                    knightPosition.setPosition(intersection.getLeft() - knightPosition.getOriginX(),
+                            intersection.getRight() - knightPosition.getOriginY());
+
+                    gamePiecesStage.addActor(knightPosition);
+                    highlightedPositions.add(knightPosition);
+                }
+
                 // Create a new multi-step move to allow the player to place a knight
                 currentlyPerformingMove = new MultiStepMove();
 
@@ -538,16 +568,13 @@ public class SessionScreen implements Screen {
                 // Switch the mode to allow the player to choose an intersection
                 aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
 
-                // TODO: generate the actual valid positions for the knight
-                for (CoordinatePair intersection : aSessionController.requestValidInitializationBuildIntersections()) {
-                    validIntersections.add(intersection);
-                    highlightedPositions.add(gamePieces.createSettlement(intersection.getLeft(), intersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                }
-
                 // Make the current move place a knight at the specified position
                 currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
                     // Clear the highlighted positions
                     validIntersections.clear();
+                    for (Image knightPosition : highlightedPositions) {
+                        knightPosition.remove();
+                    }
                     highlightedPositions.clear();
                     // Build the knight
                     KnightActor knightActor = aSessionController.buildKnight(chosenIntersection);
@@ -590,6 +617,8 @@ public class SessionScreen implements Screen {
                     addKnight(knightActor);
                     // Go back to the previous mode
                     aMode = prevMode;
+                    // Mark the coordinate position as occupied
+                    chosenIntersection.putKnight(knightActor.getKnight());
                     // re-enable all appropriate actions
                     enablePhase(aSessionController.getCurrentGamePhase());
                 });

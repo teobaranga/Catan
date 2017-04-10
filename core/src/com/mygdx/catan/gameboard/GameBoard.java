@@ -26,7 +26,9 @@ public class GameBoard {
 	private Stack<ProgressCardType> aTradeProgressCardStack;
 	private Stack<FishTokenType> aFishTokenStack;
 	private List<Village> villages;
-	private ArrayList<Knight> knights;
+	private Map<Integer, Knight> knights;
+
+	private int nextKnightId;
 	
 	private final int SIZE = GameRules.getGameRulesInstance().getSize();
 	
@@ -40,7 +42,7 @@ public class GameBoard {
 		aIntersectionPositions = new ArrayList<>();
 		aRoadsAndShips = new ArrayList<>();
 		villages = new ArrayList<>();
-		knights = new ArrayList<>();
+		knights = new HashMap<>();
         aScienceProgressCardStack = new Stack<>();
         aPoliticsProgressCardStack = new Stack<>();
         aTradeProgressCardStack = new Stack<>();
@@ -315,11 +317,22 @@ public class GameBoard {
 	    return villages;
     }
 
-	void addKnight(Knight knight) {
-		knights.add(knight);
+	void addKnight(Knight knight, int id) {
+		knights.put(id, knight);
 	}
 
-	public List<Knight> getKnights() {
-		return knights;
+	Knight getKnight(int id) {
+        return knights.get(id);
+    }
+
+	public Collection<Knight> getKnights() {
+		return knights.values();
 	}
+
+	/** Get and increment the next knight ID */
+	public int nextKnightId() {
+        int id = nextKnightId;
+        nextKnightId++;
+        return id;
+    }
 }

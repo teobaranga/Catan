@@ -306,7 +306,7 @@ public class ProgressCardHandler {
                 playSmith.<CoordinatePair>addMove(myKnightCoordinates -> {
                     for (Knight k: listOfKnights) {
                         if (k.getPosition().equals(myKnightCoordinates)) {
-                            k.upgrade();
+                            k.promote();
                         }
                     }
                     validKnights.clear();
@@ -322,7 +322,7 @@ public class ProgressCardHandler {
                 playSmith.<CoordinatePair>addMove(mySecondKnightCoordinates -> {
                     for (Knight k: listOfKnights) {
                         if (k.getPosition().equals(mySecondKnightCoordinates)) {
-                            k.upgrade();
+                            k.promote();
                         }
                     }
                     aSessionController.getSessionScreen().interractionDone();
@@ -576,8 +576,8 @@ public class ProgressCardHandler {
                         //add move for build basic knight
                         displaceKnight.<CoordinatePair>addMove(buildKnightCoord -> {
                             aSessionController.getKnightController().buildKnight(buildKnightCoord, currentPColor);
-                            BuildKnightRequest buildKnightRequest = BuildKnightRequest.newInstance(currentP.getUsername(), currentPColor, buildKnightCoord);
-                            CatanGame.client.sendTCP(buildKnightRequest);
+                            KnightRequest knightRequest = KnightRequest.build(currentP.getUsername(), currentPColor, buildKnightCoord);
+                            CatanGame.client.sendTCP(knightRequest);
 
                         });
 
@@ -604,8 +604,8 @@ public class ProgressCardHandler {
                         //add move for build basic knight
                         displaceKnight.<CoordinatePair>addMove(buildKnightCoord -> {
                             aSessionController.getKnightController().buildKnight(buildKnightCoord, currentPColor);
-                            BuildKnightRequest buildKnightRequest = BuildKnightRequest.newInstance(currentP.getUsername(), currentPColor, buildKnightCoord);
-                            CatanGame.client.sendTCP(buildKnightRequest);
+                            KnightRequest knightRequest = KnightRequest.build(currentP.getUsername(), currentPColor, buildKnightCoord);
+                            CatanGame.client.sendTCP(knightRequest);
 
                         });
 

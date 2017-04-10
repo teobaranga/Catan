@@ -2,14 +2,14 @@ package com.mygdx.catan;
 
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.Hex;
-// import com.sun.javaws.progress.Progress;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+
+// import com.sun.javaws.progress.Progress;
 
 /**
  * Singleton object describing the game rules
@@ -728,27 +728,19 @@ public class GameRules {
 	}
 
 	public ResourceMap getActivateKnightCost(ProgressCardType type) {
-		if (type == null) {
-			return activateKnightCost;
-		}
-		switch (type) {
-			case WARLORD:
-				return new ResourceMap();
-			default:
-				return activateKnightCost;
-		}
+	    // Activating a knight is free with the Warlord card
+		if (type == ProgressCardType.WARLORD)
+		    return new ResourceMap();
+
+        return activateKnightCost;
 	}
 
 	public ResourceMap getPromoteKnightCost(ProgressCardType type) {
-	    if (type == null) {
-	        return promoteKnightCost;
-        }
-        switch (type) {
-            case SMITH:
-                return new ResourceMap();
-            default:
-                return promoteKnightCost;
-        }
+	    // Upgrading a knight is free with the Smith card
+		if (type == ProgressCardType.SMITH)
+		    return new ResourceMap();
+
+        return promoteKnightCost;
     }
 
     public ResourceMap getScienceCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {

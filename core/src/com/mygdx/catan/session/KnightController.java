@@ -10,11 +10,12 @@ import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.TradeAndTransaction.TransactionManager;
 import com.mygdx.catan.enums.EdgeUnitKind;
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.player.Player;
-import com.mygdx.catan.request.BuildKnightRequest;
+import com.mygdx.catan.request.KnightRequest;
 import com.mygdx.catan.ui.KnightActor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -50,14 +51,32 @@ public class KnightController {
         listener = new Listener() {
             @Override
             public void received(Connection connection, Object object) {
-                if (object instanceof BuildKnightRequest) {
+                if (object instanceof KnightRequest) {
                     // Add the knight created by another player
                     Gdx.app.postRunnable(() -> {
-                        BuildKnightRequest request = (BuildKnightRequest) object;
-                        Pair<Integer, Integer> position = request.getPosition();
-                        CoordinatePair coordinates = gameBoardManager.getCoordinatePairFromCoordinates(position.getLeft(), position.getRight());
-                        KnightActor knightActor = buildKnight(coordinates, request.getOwner());
-                        sessionScreen.addKnight(knightActor);
+                        KnightRequest request = (KnightRequest) object;
+                        switch (request.getType()) {
+                            case BUILD:
+                                Pair<Integer, Integer> position = request.getPosition();
+                                CoordinatePair coordinates = gameBoardManager.getCoordinatePairFromCoordinates(position.getLeft(), position.getRight());
+                                KnightActor knightActor = buildKnight(coordinates, request.getOwner());
+                                sessionScreen.addKnight(knightActor);
+                                break;
+                            case ACTIVATE: {
+                                // Activate the knight and inform the GUI
+                                int id = request.getId();
+                                gameBoardManager.activateKnight(id);
+                                sessionScreen.refreshKnight(id);
+                                break;
+                            }
+                            case PROMOTE: {
+                                // Promote the knight and inform the GUI
+                                int id = request.getId();
+                                gameBoardManager.promoteKnight(id);
+                                sessionScreen.refreshKnight(id);
+                                break;
+                            }
+                        }
                     });
                 }
             }
@@ -129,11 +148,59 @@ public class KnightController {
         // Inform other players
         if (localPlayer.getColor() == color) {
             Pair<Integer, Integer> knightCoords = new ImmutablePair<>(position.getLeft(), position.getRight());
-            BuildKnightRequest request = BuildKnightRequest.newInstance(localPlayer.getUsername(), color, knightCoords);
+            KnightRequest request = KnightRequest.build(localPlayer.getUsername(), color, knightCoords);
             CatanGame.client.sendTCP(request);
         }
 
         return knightActor;
+    }
+
+    /**
+     * Attempt to activate a knight. If the player has enough resources, the activation
+     * cost is deducted from the player and the knight is activated.
+     *
+     * @return true if the knight was activated, false otherwise
+     */
+    boolean requestActivateKnight(Knight knight) {
+        ProgressCardType type = sessionManager.getCurrentlyExecutingProgressCard();
+        ResourceMap activateKnightCost = gameRules.getActivateKnightCost(type);
+        boolean enough = localPlayer.hasEnoughResources(activateKnightCost);
+        if (!enough) {
+            knight.activate();
+            transactionManager.payPlayerToBank(localPlayer, activateKnightCost);
+            sessionScreen.updateResourceBar(localPlayer.getResources());
+
+            // Inform the other players
+            KnightRequest msg = KnightRequest.activate(localPlayer.getUsername(), knight.getId());
+            CatanGame.client.sendTCP(msg);
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Attempt to promote a knight. If the player has enough resources, the promotion
+     * cost is deducted from the player and the knight is promoted.
+     *
+     * @return true if the knight was promoted, false otherwise
+     */
+    boolean requestPromoteKnight(Knight knight) {
+        ProgressCardType type = sessionManager.getCurrentlyExecutingProgressCard();
+        ResourceMap promoteKnightCost = gameRules.getPromoteKnightCost(type);
+        boolean enough = localPlayer.hasEnoughResources(promoteKnightCost);
+        if (!enough) {
+            knight.promote();
+            transactionManager.payPlayerToBank(localPlayer, promoteKnightCost);
+            sessionScreen.updateResourceBar(localPlayer.getResources());
+
+            // Inform the other players
+            KnightRequest msg = KnightRequest.promote(localPlayer.getUsername(), knight.getId());
+            CatanGame.client.sendTCP(msg);
+
+            return true;
+        }
+        return false;
     }
 
     //TODO

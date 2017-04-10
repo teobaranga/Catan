@@ -557,14 +557,32 @@ public class SessionScreen implements Screen {
                             KnightActionsWindow actionWindow = knightActor.displayActions();
                             actionWindow.setWindowCloseListener(() -> popups.remove(actionWindow));
                             actionWindow.setOnKnightActivateClick(knightActor1 -> {
-                                // TODO check for resources
-                                knightActor.getKnight().setActive(true);
-                                return true;
+                                // Attempt to activate the knight
+                                if (aSessionController.requestActivateKnight(knightActor.getKnight())) {
+                                    return true;
+                                }
+                                // Inform the player
+                                Label msg = new Label("You do not have sufficient resources\nto activate this knight.", CatanGame.skin);
+                                msg.setAlignment(Align.center);
+                                new Dialog("Insufficient resources", CatanGame.skin)
+                                        .text(msg)
+                                        .button("OK")
+                                        .show(aSessionStage);
+                                return false;
                             });
                             actionWindow.setOnKnightUpgradeClick(knightActor1 -> {
-                                // TODO check for resources
-                                knightActor.getKnight().upgrade();
-                                return true;
+                                // Attempt to promote the knight
+                                if (aSessionController.requestPromoteKnight(knightActor.getKnight())) {
+                                    return true;
+                                }
+                                // Inform the player
+                                Label msg = new Label("You do not have sufficient resources\nto promote this knight.", CatanGame.skin);
+                                msg.setAlignment(Align.center);
+                                new Dialog("Insufficient resources", CatanGame.skin)
+                                        .text(msg)
+                                        .button("OK")
+                                        .show(aSessionStage);
+                                return false;
                             });
                             popups.add(actionWindow);
                         }
@@ -1477,11 +1495,11 @@ public class SessionScreen implements Screen {
         }
         highlightBatch.end();
 
-        aSessionStage.act(delta);
-        aSessionStage.draw();
-
         gamePiecesStage.act(delta);
         gamePiecesStage.draw();
+
+        aSessionStage.act(delta);
+        aSessionStage.draw();
     }
 
     @Override
@@ -2352,9 +2370,20 @@ public class SessionScreen implements Screen {
         bootOwnerLabel.setText("Boot Owner: " + username);
     }
 
+    /** Add a knight piece to the game board */
     void addKnight(KnightActor knightActor) {
         knights.add(knightActor);
         gamePiecesStage.addActor(knightActor);
+    }
+
+    /** Refresh a knight piece as a result of an activation or promotion */
+    void refreshKnight(int id) {
+        for (KnightActor knightActor : knights) {
+            if (knightActor.getKnight().getId() == id) {
+                knightActor.refresh();
+                break;
+            }
+        }
     }
 
     /**

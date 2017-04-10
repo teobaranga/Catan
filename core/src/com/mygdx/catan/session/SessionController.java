@@ -1,7 +1,6 @@
 package com.mygdx.catan.session;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.*;
@@ -672,6 +671,12 @@ public class SessionController {
             aSessionScreen.endTurn();
             return;
         }
+
+        // Reset the status of the knights so that they can be activate & promoted again
+        for (Knight knight : localPlayer.getKnights()) {
+            knight.reset();
+        }
+
         aSessionScreen.enablePhase(aSessionManager.getCurrentPhase());
         switch (aSessionManager.getCurrentPhase()) {
             case SETUP_PHASE_ONE:
@@ -933,8 +938,18 @@ public class SessionController {
         return canBuild;
     }
 
-    public boolean requestBuildKnight() {
+    boolean requestBuildKnight() {
         return knightController.requestBuildKnight();
+    }
+
+    /** @see KnightController#requestActivateKnight(Knight)  */
+    boolean requestActivateKnight(Knight knight) {
+        return knightController.requestActivateKnight(knight);
+    }
+
+    /** @see KnightController#requestPromoteKnight(Knight) */
+    boolean requestPromoteKnight(Knight knight) {
+        return knightController.requestPromoteKnight(knight);
     }
 
     public boolean requestTradeImprovement(PlayerColor owner) {
@@ -1265,11 +1280,6 @@ public class SessionController {
     /** Build a new basic knight for the local player. */
     KnightActor buildKnight(CoordinatePair position) {
         return knightController.buildKnight(position);
-    }
-
-    /** Build a new basic knight for a given player */
-    KnightActor buildKnight(CoordinatePair position, PlayerColor color) {
-        return knightController.buildKnight(position, color);
     }
 
     /*

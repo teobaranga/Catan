@@ -1,12 +1,8 @@
 package com.mygdx.catan.gameboard;
 
 import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.GameRules;
-import com.mygdx.catan.ResourceMap;
-import com.mygdx.catan.player.Player;
-import com.mygdx.catan.session.Session;
-import com.mygdx.catan.session.SessionManager;
 import com.mygdx.catan.enums.*;
+import com.mygdx.catan.player.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -244,9 +240,9 @@ public class GameBoardManager {
      * @return the knight that was build
      */
     public Knight buildKnight(Player player, CoordinatePair myKnightPosition) {
-        Knight myKnight = Knight.newInstance(player, myKnightPosition);
+        Knight myKnight = Knight.newInstance(player, myKnightPosition, aGameBoard.nextKnightId());
         player.addKnight(myKnight);
-        aGameBoard.addKnight(myKnight);
+        aGameBoard.addKnight(myKnight, myKnight.getId());
         return myKnight;
     }
 
@@ -281,6 +277,14 @@ public class GameBoardManager {
 
     public void activateKnight(Knight k) {
         k.setActive(true);
+    }
+
+    public void activateKnight(int id) {
+        aGameBoard.getKnight(id).activate();
+    }
+
+    public void promoteKnight(int id) {
+        aGameBoard.getKnight(id).promote();
     }
 
     //TODO: you may move one of your active knights to an intersection occupried by an opponent's knight.

@@ -15,7 +15,7 @@ public class KnightActionsWindow extends CatanWindow {
     private KnightActivationListener knightActivationListener;
     private KnightUpgradeListener knightUpgradeListener;
 
-    private final TextButton upgrade;
+    private final TextButton activateButton, promoteButton;
 
     private final KnightActor knightActor;
 
@@ -24,8 +24,8 @@ public class KnightActionsWindow extends CatanWindow {
 
         this.knightActor = knightActor;
 
-        TextButton activate = new TextButton("Activate", CatanGame.skin);
-        activate.addListener(new ChangeListener() {
+        activateButton = new TextButton("Activate", CatanGame.skin);
+        activateButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (knightActivationListener != null) {
@@ -36,10 +36,10 @@ public class KnightActionsWindow extends CatanWindow {
                 }
             }
         });
-        add(activate).padTop(10).padBottom(5).padLeft(30).padRight(30).row();
+        add(activateButton).padTop(10).padBottom(5).padLeft(30).padRight(30).row();
 
-        upgrade = new TextButton("Upgrade", CatanGame.skin);
-        upgrade.addListener(new ChangeListener() {
+        promoteButton = new TextButton("Promote", CatanGame.skin);
+        promoteButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (knightUpgradeListener != null) {
@@ -50,7 +50,7 @@ public class KnightActionsWindow extends CatanWindow {
                 }
             }
         });
-        add(upgrade).padTop(5).padBottom(10).padLeft(30).padRight(30).row();
+        add(promoteButton).padTop(5).padBottom(10).padLeft(30).padRight(30).row();
 
         setModal(false);
         setMovable(true);
@@ -62,7 +62,12 @@ public class KnightActionsWindow extends CatanWindow {
         super.setStage(stage);
         // Every time this window is displayed, do these checks...
         if (knightActor.getKnight().is(MIGHTY))
-            upgrade.setDisabled(true);
+            promoteButton.setDisabled(true);
+        if (knightActor.getKnight().isPromotedThisTurn())
+            promoteButton.setDisabled(true);
+        if (knightActor.getKnight().isActivatedThisTurn())
+            activateButton.setDisabled(true);
+
     }
 
     public void setOnKnightActivateClick(KnightActivationListener knightActivationListener) {

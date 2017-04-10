@@ -19,11 +19,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.objenesis.strategy.SerializingInstantiatorStrategy;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class Config {
     /** TCP port used when connecting to the server */
@@ -93,6 +89,8 @@ public class Config {
         kryo.register(LinkedHashMap.class);
         kryo.register(List.class);
         kryo.register(ArrayList.class);
+        kryo.register(Map.class);
+        kryo.register(HashMap.class);
         kryo.register(EnumMap.class);
         kryo.register(ChooseResourceCardRequest.class);
         kryo.register(TargetedChooseResourceCardRequest.class);
@@ -137,7 +135,8 @@ public class Config {
         kryo.register(TradeImprovementRequest.class);
         kryo.register(ScienceImprovementRequest.class);
         kryo.register(PoliticsImprovementRequest.class);
-        kryo.register(BuildKnightRequest.class);
+        kryo.register(KnightRequest.class);
+        kryo.register(KnightRequest.Type.class);
         kryo.register(MoveKnightRequest.class);
         kryo.register(ActivateKnightRequest.class);
         kryo.register(ChangeKnightStatus.class);

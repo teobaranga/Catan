@@ -11,22 +11,36 @@ public class Knight {
     /** Position of the knight on the game board */
     private CoordinatePair position;
 
+    /** ID of this knight */
+    private int id;
+
     private boolean active;
     private boolean movedThisTurn;
 
     /** Strength of the knight. */
     private Strength strength;
 
-    public static Knight newInstance(Player owner, CoordinatePair position) {
+    /** Flag indicating whether the knight was promoted this turn */
+    private boolean promotedThisTurn;
+
+    /** Flag indicating whether the knight was activated this turn */
+    private boolean activatedThisTurn;
+
+    public static Knight newInstance(Player owner, CoordinatePair position, int id) {
         Knight knight = new Knight();
         knight.owner = owner;
         knight.position = position;
+        knight.id = id;
         knight.strength = Strength.BASIC;
         return knight;
     }
     
     public Knight() {
         
+    }
+
+    public int getId() {
+        return id;
     }
 
     public boolean isActive() {
@@ -58,13 +72,41 @@ public class Knight {
 
     public CoordinatePair getPosition() { return position; }
 
-    /** Upgrade this knight */
-    public void upgrade() {
+    /** Activate this knight */
+    public void activate() {
+        active = true;
+        activatedThisTurn = true;
+    }
+
+    /** Check if the knight was already activated this turn */
+    public boolean isActivatedThisTurn() {
+        return activatedThisTurn;
+    }
+
+    /** Promote this knight */
+    public void promote() {
         // Check for max strength
-        if (strength == Strength.BASIC)
+        if (strength == Strength.BASIC) {
             strength = Strength.STRONG;
-        else if (strength == Strength.STRONG)
+            promotedThisTurn = true;
+        } else if (strength == Strength.STRONG) {
             strength = Strength.MIGHTY;
+            promotedThisTurn = true;
+        }
+    }
+
+    /** Check if the knight was already promoted this turn */
+    public boolean isPromotedThisTurn() {
+        return promotedThisTurn;
+    }
+
+    /**
+     * Reset the knight's flags so that it can be promoted and activated again.
+     * Must be done every new turn.
+     */
+    public void reset() {
+        promotedThisTurn = false;
+        activatedThisTurn = false;
     }
 
     public enum Strength {

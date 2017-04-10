@@ -510,7 +510,7 @@ public class SessionController {
 
                         if (villageToUpdate.hasCityWalls()) {
                             villageToUpdate.setCityWalls(false);
-                            //TODO remove city walls on session screen
+                            aSessionScreen.removeCityWall(villageCoord);
                          } else {
                              villageToUpdate.setVillageKind(VillageKind.SETTLEMENT);
                              villageToUpdate.getOwner().incrementAvailableCities();
@@ -537,7 +537,7 @@ public class SessionController {
                             //if the city has city walls then these are removed
                             if (city.hasCityWalls()) {
                                city.setCityWalls(false);
-                               //TODO TEO remove city walls on session screen
+                               aSessionScreen.removeCityWall(cityPosition);
                             } else {
                                 city.setVillageKind(VillageKind.SETTLEMENT);
                                 localPlayer.incrementAvailableCities();
@@ -610,6 +610,21 @@ public class SessionController {
                             }
                         }
                         
+                    });
+                } else if (object instanceof CityWallChange) {
+                    Gdx.app.postRunnable(() -> {
+                        CityWallChange cityWallChanged = (CityWallChange) object;
+                        
+                        Pair<Integer,Integer> coordinates = cityWallChanged.getPosition();
+                        CoordinatePair position = aGameBoardManager.getCoordinatePairFromCoordinates(coordinates.getLeft(), coordinates.getRight());
+                        
+                        position.getOccupyingVillage().setCityWalls(cityWallChanged.getNewCityWallStatus());
+                        
+                        if (cityWallChanged.getNewCityWallStatus()) {
+                            buildCityWall(cityWallChanged.getOwner(), position, true);
+                        } else {
+                            destroyCityWall(position, true);
+                        }
                     });
                 }
             }
@@ -927,6 +942,7 @@ public class SessionController {
         return currentP.hasEnoughResources(GameRules.getGameRulesInstance().getPoliticsCityImprovementCost(currentPoliticsLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
     }
 
+    //TODO delete when play progress card button has been removed
     //returns true if progress card play is valid based on game rules
     public boolean controlPlayProgressCard(PlayerColor owner) {
         return true;
@@ -990,7 +1006,9 @@ public class SessionController {
         Player currentP = aSessionManager.getPlayerFromColor(owner);
         List<Village> listOfVillages = currentP.getVillages();
         for (Village v : listOfVillages) {
-            validUpgradeIntersections.add(v.getPosition());
+            if (v.getVillageKind() == VillageKind.SETTLEMENT) {
+                validUpgradeIntersections.add(v.getPosition());   
+            }
         }
         return validUpgradeIntersections;
     }
@@ -1239,6 +1257,7 @@ public class SessionController {
         return knightController.buildKnight(position, color);
     }
 
+    /*
     Image buildCityWall(CoordinatePair position, boolean fromPeer) {
         // TODO: Add city wall to gameboard state
 
@@ -1249,7 +1268,7 @@ public class SessionController {
         // TODO inform other players
 
         return cityWall;
-    }
+    }*/
 
     public boolean activateKnight(PlayerColor owner, Knight myKnight, boolean fromPeer) {
         Player currentP = aSessionManager.getPlayerFromColor(owner);
@@ -1335,12 +1354,45 @@ public class SessionController {
         return true;
     }
 
-    //TODO: build city wall this is where messages will happen, will tell GUI to show city wall
-    public boolean buildCityWall(PlayerColor owner, CoordinatePair myWall, boolean fromPeer){
+    /**
+     * Builds a city wall around city at given coordinatepair
+     * @precondition the coordinatepair wallPosition has a city of given player color on it
+     * */
+    public boolean buildCityWall(PlayerColor owner, CoordinatePair wallPosition, boolean fromPeer){
         Player currentP = aSessionManager.getPlayerFromColor(owner);
-        aGameBoardManager.buildCityWall(currentP, myWall);
-        //need to change city has wall to true
-        //aSessionScreen.updateCity();
+        aGameBoardManager.buildCityWall(currentP, wallPosition);
+        
+        // update gui
+        aSessionScreen.putCityWall(wallPosition, owner);
+        
+        if (!fromPeer) {
+            // send message to network about change 
+            CityWallChange request = CityWallChange.newInstance(true, new ImmutablePair<Integer,Integer>(wallPosition.getLeft(), wallPosition.getRight()), owner, localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+            
+            // remove resources it cost to build the city wall
+            aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityWallCost(aSessionManager.getCurrentlyExecutingProgressCard()));
+            aSessionScreen.updateResourceBar(localPlayer.getResources());
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Destroys a city wall around a city at given coordinatepair
+     * @precondition the coordinatepair wallPosition has a city with a wall around it
+     * */
+    public boolean destroyCityWall(CoordinatePair wallPosition, boolean fromPeer) {
+        aGameBoardManager.destroyCityWall(wallPosition);
+        
+        aSessionScreen.removeCityWall(wallPosition);
+        
+        if (!fromPeer) {
+            // send message to network about change 
+            CityWallChange request = CityWallChange.newInstance(true, new ImmutablePair<Integer,Integer>(wallPosition.getLeft(), wallPosition.getRight()), null, localPlayer.getUsername());
+            CatanGame.client.sendTCP(request);
+        }
+        
         return true;
     }
 

@@ -129,6 +129,7 @@ public class Config {
         kryo.register(DefenderOfCatan.class);
         kryo.register(DiscardHalfRequest.class);
         kryo.register(MoveMerchantRequest.class);
+        kryo.register(CityWallChange.class);
         kryo.register(UpdateLongestRoad.class);
         kryo.register(DisplaceRoadRequest.class);
         kryo.register(UpdateOldBoot.class);

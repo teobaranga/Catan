@@ -614,38 +614,30 @@ public class SessionScreen implements Screen {
         buildCityWallButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Create a new multi-step move to allow the player to place a city wall
-                currentlyPerformingMove = new MultiStepMove();
-
-                // Keep track of the previous session mode
-                final SessionScreenModes prevMode = aMode;
-
-                // Switch the mode to allow the player to choose an intersection
-                aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
-
-                // TODO: generate the actual valid positions for the city walls
-                for (CoordinatePair intersection : aSessionController.requestValidInitializationBuildIntersections()) {
-                    validIntersections.add(intersection);
-                    highlightedPositions.add(gamePieces.createSettlement(intersection.getLeft(), intersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+                if(!aSessionController.requestBuildCityWall(aSessionController.getPlayerColor())) {
+                    addGameMessage("Not enough resources for building city walls");
+                    return;
                 }
+                
+                // Create a new multi-step move to allow the player to place a city wall
+                MultiStepMove buildCityWall = new MultiStepMove();
 
                 // Make the current move place a city wall at the specified position
-                currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
-                    // Clear the highlighted positions
-                    validIntersections.clear();
-                    highlightedPositions.clear();
-                    // Build the knight
-                    CoordinatePair intersection = CoordinatePair.of(
-                            boardOrigin.getLeft() + chosenIntersection.getLeft() * OFFX,
-                            boardOrigin.getRight() + chosenIntersection.getRight() * -LENGTH / 2, null);
-                    Image cityWall = aSessionController.buildCityWall(intersection, false);
-                    cityWalls.add(cityWall);
-                    gamePiecesStage.addActor(cityWall);
-                    // Go back to the previous mode
-                    aMode = prevMode;
+                buildCityWall.<CoordinatePair>addMove(chosenIntersection -> {
+                    // Build the city wall around chosen city intersection
+                    aSessionController.buildCityWall(aSessionController.getPlayerColor(), chosenIntersection, false);
+                    
                     // re-enable all appropriate actions
-                    enablePhase(aSessionController.getCurrentGamePhase());
+                    interractionDone();
                 });
+                
+                // initiate multistepmove with the valid build positions
+                List<CoordinatePair> validCityWallIntersections = aSessionController.requestValidCityWallIntersections(aSessionController.getPlayerColor());
+                if (!validCityWallIntersections.isEmpty()) {
+                    initChooseIntersectionMove(validCityWallIntersections, buildCityWall);
+                } else {
+                    addGameMessage("You do not have any cities without walls");
+                } 
             }
         });
         buildCityWallButton.pad(0, 10, 0, 10);
@@ -1746,6 +1738,51 @@ public class SessionScreen implements Screen {
         }
         if (village != null)
             villages.add(village);
+    }
+    
+    /**
+     * puts a new city wall piece at given position of given color. removes the city wall already at that position
+     * */
+    public void putCityWall(CoordinatePair position, PlayerColor color) {
+        int offsetX = position.getLeft();
+        int offsetY = position.getRight();
+        
+        Image cityWall = gamePieces.createCityWall(color);
+        float xPos = offsetX * BASE;
+        float yPos = -(offsetY * LENGTH / 2);
+        
+        removeCityWall(position);
+        
+        cityWall.setPosition(getBoardOrigin().getLeft() + xPos - cityWall.getOriginX(), getBoardOrigin().getRight() + yPos - cityWall.getOriginY());
+        cityWalls.add(cityWall);
+        gamePiecesStage.addActor(cityWall);
+    }
+    
+    /**
+     * removes city wall at given position
+     * */
+    public void removeCityWall(CoordinatePair position) {
+        int offsetX = position.getLeft();
+        int offsetY = position.getRight();
+        
+        float xPos = getBoardOrigin().getLeft() + offsetX * BASE;
+        float yPos = getBoardOrigin().getRight() - (offsetY * LENGTH / 2);
+        
+        Image cityWallToRemove = null;
+        
+        for (Image cityWall : cityWalls) {
+            float xCor = cityWall.getX();
+            float yCor = cityWall.getY();
+            if (Math.abs(xPos - xCor) <= cityWall.getWidth()/2f && Math.abs(yPos - yCor) <= cityWall.getHeight()/2f) {
+                cityWallToRemove = cityWall;
+                break;
+            }
+        }
+        
+        if (cityWallToRemove != null) {
+            cityWalls.remove(cityWallToRemove);
+            cityWallToRemove.remove();
+        }
     }
 
     /**

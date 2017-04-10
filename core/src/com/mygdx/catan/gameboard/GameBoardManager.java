@@ -226,7 +226,13 @@ public class GameBoardManager {
     }
 
     public void buildCityWall(Player player, CoordinatePair myCityWall) {
-        throw new RuntimeException("buildCityWall not yet implemented");
+        Village city = myCityWall.getOccupyingVillage();
+        city.setCityWalls(true);
+    }
+    
+    public void destroyCityWall(CoordinatePair wallPosition) {
+        Village city = wallPosition.getOccupyingVillage();
+        city.setCityWalls(false);
     }
 
     /**

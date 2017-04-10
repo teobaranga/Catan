@@ -2374,7 +2374,7 @@ public class SessionController {
         boolean failed;
         FishTokenMap consumedFishToken = p.getLeft();
         int choice = p.getRight();
-        for (Map.Entry<FishTokenType, Integer> entry : consumedFishToken.entrySet()) {
+        for (Map.Entry<FishTokenType, Integer> entry : consumedFishToken.entrySet()) { //counts the number of traded fish
             switch (entry.getKey()) {
                 case ONE_FISH:
                     fishCount += entry.getValue();
@@ -2389,36 +2389,36 @@ public class SessionController {
                     break;
             }
         }
-        if (choice < 2) {
+        if (choice < 2) {  // checks that the player actually made a choice on what trade he wants
             aSessionScreen.addGameMessage("You have not chosen a Trade!");
             return;
         }
-        if (choice > fishCount) {
+        if (choice > fishCount) { // checks that the player gave enough fish
             aSessionScreen.addGameMessage("You have not given enough Fish!");
             return;
         }
 
-        if (choice >= 7) {
+        if (choice >= 7) { // choose a ProgressCardType and get a card of the chosen type
             chooseCardTypeAndDraw();
-        } else if (choice >= 5) {
-            playProgressCard(ProgressCardType.ROADBUILDING); // this does not work, WHY ?
-            //aSessionScreen.buildEdgeUnitForFree(); // neither does this
-        } else if (choice >= 4) {
+        } else if (choice >= 5) { // build an EdgeUnit (road or ship) for free.
+            //playProgressCard(ProgressCardType.ROADBUILDING);
+            aSessionScreen.buildEdgeUnitForFree();
+        } else if (choice >= 4) { // Choose a resource (not commodity) and get one of it.
             chooseResource();
-        } else if (choice >= 3) {
+        } else if (choice >= 3) { // Steal a resource from another player
             failed = chooseSteal();
             if (failed) {
                 aSessionScreen.addGameMessage("There is no player you can rob");
                 return;
             }
-        } else if (choice >= 2) {
+        } else if (choice >= 2) { // Move the Robber or Pirate out of the Board
             moveRobber(null, false);  //TODO Handle pirate OR robber.
         }
-        localPlayer.removeFishToken(consumedFishToken);
-        aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());
+        localPlayer.removeFishToken(consumedFishToken); // remove fish from player's hand
+        aSessionScreen.updateFishTable(localPlayer.getFishTokenHand()); // update GUI
     }
 
-    private boolean chooseSteal() {
+    private boolean chooseSteal() { // allows to choose the player to rob
         ArrayList<Player> victims = new ArrayList<>(Arrays.asList(getPlayers()));
         victims.remove(localPlayer);
         for (Player p : victims) {
@@ -2435,7 +2435,7 @@ public class SessionController {
         return false;
     }
 
-    private void chooseCardTypeAndDraw() {
+    private void chooseCardTypeAndDraw() { // allows to choose a card type to draw
         MultiStepMove chooseProgressCard = new MultiStepMove();
         chooseProgressCard.<ProgressCardKind>addMove((kind) -> {
             drawProgressCard(kind);
@@ -2444,7 +2444,7 @@ public class SessionController {
         aSessionScreen.chooseProgressCardKind(chooseProgressCard, Arrays.asList(ProgressCardKind.values()));
     }
 
-    private void chooseResource() {
+    private void chooseResource() { // allows to choose a resource (again not a commodity)
         ArrayList<ResourceKind> possiblechoice = new ArrayList<>();
         possiblechoice.add(WOOD);
         possiblechoice.add(WOOL);

@@ -1,6 +1,7 @@
 package com.mygdx.catan.session;
 
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.EventKind;
@@ -21,6 +22,7 @@ public class Session {
 
     /** The last event rolled on the event die */
     public EventKind eventDie;
+    public DiceRollPair diceResult;
 
     /** The position of the barbarians */
     public int barbarianPosition;

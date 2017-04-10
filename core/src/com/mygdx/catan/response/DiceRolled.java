@@ -2,6 +2,7 @@ package com.mygdx.catan.response;
 
 import com.mygdx.catan.session.Session;
 import com.mygdx.catan.DiceRollPair;
+import com.mygdx.catan.enums.EventKind;
 
 /**
  * Response sent as result of a player rolling the dice.
@@ -16,18 +17,22 @@ public class DiceRolled implements Response {
 
     /** The sum of the dice numbers */
     private DiceRollPair diceRoll;
+    
+    /** The event die result */
+    private EventKind eventKindResult;
 
     private Session session;
 
-    public static DiceRolled newInstance(String username, DiceRollPair diceRoll) {
+    public static DiceRolled newInstance(String username, DiceRollPair diceRoll, EventKind eventKindResult) {
         final DiceRolled response = new DiceRolled();
         response.username = username;
         response.diceRoll = diceRoll;
+        response.eventKindResult = eventKindResult;
         return response;
     }
 
-    public static DiceRolled newInstance(String username, DiceRollPair diceRoll, Session session) {
-        final DiceRolled response = newInstance(username, diceRoll);
+    public static DiceRolled newInstance(String username, DiceRollPair diceRoll, Session session, EventKind eventKindResult) {
+        final DiceRolled response = newInstance(username, diceRoll, eventKindResult);
         response.session = session;
         return response;
     }
@@ -46,5 +51,9 @@ public class DiceRolled implements Response {
 
     public Session getSession() {
         return session;
+    }
+    
+    public EventKind getEventKindResult() {
+        return eventKindResult;
     }
 }

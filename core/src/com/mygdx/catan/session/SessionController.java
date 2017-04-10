@@ -111,6 +111,10 @@ public class SessionController {
                         final DiceRolled diceRolled = (DiceRolled) object;
                         aSessionScreen.addGameMessage(diceRolled.getUsername() + " rolled a " + diceRolled.getDiceRoll());
                         aSessionScreen.showDice(diceRolled.getDiceRoll().getRed(), diceRolled.getDiceRoll().getYellow());
+                        
+                        // update dice results in session 
+                        aSessionManager.getSession().diceResult = diceRolled.getDiceRoll();
+                        aSessionManager.getSession().eventDie = diceRolled.getEventKindResult();
 
                         switch (aSessionManager.getCurrentPhase()) {
                             case SETUP_PHASE_ONE:
@@ -581,6 +585,11 @@ public class SessionController {
                                 localPlayer.decrementAvailableSettlements();
                                 aSessionScreen.updateIntersection(city.getPosition(), city.getOwner().getColor(), VillageKind.SETTLEMENT);
                                 aSessionScreen.updateAvailableGamePieces(localPlayer.getAvailableSettlements(), localPlayer.getAvailableCities(), localPlayer.getAvailableRoads(), localPlayer.getAvailableShips());
+                            
+                                if (localPlayer.getAvailableCities() == 4) { // No city on board (last city lost)
+                                    aSessionScreen.disableImprovements();
+                                    localPlayer.setLostLastCity(true);
+                                }
                             }
 
                             CatanGame.client.sendTCP(UpdateVillage.newInstance(localPlayer.getUsername(), new ImmutablePair<Integer, Integer>(city.getPosition().getLeft(), city.getPosition().getRight())));
@@ -614,11 +623,6 @@ public class SessionController {
                                 aSessionScreen.interractionDone();
                             }
                             diceResultHandle(pillaged.getDiceResults());
-                        }
-                        if (localPlayer.getAvailableCities() == 4) { // No city on board (last city lost)
-                            aSessionScreen.disableImprovements();
-                            aSessionScreen.addGameMessage("COUCOU");
-                            localPlayer.setLostLastCity(true);
                         }
                     });
                 } else if (object instanceof UpdateLongestRoad) {
@@ -734,6 +738,8 @@ public class SessionController {
                 aSessionScreen.addGameMessage("You may now roll the dice\nto generate the production");
                 break;
             case TURN_SECOND_PHASE:
+                // TODO: test following line of code
+                handleRoll(aSessionManager.getSession().diceResult, aSessionManager.getSession().eventDie);
                 aSessionScreen.addGameMessage("You may now place new buildings\nand roads or engage\nin maritime trade");
                 break;
             case Completed:
@@ -1350,6 +1356,8 @@ public class SessionController {
                     aTransactionManager.payPlayerToBank(currentP, GameRules.getGameRulesInstance().getCityCost(aSessionManager.getCurrentlyExecutingProgressCard()));
                     aSessionScreen.updateResourceBar(localPlayer.getResources());
                 }
+                
+                currentP.setLostLastCity(false);
 
                 // notify peers about board game change
                 BuildIntersection request = BuildIntersection.newInstance(new ImmutablePair<>(position.getLeft(), position.getRight()), kind, owner, CatanGame.account.getUsername());
@@ -2221,7 +2229,7 @@ public class SessionController {
                 request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
 
-                handleRoll(diceResults, eventDieResult);
+                // handleRoll(diceResults, eventDieResult);
 
                 aSessionScreen.addGameMessage(String.format("Rolled a %d %d %s", diceResults.getRed(), diceResults.getYellow(), eventDieResult));
 

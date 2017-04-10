@@ -1180,9 +1180,6 @@ public class SessionScreen implements Screen {
                     // adds move that will build the village at chosen intersection
                     currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
                         aSessionController.buildVillage(chosenIntersection, kind, aSessionController.getPlayerColor(), false, false);
-                        if(kind == VillageKind.CITY) {
-                            aSessionController.getLocalPlayer().setLostLastCity(false);
-                        }
                         aMode = SessionScreenModes.CHOOSEACTIONMODE;
                         buildButton.setText(buttonText);
 
@@ -2069,6 +2066,12 @@ public class SessionScreen implements Screen {
         improveTrade.setDisabled(true);
         improveScience.setDisabled(true);
         improvePolitics.setDisabled(true);
+    }
+    
+    void enableImprovements() {
+        improveTrade.setDisabled(false);
+        improveScience.setDisabled(false);
+        improvePolitics.setDisabled(false);
     }
 
     /**

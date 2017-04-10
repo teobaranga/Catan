@@ -11,6 +11,7 @@ import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
+import com.mygdx.catan.enums.EventKind;
 import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.ResourceKind;
 import com.mygdx.catan.game.Game;
@@ -184,7 +185,7 @@ class CatanServer {
                             forwardedResponse = startGame(forwardedRequest.username);
                         } else if (forwardedRequest instanceof RollDice) {
                             final RollDice rollTwoDice = (RollDice) forwardedRequest;
-                            forwardedResponse = handleDiceRoll(rollTwoDice.username, rollTwoDice.getRollResult());
+                            forwardedResponse = handleDiceRoll(rollTwoDice.username, rollTwoDice.getRollResult(), rollTwoDice.getEventDieResult());
                         }
 
                         for (Account peer : game.peers.keySet()) {
@@ -301,7 +302,7 @@ class CatanServer {
         return GameResponse.newInstance(game);
     }
 
-    private DiceRolled handleDiceRoll(String username, DiceRollPair dice) {
+    private DiceRolled handleDiceRoll(String username, DiceRollPair dice, EventKind event) {
         final Game game = gamesMap.get(username);
         if (!game.isInProgress())
             return null;
@@ -324,9 +325,9 @@ class CatanServer {
                     // Set the session's current player to the one with the highest dice roll
                     final int index = sessionManager.getHighestDiceRollPlayerIndex();
                     sessionManager.setFirstPlayer(index);
-                    return DiceRolled.newInstance(username, dice, sessionManager.getSession());
+                    return DiceRolled.newInstance(username, dice, sessionManager.getSession(), event);
                 } else {
-                    return DiceRolled.newInstance(username, dice);
+                    return DiceRolled.newInstance(username, dice, event);
                 }
             default:
                 return null;

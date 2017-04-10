@@ -121,6 +121,7 @@ public class Config {
         kryo.register(TradeCancel.class);
         kryo.register(SpecialTradeRequest.class);
         kryo.register(MoveRobberRequest.class);
+        kryo.register(MovePirateRequest.class);
         kryo.register(UpdateVP.class);
         kryo.register(UpdateVillage.class);
         kryo.register(BestPlayersWin.class);

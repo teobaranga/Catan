@@ -29,6 +29,7 @@ public class Player {
     private List<Knight> knights; //TODO: keep track of knights for each player
     private int defenderOfCatanPoints;
     private ResourceKind temporaryTradeKind; //temporary 2:1 trade when playing MERCHANTFLEET
+    private boolean lostLastCity;
 
     private int tokenVictoryPoints;
     private ResourceMap resourceMap;
@@ -66,7 +67,15 @@ public class Player {
         player.color = color;
         return player;
     }
-    
+
+    public boolean hasLostLastCity() {
+        return lostLastCity;
+    }
+
+    public void setLostLastCity(boolean lostLastCity) {
+        this.lostLastCity = lostLastCity;
+    }
+
     public CityImprovements getCityImprovements() {
         return cityImprovements;
     }

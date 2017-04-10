@@ -1180,6 +1180,9 @@ public class SessionScreen implements Screen {
                     // adds move that will build the village at chosen intersection
                     currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
                         aSessionController.buildVillage(chosenIntersection, kind, aSessionController.getPlayerColor(), false, false);
+                        if(kind == VillageKind.CITY) {
+                            aSessionController.getLocalPlayer().setLostLastCity(false);
+                        }
                         aMode = SessionScreenModes.CHOOSEACTIONMODE;
                         buildButton.setText(buttonText);
 
@@ -1225,10 +1228,16 @@ public class SessionScreen implements Screen {
                 }
             }
         } else {
+            boolean skip = false;
             for (CoordinatePair i : aSessionController.requestValidShipEndpoints(aSessionController.getPlayerColor())) {
                 for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) {
-                    if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j)) {
-
+                    skip = false;
+                    for (Hex h : aSessionController.getGameBoardManager().getNeighbouringHexes(i, j)) {
+                        if (h.equals(aSessionController.getGameBoardManager().getPiratePosition())) {
+                            skip = true;
+                        }
+                    }
+                    if (aSessionController.isAdjacent(i, j) && !aSessionController.isOnLand(i, j) && !skip ) {
                         Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
                         validEdges.add(edge);
 
@@ -2043,16 +2052,23 @@ public class SessionScreen implements Screen {
                 buildKnightButton.setDisabled(false);
                 buildCityWallButton.setDisabled(false);
                 tradeButton.setDisabled(false);
-                improveTrade.setDisabled(false);
-                improveScience.setDisabled(false);
-                improvePolitics.setDisabled(false);
                 tradeFish.setDisabled(false);
-
+                if (!aSessionController.getLocalPlayer().hasLostLastCity()){
+                    improveTrade.setDisabled(false);
+                    improveScience.setDisabled(false);
+                    improvePolitics.setDisabled(false);
+                }
                 rollDiceButton.setDisabled(true);
                 break;
             case Completed:
                 break;
         }
+    }
+
+    void disableImprovements() {
+        improveTrade.setDisabled(true);
+        improveScience.setDisabled(true);
+        improvePolitics.setDisabled(true);
     }
 
     /**

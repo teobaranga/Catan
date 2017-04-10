@@ -615,7 +615,11 @@ public class SessionController {
                             }
                             diceResultHandle(pillaged.getDiceResults());
                         }
-
+                        if (localPlayer.getAvailableCities() == 4) { // No city on board (last city lost)
+                            aSessionScreen.disableImprovements();
+                            aSessionScreen.addGameMessage("COUCOU");
+                            localPlayer.setLostLastCity(true);
+                        }
                     });
                 } else if (object instanceof UpdateLongestRoad) {
                     Gdx.app.postRunnable(() -> {
@@ -681,6 +685,10 @@ public class SessionController {
 
     public SessionManager getSessionManager() {
         return aSessionManager;
+    }
+
+    public GameBoardManager getGameBoardManager() {
+        return  aGameBoardManager;
     }
 
     public ProgressCardHandler getProgressCardHandler() {
@@ -1132,7 +1140,7 @@ public class SessionController {
 
     /**
      * @param owner of requested valid intersections
-     * @return a list of all the intersections that are (1) connected to a ship or harbour village owned by owner (2) something something pirate
+     * @return a list of all the intersections that are (1) connected to a ship or harbour village owned by owner (2) not neighbouring the pirate
      */
     //TODO: implement pirate thing
     public HashSet<CoordinatePair> requestValidShipEndpoints(PlayerColor owner) {
@@ -2396,7 +2404,7 @@ public class SessionController {
                 return;
             }
         } else if (choice >= 2) {
-            moveRobber(null, false);  //TODO make this better seriously arnaud.
+            moveRobber(null, false);  //TODO Handle pirate OR robber.
         }
         localPlayer.removeFishToken(consumedFishToken);
         aSessionScreen.updateFishTable(localPlayer.getFishTokenHand());

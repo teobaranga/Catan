@@ -8,24 +8,18 @@ import com.mygdx.catan.DiceRollPair;
 public class VillagePillaged extends TargetedRequest {
     
     private DiceRollPair diceResults;
-    private int totalWorstPlayers;
     
-    public static VillagePillaged newInstance(String sender, String target, DiceRollPair diceResults, int totalWorstPlayers) {
+    public static VillagePillaged newInstance(String sender, String target, DiceRollPair diceResults) {
         VillagePillaged request = new VillagePillaged();
         
         request.sender = sender;
         request.target = target;
         request.diceResults = diceResults;
-        request.totalWorstPlayers = totalWorstPlayers;
         
         return request;
     }
     
     public DiceRollPair getDiceResults() {
         return diceResults;
-    }
-    
-    public int getTotalWorstPlayers() {
-        return totalWorstPlayers;
     }
 }

@@ -44,13 +44,11 @@ public class SessionController {
 
     private final GameRules aGameRules;
 
-    private final GamePieces gamePieces;
-
     /** The random number generator for dice rolls */
     private final CatanRandom random;
 
-    /** int that represents the number of players who have chosen a village to pillage during a barbarian attack */
-    private int villagesPillaged;
+    /** int that represents the number pending responses before an interraction can be terminated */
+    private int pendingResponses;
 
     /** The local player */
     private Player localPlayer;
@@ -78,7 +76,6 @@ public class SessionController {
         tradeManager = TradeManager.getInstance(aTransactionManager);
         aProgressCardHandler = new ProgressCardHandler(this);
         aGameRules = GameRules.getGameRulesInstance();
-        gamePieces = GamePieces.getInstance();
         aSessionScreen = sessionScreen;
 
         random = CatanRandom.getInstance();
@@ -377,7 +374,9 @@ public class SessionController {
                         discard.<ResourceMap>addMove(cards -> {
                             aTransactionManager.payPlayerToBank(localPlayer, cards);
                             aSessionScreen.updateResourceBar(localPlayer.getResources());
-                            aSessionScreen.interractionDone();
+                            
+                            HandHalfDiscarded response = HandHalfDiscarded.newInstance(discardHalf.target, discardHalf.sender);
+                            CatanGame.client.sendTCP(response);
                         });
 
                         if (cardsToDiscard > 0) {
@@ -385,8 +384,20 @@ public class SessionController {
                             aSessionScreen.chooseMultipleResource(localPlayer.getResources(), cardsToDiscard, discard);
                         } else {
                             aSessionScreen.addGameMessage("Lucky for you, you have no cards to discard");
+                            // send message back immediately
+                            HandHalfDiscarded response = HandHalfDiscarded.newInstance(discardHalf.target, discardHalf.sender);
+                            CatanGame.client.sendTCP(response);
                         }
 
+                    });
+                } else if (object instanceof HandHalfDiscarded) {
+                    Gdx.app.postRunnable(() -> {
+                        pendingResponses--;
+                        System.out.println(pendingResponses);
+                        
+                        if (pendingResponses == 0) {
+                            aSessionScreen.interractionDone();
+                        }
                     });
                 } else if (object instanceof EndTurn) {
                     Gdx.app.postRunnable(() -> {
@@ -547,10 +558,12 @@ public class SessionController {
                             }
 
                             CatanGame.client.sendTCP(UpdateVillage.newInstance(localPlayer.getUsername(), new ImmutablePair<Integer,Integer>(city.getPosition().getLeft(), city.getPosition().getRight())));
-                            aSessionScreen.interractionDone();
+                            // we don't want the player whose turn it is to do any actions before
+                            // all the worst players have chosen a city to be pillaged
+                            // aSessionScreen.interractionDone();
 
                             // send message back to sender to tell them one of their villages was pillaged
-                            VillagePillaged request = VillagePillaged.newInstance(localPlayer.getUsername(), pillage.sender, pillage.getDiceResults(), pillage.getTotalWorstPlayers());
+                            VillagePillaged request = VillagePillaged.newInstance(localPlayer.getUsername(), pillage.sender, pillage.getDiceResults());
                             CatanGame.client.sendTCP(request);
                         });
 
@@ -558,7 +571,7 @@ public class SessionController {
                             aSessionScreen.initChooseIntersectionMove(validCityIntersections, pillageVillageMove);
                         } else {
                             // send message back to sender to tell them one of their villages was "pillaged" (since there was no city to choose)
-                            VillagePillaged request = VillagePillaged.newInstance(localPlayer.getUsername(), pillage.sender, pillage.getDiceResults(), pillage.getTotalWorstPlayers());
+                            VillagePillaged request = VillagePillaged.newInstance(localPlayer.getUsername(), pillage.sender, pillage.getDiceResults());
                             CatanGame.client.sendTCP(request);
                         }
 
@@ -567,12 +580,14 @@ public class SessionController {
                     Gdx.app.postRunnable(() -> {
                         VillagePillaged pillaged = (VillagePillaged) object;
 
-                        villagesPillaged++;
+                        pendingResponses--;
 
                         // if all the worst players have had their villages pillaged, we can finally handle the dice roll
-                        if (villagesPillaged == pillaged.getTotalWorstPlayers()) {
+                        if (pendingResponses == 0) {
+                            if (pillaged.getDiceResults().getSum() != 7) {
+                                aSessionScreen.interractionDone();
+                            }
                             diceResultHandle(pillaged.getDiceResults());
-                            villagesPillaged = 0;
                         }
 
                     });
@@ -1751,8 +1766,14 @@ public class SessionController {
             if (p.getResourceHandSize() >= 7) {
                 DiscardHalfRequest request = DiscardHalfRequest.newInstance(localPlayer.getUsername(), p.getUsername());
                 CatanGame.client.sendTCP(request);
+                pendingResponses++;
             }
         }
+        
+        if (pendingResponses > 0) {
+            aSessionScreen.disableAllButtons();
+        }
+        
     }
 
     /**
@@ -1877,9 +1898,13 @@ public class SessionController {
             // each request will respond with a VillagePillaged response. Local player will keep track of the number of pillaged villages, and will only
             // call handle dice roll results after all the worst players have sent back a response.
             for (Player p : worstPlayers) {
-                PillageVillageRequest request = PillageVillageRequest.newInstance(localPlayer.getUsername(), p.getUsername(), diceResults, worstPlayers.size());
+                PillageVillageRequest request = PillageVillageRequest.newInstance(localPlayer.getUsername(), p.getUsername(), diceResults);
                 CatanGame.client.sendTCP(request);
+                pendingResponses++;
             }
+            
+            // all actions must be disabled until all the worst players have chosen a city to pillage
+            aSessionScreen.disableAllButtons();
 
         } else {
             aSessionScreen.addGameMessage("Islanders Win!");

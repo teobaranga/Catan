@@ -919,6 +919,7 @@ public class SessionScreen implements Screen {
      * @param move which next move to perform will be called once a hex has been chosen
      * */
     public void initChooseHexMove(List<Hex> valid, MultiStepMove move) {
+        // System.out.println("init hex");
         // disable all possible actions
         disableAllButtons();
 
@@ -1066,6 +1067,7 @@ public class SessionScreen implements Screen {
      * and re-enables all the buttons according to current game phase if it is the client's turn
      * */
     public void interractionDone() {
+        // System.out.println("interraction done");
     	// puts mode back to choose action mode
     	aMode = SessionScreenModes.CHOOSEACTIONMODE;
 
@@ -1842,7 +1844,7 @@ public class SessionScreen implements Screen {
         }
     }
 
-    private void disableAllButtons() {
+    void disableAllButtons() {
         buildSettlementButton.setDisabled(true);
         buildCityButton.setDisabled(true);
         buildRoadButton.setDisabled(true);

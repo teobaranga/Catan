@@ -128,6 +128,7 @@ public class Config {
         kryo.register(BestPlayersWin.class);
         kryo.register(DefenderOfCatan.class);
         kryo.register(DiscardHalfRequest.class);
+        kryo.register(HandHalfDiscarded.class);
         kryo.register(MoveMerchantRequest.class);
         kryo.register(CityWallChange.class);
         kryo.register(UpdateLongestRoad.class);

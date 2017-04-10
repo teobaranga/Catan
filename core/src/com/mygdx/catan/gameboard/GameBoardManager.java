@@ -3,7 +3,6 @@ package com.mygdx.catan.gameboard;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.player.Player;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -223,7 +222,7 @@ public class GameBoardManager {
      * @param kind           unit kind: ROAD or SHIP
      */
     public void buildEdgeUnit(Player player, CoordinatePair firstPosition, CoordinatePair SecondPosition, EdgeUnitKind kind) {
-        EdgeUnit edgeunit = new EdgeUnit(firstPosition, SecondPosition, kind, player);
+        EdgeUnit edgeunit = EdgeUnit.newEdgeUnit(firstPosition, SecondPosition, kind, player);
         player.addEdgeUnit(edgeunit);
         aGameBoard.addRoadOrShip(edgeunit);
         if(kind == EdgeUnitKind.ROAD) { player.decrementAvailableRoads(); }
@@ -521,6 +520,15 @@ public class GameBoardManager {
     		}
     	}
     	return null;
+    }
+
+    public static CoordinatePair getCoordinatePairFromCoordinates(int leftCoordinate, int rightCoordinate, GameBoard gameBoard) {
+        for (CoordinatePair intersection : gameBoard.getIntersectionsAndEdges()) {
+            if (intersection.getLeft().equals(leftCoordinate) && intersection.getRight().equals(rightCoordinate)) {
+                return intersection;
+            }
+        }
+        return null;
     }
     
     /**

@@ -1,10 +1,6 @@
 package com.mygdx.catan.session;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
@@ -19,52 +15,24 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.mygdx.catan.CatanGame;
-import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.DiceRollPair;
-import com.mygdx.catan.FishTokenMap;
-import com.mygdx.catan.GameRules;
-import com.mygdx.catan.ResourceMap;
-import com.mygdx.catan.enums.EdgeUnitKind;
-import com.mygdx.catan.enums.GamePhase;
-import com.mygdx.catan.enums.HarbourKind;
-import com.mygdx.catan.enums.PlayerColor;
-import com.mygdx.catan.enums.ProgressCardKind;
-import com.mygdx.catan.enums.ProgressCardType;
-import com.mygdx.catan.enums.ResourceKind;
-import com.mygdx.catan.enums.ScreenKind;
-import com.mygdx.catan.enums.SessionScreenModes;
-import com.mygdx.catan.enums.TerrainKind;
-import com.mygdx.catan.enums.VillageKind;
+import com.mygdx.catan.*;
+import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
+import com.mygdx.catan.gameboard.Knight;
+import com.mygdx.catan.gameboard.Village;
 import com.mygdx.catan.moves.MultiStepInitMove;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.UpdateOldBoot;
-import com.mygdx.catan.ui.ChooseDiceResultWindow;
-import com.mygdx.catan.ui.ChooseDraw;
-import com.mygdx.catan.ui.ChooseFromEnumCollectionWindow;
-import com.mygdx.catan.ui.ChooseMultipleResourcesWindow;
-import com.mygdx.catan.ui.ChoosePlayerWindow;
-import com.mygdx.catan.ui.ChooseProgressCardKindWindow;
-import com.mygdx.catan.ui.DomesticTradeWindow;
-import com.mygdx.catan.ui.FishTradeWindow;
-import com.mygdx.catan.ui.KnightActor;
-import com.mygdx.catan.ui.PlayProgressCardWindow;
-import com.mygdx.catan.ui.TradeWindow;
-import com.mygdx.catan.ui.WinnerWindow;
+import com.mygdx.catan.ui.*;
 import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class SessionScreen implements Screen {
 
@@ -922,6 +890,26 @@ public class SessionScreen implements Screen {
 
         // Begin the game
         aSessionController.checkIfMyTurn();
+
+        updateResourceBar(aSessionController.getLocalPlayer().getResources());
+
+        for (Player player : aSessionController.getPlayers()) {
+            for (Knight knight : player.getKnights()) {
+                CoordinatePair intersection = CoordinatePair.of(
+                        getBoardOrigin().getLeft() + knight.getPosition().getLeft() * OFFX,
+                        getBoardOrigin().getRight() + knight.getPosition().getRight() * -LENGTH / 2, null);
+                KnightActor knightActor = GamePieces.getInstance().createKnight(knight);
+                knightActor.setPosition(intersection.getLeft() - knightActor.getOriginX(),
+                        intersection.getRight() - knightActor.getOriginY());
+                addKnight(knightActor);
+            }
+            for (EdgeUnit edgeUnit : player.getRoadsAndShips()) {
+                updateEdge(edgeUnit.getAFirstCoordinate(), edgeUnit.getASecondCoordinate(), edgeUnit.getKind(), player.getColor());
+            }
+            for (Village village : player.getVillages()) {
+                updateIntersection(village.getPosition(), player.getColor(), village.getVillageKind());
+            }
+        }
     }
 
     /** Update the label display the current barbarian position */
@@ -1879,6 +1867,8 @@ public class SessionScreen implements Screen {
         int xCorSecond = secondCoordinate.getLeft();
         int yCorSecond = secondCoordinate.getRight();
 
+        System.out.println("Road placed at " + firstCoordinate + " " + secondCoordinate);
+
         // removes edge on given coordinate
         removeEdgeUnit(xCorFirst, yCorFirst, xCorSecond, yCorSecond);
 
@@ -2447,6 +2437,7 @@ public class SessionScreen implements Screen {
     void addKnight(KnightActor knightActor) {
         knights.add(knightActor);
         gamePiecesStage.addActor(knightActor);
+        System.out.println("Knight added at " + knightActor.getKnight().getPosition());
     }
 
     /** Refresh a knight piece as a result of an activation or promotion */

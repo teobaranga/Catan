@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
+import com.esotericsoftware.kryonet.KryoSerialization;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.account.AccountManager;
 import com.mygdx.catan.enums.ScreenKind;
@@ -38,11 +39,13 @@ public class CatanGame extends Game {
     static {
         appComponent = DaggerAppComponent.builder().build();
 
-        client = new Client();
+        Kryo kryo = new Kryo();
+        kryo.setReferences(true);
+        KryoSerialization serialization = new KryoSerialization(kryo);
+        client = new Client(8192, 9182, serialization);
 
         // Register request & response classes (needed for networking)
         // Must be registered in the same order in the server
-        Kryo kryo = client.getKryo();
         Config.registerKryoClasses(kryo);
         client.start();
 

@@ -10,13 +10,15 @@ public class EdgeUnit {
 	private CoordinatePair aFirstCoordinate;
 	private CoordinatePair aSecondCoordinate;
 	private Player owner;
-	
-	public EdgeUnit(CoordinatePair pFirstCoordinate, CoordinatePair pSecondCoordinate, EdgeUnitKind pKind, Player pOwner) {
-		kind = pKind;
-		owner = pOwner;
-		aFirstCoordinate = pFirstCoordinate;
-		aSecondCoordinate = pSecondCoordinate;
-	}
+
+	public static EdgeUnit newEdgeUnit(CoordinatePair pFirstCoordinate, CoordinatePair pSecondCoordinate, EdgeUnitKind pKind, Player pOwner) {
+        EdgeUnit edgeUnit = new EdgeUnit();
+        edgeUnit.kind = pKind;
+        edgeUnit.owner = pOwner;
+        edgeUnit.aFirstCoordinate = pFirstCoordinate;
+        edgeUnit.aSecondCoordinate = pSecondCoordinate;
+        return edgeUnit;
+    }
 	
 	/**
 	 * @return either SHIP or ROAD (given the kind of this edge unit)

@@ -71,7 +71,7 @@ public class MenuScreen implements Screen {
         aCreateGameButton.pad(30, 20, 30, 20);
         setupButton(aCreateGameButton, ScreenKind.CREATE_GAME);
 
-        aBrowseGamesButton = new TextButton("Browse Games", CatanGame.skin);
+        aBrowseGamesButton = new TextButton("Load Game", CatanGame.skin);
         aBrowseGamesButton.pad(30, 20, 30, 20);
         setupButton(aBrowseGamesButton, ScreenKind.BROWSE_GAMES);
         aBrowseGamesButton.addListener(new ClickListener() {

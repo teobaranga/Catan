@@ -320,7 +320,7 @@ public class GameBoard {
 	}
 
 	/** Add a village to the list of villages on the game board */
-	void addVillage(Village village) {
+	public void addVillage(Village village) {
 	    villages.add(village);
     }
 
@@ -329,7 +329,7 @@ public class GameBoard {
 	    return villages;
     }
 
-	void addKnight(Knight knight, int id) {
+	public void addKnight(Knight knight, int id) {
 		knights.put(id, knight);
 	}
 

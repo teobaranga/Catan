@@ -3,6 +3,7 @@ package com.mygdx.catan.gameboard;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.player.Player;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,6 +76,10 @@ public class GameBoardManager {
         return aGameBoard.getRobberPosition();
     }
 
+    public Hex getPiratePosition() {
+        return aGameBoard.getPiratePosition();
+    }
+
     public GameBoard getGameBoard() {
         return aGameBoard;
     }
@@ -135,7 +140,11 @@ public class GameBoardManager {
     public void setRobberPosition(Hex pos) {
         aGameBoard.setRobberPosition(pos);
     }
-    
+
+    public void setPiratePosition(Hex pos) {
+        aGameBoard.setaPiratePosition(pos);
+    }
+
     /**
      *
      * Checks if the given player suffers from the Old Boot malus.
@@ -356,6 +365,19 @@ public class GameBoardManager {
             }
         }
         return adjacentVillages;
+    }
+
+    public ArrayList<EdgeUnit> getAdjacentShips(Hex hex) {
+        ArrayList<EdgeUnit> adjacentShips = new ArrayList<>();
+        for (CoordinatePair intersection1 : getAdjacentIntersections(hex)) {
+            for (CoordinatePair intersection2 : getAdjacentIntersections(hex)) {
+                EdgeUnit edgeUnit = getEdgeUnitFromCoordinatePairs(intersection1,intersection2);
+                if ( edgeUnit != null && edgeUnit.getKind() ==  EdgeUnitKind.SHIP) {
+                    adjacentShips.add(edgeUnit);
+                }
+            }
+        }
+        return adjacentShips;
     }
 
     /**

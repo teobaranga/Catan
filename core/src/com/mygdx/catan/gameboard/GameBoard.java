@@ -18,6 +18,7 @@ public class GameBoard {
 	private ArrayList<CoordinatePair> aIntersectionPositions;			// Villages will be available through the intersection positions
 	private ArrayList<EdgeUnit> aRoadsAndShips;
 	private Hex aRobberPosition;
+	private Hex aPiratePosition;
 	private Hex aMerchantPosition;
 	private Player aMerchantOwner;
 	private Player aBootOwner;
@@ -260,6 +261,17 @@ public class GameBoard {
 	public Hex getRobberPosition() {
 		return aRobberPosition;
 	}
+
+
+	public void setaPiratePosition(Hex piratePosition){
+	    if (piratePosition != null) {
+	        aPiratePosition = piratePosition;
+        }
+    }
+
+	public Hex getPiratePosition() {
+	    return aPiratePosition;
+    }
 
 	/**
 	 * Sets merchant to newMerchantPosition

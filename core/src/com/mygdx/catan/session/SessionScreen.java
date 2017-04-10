@@ -109,6 +109,9 @@ public class SessionScreen implements Screen {
     /** The Robber */
     private PolygonSprite robberSprite;
 
+    /** The Pirate */
+    private PolygonSprite pirateSprite;
+
     /** The Merchant */
     private PolygonRegion merchantRegion;
 
@@ -248,6 +251,9 @@ public class SessionScreen implements Screen {
         highlightBatch = new PolygonSpriteBatch();
         gamePieces = GamePieces.getInstance();
         robberSprite = gamePieces.createRobber();
+
+        pirateSprite = gamePieces.createRobber(); // TODO change this
+
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // sets the initializing mode of the session screen (VIEWMODE). set to CHOOSEACTIONMODE for testing purposes 
@@ -1384,7 +1390,7 @@ public class SessionScreen implements Screen {
                     // create a MultiStepMovingshipMove and set session screen current multistepmove
                     currentlyPerformingMove = new MultiStepMovingshipMove();
 
-                    // adds move that will save the chosen
+                    // adds move that will save the chosen ship
                     currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenShip -> {
                         ((MultiStepMovingshipMove) currentlyPerformingMove).setShipToMove(chosenShip);
                         // highlights valid destinations
@@ -1509,6 +1515,9 @@ public class SessionScreen implements Screen {
             }
         }
         robberSprite.draw(polyBatch);
+
+        pirateSprite.draw(polyBatch);
+
         if (merchantRegion != null) {
             polyBatch.draw(merchantRegion, boardOrigin.getLeft(), boardOrigin.getRight());
         }
@@ -1624,6 +1633,22 @@ public class SessionScreen implements Screen {
         robberSprite.setPosition(boardOrigin.getLeft() + xPos - robberSprite.getWidth() / 2f,
                 boardOrigin.getRight() + yPos - robberSprite.getHeight() / 2f);
     }
+
+    /**
+     * Places Pirate on given coordinates
+     *
+     * @param xCor left coordinate
+     * @param yCor right coordinate
+     */
+    public void placePirate(int xCor, int yCor) {
+
+        float xPos = xCor * OFFX;
+        float yPos = -yCor * OFFY;
+
+        pirateSprite.setPosition(boardOrigin.getLeft() + xPos - pirateSprite.getWidth() / 2f,
+                boardOrigin.getRight() + yPos - pirateSprite.getHeight() / 2f);
+    }
+
 
     /**
      * Places Merchant on given coordinates

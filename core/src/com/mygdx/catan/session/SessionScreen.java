@@ -397,7 +397,6 @@ public class SessionScreen implements Screen {
                 MultiStepMove fishTrade = new MultiStepMove();
                 fishTrade.<Pair<FishTokenMap,Integer>>addMove((tokenChoicePair) -> {
                     aSessionController.fishActionHandle(tokenChoicePair);
-                    interractionDone();
                 });
                 // Create the Window
                 final FishTradeWindow window = new FishTradeWindow("Fish Trade", CatanGame.skin, fishHand);
@@ -908,8 +907,24 @@ public class SessionScreen implements Screen {
             }
             for (Village village : player.getVillages()) {
                 updateIntersection(village.getPosition(), player.getColor(), village.getVillageKind());
+                if (village.hasCityWalls()) {
+                    putCityWall(village.getPosition(),village.getOwner().getColor());
+                }
             }
         }
+        if (aSessionController.getSessionManager().getSession().longestRoadOwner != null) {
+            updateLongestRoadOwner(aSessionController.getSessionManager().getSession().longestRoadOwner.getColor(), aSessionController.getSessionManager().getSession().longestRoadOwner.getUsername());
+        }
+        if (aSessionController.getCurrentPlayer().getCityImprovements().getPoliticsLevel() != 0) {
+            updatePoliticsImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getPoliticsLevel());
+        }
+        if (aSessionController.getCurrentPlayer().getCityImprovements().getTradeLevel() != 0) {
+            updateTradeImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getTradeLevel());
+        }
+        if (aSessionController.getCurrentPlayer().getCityImprovements().getScienceLevel() != 0) {
+            updateScienceImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getScienceLevel());
+        }
+        updateBarbarianPosition(aSessionController.getSessionManager().getSession().barbarianPosition);
     }
 
     /** Update the label display the current barbarian position */
@@ -1108,7 +1123,6 @@ public class SessionScreen implements Screen {
      * and re-enables all the buttons according to current game phase if it is the client's turn
      * */
     public void interractionDone() {
-        // System.out.println("interraction done");
     	// puts mode back to choose action mode
     	aMode = SessionScreenModes.CHOOSEACTIONMODE;
 
@@ -1254,48 +1268,6 @@ public class SessionScreen implements Screen {
             }
         }
     }
-
-
-    public void buildEdgeUnitForFree(){ //TODO does not work
-        // create a MultiStepMove and set session screen current multistepmove
-        if (aMode != SessionScreenModes.CHOOSEEDGEMODE) {
-            // the following loop go through requested valid build positions
-            getValidEdgePosition(EdgeUnitKind.ROAD);
-
-            // adds move that will build the village at chosen intersection
-            currentlyPerformingMove = new MultiStepMove();
-            currentlyPerformingMove.<Pair<CoordinatePair, CoordinatePair>>addMove(chosenEdge -> {
-                EdgeUnitKind kind = EdgeUnitKind.ROAD;
-                if (!aSessionController.isOnLand(chosenEdge.getLeft(), chosenEdge.getRight())) {
-                    kind = EdgeUnitKind.SHIP;
-                }
-                aSessionController.buildEdgeUnit(aSessionController.getPlayerColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, true);
-
-                aMode = SessionScreenModes.CHOOSEACTIONMODE;
-                // re-enable all appropriate actions
-                if (aSessionController.isMyTurn()) {
-                    enablePhase(aSessionController.getCurrentGamePhase());
-                }
-            });
-
-            // make a sprite that highlights the areas
-            for (Pair<CoordinatePair, CoordinatePair> edge : validEdges) {
-                highlightedPositions.add(gamePieces.createRoad(edge.getLeft().getLeft(), edge.getLeft().getRight(), edge.getRight().getLeft(), edge.getRight().getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-            }
-            aMode = SessionScreenModes.CHOOSEEDGEMODE;
-            // edgePieceKind = kind;
-        } else if (aMode == SessionScreenModes.CHOOSEEDGEMODE) {
-            validEdges.clear();
-            highlightedPositions.clear();
-            aMode = SessionScreenModes.CHOOSEACTIONMODE;
-            // re-enable all appropriate actions
-            if (aSessionController.isMyTurn()) {
-                enablePhase(aSessionController.getCurrentGamePhase());
-            }
-        }
-        addGameMessage("" + highlightedPositions.size());
-    }
-
 
     private void setupBuildEdgeUnitButton(TextButton buildButton, EdgeUnitKind kind, String buttonText) {
         buildButton.addListener(new ChangeListener() {
@@ -1862,6 +1834,10 @@ public class SessionScreen implements Screen {
      * @param color            of player who owns the new edge unit
      */
     public void updateEdge(CoordinatePair firstCoordinate, CoordinatePair secondCoordinate, EdgeUnitKind kind, PlayerColor color) {
+        if (firstCoordinate == null || secondCoordinate == null) {
+            return;
+        }
+        
         int xCorFirst = firstCoordinate.getLeft();
         int yCorFirst = firstCoordinate.getRight();
         int xCorSecond = secondCoordinate.getLeft();

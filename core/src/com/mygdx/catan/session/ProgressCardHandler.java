@@ -672,7 +672,12 @@ public class ProgressCardHandler {
                 for (Player p : playersWithMoreVP) {
                     TargetedChooseResourceCardRequest request = TargetedChooseResourceCardRequest.newInstance(2, CatanGame.account.getUsername(), p.getUsername());
                     CatanGame.client.sendTCP(request);
+                    aSessionController.pendingResponses++;
                 }
+                
+                // disable all action until every target has reponded
+                aSessionController.getSessionScreen().disableAllButtons();
+                
                 aSessionManager.finishCurrentlyExecutingProgressCard();
 
                 break;
@@ -746,7 +751,9 @@ public class ProgressCardHandler {
                                 SpecialTradeRequest request = SpecialTradeRequest.newInstance(kind, currentP.getUsername(), chosenPlayer.getUsername());
                                 CatanGame.client.sendTCP(request);
                                 
-                                aSessionController.getSessionScreen().interractionDone();
+                                // set pending responses to 1
+                                // interaction will be unlocked once target has responded
+                                aSessionController.pendingResponses = 1;
                             });
                             
                             aSessionController.getSessionScreen().chooseResource(availableResources, forceTrade);
@@ -956,7 +963,7 @@ public class ProgressCardHandler {
         validRoadPos.add(roadToMove);
     }
     
-    private void updateValidEdges(List<Pair<CoordinatePair,CoordinatePair>> validEdges) {
+    void updateValidEdges(List<Pair<CoordinatePair,CoordinatePair>> validEdges) {
      // loops through valid road end points and adds valid edges (both ships and roads)
         for (CoordinatePair i : aSessionController.requestValidRoadEndpoints(aSessionController.getPlayerColor())) {
             for (CoordinatePair j : aSessionController.getIntersectionsAndEdges()) { 

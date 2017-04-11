@@ -25,6 +25,18 @@ public class CityImprovements {
     public int getScienceLevel() {
         return science;
     }
+    
+    public void setTradeLevel(int newTrade) {
+        trade = newTrade;
+    }
+    
+    public void setPoliticsLevel(int newPolitics) {
+        politics = newPolitics;
+    }
+    
+    public void setScienceLevel(int newScience) {
+        science = newScience;
+    }
 
     public void upgradeTradeLevel() {
         if (trade != MAX_LEVEL)

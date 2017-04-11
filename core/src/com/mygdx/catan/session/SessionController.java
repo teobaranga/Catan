@@ -19,6 +19,7 @@ import com.mygdx.catan.request.*;
 import com.mygdx.catan.response.DiceRolled;
 import com.mygdx.catan.ui.KnightActor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -55,7 +56,7 @@ public class SessionController {
     /**
      * int that represents the number pending responses before an interraction can be terminated
      */
-    private int pendingResponses;
+    protected int pendingResponses;
 
     /**
      * The local player
@@ -328,6 +329,12 @@ public class SessionController {
 
                         localPlayer.addResources(resourcesGiven.getResources());
                         aSessionScreen.updateResourceBar(localPlayer.getResources());
+                        
+                        pendingResponses--;
+                        
+                        if (pendingResponses == 0) {
+                            aSessionScreen.interractionDone();
+                        }
 
                     });
                 } else if (object instanceof TakeResources) {
@@ -1320,7 +1327,7 @@ public class SessionController {
      */
     public boolean buildVillage(CoordinatePair position, VillageKind kind, PlayerColor owner, boolean fromPeer, boolean init) {
         Player currentP = aSessionManager.getPlayerFromColor(owner);
-
+        System.out.println(kind.toString()+" placed at "+ position.getLeft()+" "+position.getRight());
         if (kind == VillageKind.SETTLEMENT) {
             aGameBoardManager.buildSettlement(currentP, position);
 
@@ -1451,6 +1458,7 @@ public class SessionController {
                 // notify peers about board game change
                 BuildEdge request = BuildEdge.newInstance(new ImmutablePair<>(firstPosition.getLeft(), firstPosition.getRight()), new ImmutablePair<>(secondPosition.getLeft(), secondPosition.getRight()), kind, owner, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
+                CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
             }
         }
 
@@ -1470,10 +1478,10 @@ public class SessionController {
                 // notify peers about board game change
                 BuildEdge request = BuildEdge.newInstance(new ImmutablePair<>(firstPosition.getLeft(), firstPosition.getRight()), new ImmutablePair<>(secondPosition.getLeft(), secondPosition.getRight()), kind, owner, CatanGame.account.getUsername());
                 CatanGame.client.sendTCP(request);
+                CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
             }
         }
 
-        CatanGame.client.sendTCP(UpdateVP.newInstance(localPlayer.getUsername()));
         return true;
     }
 
@@ -2368,6 +2376,46 @@ public class SessionController {
             localPlayer.addFishToken(type);
         }
     }
+    
+    void buildEdgeUnitForFree() {
+        ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges = new ArrayList<>();
+        
+        // loops through valid road end points and adds valid edges (both ships and roads)
+        for (CoordinatePair i : requestValidRoadEndpoints(getPlayerColor())) {
+            for (CoordinatePair j : getIntersectionsAndEdges()) { 
+                if (isAdjacent(i, j)) {
+
+                    Pair<CoordinatePair, CoordinatePair> edge = new MutablePair<>(i, j);
+                    validEdges.add(edge);
+
+                    for (EdgeUnit eu : getRoadsAndShips()) {
+                        if (eu.hasEndpoint(i) && eu.hasEndpoint(j)) {
+                            validEdges.remove(edge);
+                        }
+                    }
+                }
+            } 
+        }
+        
+        MultiStepMove buildEdgeUnitForFree = new MultiStepMove();
+        
+        buildEdgeUnitForFree.<Pair<CoordinatePair,CoordinatePair>>addMove(chosenEdge -> {
+            EdgeUnitKind kind = EdgeUnitKind.ROAD;
+            if (!isOnLand(chosenEdge.getLeft(), chosenEdge.getRight())) {
+                kind = EdgeUnitKind.SHIP;
+            }
+            
+            buildEdgeUnit(localPlayer.getColor(), chosenEdge.getLeft(), chosenEdge.getRight(), kind, false, true);
+            aSessionScreen.interractionDone();
+            
+        });
+        
+        if (!validEdges.isEmpty() && (localPlayer.getAvailableRoads() != 0 && localPlayer.getAvailableShips() != 0)) {
+            aSessionScreen.initChooseEdgeMove(validEdges, buildEdgeUnitForFree);
+        } else {
+            aSessionScreen.addGameMessage("You have no available edges to build a road, that was a dumb move");
+        }
+    }
 
     void fishActionHandle(Pair<FishTokenMap, Integer> p) {
         int fishCount = 0;
@@ -2400,10 +2448,10 @@ public class SessionController {
 
         if (choice >= 7) { // choose a ProgressCardType and get a card of the chosen type
             chooseCardTypeAndDraw();
-        } else if (choice >= 5) { // build an EdgeUnit (road or ship) for free.
-            //playProgressCard(ProgressCardType.ROADBUILDING);
-            aSessionScreen.buildEdgeUnitForFree();
-        } else if (choice >= 4) { // Choose a resource (not commodity) and get one of it.
+
+        } else if (choice >= 5) {
+            buildEdgeUnitForFree();
+        } else if (choice >= 4) {
             chooseResource();
         } else if (choice >= 3) { // Steal a resource from another player
             failed = chooseSteal();

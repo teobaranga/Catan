@@ -34,6 +34,7 @@ public class Session {
     /** Index of the first player */
     public int firstPlayerIndex;
 
+
     /** Index of the current player */
     public int playerIndex;
 

@@ -773,6 +773,7 @@ public class SessionScreen implements Screen {
         if (aSessionController.getGameBoardManager().getBootOwner() != null) {
             bootOwnerLabel.setText("Boot Owner: " + aSessionController.getGameBoardManager().getBootOwner().getUsername());
         }
+
         giveBoot = new TextButton("Give Boot", CatanGame.skin);
         giveBoot.addListener(new ChangeListener() {
             @Override
@@ -1840,7 +1841,7 @@ public class SessionScreen implements Screen {
         if (firstCoordinate == null || secondCoordinate == null) {
             return;
         }
-        
+
         int xCorFirst = firstCoordinate.getLeft();
         int yCorFirst = firstCoordinate.getRight();
         int xCorSecond = secondCoordinate.getLeft();

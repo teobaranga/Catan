@@ -1872,10 +1872,8 @@ public class SessionController {
     //The event die yields a trade,science, or politics.
     public void eventDieProgressCardHandle(EventKind eventDieResult, DiceRollPair diceResults) {
         int level = localPlayer.getImprovementLevelByType(eventDieResult);
-        //player is eligible
-        if (diceResults.getRed() <= level) {
-            if (localPlayer.getProgressCardCount() != 4) {
-
+        // player is eligible
+        if (diceResults.getRed() <= level && localPlayer.getProgressCardCount() != 4) {
                 MultiStepMove chooseProgressCard = new MultiStepMove();
                 chooseProgressCard.<Boolean>addMove((choice) -> {
 
@@ -1894,15 +1892,11 @@ public class SessionController {
                                 break;
                         }
                     }
-                    if (diceResults.getSum() != 7) {
-                        diceResultHandle(diceResults);
-                        // aSessionScreen.interractionDone();
-                    }
+                    diceResultHandle(diceResults);
                 });
 
                 aSessionScreen.chooseDraw(chooseProgressCard);
-            }
-        } else {
+        } else { // player is not eligible
             diceResultHandle(diceResults);
         }
     }

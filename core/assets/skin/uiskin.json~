@@ -1,0 +1,230 @@
+{
+  com.badlogic.gdx.graphics.g2d.BitmapFont: {
+    default: {
+      file: default.fnt
+    },
+    arial-13: {
+      file: arial-13.fnt
+    },
+    droid-sans-15: {
+      file: droid-sans-15.fnt
+    }
+  },
+  com.badlogic.gdx.graphics.Color: {
+    green: {a: 1, b: 0, g: 1, r: 0},
+    white: {a: 1, b: 1, g: 1, r: 1},
+    red: {a: 1, b: 0, g: 0, r: 1},
+    black: {a: 1, b: 0, g: 0, r: 0}
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
+    dialogDim: {
+      name: white,
+      color: {r: 0, g: 0, b: 0, a: 0.45}
+    },
+    resTableBackground: {
+      name: white,
+      color: {r: 0.204, g: 0.204, b: 0.204, a: 1}
+    },
+    readyBackground: {
+      name: white,
+      color: {r: 0.49020, g: 0.79216, b: 0.36078, a: 1}
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
+    default: {
+      down: default-round-down,
+      up: default-round
+    },
+    toggle: {
+      down: default-round-down,
+      checked: default-round-down,
+      up: default-round
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+    default: {
+      down: default-round-down,
+      up: default-round,
+      font: default,
+      fontColor: white,
+      disabled: default-scroll
+    },
+    toggle: {
+      down: default-round-down,
+      up: default-round,
+      checked: default-round-down,
+      font: default,
+      fontColor: white,
+      downFontColor: red
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
+    ore: {
+      up: default-round,
+      down: default-round-down,
+      checked: default-round-down,
+      disabled: default-scroll,
+      imageUp: ore
+    },
+    wool: {
+      up: default-round,
+      down: default-round-down,
+      checked: default-round-down,
+      disabled: default-scroll,
+      imageUp: wool
+    },
+    brick: {
+      up: default-round,
+      down: default-round-down,
+      checked: default-round-down,
+      disabled: default-scroll,
+      imageUp: brick
+    },
+    wheat: {
+      up: default-round,
+      down: default-round-down,
+      checked: default-round-down,
+      disabled: default-scroll,
+      imageUp: wheat
+    },
+    wood: {
+      up: default-round,
+      down: default-round-down,
+      checked: default-round-down,
+      disabled: default-scroll,
+      imageUp: wood
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
+    default: {
+      vScroll: default-scroll,
+      hScrollKnob: default-round-large,
+      background: default-rect,
+      hScroll: default-scroll,
+      vScrollKnob: default-round-large
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
+    default: {
+      font: default,
+      fontColor: white,
+      background: default-select,
+      scrollStyle: default,
+      listStyle: {
+        font: default,
+        selection: default-select-selection
+      }
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.SplitPane$SplitPaneStyle: {
+    default-vertical: {
+      handle: default-splitpane-vertical
+    },
+    default-horizontal: {
+      handle: default-splitpane
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
+    default: {
+      titleFont: default,
+      background: default-window,
+      titleFontColor: white
+    },
+    no-title: {
+      titleFont: default,
+      background: default-rect
+    },
+    dialog: {
+      titleFont: default,
+      background: default-window,
+      titleFontColor: white,
+      stageBackground: dialogDim
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
+    default-horizontal: {
+      background: default-slider,
+      knob: default-slider-knob
+    },
+    default-vertical: {
+      background: default-slider,
+      knob: default-round-large
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
+    default-horizontal: {
+      background: default-slider,
+      knob: default-slider-knob
+    },
+    default-vertical: {
+      background: default-slider,
+      knob: default-round-large
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+    default: {
+      font: default,
+      fontColor: white
+    },
+    lobby-header: {
+      font: default,
+      background: default-rect
+    },
+    chat-sender: {
+      font: droid-sans-15,
+      fontColor: white
+    },
+    chat-message: {
+      font: default,
+      fontColor: white
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
+    default: {
+      selection: selection,
+      background: textfield,
+      font: default,
+      fontColor: white,
+      cursor: cursor
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
+    default: {
+      checkboxOn: check-on,
+      checkboxOff: check-off,
+      font: default,
+      fontColor: white
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
+    default: {
+      fontColorUnselected: white,
+      selection: selection,
+      fontColorSelected: white,
+      font: default
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Touchpad$TouchpadStyle: {
+    default: {
+      background: default-pane,
+      knob: default-round-large
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Tree$TreeStyle: {
+    default: {
+      minus: tree-minus,
+      plus: tree-plus,
+      selection: default-select-selection
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle: {
+    default: {
+      label: {
+        font: default,
+        fontColor: white
+      },
+      background: default-pane,
+      wrapWidth: 150
+    }
+  },
+}

@@ -32,6 +32,11 @@ public class CatanRandom {
     public EventKind rollEventDie() {
         return nextEvent();
     }
+    
+    /** test method that always return science event */
+    public EventKind rollEventDieScience() {
+        return EventKind.SCIENCE;
+    }
 
     private int nextDie() {
         return rand.nextInt(6) + 1;

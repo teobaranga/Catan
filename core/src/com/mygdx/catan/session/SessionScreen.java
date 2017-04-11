@@ -806,7 +806,7 @@ public class SessionScreen implements Screen {
         });
         bootOwner = new Table(CatanGame.skin);
         bootOwner.setSize(menuTable.getWidth(), 80);
-        bootOwner.setPosition(10, menuTable.getHeight() + 20);
+        bootOwner.setPosition(230, Gdx.graphics.getHeight() - 130);
         bootOwner.setBackground(CatanGame.skin.newDrawable("white", Color.BLACK));
         bootOwner.add(bootOwnerLabel).pad(5).row();
         bootOwner.add(giveBoot).pad(5).row();
@@ -936,6 +936,16 @@ public class SessionScreen implements Screen {
         barbarianPositionLabel.setText("Barbarian position: " + newDistance);
     }
 
+
+    public void chooseRobber(MultiStepMove move) {
+        disableAllButtons();
+        List<RobberType> toChooseFrom= new ArrayList<>(Arrays.asList(RobberType.values()));
+        final ChooseFromEnumCollectionWindow chooseRobberWindow = new ChooseFromEnumCollectionWindow("Pirate Out or Robber Out?", CatanGame.skin, toChooseFrom);
+        chooseRobberWindow.setChooseCardListener((robber) ->
+        move.performNextMove(robber));
+
+        aSessionStage.addActor(chooseRobberWindow);
+    }
     /**
      * @param opponents client can choose from
      * @param move whose next move to perform will be called once a player has been chosen

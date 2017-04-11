@@ -99,7 +99,7 @@ public class GamePieces {
         PolygonRegionLoader polygonRegionLoader = new PolygonRegionLoader();
 
         sea = polygonRegionLoader.load(CatanGame.skin.getRegion("sea"), Gdx.files.internal("hex.psh"));
-        fishery = polygonRegionLoader.load(CatanGame.skin.getRegion("sea"), Gdx.files.internal("hex.psh")); //TODO arnaud, modify this to different tile than sea tile and split small/big fisheries
+        fishery = polygonRegionLoader.load(CatanGame.skin.getRegion("sea"), Gdx.files.internal("hex.psh"));
         hills = polygonRegionLoader.load(CatanGame.skin.getRegion("hills"), Gdx.files.internal("hex.psh"));
         forest = polygonRegionLoader.load(CatanGame.skin.getRegion("forest"), Gdx.files.internal("hex.psh"));
         mountains = polygonRegionLoader.load(CatanGame.skin.getRegion("mountains"), Gdx.files.internal("hex.psh"));

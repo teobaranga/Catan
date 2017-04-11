@@ -271,6 +271,7 @@ public class SessionController {
                         aSessionScreen.addGameMessage(robberMoved.username + " moved the robber");
 
                         Hex newPos = aGameBoardManager.getHexFromCoordinates(robberMoved.getNewPos().getLeft(), robberMoved.getNewPos().getRight());
+
                         if (robberMoved.getIfOutOfBoard()) {
                             moveRobber(null, true);
                         } else {
@@ -284,7 +285,12 @@ public class SessionController {
 
                         Hex newPos = aGameBoardManager.getHexFromCoordinates(pirateMoved.getNewPos().getLeft(), pirateMoved.getNewPos().getRight());
 
-                        movePirate(newPos, true);
+                        if (pirateMoved.getIfOutOfBoard()) {
+                            movePirate(null, true);
+                        } else{
+                            movePirate(newPos, true);
+                        }
+
                     });
                 } else if (object instanceof SpecialTradeRequest) {
                     Gdx.app.postRunnable(() -> {
@@ -1556,11 +1562,21 @@ public class SessionController {
     }
 
     public boolean movePirate(Hex newPosition, boolean fromPeer) { // TODO finish changes
-        aGameBoardManager.setPiratePosition(newPosition);
-        aSessionScreen.placePirate(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate());
-
+        if (newPosition == null) {
+            newPosition = Hex.newInstance(CoordinatePair.of(-30, -30, HarbourKind.NONE), TerrainKind.SEA, 0);
+            aGameBoardManager.setPiratePosition(null);
+            aSessionScreen.placePirate(-30, -30);
+        } else {
+            aGameBoardManager.setPiratePosition(newPosition);
+            aSessionScreen.placePirate(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate());
+        }
         if (!fromPeer) {
-            MoveRobberRequest request = MoveRobberRequest.newInstance(new ImmutablePair<Integer, Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), localPlayer.getUsername(), false);
+            MovePirateRequest request;
+            if(newPosition == null) {
+                request = MovePirateRequest.newInstance(new ImmutablePair<Integer, Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), localPlayer.getUsername(), true);
+            } else {
+                request = MovePirateRequest.newInstance(new ImmutablePair<Integer, Integer>(newPosition.getLeftCoordinate(), newPosition.getRightCoordinate()), localPlayer.getUsername(), false);
+            }
             CatanGame.client.sendTCP(request);
         }
 
@@ -2460,10 +2476,28 @@ public class SessionController {
                 return;
             }
         } else if (choice >= 2) { // Move the Robber or Pirate out of the Board
-            moveRobber(null, false);  //TODO Handle pirate OR robber.
+            MultiStepMove move = new MultiStepMove();
+            move.<RobberType>addMove((type) -> {
+                switch (type) {
+                    case ROBBER:
+                        moveRobber(null, false);
+                        break;
+                    case PIRATE:
+                        movePirate(null, false);
+                        break;
+                    default:
+                            break;
+                }
+                aSessionScreen.interractionDone();
+            });
+            chooseRobberOut(move);
         }
         localPlayer.removeFishToken(consumedFishToken); // remove fish from player's hand
         aSessionScreen.updateFishTable(localPlayer.getFishTokenHand()); // update GUI
+    }
+
+    private void chooseRobberOut(MultiStepMove move) {
+        aSessionScreen.chooseRobber(move);
     }
 
     private boolean chooseSteal() { // allows to choose the player to rob

@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.RobberType;
 
 public class ChooseFromEnumCollectionWindow<T extends Enum<T>> extends Window {
 
@@ -80,6 +81,20 @@ public class ChooseFromEnumCollectionWindow<T extends Enum<T>> extends Window {
                     break;
                 default:
                     break;
+                }
+            } else if (enumType instanceof RobberType) {
+                RobberType type = (RobberType) enumType;
+                switch (type) {
+                    case ROBBER:
+                        kindButton.setColor(Color.BLACK);
+                        kindButton.setText("Robber");
+                        break;
+                    case PIRATE:
+                        kindButton.setColor(Color.NAVY);
+                        kindButton.setText("Pirate");
+                        break;
+                    default:
+                        break;
                 }
             }
             

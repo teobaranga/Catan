@@ -35,7 +35,7 @@ public class FishTradeWindow extends CatanWindow {
 
         final Table exchangeRules = new Table(skin);
 
-        rule2 = new TextButton("2 Fish\n\nMove Robber out", skin);
+        rule2 = new TextButton("2 Fish\nMove Robber out\nor Pirate out", skin);
         initButton(rule2, 2);
 
         rule3 = new TextButton("3 Fish\n\nSteal a Resource", skin);

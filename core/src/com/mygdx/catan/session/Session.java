@@ -33,6 +33,11 @@ public class Session {
 
     /** Index of the first player */
     public int firstPlayerIndex;
+    
+    /** owners of the metropolises */
+    public Player scienceMetropolisOwner;
+    public Player tradeMetropolisOwner;
+    public Player politicsMetropolisOwner;
 
 
     /** Index of the current player */

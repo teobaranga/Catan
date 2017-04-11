@@ -386,7 +386,8 @@ class CatanServer {
         progressCardGame.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
 
         // barbarians have attacked at least once
-
+        progressCardGame.session.firstBarbarianAttack = true;
+        
         Player[] progressCardplayers = progressCardGame.session.getPlayers();
         Player progressCardPlayer1 = progressCardplayers[0];
         Player progressCardPlayer2 = progressCardplayers[1];
@@ -592,8 +593,7 @@ class CatanServer {
                 progressCardGame.gameboard.addVillage(vil1);
                 progressCardGame.gameboard.addVillage(vil2);
             }
-            // TODO: give knights to player 3
-
+            
             // give resources
             ResourceMap progressCardPlayer3Map = new ResourceMap();
             progressCardPlayer3Map.put(ResourceKind.ORE, 1);

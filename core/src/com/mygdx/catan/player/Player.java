@@ -39,7 +39,6 @@ public class Player {
 
     private int availableSettlements;
     private int availableCities;
-    private int availableMetropolis; //need this for barbarian attack
     private int availableRoads;
     private int availableShips;
     private int availableKnights;
@@ -71,6 +70,28 @@ public class Player {
     public boolean hasLostLastCity() {
         return lostLastCity;
     }
+    
+    public int getCityCount() {
+        int cityCount = 0;
+        for (Village v : villages) {
+            if (v.getVillageKind() == VillageKind.CITY) {
+                cityCount++;
+            }
+        }
+        return cityCount;
+    }
+    
+    public boolean canUpgradeTrade() {
+        return !lostLastCity && (getCityCount() > 0 || cityImprovements.getTradeLevel() < 3);
+    }
+    
+    public boolean canUpgradeScience() {
+        return !lostLastCity && (getCityCount() > 0 || cityImprovements.getScienceLevel() < 3);
+    }
+    
+    public boolean canUpgradePolitics() {
+        return !lostLastCity && (getCityCount() > 0 || cityImprovements.getPoliticsLevel() < 3);
+    }
 
     public void setLostLastCity(boolean lostLastCity) {
         this.lostLastCity = lostLastCity;
@@ -86,10 +107,6 @@ public class Player {
 
     public int getAvailableCities() {
         return availableCities;
-    }
-
-    public int getAvailableMetropolis() {
-        return availableMetropolis;
     }
 
     public int getAvailableRoads() {

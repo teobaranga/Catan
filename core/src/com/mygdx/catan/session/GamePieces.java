@@ -14,6 +14,7 @@ import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.TerrainKind;
+import com.mygdx.catan.enums.VillageKind;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.ui.KnightActor;
@@ -447,27 +448,21 @@ public class GamePieces {
      * @param xCor x coordinate of game piece center
      * @param yCor y coordinate of game piece center
      */
-    PolygonRegion createMetropolis(int xCor, int yCor, int base, int length, int pieceBase, PlayerColor color) {
+    PolygonRegion createMetropolis(int xCor, int yCor, int base, int length, int pieceBase, VillageKind kind) {
         Texture aTexture = aSeaTextureSolid;
 
-        switch (color) {
-            case BLUE:
-                aTexture = aBlueTextureSolid;
-                break;
-            case ORANGE:
-                aTexture = aOrangeTextureSolid;
-                break;
-            case RED:
-                aTexture = aRedTextureSolid;
-                break;
-            case WHITE:
-                aTexture = aWhiteTextureSolid;
-                break;
-            case YELLOW:
-                aTexture = aYellowTextureSolid;
-                break;
-            default:
-                break;
+        switch (kind) {
+        case POLITICS_METROPOLIS:
+            aTexture = setupTextureSolid(Color.ROYAL);
+            break;
+        case SCIENCE_METROPOLIS:
+            aTexture = setupTextureSolid(Color.FOREST);
+            break;
+        case TRADE_METROPOLIS:
+            aTexture = setupTextureSolid(Color.GOLD);
+            break;
+        default:
+            break;
         }
 
         float xPos = (xCor * base);

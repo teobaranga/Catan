@@ -688,6 +688,39 @@ public class SessionController {
                             destroyCityWall(position, true);
                         }
                     });
+                } else if (object instanceof UpdateVillageImprovement) {
+                    Gdx.app.postRunnable(() -> {
+                        UpdateVillageImprovement metropolisUpdate = (UpdateVillageImprovement) object;
+                        
+                        Player newOwner = aSessionManager.getPlayerFromColor(metropolisUpdate.getOwner());
+                        Pair<Integer,Integer> pos = metropolisUpdate.getPos();
+                        CoordinatePair vilcoord = aGameBoardManager.getCoordinatePairFromCoordinates(pos.getLeft(), pos.getRight());
+                        
+                        if (metropolisUpdate.isUpgrade()) {
+                            aSessionScreen.addGameMessage(metropolisUpdate.username+" now has the "+metropolisUpdate.getNewKind().toString().toLowerCase()+" metropolis");
+                            
+                            vilcoord.getOccupyingVillage().setVillageKind(metropolisUpdate.getNewKind());
+                            aSessionScreen.updateIntersection(vilcoord, metropolisUpdate.getOwner(), metropolisUpdate.getNewKind());
+                            switch (metropolisUpdate.getNewKind()) {
+                            case POLITICS_METROPOLIS:
+                                aSessionManager.getSession().politicsMetropolisOwner = newOwner;
+                                break;
+                            case SCIENCE_METROPOLIS:
+                                aSessionManager.getSession().scienceMetropolisOwner = newOwner;
+                                break;
+                            case TRADE_METROPOLIS:
+                                aSessionManager.getSession().tradeMetropolisOwner = newOwner;
+                                break;
+                            default:
+                                break;
+                            }
+                        } else {
+                            aSessionScreen.addGameMessage(metropolisUpdate.username+" lost the "+metropolisUpdate.getNewKind().toString().toLowerCase()+" metropolis");
+                            
+                            vilcoord.getOccupyingVillage().setVillageKind(CITY);
+                            aSessionScreen.updateIntersection(vilcoord, metropolisUpdate.getOwner(), CITY);
+                        }
+                    });
                 }
             }
         };
@@ -1098,30 +1131,30 @@ public class SessionController {
 
     /**
      * @param owner of requested valid intersections
+     * @param kind of Village that we are upgrading (so if we are upgrading to city, kind should be settlement, if we are upgrading to metropolis kind should be city)
      * @return a list of all the intersections that have an owner's settlement on it
      */
-    public ArrayList<CoordinatePair> requestValidCityUpgradeIntersections(PlayerColor owner) {
+    public ArrayList<CoordinatePair> requestValidCityUpgradeIntersections(PlayerColor owner, VillageKind kind) {
         // does not change any state, gui does not need to be notified, method call cannot come from peer
         ArrayList<CoordinatePair> validUpgradeIntersections = new ArrayList<>();
         Player currentP = aSessionManager.getPlayerFromColor(owner);
         List<Village> listOfVillages = currentP.getVillages();
         for (Village v : listOfVillages) {
-            if (v.getVillageKind() == VillageKind.SETTLEMENT) {
+            if (v.getVillageKind() == kind) {
                 validUpgradeIntersections.add(v.getPosition());
             }
         }
         return validUpgradeIntersections;
     }
 
-    //TODO: generate valid metropolis intersections
-
+    
     /**
-     * @return list of all the intersections of the local player's cities
+     * @return list of all the intersections of the local player's cities. Note that metropolis are just cities with an improvement on them.
      */
     public ArrayList<CoordinatePair> requestCityIntersections() {
         ArrayList<CoordinatePair> validMetropolisIntersections = new ArrayList<>();
         for (Village v : localPlayer.getVillages()) {
-            if (v.getVillageKind() == CITY) {
+            if (v.getVillageKind() == CITY || v.getVillageKind() == VillageKind.SCIENCE_METROPOLIS || v.getVillageKind() == VillageKind.POLITICS_METROPOLIS || v.getVillageKind() == VillageKind.TRADE_METROPOLIS) {
                 validMetropolisIntersections.add(v.getPosition());
             }
         }
@@ -2045,7 +2078,7 @@ public class SessionController {
             for (Player p : aSessionManager.getPlayers()) {
                 for (Village v : p.getVillages()) {
                     VillageKind vk = v.getVillageKind();
-                    if (vk == VillageKind.CITY) {
+                    if (vk == VillageKind.CITY || vk == VillageKind.SCIENCE_METROPOLIS || vk == VillageKind.POLITICS_METROPOLIS || vk == VillageKind.TRADE_METROPOLIS) {
                         int playerKnightLevel = 0;
                         for (Knight k : p.getActiveKnights()) {
                             playerKnightLevel += k.getStrength();
@@ -2153,30 +2186,30 @@ public class SessionController {
                 switch (ph.getKind()) {
                     case PASTURE:
                         resAndComMap.add(WOOL, 1);
-                        if (vKind == CITY)
+                        if (vKind == CITY || vKind == VillageKind.SCIENCE_METROPOLIS || vKind == VillageKind.POLITICS_METROPOLIS || vKind == VillageKind.TRADE_METROPOLIS)
                             resAndComMap.add(CLOTH, 1);
                         break;
                     case FOREST:
                         resAndComMap.add(WOOD, 1);
-                        if (vKind == CITY)
+                        if (vKind == CITY || vKind == VillageKind.SCIENCE_METROPOLIS || vKind == VillageKind.POLITICS_METROPOLIS || vKind == VillageKind.TRADE_METROPOLIS)
                             resAndComMap.add(PAPER, 1);
                         break;
                     case MOUNTAINS:
                         resAndComMap.add(ORE, 1);
-                        if (vKind == CITY)
+                        if (vKind == CITY || vKind == VillageKind.SCIENCE_METROPOLIS || vKind == VillageKind.POLITICS_METROPOLIS || vKind == VillageKind.TRADE_METROPOLIS)
                             resAndComMap.add(COIN, 1);
                         break;
                     case HILLS:
                         resAndComMap.add(BRICK, 1);
-                        if (vKind == CITY)
+                        if (vKind == CITY || vKind == VillageKind.SCIENCE_METROPOLIS || vKind == VillageKind.POLITICS_METROPOLIS || vKind == VillageKind.TRADE_METROPOLIS)
                             resAndComMap.add(BRICK, 1);
                         break;
                     case FIELDS:
                         resAndComMap.add(GRAIN, 1);
-                        if (vKind == CITY)
+                        if (vKind == CITY || vKind == VillageKind.SCIENCE_METROPOLIS || vKind == VillageKind.POLITICS_METROPOLIS || vKind == VillageKind.TRADE_METROPOLIS)
                             resAndComMap.add(GRAIN, 1);
                         break;
-                    case GOLDFIELD: // COIN ?
+                    case GOLDFIELD: //TODO aina
                         break;
                     case BIG_FISHERY:
                     case SMALL_FISHERY:
@@ -2553,6 +2586,64 @@ public class SessionController {
         aSessionScreen.updateTradeImprovements(level);
         TradeImprovementRequest request = TradeImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
         CatanGame.client.sendTCP(request);
+        aSessionScreen.enableImprovements();
+        
+        // if no one owns the trade metropolis, if trade level is 4 let the player upgrade one of their cities
+        if (aSessionManager.getSession().tradeMetropolisOwner == null) {
+            if (level == 4) {
+                MultiStepMove upgradeCity = new MultiStepMove();
+                
+                upgradeCity.<CoordinatePair>addMove((chosenPos) -> {
+                    Village villageToUpgrade = chosenPos.getOccupyingVillage();
+                    villageToUpgrade.setVillageKind(VillageKind.TRADE_METROPOLIS);
+                    aSessionManager.getSession().tradeMetropolisOwner = localPlayer;
+                    aSessionScreen.updateIntersection(chosenPos, villageToUpgrade.getOwner().getColor(), VillageKind.TRADE_METROPOLIS);
+                    
+                    // send message to network about new metropolis owner
+                    Pair<Integer,Integer> pos = new ImmutablePair<>(chosenPos.getLeft(), chosenPos.getRight());
+                    UpdateVillageImprovement updateRequest = UpdateVillageImprovement.newInstance(VillageKind.TRADE_METROPOLIS, localPlayer.getColor(), true, pos, localPlayer.getUsername());
+                    CatanGame.client.sendTCP(updateRequest);
+                    
+                    aSessionScreen.interractionDone();
+                });
+                
+                aSessionScreen.initChooseIntersectionMove(requestValidCityUpgradeIntersections(localPlayer.getColor(), VillageKind.CITY), upgradeCity);
+            }
+        } else if (!aSessionManager.getSession().tradeMetropolisOwner.equals(localPlayer)) {
+            if (level == 5 && aSessionManager.getSession().tradeMetropolisOwner.getCityImprovements().getTradeLevel() == 4) {
+                MultiStepMove claimMetropolis = new MultiStepMove();
+                
+                claimMetropolis.<CoordinatePair>addMove((chosenPos) -> {
+                    Village villageToUpgrade = chosenPos.getOccupyingVillage();
+                    villageToUpgrade.setVillageKind(VillageKind.TRADE_METROPOLIS);
+                    // send message to network about new metropolis owner
+                    Pair<Integer,Integer> pos = new ImmutablePair<>(chosenPos.getLeft(), chosenPos.getRight());
+                    UpdateVillageImprovement updateRequest = UpdateVillageImprovement.newInstance(VillageKind.TRADE_METROPOLIS, localPlayer.getColor(), true, pos, localPlayer.getUsername());
+                    CatanGame.client.sendTCP(updateRequest);
+                    
+                    // downgrade the current trade metropolis village to city
+                    for (Village villageToDowngrade : aSessionManager.getSession().tradeMetropolisOwner.getVillages()) {
+                        if (villageToDowngrade.getVillageKind() == VillageKind.TRADE_METROPOLIS) {
+                            villageToDowngrade.setVillageKind(CITY);
+                            aSessionScreen.updateIntersection(villageToDowngrade.getPosition(), villageToDowngrade.getOwner().getColor(), CITY);
+                            
+                            // send message to network about lost metropolis owner
+                            pos = new ImmutablePair<>(villageToDowngrade.getPosition().getLeft(), villageToDowngrade.getPosition().getRight());
+                            UpdateVillageImprovement downgradeRequest = UpdateVillageImprovement.newInstance(VillageKind.TRADE_METROPOLIS, villageToDowngrade.getOwner().getColor(), false, pos, localPlayer.getUsername());
+                            CatanGame.client.sendTCP(downgradeRequest);
+                            
+                            break;
+                        }
+                    }
+                    
+                    aSessionManager.getSession().tradeMetropolisOwner = localPlayer;
+                    aSessionScreen.updateIntersection(chosenPos, villageToUpgrade.getOwner().getColor(), VillageKind.TRADE_METROPOLIS);
+                    aSessionScreen.interractionDone();
+                });
+                
+                aSessionScreen.initChooseIntersectionMove(requestValidCityUpgradeIntersections(localPlayer.getColor(), VillageKind.CITY), claimMetropolis);
+            }
+        }
     }
 
     public void scienceCityImprovement(PlayerColor owner) {
@@ -2564,6 +2655,64 @@ public class SessionController {
         aSessionScreen.updateScienceImprovements(level);
         ScienceImprovementRequest request = ScienceImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
         CatanGame.client.sendTCP(request);
+        aSessionScreen.enableImprovements();
+        
+        // if no one owns the science metropolis, if trade level is 4 let the player upgrade one of their cities
+        if (aSessionManager.getSession().scienceMetropolisOwner == null) {
+            if (level == 4) {
+                MultiStepMove upgradeCity = new MultiStepMove();
+                
+                upgradeCity.<CoordinatePair>addMove((chosenPos) -> {
+                    Village villageToUpgrade = chosenPos.getOccupyingVillage();
+                    villageToUpgrade.setVillageKind(VillageKind.SCIENCE_METROPOLIS);
+                    aSessionManager.getSession().scienceMetropolisOwner = localPlayer;
+                    aSessionScreen.updateIntersection(chosenPos, villageToUpgrade.getOwner().getColor(), VillageKind.SCIENCE_METROPOLIS);
+                    
+                    // send message to network about new metropolis owner
+                    Pair<Integer,Integer> pos = new ImmutablePair<>(chosenPos.getLeft(), chosenPos.getRight());
+                    UpdateVillageImprovement updateRequest = UpdateVillageImprovement.newInstance(VillageKind.SCIENCE_METROPOLIS, localPlayer.getColor(), true, pos, localPlayer.getUsername());
+                    CatanGame.client.sendTCP(updateRequest);
+                    
+                    aSessionScreen.interractionDone();
+                });
+                
+                aSessionScreen.initChooseIntersectionMove(requestValidCityUpgradeIntersections(localPlayer.getColor(), VillageKind.CITY), upgradeCity);
+            }
+        } else if (!aSessionManager.getSession().tradeMetropolisOwner.equals(localPlayer)) {
+            if (level == 5 && aSessionManager.getSession().scienceMetropolisOwner.getCityImprovements().getTradeLevel() == 4) {
+                MultiStepMove claimMetropolis = new MultiStepMove();
+                
+                claimMetropolis.<CoordinatePair>addMove((chosenPos) -> {
+                    Village villageToUpgrade = chosenPos.getOccupyingVillage();
+                    villageToUpgrade.setVillageKind(VillageKind.SCIENCE_METROPOLIS);
+                    // send message to network about new metropolis owner
+                    Pair<Integer,Integer> pos = new ImmutablePair<>(chosenPos.getLeft(), chosenPos.getRight());
+                    UpdateVillageImprovement updateRequest = UpdateVillageImprovement.newInstance(VillageKind.SCIENCE_METROPOLIS, localPlayer.getColor(), true, pos, localPlayer.getUsername());
+                    CatanGame.client.sendTCP(updateRequest);
+                    
+                    // downgrade the current trade metropolis village to city
+                    for (Village villageToDowngrade : aSessionManager.getSession().scienceMetropolisOwner.getVillages()) {
+                        if (villageToDowngrade.getVillageKind() == VillageKind.SCIENCE_METROPOLIS) {
+                            villageToDowngrade.setVillageKind(CITY);
+                            aSessionScreen.updateIntersection(villageToDowngrade.getPosition(), villageToDowngrade.getOwner().getColor(), CITY);
+                            
+                            // send message to network about lost metropolis owner
+                            pos = new ImmutablePair<>(villageToDowngrade.getPosition().getLeft(), villageToDowngrade.getPosition().getRight());
+                            UpdateVillageImprovement downgradeRequest = UpdateVillageImprovement.newInstance(VillageKind.SCIENCE_METROPOLIS, villageToDowngrade.getOwner().getColor(), false, pos, localPlayer.getUsername());
+                            CatanGame.client.sendTCP(downgradeRequest);
+                            
+                            break;
+                        }
+                    }
+                    
+                    aSessionManager.getSession().scienceMetropolisOwner = localPlayer;
+                    aSessionScreen.updateIntersection(chosenPos, villageToUpgrade.getOwner().getColor(), VillageKind.SCIENCE_METROPOLIS);
+                    aSessionScreen.interractionDone();
+                });
+                
+                aSessionScreen.initChooseIntersectionMove(requestValidCityUpgradeIntersections(localPlayer.getColor(), VillageKind.CITY), claimMetropolis);
+            }
+        }
     }
 
     public void politicsCityImprovement(PlayerColor owner) {
@@ -2575,6 +2724,64 @@ public class SessionController {
         aSessionScreen.updatePoliticsImprovements(level);
         PoliticsImprovementRequest request = PoliticsImprovementRequest.newInstance(owner, CatanGame.account.getUsername(), level);
         CatanGame.client.sendTCP(request);
+        aSessionScreen.enableImprovements();
+        
+        // if no one owns the science metropolis, if trade level is 4 let the player upgrade one of their cities
+        if (aSessionManager.getSession().politicsMetropolisOwner == null) {
+            if (level == 4) {
+                MultiStepMove upgradeCity = new MultiStepMove();
+                
+                upgradeCity.<CoordinatePair>addMove((chosenPos) -> {
+                    Village villageToUpgrade = chosenPos.getOccupyingVillage();
+                    villageToUpgrade.setVillageKind(VillageKind.POLITICS_METROPOLIS);
+                    aSessionManager.getSession().politicsMetropolisOwner = localPlayer;
+                    aSessionScreen.updateIntersection(chosenPos, villageToUpgrade.getOwner().getColor(), VillageKind.POLITICS_METROPOLIS);
+                    
+                    // send message to network about new metropolis owner
+                    Pair<Integer,Integer> pos = new ImmutablePair<>(chosenPos.getLeft(), chosenPos.getRight());
+                    UpdateVillageImprovement updateRequest = UpdateVillageImprovement.newInstance(VillageKind.POLITICS_METROPOLIS, localPlayer.getColor(), true, pos, localPlayer.getUsername());
+                    CatanGame.client.sendTCP(updateRequest);
+                    
+                    aSessionScreen.interractionDone();
+                });
+                
+                aSessionScreen.initChooseIntersectionMove(requestValidCityUpgradeIntersections(localPlayer.getColor(), VillageKind.CITY), upgradeCity);
+            }
+        } else if (!aSessionManager.getSession().tradeMetropolisOwner.equals(localPlayer)) {
+            if (level == 5 && aSessionManager.getSession().politicsMetropolisOwner.getCityImprovements().getTradeLevel() == 4) {
+                MultiStepMove claimMetropolis = new MultiStepMove();
+                
+                claimMetropolis.<CoordinatePair>addMove((chosenPos) -> {
+                    Village villageToUpgrade = chosenPos.getOccupyingVillage();
+                    villageToUpgrade.setVillageKind(VillageKind.POLITICS_METROPOLIS);
+                    // send message to network about new metropolis owner
+                    Pair<Integer,Integer> pos = new ImmutablePair<>(chosenPos.getLeft(), chosenPos.getRight());
+                    UpdateVillageImprovement updateRequest = UpdateVillageImprovement.newInstance(VillageKind.POLITICS_METROPOLIS, localPlayer.getColor(), true, pos, localPlayer.getUsername());
+                    CatanGame.client.sendTCP(updateRequest);
+                    
+                    // downgrade the current trade metropolis village to city
+                    for (Village villageToDowngrade : aSessionManager.getSession().politicsMetropolisOwner.getVillages()) {
+                        if (villageToDowngrade.getVillageKind() == VillageKind.POLITICS_METROPOLIS) {
+                            villageToDowngrade.setVillageKind(CITY);
+                            aSessionScreen.updateIntersection(villageToDowngrade.getPosition(), villageToDowngrade.getOwner().getColor(), CITY);
+                            
+                            // send message to network about lost metropolis owner
+                            pos = new ImmutablePair<>(villageToDowngrade.getPosition().getLeft(), villageToDowngrade.getPosition().getRight());
+                            UpdateVillageImprovement downgradeRequest = UpdateVillageImprovement.newInstance(VillageKind.POLITICS_METROPOLIS, villageToDowngrade.getOwner().getColor(), false, pos, localPlayer.getUsername());
+                            CatanGame.client.sendTCP(downgradeRequest);
+                            
+                            break;
+                        }
+                    }
+                    
+                    aSessionManager.getSession().politicsMetropolisOwner = localPlayer;
+                    aSessionScreen.updateIntersection(chosenPos, villageToUpgrade.getOwner().getColor(), VillageKind.POLITICS_METROPOLIS);
+                    aSessionScreen.interractionDone();
+                });
+                
+                aSessionScreen.initChooseIntersectionMove(requestValidCityUpgradeIntersections(localPlayer.getColor(), VillageKind.CITY), claimMetropolis);
+            }
+        }
     }
 
     public KnightController getKnightController() {

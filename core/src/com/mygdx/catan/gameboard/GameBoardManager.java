@@ -199,7 +199,6 @@ public class GameBoardManager {
      */
     public boolean upgradeSettlement(Player player, CoordinatePair position) {
         Village settlement = position.getOccupyingVillage();
-        //TODO: upgrade to metropolis if already a city?
 
         //note: settlement is already associated to player and position, and list of villages in aGameBoard, and therefore only needs to be upgraded to city
         settlement.setVillageKind(VillageKind.CITY);

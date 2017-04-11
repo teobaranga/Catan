@@ -106,6 +106,7 @@ public class Config {
         kryo.register(RollDice.class);
         kryo.register(DiceRolled.class);
         kryo.register(VillagePillaged.class);
+        kryo.register(UpdateVillageImprovement.class);
         kryo.register(PillageVillageRequest.class);
         kryo.register(DrawProgressCard.class);
         kryo.register(OpponentDrawnProgressCard.class);

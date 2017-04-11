@@ -1188,7 +1188,7 @@ public class SessionScreen implements Screen {
                             highlightedPositions.add(gamePieces.createSettlement(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                         }
                     } else {
-                        for (CoordinatePair intersections : aSessionController.requestValidCityUpgradeIntersections(aSessionController.getPlayerColor())) {
+                        for (CoordinatePair intersections : aSessionController.requestValidCityUpgradeIntersections(aSessionController.getPlayerColor(), VillageKind.SETTLEMENT)) {
                             validIntersections.add(intersections);
                             highlightedPositions.add(gamePieces.createCity(intersections.getLeft(), intersections.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
                         }
@@ -1779,13 +1779,16 @@ public class SessionScreen implements Screen {
                 village = gamePieces.createCity(offsetX, offsetY, BASE, LENGTH, PIECEBASE, color);
                 break;
             case SCIENCE_METROPOLIS:
-                village = gamePieces.createMetropolis(offsetX, offsetY, BASE, LENGTH, PIECEBASE, color);
+                village = gamePieces.createMetropolis(offsetX, offsetY, BASE, LENGTH, PIECEBASE, kind);
                 break;
             case SETTLEMENT:
                 village = gamePieces.createSettlement(offsetX, offsetY, BASE, LENGTH, PIECEBASE, color);
                 break;
             case TRADE_METROPOLIS:
-                village = gamePieces.createMetropolis(offsetX, offsetY, BASE, LENGTH, PIECEBASE, color);
+                village = gamePieces.createMetropolis(offsetX, offsetY, BASE, LENGTH, PIECEBASE, kind);
+                break;
+            case POLITICS_METROPOLIS:
+                village = gamePieces.createMetropolis(offsetX, offsetY, BASE, LENGTH, PIECEBASE, kind);
                 break;
             default:
                 break;
@@ -2030,10 +2033,14 @@ public class SessionScreen implements Screen {
                 buildCityWallButton.setDisabled(false);
                 tradeButton.setDisabled(false);
                 tradeFish.setDisabled(false);
-                if (!aSessionController.getLocalPlayer().hasLostLastCity()){
+                if (aSessionController.getLocalPlayer().canUpgradeTrade()) {
                     improveTrade.setDisabled(false);
-                    improveScience.setDisabled(false);
+                }
+                if (aSessionController.getLocalPlayer().canUpgradePolitics()) {
                     improvePolitics.setDisabled(false);
+                }
+                if (aSessionController.getLocalPlayer().canUpgradeScience()) {
+                    improveScience.setDisabled(false);
                 }
                 rollDiceButton.setDisabled(true);
                 break;
@@ -2049,9 +2056,16 @@ public class SessionScreen implements Screen {
     }
     
     void enableImprovements() {
-        improveTrade.setDisabled(false);
-        improveScience.setDisabled(false);
-        improvePolitics.setDisabled(false);
+        disableImprovements();
+        if (aSessionController.getLocalPlayer().canUpgradeTrade()) {
+            improveTrade.setDisabled(false);
+        }
+        if (aSessionController.getLocalPlayer().canUpgradePolitics()) {
+            improvePolitics.setDisabled(false);
+        }
+        if (aSessionController.getLocalPlayer().canUpgradeScience()) {
+            improveScience.setDisabled(false);
+        }
     }
 
     /**
@@ -2365,7 +2379,6 @@ public class SessionScreen implements Screen {
                     aSessionController.tradeCityImprovement(aSessionController.getCurrentPlayer().getColor());
                     updateTradeImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getTradeLevel());
                     updateResourceBar(aSessionController.getCurrentPlayer().getResources());
-                    interractionDone();
                 }
             }
         });
@@ -2382,7 +2395,6 @@ public class SessionScreen implements Screen {
                     aSessionController.politicsCityImprovement(aSessionController.getCurrentPlayer().getColor());
                     updatePoliticsImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getPoliticsLevel());
                     updateResourceBar(aSessionController.getCurrentPlayer().getResources());
-                    interractionDone();
                 }
             }
         });
@@ -2399,7 +2411,6 @@ public class SessionScreen implements Screen {
                     aSessionController.scienceCityImprovement(aSessionController.getCurrentPlayer().getColor());
                     updateScienceImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getScienceLevel());
                     updateResourceBar(aSessionController.getCurrentPlayer().getResources());
-                    interractionDone();
                 }
 
             }

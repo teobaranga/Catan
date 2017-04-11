@@ -1058,21 +1058,23 @@ public class SessionController {
     public boolean requestTradeImprovement(PlayerColor owner) {
         Player currentP = aSessionManager.getPlayerFromColor(owner);
         int currentTradeLevel = getCurrentPlayer().getCityImprovements().getTradeLevel();
-        boolean canImprove = currentP.hasEnoughResources(GameRules.getGameRulesInstance().getTradeCityImprovementCost(currentTradeLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
-        return canImprove;
+        boolean hasEnoughResources = currentP.hasEnoughResources(GameRules.getGameRulesInstance().getTradeCityImprovementCost(currentTradeLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
+        return hasEnoughResources && currentP.canUpgradePolitics();
 
     }
 
     public boolean requestScienceImprovement(PlayerColor owner) {
-        Player currentP = getCurrentPlayer();
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         int currentScienceLevel = getCurrentPlayer().getCityImprovements().getScienceLevel();
-        return currentP.hasEnoughResources(GameRules.getGameRulesInstance().getScienceCityImprovementCost(currentScienceLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
+        boolean hasEnoughResources = currentP.hasEnoughResources(GameRules.getGameRulesInstance().getScienceCityImprovementCost(currentScienceLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
+        return  hasEnoughResources && currentP.canUpgradeScience();
     }
 
     public boolean requestPoliticsImprovement(PlayerColor owner) {
-        Player currentP = getCurrentPlayer();
+        Player currentP = aSessionManager.getPlayerFromColor(owner);
         int currentPoliticsLevel = getCurrentPlayer().getCityImprovements().getPoliticsLevel();
-        return currentP.hasEnoughResources(GameRules.getGameRulesInstance().getPoliticsCityImprovementCost(currentPoliticsLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
+        boolean hasEnoughResources = currentP.hasEnoughResources(GameRules.getGameRulesInstance().getPoliticsCityImprovementCost(currentPoliticsLevel + 1, aSessionManager.getCurrentlyExecutingProgressCard()));
+        return hasEnoughResources && currentP.canUpgradePolitics();
     }
 
     //TODO delete when play progress card button has been removed

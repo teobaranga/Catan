@@ -422,6 +422,7 @@ class CatanServer {
                 Mfour_Meight.putVillage(vil1);
                 Village vil2 = Village.newInstance(progressCardPlayer1, Mone_Mone);
                 vil2.setVillageKind(VillageKind.TRADE_METROPOLIS);
+                progressCardGame.session.tradeMetropolisOwner = progressCardPlayer1;
                 Mone_Mone.putVillage(vil2);
                 EdgeUnit edg1 = EdgeUnit.newEdgeUnit(Mfour_Meight, Mthree_Mseven, EdgeUnitKind.ROAD, progressCardPlayer1);
                 EdgeUnit edg2 = EdgeUnit.newEdgeUnit(Mone_one, Mone_Mone, EdgeUnitKind.ROAD, progressCardPlayer1);
@@ -479,6 +480,7 @@ class CatanServer {
                 vil1.setVillageKind(VillageKind.CITY);
                 Village vil2 = Village.newInstance(progressCardPlayer2, Mthree_Mone);
                 vil2.setVillageKind(VillageKind.SCIENCE_METROPOLIS);
+                progressCardGame.session.scienceMetropolisOwner = progressCardPlayer2;
                 Mthree_Mone.putVillage(vil2);
                 Village vil3 = Village.newInstance(progressCardPlayer2, Mthree_Mfive);
                 Mthree_Mfive.putVillage(vil3);
@@ -547,7 +549,7 @@ class CatanServer {
             progressCardPlayer3.addProgressCard(ProgressCardType.IRRIGATION);
             progressCardPlayer3.addProgressCard(ProgressCardType.WEDDING);
 
-            // set flipchart levels: science : 2 - politics : 5 - trade : 0
+            // set flipchart levels: science : 2 - politics : 3 - trade : 0
             progressCardPlayer3.getCityImprovements().setScienceLevel(2);
             progressCardPlayer3.getCityImprovements().setPoliticsLevel(3);
             progressCardPlayer3.getCityImprovements().setTradeLevel(0);

@@ -23,6 +23,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1894,12 +1895,15 @@ public class SessionController {
                         }
                     }
                     if (diceResults.getSum() != 7) {
-                        aSessionScreen.interractionDone();
+                        diceResultHandle(diceResults);
+                        // aSessionScreen.interractionDone();
                     }
                 });
 
                 aSessionScreen.chooseDraw(chooseProgressCard);
             }
+        } else {
+            diceResultHandle(diceResults);
         }
     }
 
@@ -1925,7 +1929,8 @@ public class SessionController {
                 diceResultHandle(diceResults);
             }
         } else {
-            diceResultHandle(diceResults);
+            // the listener for DrawProgressCard will call diceResultHandle, so that goldmine will not interrupt the choice 
+            // diceResultHandle(diceResults);
             DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults, localPlayer.getUsername());
             CatanGame.client.sendTCP(drawRequest);
         }
@@ -2171,6 +2176,7 @@ public class SessionController {
         // Create the map containing the resources and commodities that the player
         // will receive as a result of this dice roll
         ResourceMap resAndComMap = new ResourceMap();
+        int goldNumber = 0;
 
         // For each producing hex...
         for (Hex ph : producingHexes) {
@@ -2211,7 +2217,10 @@ public class SessionController {
                         if (vKind == CITY || vKind == VillageKind.SCIENCE_METROPOLIS || vKind == VillageKind.POLITICS_METROPOLIS || vKind == VillageKind.TRADE_METROPOLIS)
                             resAndComMap.add(GRAIN, 1);
                         break;
-                    case GOLDFIELD: //TODO aina
+                    case GOLDFIELD:
+                        goldNumber++;
+                        if (vKind == CITY || vKind == VillageKind.SCIENCE_METROPOLIS || vKind == VillageKind.POLITICS_METROPOLIS || vKind == VillageKind.TRADE_METROPOLIS)
+                            goldNumber++;
                         break;
                     case BIG_FISHERY:
                     case SMALL_FISHERY:
@@ -2224,11 +2233,33 @@ public class SessionController {
             }
         }
 
-        localPlayer.addResources(resAndComMap);
+        // if player has at least one gold hex, init choose multiple resources move
+        if (goldNumber > 0) {
+            MultiStepMove chooseResources = new MultiStepMove();
+            EnumMap<ResourceKind, Integer> resourcesToChooseFrom = new EnumMap<>(ResourceKind.class);
+            
+            chooseResources.<ResourceMap>addMove((map) -> {
+                resAndComMap.add(map);
+                localPlayer.addResources(resAndComMap);
+                aSessionScreen.updateResourceBar(localPlayer.getResources());
+                aSessionScreen.interractionDone();
+            });
+            
+            for (ResourceKind kind : ResourceKind.values()) {
+                resourcesToChooseFrom.put(kind, goldNumber);
+            }
+            aSessionScreen.chooseMultipleResource(resourcesToChooseFrom, goldNumber, chooseResources);
+        } else {
+            localPlayer.addResources(resAndComMap);
+            aSessionScreen.updateResourceBar(localPlayer.getResources());
+            aSessionScreen.interractionDone();
+        }
+        
         //aqueduct
         if (diceRoll != 7
                 && resAndComMap.isEmpty()
-                && aGameRules.getScienceImprovmentType(localPlayer.getCityImprovements().getScienceLevel()) == CityImprovementTypeScience.AQUEDUCT) {
+                && aGameRules.getScienceImprovmentType(localPlayer.getCityImprovements().getScienceLevel()) == CityImprovementTypeScience.AQUEDUCT
+                && goldNumber == 0) {
 
             MultiStepMove chooseResource = new MultiStepMove();
             chooseResource.<ResourceKind>addMove(kind -> {
@@ -2240,7 +2271,6 @@ public class SessionController {
             });
             aSessionScreen.chooseResource(Arrays.asList(ResourceKind.values()), chooseResource);
         }
-        aSessionScreen.updateResourceBar(localPlayer.getResources());
     }
 
     int getBootMalus(Player player) {

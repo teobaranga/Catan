@@ -2505,6 +2505,7 @@ public class SessionController {
             toAdd.add(resourcekind, 1);
             aTransactionManager.payBankToPlayer(localPlayer, toAdd);
             aSessionScreen.updateResourceBar(localPlayer.getResources());
+            aSessionScreen.interractionDone();
         });
         aSessionScreen.chooseResource(possiblechoice, getCardFromBank);
     }

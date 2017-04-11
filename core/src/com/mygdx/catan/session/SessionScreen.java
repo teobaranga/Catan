@@ -770,6 +770,9 @@ public class SessionScreen implements Screen {
         
         //Old Boot Table
         bootOwnerLabel = new Label("Boot Owner: No one", CatanGame.skin);
+        if (aSessionController.getGameBoardManager().getBootOwner() != null) {
+            bootOwnerLabel.setText("Boot Owner: " + aSessionController.getGameBoardManager().getBootOwner().getUsername());
+        }
         giveBoot = new TextButton("Give Boot", CatanGame.skin);
         giveBoot.addListener(new ChangeListener() {
             @Override

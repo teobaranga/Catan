@@ -14,9 +14,13 @@ import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Knight;
+import com.mygdx.catan.gameboard.Knight.Strength;
+import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.LongestRouteCalculator;
 import com.mygdx.catan.player.Player;
+import com.mygdx.catan.request.knight.KnightRemovedResponse;
 import com.mygdx.catan.request.knight.KnightRequest;
+import com.mygdx.catan.request.knight.RequestRemoveKnight;
 import com.mygdx.catan.ui.KnightActor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -86,6 +90,20 @@ public class KnightController {
                                 sessionScreen.refreshKnight(id);
                             }
                         }
+                    });
+                } else if (object instanceof RequestRemoveKnight) {
+                    Gdx.app.postRunnable(() -> {
+                        RequestRemoveKnight request = (RequestRemoveKnight) object;
+                        MultiStepMove removeKnight = new MultiStepMove();
+                        
+                        removeKnight.<CoordinatePair>addMove((knightIntersection) -> {
+                            
+                            int knightStrength = knightIntersection.getOccupyingKnight().getStrength(); 
+                            KnightRemovedResponse response = KnightRemovedResponse.newInstance(knightStrength, localPlayer.getUsername(), request.sender);
+                            CatanGame.client.sendTCP(response);
+                            removeKnight(knightIntersection);
+                            
+                        });
                     });
                 }
             }

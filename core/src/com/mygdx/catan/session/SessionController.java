@@ -495,7 +495,17 @@ public class SessionController {
                     Gdx.app.postRunnable(() -> {
                         DrawProgressCard handleNonBarbarianEvent = (DrawProgressCard) object;
                         aSessionScreen.addGameMessage("You may be able to draw a progress card");
-                        eventDieProgressCardHandle(handleNonBarbarianEvent.getEventKind(), handleNonBarbarianEvent.getDiceResults());
+                        eventDieProgressCardHandle(handleNonBarbarianEvent.getEventKind(), handleNonBarbarianEvent.getDiceResults(), handleNonBarbarianEvent.username);
+                    });
+                } else if (object instanceof EventDieHandled) {
+                    Gdx.app.postRunnable(() -> {
+                        EventDieHandled handled = (EventDieHandled) object;
+                        
+                        pendingResponses--;
+                        
+                        if (pendingResponses == 0) {
+                            diceResultHandle(handled.getDiceResults());
+                        }
                     });
                 } else if (object instanceof BestPlayersWin) {
                     Gdx.app.postRunnable(() -> {
@@ -1865,7 +1875,7 @@ public class SessionController {
     }
 
     //The event die yields a trade,science, or politics.
-    public void eventDieProgressCardHandle(EventKind eventDieResult, DiceRollPair diceResults) {
+    public void eventDieProgressCardHandle(EventKind eventDieResult, DiceRollPair diceResults, String senderOfRequest) {
         int level = localPlayer.getImprovementLevelByType(eventDieResult);
         // player is eligible
         if (diceResults.getRed() <= level && localPlayer.getProgressCardCount() != 4) {
@@ -1887,12 +1897,15 @@ public class SessionController {
                                 break;
                         }
                     }
-                    diceResultHandle(diceResults);
+                    EventDieHandled response = EventDieHandled.newInstance(diceResults, eventDieResult, localPlayer.getUsername(), senderOfRequest);
+                    CatanGame.client.sendTCP(response);
                 });
 
                 aSessionScreen.chooseDraw(chooseProgressCard);
         } else { // player is not eligible
-            diceResultHandle(diceResults);
+            EventDieHandled response = EventDieHandled.newInstance(diceResults, eventDieResult, localPlayer.getUsername(), senderOfRequest);
+            CatanGame.client.sendTCP(response);
+            //diceResultHandle(diceResults);
         }
     }
 
@@ -1918,8 +1931,9 @@ public class SessionController {
                 diceResultHandle(diceResults);
             }
         } else {
-            // the listener for DrawProgressCard will call diceResultHandle, so that goldmine will not interrupt the choice 
+            // must wait for all responses before handling dice result
             // diceResultHandle(diceResults);
+            pendingResponses = aSessionManager.getPlayers().length;
             DrawProgressCard drawRequest = DrawProgressCard.newInstance(eventDieResult, diceResults, localPlayer.getUsername());
             CatanGame.client.sendTCP(drawRequest);
         }

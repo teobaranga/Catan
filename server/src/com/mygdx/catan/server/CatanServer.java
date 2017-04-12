@@ -322,7 +322,7 @@ class CatanServer {
         // Create its session
         game.session = Session.newInstance(game.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         // Create its gameboard
-        game.gameboard = GameBoard.newInstance(BoardVariants.BOARD_VARIANT1); //TODO make default again
+        game.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT); //TODO make default again
         System.out.println("gameboard created");
         // Return the game response containing the game along with its session and its gameboard
         return GameResponse.newInstance(game);
@@ -2040,7 +2040,7 @@ class CatanServer {
 
        /** testing different boards */
        Game testBoard = new Game();
-       testBoard.name = "Winning Game";
+       testBoard.name = "testing variant1";
 
        for(Account account : accounts) {
            testBoard.addPlayer(account, -1);
@@ -2050,7 +2050,7 @@ class CatanServer {
        testBoard.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
        testBoard.gameboard = GameBoard.newInstance(BoardVariants.BOARD_VARIANT1);
 
-       savedGames.add(testBoard);
+       // savedGames.add(testBoard);
 
         return savedGames;
     }

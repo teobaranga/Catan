@@ -308,75 +308,46 @@ public class ProgressCardHandler {
                         validKnights.add(k.getPosition());
                     }
                 }
-                MultiStepMove playSmith = new MultiStepMove();
 
-                // add the moves
-                playSmith.<Knight>addMove(chosenKnight -> {
-                    aSessionController.getKnightController().requestPromoteKnight(chosenKnight);
-
-                    if (!validKnights.isEmpty()) {
-                        aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
-                    } else {
-                        aSessionController.getSessionScreen().addGameMessage("You do not have an available knight for an upgrade");
-                        aSessionController.getSessionScreen().interractionDone();
-                    }
-
-                    // re initializes validEdges
-                    validKnights.clear();
-                    updateValidKnights(validKnights, chosenKnight.getPosition());
-
-                    // prompts the player to choose the second edge with updated valid edges
-                    if (!validKnights.isEmpty()) {
-                        aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
-                    } else {
-                        aSessionController.getSessionScreen().addGameMessage("You do not have an available knight for the second upgrade");
-                        aSessionController.getSessionScreen().interractionDone();
-                    }
-                });
-
-                playSmith.<Knight>addMove(secondChosenKnight -> {
-                    aSessionController.getKnightController().requestPromoteKnight(secondChosenKnight);
-
-                    // ends the move
+                if(validKnights.size() == 0) {
+                    aSessionController.getSessionScreen().addGameMessage("No available knights for promotion, not a smart move.");
                     aSessionController.getSessionScreen().interractionDone();
-                });
+                } else {
+                    MultiStepMove playSmith = new MultiStepMove();
+                    playSmith.<CoordinatePair>addMove(myKnightCoordinates -> {
+                        myKnightCoordinates.getOccupyingKnight().promote();
+                        aSessionController.getKnightController().requestPromoteKnight(myKnightCoordinates.getOccupyingKnight());
+                        aSessionController.getSessionScreen().refreshKnight(myKnightCoordinates.getOccupyingKnight().getId());
 
+//
+                        validKnights.clear();
+                        updateValidKnights(validKnights, myKnightCoordinates);
+
+                        if (!validKnights.isEmpty()) {
+                            aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+                            aSessionController.getSessionScreen().addGameMessage("You may now pick a second knight to promote");
+                        } else {
+                            aSessionController.getSessionScreen().addGameMessage("You have no more knights to promote");
+                            aSessionController.getSessionScreen().interractionDone();
+                        }
+                    });
+                    playSmith.<CoordinatePair>addMove(mySecondKnightCoordinates -> {
+                        mySecondKnightCoordinates.getOccupyingKnight().promote();
+                        aSessionController.getKnightController().requestPromoteKnight(mySecondKnightCoordinates.getOccupyingKnight());
+                        aSessionController.getSessionScreen().refreshKnight(mySecondKnightCoordinates.getOccupyingKnight().getId());
+
+                        aSessionController.getSessionScreen().interractionDone();
+                    });
+
+                    if (!validKnights.isEmpty()) {
+                        aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+                    } else {
+                        aSessionController.getSessionScreen().addGameMessage("You have no valid knights to promote. That was a dumb move");
+                    }
+                }
+
+                //revert back to choose action mode and enable buttons
                 break;
-//                MultiStepMove playSmith = new MultiStepMove();
-//                playSmith.<CoordinatePair>addMove(myKnightCoordinates -> {
-//                    for (Knight k: listOfKnights) {
-//                        if (k.getPosition().equals(myKnightCoordinates)) {
-//                            k.promote();
-//                        }
-//                    }
-//                    validKnights.clear();
-//                    updateValidKnights(validKnights, myKnightCoordinates);
-//
-//                    if (!validKnights.isEmpty()) {
-//                        aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
-//                        aSessionController.getSessionScreen().addGameMessage("You may now pick two knights to promote");
-//                    } else {
-//                        aSessionController.getSessionScreen().addGameMessage("You have no more knights to promote");
-//                        aSessionController.getSessionScreen().interractionDone();
-//                    }
-//                });
-//                playSmith.<CoordinatePair>addMove(mySecondKnightCoordinates -> {
-//                    for (Knight k: listOfKnights) {
-//                        if (k.getPosition().equals(mySecondKnightCoordinates)) {
-//                            k.promote();
-//                        }
-//                    }
-//                    aSessionController.getSessionScreen().interractionDone();
-//                });
-//
-//                if (!validKnights.isEmpty()) {
-//                    aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
-//                } else {
-//                    aSessionController.getSessionScreen().addGameMessage("You have no valid knights to promote. That was a dumb move");
-//                }
-//
-//                //revert back to choose action mode and enable buttons
-//                break;
             case BISHOP:
                 // Move the robber, following the normal rules. Draw 1 random resource/commodity card from each player who has a settlement or
                 // city next to the robber's new hex

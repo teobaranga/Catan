@@ -322,7 +322,7 @@ class CatanServer {
         // Create its session
         game.session = Session.newInstance(game.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         // Create its gameboard
-        game.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
+        game.gameboard = GameBoard.newInstance(BoardVariants.BOARD_VARIANT1); //TODO make default again
         System.out.println("gameboard created");
         // Return the game response containing the game along with its session and its gameboard
         return GameResponse.newInstance(game);
@@ -615,7 +615,7 @@ class CatanServer {
             }
         }
 
-        savedGames.add(yearsOfPlenty);
+        // savedGames.add(yearsOfPlenty);
 
         // ---------------------------------------------------------------------------
         // Progress Card game : 1 ----------------------------------------------------
@@ -1143,24 +1143,67 @@ class CatanServer {
             SIDE NOTE: do we add 4 VP for metropolis??
          */
         Game metropolisGame = new Game();
-        metropolisGame.name = "Metropolis";
-        metropolisGame.session = Session.newInstance(metropolisGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
-
-        for (Account account : accounts) {
+        metropolisGame.name = "Metropolis game";
+        for (Account account: accounts) {
             metropolisGame.addPlayer(account, -1);
             metropolisGame.markAsReady(account.getUsername());
         }
-        ResourceMap commoditiesMap = new ResourceMap();
+        metropolisGame.session = Session.newInstance(metropolisGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
+        metropolisGame.gameboard = GameBoard.newInstance(BoardVariants.BOARD_VARIANT1);
+        metropolisGame.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
 
-        for (ResourceKind resourceKind : ResourceKind.values()) {
-            //will need 9 coin, 9 paper, 9 cloth (for 2 upgrades)
-            commoditiesMap.add(resourceKind, 13);
+        // barbarians have attacked at least once
+        metropolisGame.session.firstBarbarianAttack = true;
+        
+        Player[] metropolisplayers = metropolisGame.session.getPlayers();
+        Player metp1 = metropolisplayers[0];
+        Player metp2 = metropolisplayers[1];
+        Player metp3 = metropolisplayers[2];
+        
+        // give one player a mighty knight do that barbarians didn't win. give that player defender of catan
+        
+        {
+            CoordinatePair Mthree_Mfive = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, metropolisGame.gameboard);
+            CoordinatePair Mtwo_Mfour = GameBoardManager.getCoordinatePairFromCoordinates(-2, -4, metropolisGame.gameboard);
+            CoordinatePair Mone_Mfive = GameBoardManager.getCoordinatePairFromCoordinates(-1, -5, metropolisGame.gameboard);
+            CoordinatePair Mtwo_Mtwo = GameBoardManager.getCoordinatePairFromCoordinates(-2, -2, metropolisGame.gameboard);
+            
+            Village vil1 = Village.newInstance(metp1, Mthree_Mfive);
+            Mthree_Mfive.putVillage(vil1);
+            metropolisGame.gameboard.addVillage(vil1);
+            metp1.addVillage(vil1);
+            
+            Village vil2 = Village.newInstance(metp1, Mone_Mfive);
+            Mone_Mfive.putVillage(vil2);
+            vil2.setVillageKind(VillageKind.CITY);
+            metropolisGame.gameboard.addVillage(vil2);
+            metp1.addVillage(vil2);
+            
+            EdgeUnit edg1 = EdgeUnit.newEdgeUnit(Mtwo_Mfour, Mthree_Mfive, EdgeUnitKind.ROAD, metp1);
+            metropolisGame.gameboard.addRoadOrShip(edg1);
+            metp1.addEdgeUnit(edg1);
+            
+            EdgeUnit edg2 = EdgeUnit.newEdgeUnit(Mtwo_Mfour, Mone_Mfive, EdgeUnitKind.ROAD, metp1);
+            metropolisGame.gameboard.addRoadOrShip(edg2);
+            metp1.addEdgeUnit(edg2);
+            
+            EdgeUnit edg3 = EdgeUnit.newEdgeUnit(Mtwo_Mfour, Mtwo_Mtwo, EdgeUnitKind.ROAD, metp1);
+            metropolisGame.gameboard.addRoadOrShip(edg3);
+            metp1.addEdgeUnit(edg3);
+            
+            {
+                int id = metropolisGame.gameboard.nextKnightId();
+                Knight knight = Knight.newInstance(metp1, Mtwo_Mtwo, id);
+                knight.promote();
+                knight.promote();
+                knight.activate();
+                Mtwo_Mtwo.putKnight(knight);
+                metp1.addKnight(knight);
+                metropolisGame.gameboard.addKnight(knight, knight.getId());
+            }
+            
+            metp1.incrementDefenderOfCatanPoints();
         }
-
-        for (Player player : metropolisGame.session.getPlayers()) {
-            player.setResources(commoditiesMap);
-        }
-        // WHICH PHASE? metropolisGame.session.currentPhase = GamePhase.
 
         savedGames.add(metropolisGame);
 

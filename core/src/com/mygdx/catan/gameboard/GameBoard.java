@@ -150,8 +150,13 @@ public class GameBoard {
         }
 
         // Initialize the Side Fisheries
-        for(int i = 0; i < 6; i++) {
-            Pair<Integer,Integer> currentPair = rules.getSmallFisheryPair(i);
+		Pair<Integer,Integer> currentPair;
+		for(int i = 0; i < 6; i++) {
+        	if (variant == BoardVariants.DEFAULT){
+				currentPair = rules.getSmallFisheryPair(i);
+			} else {
+        		currentPair = rules.getDefaultSmallFisheryPairVariant1().get(i);
+			}
             CoordinatePair hexCoord = CoordinatePair.of(currentPair.getLeft(), currentPair.getRight(), HarbourKind.NONE);
             Integer lDiceNumber = aDiceNumberSetup.get(hexCoord.hashCode());
             TerrainKind lTerrainKind = aHexKindSetup.get(hexCoord.hashCode());

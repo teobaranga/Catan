@@ -193,6 +193,18 @@ public class GameRules {
         smallFisheryPosition.add(new ImmutablePair<>(2,4));
     }
 
+    public ArrayList<Pair<Integer,Integer>>  getDefaultSmallFisheryPairVariant1() {
+        ArrayList<Pair<Integer,Integer>> smallFisheryPosition = new ArrayList<>();
+        smallFisheryPosition.add(new ImmutablePair<>(-8,2));
+        smallFisheryPosition.add(new ImmutablePair<>(8,2));
+        smallFisheryPosition.add(new ImmutablePair<>(-7,3));
+        smallFisheryPosition.add(new ImmutablePair<>(7,3));
+        smallFisheryPosition.add(new ImmutablePair<>(-6,4));
+        smallFisheryPosition.add(new ImmutablePair<>(4,0));
+        return smallFisheryPosition;
+    }
+
+
 	private void setupProducingResourcesmap() {
 	    producingResourcemap.put(TerrainKind.FIELDS, ResourceKind.GRAIN);
 	    producingResourcemap.put(TerrainKind.FOREST, ResourceKind.WOOD);
@@ -259,84 +271,83 @@ public class GameRules {
      * hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
      * */
     private void setupVariant1TerrainMap() {
-        variant1TerrainKindMap.put(getHashCodeofPair(-9,1), TerrainKind.SMALL_FISHERY);
-        variant1TerrainKindMap.put(getHashCodeofPair(9,1), TerrainKind.SMALL_FISHERY);
-        variant1TerrainKindMap.put(getHashCodeofPair(-9,-1), TerrainKind.SMALL_FISHERY);
-        variant1TerrainKindMap.put(getHashCodeofPair(9,-1), TerrainKind.SMALL_FISHERY);
-        variant1TerrainKindMap.put(getHashCodeofPair(0,6), TerrainKind.SMALL_FISHERY);
-        variant1TerrainKindMap.put(getHashCodeofPair(2,6), TerrainKind.SMALL_FISHERY);
 
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-4,-4), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-2,-4), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(0,-4), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(2,-4), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(4,-4), TerrainKind.SEA);
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-5,-3), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-3,-3), TerrainKind.FIELDS);
-        variant1TerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.PASTURE);
-        variant1TerrainKindMap.put(getHashCodeofPair(1,-3), TerrainKind.HILLS);
-        variant1TerrainKindMap.put(getHashCodeofPair(3,-3), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(5,-3), TerrainKind.SEA);
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-6,-2), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-4,-2), TerrainKind.FOREST);
-        variant1TerrainKindMap.put(getHashCodeofPair(-2,-2), TerrainKind.MOUNTAINS);
-        variant1TerrainKindMap.put(getHashCodeofPair(0,-2), TerrainKind.BIG_FISHERY);
-        variant1TerrainKindMap.put(getHashCodeofPair(2,-2), TerrainKind.PASTURE);
-        variant1TerrainKindMap.put(getHashCodeofPair(4,-2), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(6,-2), TerrainKind.SEA);
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-7,-1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-5,-1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-3,-1), TerrainKind.HILLS);
-        variant1TerrainKindMap.put(getHashCodeofPair(-1,-1), TerrainKind.PASTURE);
-        variant1TerrainKindMap.put(getHashCodeofPair(1,-1), TerrainKind.MOUNTAINS);
-        variant1TerrainKindMap.put(getHashCodeofPair(3,-1), TerrainKind.FIELDS);
-        variant1TerrainKindMap.put(getHashCodeofPair(5,-1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(7,-1), TerrainKind.SEA);
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-8,0), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-6,0), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-4,0), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-2,0), TerrainKind.FOREST);
-        variant1TerrainKindMap.put(getHashCodeofPair(0,0), TerrainKind.FOREST);
-        variant1TerrainKindMap.put(getHashCodeofPair(2,0), TerrainKind.PASTURE);
-        variant1TerrainKindMap.put(getHashCodeofPair(4,0), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(6,0), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(8,0), TerrainKind.SEA);
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-7,1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-5,1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-3,1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-1,1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(1,1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(3,1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(5,1), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(7,1), TerrainKind.SEA);
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-6,2), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-4,2), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-2,2), TerrainKind.GOLDFIELD);
-        variant1TerrainKindMap.put(getHashCodeofPair(0,2), TerrainKind.FIELDS);
-        variant1TerrainKindMap.put(getHashCodeofPair(2,2), TerrainKind.PASTURE);
-        variant1TerrainKindMap.put(getHashCodeofPair(4,2), TerrainKind.HILLS);
-        variant1TerrainKindMap.put(getHashCodeofPair(6,2), TerrainKind.SEA);
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-5,3), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(-3,3), TerrainKind.MOUNTAINS);
-        variant1TerrainKindMap.put(getHashCodeofPair(-1,3), TerrainKind.PASTURE);
-        variant1TerrainKindMap.put(getHashCodeofPair(1,3), TerrainKind.MOUNTAINS);
-        variant1TerrainKindMap.put(getHashCodeofPair(3,3), TerrainKind.MOUNTAINS);
-        variant1TerrainKindMap.put(getHashCodeofPair(5,3), TerrainKind.GOLDFIELD);
-        
-        variant1TerrainKindMap.put(getHashCodeofPair(-4,4), TerrainKind.HILLS);
-        variant1TerrainKindMap.put(getHashCodeofPair(-2,4), TerrainKind.HILLS);
-        variant1TerrainKindMap.put(getHashCodeofPair(0,4), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(2,4), TerrainKind.SEA);
-        variant1TerrainKindMap.put(getHashCodeofPair(4,4), TerrainKind.FOREST);
-    }
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,-4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,-4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,-4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,-4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,-4), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-5,-3), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-3,-3), TerrainKind.FIELDS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(1,-3), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(3,-3), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(5,-3), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-6,-2), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,-2), TerrainKind.FOREST);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,-2), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,-2), TerrainKind.BIG_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,-2), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,-2), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(6,-2), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-7,-1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-5,-1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-3,-1), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-1,-1), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(1,-1), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(3,-1), TerrainKind.FIELDS);
+		variant1TerrainKindMap.put(getHashCodeofPair(5,-1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(7,-1), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-8,0), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-6,0), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,0), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,0), TerrainKind.FOREST);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,0), TerrainKind.FOREST);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,0), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,0), TerrainKind.SMALL_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(6,0), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(8,0), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-7,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-5,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-3,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-1,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(1,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(3,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(5,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(7,1), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-8,2), TerrainKind.SMALL_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(-6,2), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,2), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,2), TerrainKind.GOLDFIELD);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,2), TerrainKind.FIELDS);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,2), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,2), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(6,2), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(8,2), TerrainKind.SMALL_FISHERY);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-7,3), TerrainKind.SMALL_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(-5,3), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(-3,3), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-1,3), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(1,3), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(3,3), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(5,3), TerrainKind.GOLDFIELD);
+		variant1TerrainKindMap.put(getHashCodeofPair(7,3), TerrainKind.SMALL_FISHERY);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-6,4), TerrainKind.SMALL_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,4), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,4), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,4), TerrainKind.FOREST);
+	}
 
 	/**
 	 * hardcodes default dice number map (keys exactly as above) (assumes size <= 7)
@@ -389,13 +400,20 @@ public class GameRules {
 	}
 
 	private void setupVariant1DiceMap() {
-	    variant1DiceNumberMap.put(getHashCodeofPair(0,-2), 0);
-	    variant1DiceNumberMap.put(getHashCodeofPair(-7,1), 6);
-	    variant1DiceNumberMap.put(getHashCodeofPair(7,1), 8);
-	    variant1DiceNumberMap.put(getHashCodeofPair(-7,-1), 5);
-	    variant1DiceNumberMap.put(getHashCodeofPair(7,-1), 9);
-	    variant1DiceNumberMap.put(getHashCodeofPair(0,4), 4);
-	    variant1DiceNumberMap.put(getHashCodeofPair(2,4), 10);
+		variant1DiceNumberMap.put(getHashCodeofPair(-8,2),5);
+		variant1DiceNumberMap.put(getHashCodeofPair(8,2),9);
+		variant1DiceNumberMap.put(getHashCodeofPair(-7,3),6);
+		variant1DiceNumberMap.put(getHashCodeofPair(7,3),8);
+		variant1DiceNumberMap.put(getHashCodeofPair(-6,4),4);
+		variant1DiceNumberMap.put(getHashCodeofPair(6,4),10);
+
+		variant1DiceNumberMap.put(getHashCodeofPair(0,-2), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(-7,1), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(7,1), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(-7,-1), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(7,-1), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(0,4), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(2,4), 0);
 
 	    variant1DiceNumberMap.put(getHashCodeofPair(-4,-4), 0);
 	    variant1DiceNumberMap.put(getHashCodeofPair(-2,-4), 0);
@@ -432,7 +450,7 @@ public class GameRules {
         variant1DiceNumberMap.put(getHashCodeofPair(-2,0), 8);
         variant1DiceNumberMap.put(getHashCodeofPair(0,0), 10);
         variant1DiceNumberMap.put(getHashCodeofPair(2,0), 6);
-        variant1DiceNumberMap.put(getHashCodeofPair(4,0), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(4,0), 10);
         variant1DiceNumberMap.put(getHashCodeofPair(6,0), 0);
         variant1DiceNumberMap.put(getHashCodeofPair(8,0), 0);
         
@@ -445,19 +463,19 @@ public class GameRules {
         variant1DiceNumberMap.put(getHashCodeofPair(5,1), 0);
         // variant1DiceNumberMap.put(getHashCodeofPair(7,1), 0);
         
-        variant1DiceNumberMap.put(getHashCodeofPair(-6,2), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-6,2), 4);
         variant1DiceNumberMap.put(getHashCodeofPair(-4,2), 0);
         variant1DiceNumberMap.put(getHashCodeofPair(-2,2), 4);
         variant1DiceNumberMap.put(getHashCodeofPair(0,2), 3);
-        variant1DiceNumberMap.put(getHashCodeofPair(2,2), 4);
+        variant1DiceNumberMap.put(getHashCodeofPair(2,2), 0);
         variant1DiceNumberMap.put(getHashCodeofPair(4,2), 12);
-        variant1DiceNumberMap.put(getHashCodeofPair(6,2), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(6,2), 9);
         
-        variant1DiceNumberMap.put(getHashCodeofPair(-5,3),0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-5,3),3);
         variant1DiceNumberMap.put(getHashCodeofPair(-3,3),10);
         variant1DiceNumberMap.put(getHashCodeofPair(-1,3), 6);
-        variant1DiceNumberMap.put(getHashCodeofPair(1,3), 9);
-        variant1DiceNumberMap.put(getHashCodeofPair(3,3), 3);
+        variant1DiceNumberMap.put(getHashCodeofPair(1,3), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(3,3), 0);
         variant1DiceNumberMap.put(getHashCodeofPair(5,3), 5);
         
         variant1DiceNumberMap.put(getHashCodeofPair(-4,4), 3);

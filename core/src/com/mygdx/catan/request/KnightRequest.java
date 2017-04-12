@@ -42,6 +42,15 @@ public class KnightRequest extends ForwardedRequest {
         return request;
     }
 
+    public static KnightRequest remove(String username, int id) {
+        KnightRequest request = new KnightRequest();
+        request.username = username;
+        request.universal = false;
+        request.type = Type.REMOVE;
+        request.id = id;
+        return request;
+    }
+
     public Type getType() {
         return type;
     }
@@ -59,6 +68,6 @@ public class KnightRequest extends ForwardedRequest {
     }
 
     public enum Type {
-        BUILD, ACTIVATE, PROMOTE
+        BUILD, ACTIVATE, PROMOTE, REMOVE
     }
 }

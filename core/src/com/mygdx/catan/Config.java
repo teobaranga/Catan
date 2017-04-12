@@ -15,6 +15,8 @@ import com.mygdx.catan.request.*;
 import com.mygdx.catan.request.game.BrowseGames;
 import com.mygdx.catan.request.game.LoadGame;
 import com.mygdx.catan.response.*;
+import com.mygdx.catan.response.game.GameList;
+import com.mygdx.catan.session.KnightController;
 import com.mygdx.catan.session.Session;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;

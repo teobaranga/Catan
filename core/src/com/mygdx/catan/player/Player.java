@@ -39,6 +39,7 @@ public class Player {
 
     private int availableSettlements;
     private int availableCities;
+    private int availableMetropolis; //need this for barbarian attack
     private int availableRoads;
     private int availableShips;
     private int availableKnights;
@@ -107,6 +108,10 @@ public class Player {
 
     public int getAvailableCities() {
         return availableCities;
+    }
+
+    public int getAvailableMetropolis() {
+        return availableMetropolis;
     }
 
     public int getAvailableRoads() {
@@ -425,6 +430,8 @@ public class Player {
     public void removeEdgeUnit(EdgeUnit unit) {
         roadsAndShips.remove(unit);
     }
+
+    public void removeKnight(Knight knight) {knights.remove(knight);}
 
     /**
      * adds given village to villages. Its position and and type is assumed to be legal.

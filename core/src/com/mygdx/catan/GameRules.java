@@ -937,8 +937,11 @@ public class GameRules {
 
 	public ResourceMap getPromoteKnightCost(ProgressCardType type) {
 	    // Upgrading a knight is free with the Smith card
-		if (type == ProgressCardType.SMITH)
-		    return new ResourceMap();
+        ResourceMap costWithSmith = new ResourceMap();
+        if (type == ProgressCardType.SMITH){
+            costWithSmith.put(ResourceKind.GRAIN, 0);
+            return costWithSmith;
+        }
 
         return promoteKnightCost;
     }

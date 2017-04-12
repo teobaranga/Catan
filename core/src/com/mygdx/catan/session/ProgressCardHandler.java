@@ -187,6 +187,7 @@ public class ProgressCardHandler {
                 ResourceMap newGrains = new ResourceMap();
                 newGrains.add(ResourceKind.GRAIN, numGrainCards);
                 currentP.addResources(newGrains);
+                aSessionController.getSessionScreen().updateResourceBar(currentP.getResources());
                 aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             //allows player to upgrade a settlement to a city for 2 ore and 1 grain
@@ -199,8 +200,8 @@ public class ProgressCardHandler {
                     }
                 }
                 MultiStepMove playMedicine = new MultiStepMove();
-                playMedicine.<CoordinatePair>addMove(myCityCoordinates -> {
-                    aSessionController.buildCityWall(currentPColor, myCityCoordinates, true);
+                playMedicine.<CoordinatePair>addMove(settlementToUpGrade -> {
+                    aSessionController.buildVillage(settlementToUpGrade, VillageKind.CITY, currentPColor, true, false);
                     //revert back to choose action mode and enable buttons
                     aSessionController.getSessionScreen().interractionDone();
                 });
@@ -221,12 +222,14 @@ public class ProgressCardHandler {
                     }
                 }
                 ResourceMap newOre = new ResourceMap();
-                newOre.add(ResourceKind.GRAIN, numOreCards);
+                newOre.add(ResourceKind.ORE, numOreCards);
                 currentP.addResources(newOre);
+                aSessionController.getSessionScreen().updateResourceBar(currentP.getResources());
                 aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             case PRINTER:
                 aSessionManager.incrementTokenVP(currentP);
+                aSessionController.getSessionScreen().updateVpTables();
                 aSessionManager.finishCurrentlyExecutingProgressCard();
                 break;
             case ROADBUILDING:
@@ -298,44 +301,79 @@ public class ProgressCardHandler {
                 ArrayList<CoordinatePair> validKnights = new ArrayList<>();
                 List<Knight> listOfKnights = currentP.getKnights();
                 for (Knight k : listOfKnights) {
-                    if (k.getStrength() != 3) {
+                    if (((k.getStrength() == 2 && currentP.getCityImprovements().getTradeLevel() == 3)) || (k.getStrength() == 1) || (k.getStrength() == 0)){
                         validKnights.add(k.getPosition());
                     }
                 }
                 MultiStepMove playSmith = new MultiStepMove();
-                playSmith.<CoordinatePair>addMove(myKnightCoordinates -> {
-                    for (Knight k: listOfKnights) {
-                        if (k.getPosition().equals(myKnightCoordinates)) {
-                            k.promote();
-                        }
-                    }
-                    validKnights.clear();
-                    updateValidKnights(validKnights, myKnightCoordinates);
-                    
+
+                // add the moves
+                playSmith.<Knight>addMove(chosenKnight -> {
+                    aSessionController.getKnightController().requestPromoteKnight(chosenKnight);
+
                     if (!validKnights.isEmpty()) {
                         aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
                     } else {
-                        aSessionController.getSessionScreen().addGameMessage("You have no more knights to promote");
+                        aSessionController.getSessionScreen().addGameMessage("You do not have an available knight for an upgrade");
+                        aSessionController.getSessionScreen().interractionDone();
+                    }
+
+                    // re initializes validEdges
+                    validKnights.clear();
+                    updateValidKnights(validKnights, chosenKnight.getPosition());
+
+                    // prompts the player to choose the second edge with updated valid edges
+                    if (!validKnights.isEmpty()) {
+                        aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+                    } else {
+                        aSessionController.getSessionScreen().addGameMessage("You do not have an available knight for the second upgrade");
                         aSessionController.getSessionScreen().interractionDone();
                     }
                 });
-                playSmith.<CoordinatePair>addMove(mySecondKnightCoordinates -> {
-                    for (Knight k: listOfKnights) {
-                        if (k.getPosition().equals(mySecondKnightCoordinates)) {
-                            k.promote();
-                        }
-                    }
+
+                playSmith.<Knight>addMove(secondChosenKnight -> {
+                    aSessionController.getKnightController().requestPromoteKnight(secondChosenKnight);
+
+                    // ends the move
                     aSessionController.getSessionScreen().interractionDone();
                 });
 
-                if (!validKnights.isEmpty()) {
-                    aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
-                } else {
-                    aSessionController.getSessionScreen().addGameMessage("You have no knights to promote. That was a dumb move");
-                }
-                
-                //revert back to choose action mode and enable buttons
                 break;
+//                MultiStepMove playSmith = new MultiStepMove();
+//                playSmith.<CoordinatePair>addMove(myKnightCoordinates -> {
+//                    for (Knight k: listOfKnights) {
+//                        if (k.getPosition().equals(myKnightCoordinates)) {
+//                            k.promote();
+//                        }
+//                    }
+//                    validKnights.clear();
+//                    updateValidKnights(validKnights, myKnightCoordinates);
+//
+//                    if (!validKnights.isEmpty()) {
+//                        aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+//                        aSessionController.getSessionScreen().addGameMessage("You may now pick two knights to promote");
+//                    } else {
+//                        aSessionController.getSessionScreen().addGameMessage("You have no more knights to promote");
+//                        aSessionController.getSessionScreen().interractionDone();
+//                    }
+//                });
+//                playSmith.<CoordinatePair>addMove(mySecondKnightCoordinates -> {
+//                    for (Knight k: listOfKnights) {
+//                        if (k.getPosition().equals(mySecondKnightCoordinates)) {
+//                            k.promote();
+//                        }
+//                    }
+//                    aSessionController.getSessionScreen().interractionDone();
+//                });
+//
+//                if (!validKnights.isEmpty()) {
+//                    aSessionController.getSessionScreen().initChooseIntersectionMove(validKnights, playSmith);
+//                } else {
+//                    aSessionController.getSessionScreen().addGameMessage("You have no valid knights to promote. That was a dumb move");
+//                }
+//
+//                //revert back to choose action mode and enable buttons
+//                break;
             case BISHOP:
                 // Move the robber, following the normal rules. Draw 1 random resource/commodity card from each player who has a settlement or
                 // city next to the robber's new hex
@@ -430,6 +468,9 @@ public class ProgressCardHandler {
                     for (Knight k: chosenPlayer.getKnights()) {
                         opponentKnights.add(k);
                     }
+                    if(opponentKnights.size() == 0){
+                        aSessionController.getSessionScreen().addGameMessage("Your opponent doesn't have any knights. Not the smartest move.");
+                    }
 
                     playDeserter.<Knight>addMove((Knight knightToRemove) -> {
                         aGameBoardManager.removeKnight(knightToRemove);
@@ -450,8 +491,9 @@ public class ProgressCardHandler {
                 placeNewKnight.<CoordinatePair>addMove((CoordinatePair newKnightCoords) -> {
                     ArrayList myValidKnights = new ArrayList();
                     for (CoordinatePair intersection: aSessionController.requestValidKnightIntersections(currentP.getColor())){
-
+                        myValidKnights.add(intersection);
                     }
+                    aSessionController.getSessionScreen().initChooseIntersectionMove(myValidKnights, placeNewKnight);
                 });
 
                 break;
@@ -657,8 +699,8 @@ public class ProgressCardHandler {
                 break;
             case WARLORD:
                 for (Knight k: currentP.getKnights()) {
-                    aSessionController.activateKnight(currentP.getColor(), k, false);
-                    ActivateKnightRequest request = ActivateKnightRequest.newInstance(true, currentPColor, currentP.getUsername(), k.getPosition());
+                    aSessionController.getKnightController().requestActivateKnight(k);
+                    KnightRequest request = KnightRequest.activate(currentP.getUsername(), k.getId());
                     CatanGame.client.sendTCP(request);
                 }
                 aSessionManager.finishCurrentlyExecutingProgressCard();

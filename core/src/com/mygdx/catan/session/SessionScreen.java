@@ -672,7 +672,7 @@ public class SessionScreen implements Screen {
         menuTable.add(moveShipButton).padBottom(10).row();
 
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
-        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", ProgressCardType.ROADBUILDING);
+        setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", null);
         playProgressCardButton.pad(0, 10, 0, 10);
         menuTable.add(playProgressCardButton).padBottom(10).row();
 
@@ -2449,6 +2449,17 @@ public class SessionScreen implements Screen {
         for (KnightActor knightActor : knights) {
             if (knightActor.getKnight().getId() == id) {
                 knightActor.refresh();
+                break;
+            }
+        }
+    }
+
+    /**Remove a knight from the gameboard*/
+    void removeKnight(int id) {
+        for (KnightActor knightActor : knights) {
+            if (knightActor.getKnight().getId() == id){
+                knightActor.remove();
+                addGameMessage("A knight has been removed.");
                 break;
             }
         }

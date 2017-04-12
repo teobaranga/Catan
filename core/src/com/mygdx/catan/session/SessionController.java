@@ -1847,6 +1847,10 @@ public class SessionController {
                 // updates the stacks of peers
                 request = OpponentDrawnProgressCard.newInstance(drawnCard, localPlayer.getUsername());
                 CatanGame.client.sendTCP(request);
+
+                if(drawnCard == ProgressCardType.CONSTITUTION) {
+                    aProgressCardHandler.handle(ProgressCardType.CONSTITUTION, localPlayer.getColor());
+                }
                 break;
             case SCIENCE:
                 drawnCard = aGameBoardManager.drawScienceProgressCard();
@@ -1855,6 +1859,11 @@ public class SessionController {
                 // updates the stacks of peers
                 request = OpponentDrawnProgressCard.newInstance(drawnCard, localPlayer.getUsername());
                 CatanGame.client.sendTCP(request);
+
+                if(drawnCard == ProgressCardType.PRINTER) {
+                    aProgressCardHandler.handle(ProgressCardType.PRINTER, localPlayer.getColor());
+                }
+
                 break;
             case TRADE:
                 drawnCard = aGameBoardManager.drawPoliticsProgressCard();

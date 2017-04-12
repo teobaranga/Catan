@@ -209,7 +209,12 @@ public class KnightController {
     }
 
     //TODO
-    public void removeKnight(CoordinatePair knightpos) {
-
+    public void removeKnight(CoordinatePair knightPos) {
+        Knight knightToRemove = knightPos.getOccupyingKnight();
+        Player owner = knightToRemove.getOwner();
+        owner.removeKnight(knightToRemove);
+        sessionScreen.removeKnight(knightToRemove.getId());
+        KnightRequest request = KnightRequest.remove(localPlayer.getUsername(), knightToRemove.getId());
+        CatanGame.client.sendTCP(request);
     }
 }

@@ -109,7 +109,7 @@ public class SessionScreen implements Screen {
 
     // Menu Buttons
     private TextButton buildSettlementButton, buildCityButton, buildRoadButton, buildShipButton, buildKnightButton,
-            buildCityWallButton, buildMetropolisButton;
+            buildCityWallButton;
     private TextButton rollDiceButton, endTurnButton;
     private TextButton domesticTradeButton, tradeButton;
     private TextButton moveShipButton;
@@ -524,35 +524,35 @@ public class SessionScreen implements Screen {
         buildKnightButton.pad(0, 10, 0, 10);
         menuTable.add(buildKnightButton).padBottom(10).row();
 
-        buildMetropolisButton = new TextButton("Build Metropolis", CatanGame.skin);
-        buildMetropolisButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                //create a new multi step move to allow the player to build a metropolis
-                currentlyPerformingMove = new MultiStepMove();
-
-                final SessionScreenModes prevMode = aMode;
-
-                aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
-
-                for(CoordinatePair intersection: aSessionController.requestCityIntersections()) {
-                    validIntersections.add(intersection);
-                    highlightedPositions.add(gamePieces.createSettlement(intersection.getLeft(), intersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
-                }
-
-                currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
-                    // Clear the highlighted positions
-                    validIntersections.clear();
-                    highlightedPositions.clear();
-                    // Build the metropolis
-                    updateIntersection(chosenIntersection, aSessionController.getPlayerColor(), VillageKind.TRADE_METROPOLIS);
-                    // Go back to the previous mode
-                    aMode = prevMode;
-                    // re-enable all appropriate actions
-                    enablePhase(aSessionController.getCurrentGamePhase());
-                });
-            }
-        });
+//        buildMetropolisButton = new TextButton("Build Metropolis", CatanGame.skin);
+//        buildMetropolisButton.addListener(new ChangeListener() {
+//            @Override
+//            public void changed(ChangeEvent event, Actor actor) {
+//                //create a new multi step move to allow the player to build a metropolis
+//                currentlyPerformingMove = new MultiStepMove();
+//
+//                final SessionScreenModes prevMode = aMode;
+//
+//                aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
+//
+//                for(CoordinatePair intersection: aSessionController.requestCityIntersections()) {
+//                    validIntersections.add(intersection);
+//                    highlightedPositions.add(gamePieces.createSettlement(intersection.getLeft(), intersection.getRight(), BASE, LENGTH, PIECEBASE, aSessionController.getPlayerColor()));
+//                }
+//
+//                currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
+//                    // Clear the highlighted positions
+//                    validIntersections.clear();
+//                    highlightedPositions.clear();
+//                    // Build the metropolis
+//                    updateIntersection(chosenIntersection, aSessionController.getPlayerColor(), VillageKind.TRADE_METROPOLIS);
+//                    // Go back to the previous mode
+//                    aMode = prevMode;
+//                    // re-enable all appropriate actions
+//                    enablePhase(aSessionController.getCurrentGamePhase());
+//                });
+//            }
+//        });
 
         buildCityWallButton = new TextButton("Build City Wall", CatanGame.skin);
         buildCityWallButton.addListener(new ChangeListener() {
@@ -587,8 +587,8 @@ public class SessionScreen implements Screen {
         buildCityWallButton.pad(0, 10, 0, 10);
         menuTable.add(buildCityWallButton).padBottom(10).row();
 
-        buildMetropolisButton.pad(0,10,0,10);
-        menuTable.add(buildMetropolisButton).padBottom(10).row();
+//        buildMetropolisButton.pad(0,10,0,10);
+//        menuTable.add(buildMetropolisButton).padBottom(10).row();
 
         moveShipButton = new TextButton("Move Ship", CatanGame.skin);
         setupMoveShipButton(moveShipButton);
@@ -1842,7 +1842,7 @@ public class SessionScreen implements Screen {
         endTurnButton.setDisabled(true);
         moveShipButton.setDisabled(true);
         rollDiceButton.setDisabled(true);
-        buildMetropolisButton.setDisabled(true);
+//        buildMetropolisButton.setDisabled(true);
         giveBoot.setDisabled(true);
         buildKnightButton.setDisabled(true);
         buildCityWallButton.setDisabled(true);
@@ -1869,9 +1869,9 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
-                buildMetropolisButton.setDisabled(true);
+//                buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
-//                buildKnightButton.setDisabled(true);
+                buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
                 tradeButton.setDisabled(true);
                 improveTrade.setDisabled(true);
@@ -1891,7 +1891,7 @@ public class SessionScreen implements Screen {
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
-                buildMetropolisButton.setDisabled(true);
+//                buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
                 buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
@@ -1913,7 +1913,7 @@ public class SessionScreen implements Screen {
                 rollDiceButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
-                buildMetropolisButton.setDisabled(true);
+//                buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
                 buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
@@ -1934,9 +1934,9 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(true);
                 endTurnButton.setDisabled(true);
                 moveShipButton.setDisabled(true);
-                buildMetropolisButton.setDisabled(true);
+//                buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
-//                buildKnightButton.setDisabled(true);
+                buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
                 tradeButton.setDisabled(true);
                 improveTrade.setDisabled(true);
@@ -1955,7 +1955,7 @@ public class SessionScreen implements Screen {
                 domesticTradeButton.setDisabled(false);
                 endTurnButton.setDisabled(false);
                 moveShipButton.setDisabled(false);
-                buildMetropolisButton.setDisabled(false);
+//                buildMetropolisButton.setDisabled(false);
                 giveBoot.setDisabled(false);
                 buildKnightButton.setDisabled(false);
                 buildCityWallButton.setDisabled(false);
@@ -2007,7 +2007,7 @@ public class SessionScreen implements Screen {
         rollDiceButton.setDisabled(true);
         domesticTradeButton.setDisabled(true);
         endTurnButton.setDisabled(true);
-        buildMetropolisButton.setDisabled(true);
+//        buildMetropolisButton.setDisabled(true);
         buildKnightButton.setDisabled(true);
         buildCityWallButton.setDisabled(true);
         moveShipButton.setDisabled(true);

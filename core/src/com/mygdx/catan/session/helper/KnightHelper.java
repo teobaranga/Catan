@@ -55,16 +55,15 @@ public class KnightHelper {
     public MultiStepMove buildKnight() {
         Stage sessionStage = sessionScreen.aSessionStage;
         Stage gamePiecesStage = sessionScreen.gamePiecesStage;
-        // TODO uncomment this
         // Make sure the player has everything required to build a knight
-//                if (!aSessionController.requestBuildKnight()) {
-//                    addGameMessage("You can't build a knight (not enough resources or no valid positions)");
-//                    return;
-//                }
+        if (!knightController.requestBuildKnight()) {
+            sessionScreen.addGameMessage("You can't build a knight (not enough resources or no valid positions)");
+            return null;
+        }
 
         // Create the highlighted positions showing where a knight could be placed
         List<CoordinatePair> validBuildKnightPositions = sessionController.getValidBuildKnightPositions();
-            //    List<CoordinatePair> validBuildKnightPositions = sessionController.requestValidInitializationBuildIntersections();
+        //    List<CoordinatePair> validBuildKnightPositions = sessionController.requestValidInitializationBuildIntersections();
 
         if (validBuildKnightPositions.isEmpty()) {
             Label msg = new Label("There are no valid positions\nwhere you can build a knight.", CatanGame.skin);

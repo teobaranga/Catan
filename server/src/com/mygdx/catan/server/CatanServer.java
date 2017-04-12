@@ -497,7 +497,7 @@ class CatanServer {
                     resourceMapP2.put(ResourceKind.BRICK, 5);
                     resourceMapP2.put(ResourceKind.GRAIN, 3);
                     resourceMapP2.put(ResourceKind.PAPER, 2);
-                    p1.setResources(resourceMapP2);
+                    p2.setResources(resourceMapP2);
 
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, yearsOfPlenty.gameboard);
                     Village village = Village.newInstance(p2, position);
@@ -557,7 +557,7 @@ class CatanServer {
                     resourceMapP3.put(ResourceKind.BRICK, 5);
                     resourceMapP3.put(ResourceKind.GRAIN, 4);
                     resourceMapP3.put(ResourceKind.PAPER, 2);
-                    p1.setResources(resourceMapP3);
+                    p3.setResources(resourceMapP3);
 
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, yearsOfPlenty.gameboard);
                     int id = yearsOfPlenty.gameboard.nextKnightId();

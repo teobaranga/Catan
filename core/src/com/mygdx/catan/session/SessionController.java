@@ -1033,10 +1033,6 @@ public class SessionController {
         return canBuild;
     }
 
-    boolean requestBuildKnight() {
-        return knightController.requestBuildKnight();
-    }
-
     /**
      * @see KnightController#requestActivateKnight(Knight)
      */

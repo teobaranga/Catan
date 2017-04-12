@@ -1160,7 +1160,11 @@ class CatanServer {
         Player metp2 = metropolisplayers[1];
         Player metp3 = metropolisplayers[2];
         
-        // give one player a mighty knight do that barbarians didn't win. give that player defender of catan
+        
+        // set flipchart levels: science : 0 - politics : 3 - trade : 0
+        metp1.getCityImprovements().setScienceLevel(0);
+        metp1.getCityImprovements().setPoliticsLevel(3);
+        metp1.getCityImprovements().setTradeLevel(0);
         
         {
             CoordinatePair Mthree_Mfive = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, metropolisGame.gameboard);
@@ -1204,6 +1208,85 @@ class CatanServer {
             
             metp1.incrementDefenderOfCatanPoints();
         }
+        
+        ResourceMap metp1Map = new ResourceMap();
+        metp1Map.put(ResourceKind.PAPER, 6);
+        metp1Map.put(ResourceKind.CLOTH, 5);
+        metp1Map.put(ResourceKind.COIN, 9);
+        metp1.setResources(metp1Map);
+        
+        
+        // set flipchart levels: science : 3 - politics : 0 - trade : 0
+        metp1.getCityImprovements().setScienceLevel(3);
+        metp1.getCityImprovements().setPoliticsLevel(0);
+        metp1.getCityImprovements().setTradeLevel(0);
+        
+        {
+            CoordinatePair two_Mfour = GameBoardManager.getCoordinatePairFromCoordinates(2, -4, metropolisGame.gameboard);
+            CoordinatePair two_Mtwo = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, metropolisGame.gameboard);
+            CoordinatePair zero_Mtwo = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, metropolisGame.gameboard);
+            CoordinatePair one_Mone = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, metropolisGame.gameboard);
+            
+            Village vil1 = Village.newInstance(metp2, two_Mfour);
+            two_Mfour.putVillage(vil1);
+            metropolisGame.gameboard.addVillage(vil1);
+            metp2.addVillage(vil1);
+            
+            Village vil2 = Village.newInstance(metp2, zero_Mtwo);
+            vil2.setVillageKind(VillageKind.CITY);
+            two_Mfour.putVillage(vil2);
+            metropolisGame.gameboard.addVillage(vil2);
+            metp2.addVillage(vil2);
+            
+            EdgeUnit edg1 = EdgeUnit.newEdgeUnit(two_Mfour, two_Mtwo, EdgeUnitKind.ROAD, metp2);
+            metropolisGame.gameboard.addRoadOrShip(edg1);
+            metp2.addEdgeUnit(edg1);
+            
+            EdgeUnit edg2 = EdgeUnit.newEdgeUnit(zero_Mtwo, one_Mone, EdgeUnitKind.ROAD, metp2);
+            metropolisGame.gameboard.addRoadOrShip(edg2);
+            metp2.addEdgeUnit(edg2);
+        }
+        
+        ResourceMap metp2Map = new ResourceMap();
+        metp2Map.put(ResourceKind.PAPER, 10);
+        metp2Map.put(ResourceKind.CLOTH, 5);
+        metp2Map.put(ResourceKind.COIN, 6);
+        metp2.setResources(metp2Map);
+        
+        // set flipchart levels: science : 0 - politics : 0 - trade : 1
+        metp1.getCityImprovements().setScienceLevel(0);
+        metp1.getCityImprovements().setPoliticsLevel(0);
+        metp1.getCityImprovements().setTradeLevel(1);
+        {
+            CoordinatePair Mtwo_two = GameBoardManager.getCoordinatePairFromCoordinates(-2, 2, metropolisGame.gameboard);
+            CoordinatePair Mtwo_four = GameBoardManager.getCoordinatePairFromCoordinates(-2, 4, metropolisGame.gameboard);
+            CoordinatePair zero_two = GameBoardManager.getCoordinatePairFromCoordinates(0, 2, metropolisGame.gameboard);
+            CoordinatePair one_one = GameBoardManager.getCoordinatePairFromCoordinates(1, 1, metropolisGame.gameboard);
+            
+            Village vil1 = Village.newInstance(metp3, Mtwo_two);
+            Mtwo_two.putVillage(vil1);
+            metropolisGame.gameboard.addVillage(vil1);
+            metp3.addVillage(vil1);
+            
+            Village vil2 = Village.newInstance(metp3, one_one);
+            vil2.setVillageKind(VillageKind.CITY);
+            one_one.putVillage(vil2);
+            metropolisGame.gameboard.addVillage(vil2);
+            metp3.addVillage(vil2);
+            
+            EdgeUnit edg1 = EdgeUnit.newEdgeUnit(Mtwo_four, Mtwo_two, EdgeUnitKind.SHIP, metp3);
+            metropolisGame.gameboard.addRoadOrShip(edg1);
+            metp3.addEdgeUnit(edg1);
+            
+            EdgeUnit edg2 = EdgeUnit.newEdgeUnit(zero_two, one_one, EdgeUnitKind.ROAD, metp3);
+            metropolisGame.gameboard.addRoadOrShip(edg2);
+            metp3.addEdgeUnit(edg2);
+        }
+        ResourceMap metp3Map = new ResourceMap();
+        metp3Map.put(ResourceKind.PAPER, 5);
+        metp3Map.put(ResourceKind.CLOTH, 9);
+        metp3Map.put(ResourceKind.COIN, 6);
+        metp3.setResources(metp3Map);
 
         savedGames.add(metropolisGame);
 

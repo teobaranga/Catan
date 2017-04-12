@@ -1936,7 +1936,7 @@ public class SessionScreen implements Screen {
                 moveShipButton.setDisabled(true);
                 buildMetropolisButton.setDisabled(true);
                 giveBoot.setDisabled(true);
-                buildKnightButton.setDisabled(true);
+//                buildKnightButton.setDisabled(true);
                 buildCityWallButton.setDisabled(true);
                 tradeButton.setDisabled(true);
                 improveTrade.setDisabled(true);

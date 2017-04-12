@@ -404,17 +404,18 @@ class CatanServer {
                     resourceMapP1.put(ResourceKind.WOOD, 5);
                     resourceMapP1.put(ResourceKind.CLOTH, 4);
                     resourceMapP1.put(ResourceKind.WOOL, 5);
-                    resourceMapP1.put(ResourceKind.COIN, 3);
+                    resourceMapP1.put(ResourceKind.COIN, 4);
                     resourceMapP1.put(ResourceKind.ORE, 4);
                     resourceMapP1.put(ResourceKind.BRICK, 4);
                     resourceMapP1.put(ResourceKind.GRAIN, 5);
-                    resourceMapP1.put(ResourceKind.PAPER, 2);
+                    resourceMapP1.put(ResourceKind.PAPER, 5);
                     p1.setResources(resourceMapP1);
 
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -8, yearsOfPlenty.gameboard);
                     Village village = Village.newInstance(p1, position);
                     village.setVillageKind(VillageKind.CITY);
                     p1.addVillage(village);
+                    position.putVillage(village);
                     yearsOfPlenty.gameboard.addVillage(village);
                 }
                 {
@@ -451,6 +452,7 @@ class CatanServer {
                     Village village = Village.newInstance(p1, position);
                     village.setVillageKind(VillageKind.SETTLEMENT);
                     p1.addVillage(village);
+                    position.putVillage(village);
                     yearsOfPlenty.gameboard.addVillage(village);
                 }
                 {
@@ -458,6 +460,7 @@ class CatanServer {
                     Village village = Village.newInstance(p1, position);
                     village.setVillageKind(VillageKind.SETTLEMENT);
                     p1.addVillage(village);
+                    position.putVillage(village);
                     yearsOfPlenty.gameboard.addVillage(village);
                 }
                 {
@@ -500,6 +503,7 @@ class CatanServer {
                     Village village = Village.newInstance(p2, position);
                     village.setVillageKind(VillageKind.CITY);
                     p2.addVillage(village);
+                    position.putVillage(village);
                     yearsOfPlenty.gameboard.addVillage(village);
 
                 }
@@ -509,6 +513,7 @@ class CatanServer {
                     Village village = Village.newInstance(p2, position);
                     village.setVillageKind(VillageKind.SETTLEMENT);
                     p2.addVillage(village);
+                    position.putVillage(village);
                     yearsOfPlenty.gameboard.addVillage(village);
                 }
                 {
@@ -557,6 +562,7 @@ class CatanServer {
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, yearsOfPlenty.gameboard);
                     int id = yearsOfPlenty.gameboard.nextKnightId();
                     Knight knight = Knight.newInstance(p3, position, id);
+                    position.putKnight(knight);
                     p3.addKnight(knight);
                     yearsOfPlenty.gameboard.addKnight(knight, knight.getId());
                 }
@@ -564,6 +570,7 @@ class CatanServer {
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, yearsOfPlenty.gameboard);
                     int id = yearsOfPlenty.gameboard.nextKnightId();
                     Knight knight = Knight.newInstance(p3, position, id);
+                    position.putKnight(knight);
                     p3.addKnight(knight);
                     yearsOfPlenty.gameboard.addKnight(knight, knight.getId());
                 }
@@ -572,6 +579,7 @@ class CatanServer {
                     Village village = Village.newInstance(p3, position);
                     village.setVillageKind(VillageKind.CITY);
                     p3.addVillage(village);
+                    position.putVillage(village);
                     yearsOfPlenty.gameboard.addVillage(village);
                 }
                 {
@@ -580,6 +588,7 @@ class CatanServer {
                     Village village = Village.newInstance(p3, position);
                     village.setVillageKind(VillageKind.SETTLEMENT);
                     p3.addVillage(village);
+                    position.putVillage(village);
                     yearsOfPlenty.gameboard.addVillage(village);
                 }
                 {
@@ -615,7 +624,7 @@ class CatanServer {
             }
         }
 
-        // savedGames.add(yearsOfPlenty);
+         savedGames.add(yearsOfPlenty);
 
         // ---------------------------------------------------------------------------
         // Progress Card game : 1 ----------------------------------------------------
@@ -865,7 +874,7 @@ class CatanServer {
         progressCardGame.gameboard.removeProgressCard(ProgressCardType.IRRIGATION, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.IRRIGATION));
         progressCardGame.gameboard.removeProgressCard(ProgressCardType.WEDDING, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.WEDDING));
 
-        //savedGames.add(progressCardGame);
+        savedGames.add(progressCardGame);
 
 
         // ---------------------------------------------------------------------------
@@ -1129,7 +1138,7 @@ class CatanServer {
         progressCardGame2.gameboard.removeProgressCard(ProgressCardType.TRADEMONOPOLY, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.IRRIGATION));
         progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MERCHANT, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.WEDDING));
 
-        // savedGames.add(progressCardGame2);
+        savedGames.add(progressCardGame2);
 
 
         // Metropolis saved game ---------------------------------------------------
@@ -1332,6 +1341,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p1, position, id);
+                position.putKnight(knight);
                 knight.promote();
                 p1.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
@@ -1340,6 +1350,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(1, -5, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p1, position, id);
+                position.putKnight(knight);
                 knight.promote();
                 knight.promote();
                 p1.addKnight(knight);
@@ -1350,6 +1361,7 @@ class CatanServer {
                 Village village = Village.newInstance(p1, position);
                 village.setVillageKind(VillageKind.CITY);
                 p1.addVillage(village);
+                position.putVillage(village);
                 knightGame.gameboard.addVillage(village);
             }
             {
@@ -1358,6 +1370,7 @@ class CatanServer {
                 Village village = Village.newInstance(p1, position);
                 village.setVillageKind(VillageKind.SETTLEMENT);
                 p1.addVillage(village);
+                position.putVillage(village);
                 knightGame.gameboard.addVillage(village);
             }
             {
@@ -1408,6 +1421,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p2, position, id);
+                position.putKnight(knight);
                 knight.promote();
                 p2.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
@@ -1416,6 +1430,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-2, -4, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p2, position, id);
+                position.putKnight(knight);
                 p2.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
             }
@@ -1424,6 +1439,7 @@ class CatanServer {
                 Village village = Village.newInstance(p2, position);
                 village.setVillageKind(VillageKind.CITY);
                 p2.addVillage(village);
+                position.putVillage(village);
                 knightGame.gameboard.addVillage(village);
             }
             {
@@ -1432,6 +1448,7 @@ class CatanServer {
                 Village village = Village.newInstance(p2, position);
                 village.setVillageKind(VillageKind.SETTLEMENT);
                 p2.addVillage(village);
+                position.putVillage(village);
                 knightGame.gameboard.addVillage(village);
             }
 
@@ -1483,6 +1500,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p3, position, id);
+                position.putKnight(knight);
                 knight.promote();
                 knight.promote();
                 p3.addKnight(knight);
@@ -1492,6 +1510,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p3, position, id);
+                position.putKnight(knight);
                 knight.promote();
                 p3.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
@@ -1501,6 +1520,7 @@ class CatanServer {
                 Village village = Village.newInstance(p3, position);
                 village.setVillageKind(VillageKind.CITY);
                 p3.addVillage(village);
+                position.putVillage(village);
                 knightGame.gameboard.addVillage(village);
             }
             {
@@ -1509,6 +1529,7 @@ class CatanServer {
                 Village village = Village.newInstance(p3, position);
                 village.setVillageKind(VillageKind.SETTLEMENT);
                 p3.addVillage(village);
+                position.putVillage(village);
                 knightGame.gameboard.addVillage(village);
             }
 
@@ -1587,6 +1608,7 @@ class CatanServer {
                     Village village = Village.newInstance(p1, position);
                     village.setVillageKind(VillageKind.CITY);
                     p1.addVillage(village);
+                    position.putVillage(village);
                     barbarianAttack.gameboard.addVillage(village);
                 }
                 {
@@ -1602,6 +1624,7 @@ class CatanServer {
                     Village village = Village.newInstance(p1, position);
                     village.setVillageKind(VillageKind.SETTLEMENT);
                     p1.addVillage(village);
+                    position.putVillage(village);
                     barbarianAttack.gameboard.addVillage(village);
                 }
                 {
@@ -1644,6 +1667,7 @@ class CatanServer {
                     Village village = Village.newInstance(p2, position);
                     village.setVillageKind(VillageKind.CITY);
                     p2.addVillage(village);
+                    position.putVillage(village);
                     barbarianAttack.gameboard.addVillage(village);
 
                 }
@@ -1653,6 +1677,7 @@ class CatanServer {
                     Village village = Village.newInstance(p2, position);
                     village.setVillageKind(VillageKind.SETTLEMENT);
                     p2.addVillage(village);
+                    position.putVillage(village);
                     barbarianAttack.gameboard.addVillage(village);
                 }
                 {
@@ -1701,6 +1726,7 @@ class CatanServer {
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, barbarianAttack.gameboard);
                     int id = barbarianAttack.gameboard.nextKnightId();
                     Knight knight = Knight.newInstance(p3, position, id);
+                    position.putKnight(knight);
                     knight.promote();
                     p3.addKnight(knight);
                     barbarianAttack.gameboard.addKnight(knight, knight.getId());
@@ -1709,6 +1735,7 @@ class CatanServer {
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, barbarianAttack.gameboard);
                     int id = barbarianAttack.gameboard.nextKnightId();
                     Knight knight = Knight.newInstance(p3, position, id);
+                    position.putKnight(knight);
                     p3.addKnight(knight);
                     barbarianAttack.gameboard.addKnight(knight, knight.getId());
                 }
@@ -1717,6 +1744,7 @@ class CatanServer {
                     Village village = Village.newInstance(p3, position);
                     village.setVillageKind(VillageKind.CITY);
                     p3.addVillage(village);
+                    position.putVillage(village);
                     barbarianAttack.gameboard.addVillage(village);
                 }
                 {
@@ -1725,6 +1753,7 @@ class CatanServer {
                     Village village = Village.newInstance(p3, position);
                     village.setVillageKind(VillageKind.SETTLEMENT);
                     p3.addVillage(village);
+                    position.putVillage(village);
                     barbarianAttack.gameboard.addVillage(village);
                 }
                 {
@@ -1760,7 +1789,7 @@ class CatanServer {
             }
         }
 
-        //savedGames.add(barbarianAttack);
+        savedGames.add(barbarianAttack);
 
         //**** prepare catan strength ****
         //give player1 2 knights, player2 3 knights, player3 4 knights (change up the levels i.e basic, strong, mighty)
@@ -1814,6 +1843,7 @@ class CatanServer {
                 Village village = Village.newInstance(p1, position);
                 village.setVillageKind(VillageKind.CITY);
                 p1.addVillage(village);
+                position.putVillage(village);
                 winningGame.gameboard.addVillage(village);
             }
             {
@@ -1829,6 +1859,7 @@ class CatanServer {
                 Village village = Village.newInstance(p1, position);
                 village.setVillageKind(VillageKind.SETTLEMENT);
                 p1.addVillage(village);
+                position.putVillage(village);
                 winningGame.gameboard.addVillage(village);
             }
             {
@@ -1859,6 +1890,7 @@ class CatanServer {
                 Village village = Village.newInstance(p1, position);
                 village.setVillageKind(VillageKind.CITY);
                 p1.addVillage(village);
+                position.putVillage(village);
                 winningGame.gameboard.addVillage(village);
             }
             Player p2 = winningGamePlayers[1];
@@ -1882,6 +1914,7 @@ class CatanServer {
                 Village village = Village.newInstance(p2, position);
                 village.setVillageKind(VillageKind.CITY);
                 p2.addVillage(village);
+                position.putVillage(village);
                 winningGame.gameboard.addVillage(village);
 
             }
@@ -1891,6 +1924,7 @@ class CatanServer {
                 Village village = Village.newInstance(p2, position);
                 village.setVillageKind(VillageKind.SETTLEMENT);
                 p2.addVillage(village);
+                position.putVillage(village);
                 winningGame.gameboard.addVillage(village);
             }
             {
@@ -1942,6 +1976,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, winningGame.gameboard);
                 int id = winningGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p3, position, id);
+                position.putKnight(knight);
                 knight.promote();
                 p3.addKnight(knight);
                 winningGame.gameboard.addKnight(knight, knight.getId());
@@ -1950,6 +1985,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, winningGame.gameboard);
                 int id = winningGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p3, position, id);
+                position.putKnight(knight);
                 p3.addKnight(knight);
                 winningGame.gameboard.addKnight(knight, knight.getId());
             }
@@ -1958,6 +1994,7 @@ class CatanServer {
                 Village village = Village.newInstance(p3, position);
                 village.setVillageKind(VillageKind.CITY);
                 p3.addVillage(village);
+                position.putVillage(village);
                 winningGame.gameboard.addVillage(village);
             }
             {
@@ -1966,6 +2003,7 @@ class CatanServer {
                 Village village = Village.newInstance(p3, position);
                 village.setVillageKind(VillageKind.SETTLEMENT);
                 p3.addVillage(village);
+                position.putVillage(village);
                 winningGame.gameboard.addVillage(village);
             }
             {

@@ -23,7 +23,6 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1806,6 +1805,7 @@ public class SessionController {
         currentVP += player.getTokenVictoryPoints();
         currentVP += aGameBoardManager.getVillagePoints(player);
         currentVP += player.getDefenderOfCatanPoints();
+
         return currentVP;
     }
 

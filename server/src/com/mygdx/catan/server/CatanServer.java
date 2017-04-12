@@ -31,7 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 class CatanServer {
 
-    /** Name of the file storing the game accounts */
+    /**
+     * Name of the file storing the game accounts
+     */
     private static final String ACCOUNTS_DB = "accounts.bin";
 
     private static final String SAVED_GAMES_DB = "games.bin";
@@ -103,7 +105,7 @@ class CatanServer {
         savedGames = kryo.readObject(input, ArrayList.class);
         input.close();
 
-        // Load the games TODO complete this
+        // Load the games
         gamesMap = new ConcurrentHashMap<>();
 
         // Start the server
@@ -363,11 +365,227 @@ class CatanServer {
         yearsOfPlenty.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
         yearsOfPlenty.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
 
-        ResourceMap resourceMap = new ResourceMap();
-        for (ResourceKind resourceKind : ResourceKind.values())
-            resourceMap.add(resourceKind, 12);
-        for (Player player : yearsOfPlenty.session.getPlayers())
-            player.setResources(resourceMap);
+
+        Player[] yearsOfPlentyPlayers = yearsOfPlenty.session.getPlayers();
+        {
+            Player p1 = yearsOfPlentyPlayers[0];
+            {
+                {
+                    ResourceMap resourceMapP1 = new ResourceMap();
+
+                    resourceMapP1.put(ResourceKind.WOOD, 5);
+                    resourceMapP1.put(ResourceKind.CLOTH, 4);
+                    resourceMapP1.put(ResourceKind.WOOL, 5);
+                    resourceMapP1.put(ResourceKind.COIN, 3);
+                    resourceMapP1.put(ResourceKind.ORE, 4);
+                    resourceMapP1.put(ResourceKind.BRICK, 4);
+                    resourceMapP1.put(ResourceKind.GRAIN, 5);
+                    resourceMapP1.put(ResourceKind.PAPER, 2);
+                    p1.setResources(resourceMapP1);
+
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -8, yearsOfPlenty.gameboard);
+                    Village village = Village.newInstance(p1, position);
+                    village.setVillageKind(VillageKind.CITY);
+                    p1.addVillage(village);
+                    yearsOfPlenty.gameboard.addVillage(village);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(4, -4, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(4, -2, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(5, -1, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(5, 1, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(4, -2, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(5, -1, yearsOfPlenty.gameboard);
+                    EdgeUnit ship = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.SHIP, p1);
+                    p1.addEdgeUnit(ship);
+                    yearsOfPlenty.gameboard.addRoadOrShip(ship);
+                }
+                {
+                    //ADD SETTLEMENT
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, yearsOfPlenty.gameboard);
+                    Village village = Village.newInstance(p1, position);
+                    village.setVillageKind(VillageKind.SETTLEMENT);
+                    p1.addVillage(village);
+                    yearsOfPlenty.gameboard.addVillage(village);
+                }
+                {
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(5, 1, yearsOfPlenty.gameboard);
+                    Village village = Village.newInstance(p1, position);
+                    village.setVillageKind(VillageKind.SETTLEMENT);
+                    p1.addVillage(village);
+                    yearsOfPlenty.gameboard.addVillage(village);
+                }
+                {
+                    //ADD ROAD
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(0, -10, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(2, -8, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -5, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                Player p2 = yearsOfPlentyPlayers[1];
+                {
+                    ResourceMap resourceMapP2 = new ResourceMap();
+
+                    resourceMapP2.put(ResourceKind.WOOD, 4);
+                    resourceMapP2.put(ResourceKind.CLOTH, 5);
+                    resourceMapP2.put(ResourceKind.WOOL, 4);
+                    resourceMapP2.put(ResourceKind.COIN, 4);
+                    resourceMapP2.put(ResourceKind.ORE, 3);
+                    resourceMapP2.put(ResourceKind.BRICK, 5);
+                    resourceMapP2.put(ResourceKind.GRAIN, 3);
+                    resourceMapP2.put(ResourceKind.PAPER, 2);
+                    p1.setResources(resourceMapP2);
+
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, yearsOfPlenty.gameboard);
+                    Village village = Village.newInstance(p2, position);
+                    village.setVillageKind(VillageKind.CITY);
+                    p2.addVillage(village);
+                    yearsOfPlenty.gameboard.addVillage(village);
+
+                }
+                {
+                    //ADD SETELLEMENT
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, yearsOfPlenty.gameboard);
+                    Village village = Village.newInstance(p2, position);
+                    village.setVillageKind(VillageKind.SETTLEMENT);
+                    p2.addVillage(village);
+                    yearsOfPlenty.gameboard.addVillage(village);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                    p2.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    //ADD ROAD!
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                    p2.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                    p2.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-2, -4, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                    p2.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                Player p3 = yearsOfPlentyPlayers[2];
+                {
+                    ResourceMap resourceMapP3 = new ResourceMap();
+
+                    resourceMapP3.put(ResourceKind.WOOD, 3);
+                    resourceMapP3.put(ResourceKind.CLOTH, 4);
+                    resourceMapP3.put(ResourceKind.WOOL, 4);
+                    resourceMapP3.put(ResourceKind.COIN, 3);
+                    resourceMapP3.put(ResourceKind.ORE, 3);
+                    resourceMapP3.put(ResourceKind.BRICK, 5);
+                    resourceMapP3.put(ResourceKind.GRAIN, 4);
+                    resourceMapP3.put(ResourceKind.PAPER, 2);
+                    p1.setResources(resourceMapP3);
+
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, yearsOfPlenty.gameboard);
+                    int id = yearsOfPlenty.gameboard.nextKnightId();
+                    Knight knight = Knight.newInstance(p3, position, id);
+                    p3.addKnight(knight);
+                    yearsOfPlenty.gameboard.addKnight(knight, knight.getId());
+                }
+                {
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, yearsOfPlenty.gameboard);
+                    int id = yearsOfPlenty.gameboard.nextKnightId();
+                    Knight knight = Knight.newInstance(p3, position, id);
+                    p3.addKnight(knight);
+                    yearsOfPlenty.gameboard.addKnight(knight, knight.getId());
+                }
+                {
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(1, 1, yearsOfPlenty.gameboard);
+                    Village village = Village.newInstance(p3, position);
+                    village.setVillageKind(VillageKind.CITY);
+                    p3.addVillage(village);
+                    yearsOfPlenty.gameboard.addVillage(village);
+                }
+                {
+                    //ADD SETETLEMENT
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, yearsOfPlenty.gameboard);
+                    Village village = Village.newInstance(p3, position);
+                    village.setVillageKind(VillageKind.SETTLEMENT);
+                    p3.addVillage(village);
+                    yearsOfPlenty.gameboard.addVillage(village);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                    p3.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                    p3.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    //ADD ROAD
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                    p3.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, yearsOfPlenty.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, 1, yearsOfPlenty.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                    p3.addEdgeUnit(road);
+                    yearsOfPlenty.gameboard.addRoadOrShip(road);
+                }
+
+            }
+        }
 
         savedGames.add(yearsOfPlenty);
 
@@ -377,7 +595,7 @@ class CatanServer {
 
         Game progressCardGame = new Game();
         progressCardGame.name = "Progress Card Game";
-        for (Account account: accounts) {
+        for (Account account : accounts) {
             progressCardGame.addPlayer(account, -1);
             progressCardGame.markAsReady(account.getUsername());
         }
@@ -387,7 +605,7 @@ class CatanServer {
 
         // barbarians have attacked at least once
         progressCardGame.session.firstBarbarianAttack = true;
-        
+
         Player[] progressCardplayers = progressCardGame.session.getPlayers();
         Player progressCardPlayer1 = progressCardplayers[0];
         Player progressCardPlayer2 = progressCardplayers[1];
@@ -417,7 +635,7 @@ class CatanServer {
                 CoordinatePair Mthree_Mseven = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, progressCardGame.gameboard);
                 CoordinatePair Mone_Mone = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, progressCardGame.gameboard);
                 CoordinatePair Mone_one = GameBoardManager.getCoordinatePairFromCoordinates(-1, 1, progressCardGame.gameboard);
-                
+
                 Village vil1 = Village.newInstance(progressCardPlayer1, Mfour_Meight);
                 Mfour_Meight.putVillage(vil1);
                 Village vil2 = Village.newInstance(progressCardPlayer1, Mone_Mone);
@@ -538,7 +756,7 @@ class CatanServer {
             progressCardPlayer2.setResources(progressCardPlayer2Map);
 
             /**
-             * player 3 ---------- politics 
+             * player 3 ---------- politics
              * - warlord
              * - inventor
              * - irrigation
@@ -571,13 +789,14 @@ class CatanServer {
                 EdgeUnit edg2 = EdgeUnit.newEdgeUnit(two_Mtwo, two_Mfour, EdgeUnitKind.ROAD, progressCardPlayer3);
                 EdgeUnit edg3 = EdgeUnit.newEdgeUnit(one_Mone, two_Mtwo, EdgeUnitKind.ROAD, progressCardPlayer3);
 
-             // add knights
+                // add knights
                 {
                     int id = progressCardGame.gameboard.nextKnightId();
                     Knight knight = Knight.newInstance(progressCardPlayer3, one_Mone, id);
                     progressCardPlayer3.addKnight(knight);
                     progressCardGame.gameboard.addKnight(knight, knight.getId());
-                } {
+                }
+                {
                     int id = progressCardGame.gameboard.nextKnightId();
                     Knight knight = Knight.newInstance(progressCardPlayer3, two_Mtwo, id);
                     progressCardPlayer3.addKnight(knight);
@@ -595,7 +814,7 @@ class CatanServer {
                 progressCardGame.gameboard.addVillage(vil1);
                 progressCardGame.gameboard.addVillage(vil2);
             }
-            
+
             // give resources
             ResourceMap progressCardPlayer3Map = new ResourceMap();
             progressCardPlayer3Map.put(ResourceKind.ORE, 1);
@@ -618,9 +837,9 @@ class CatanServer {
         progressCardGame.gameboard.removeProgressCard(ProgressCardType.IRRIGATION, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.IRRIGATION));
         progressCardGame.gameboard.removeProgressCard(ProgressCardType.WEDDING, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.WEDDING));
 
-        // savedGames.add(progressCardGame);
+        //savedGames.add(progressCardGame);
 
-        
+
         // ---------------------------------------------------------------------------
         // Progress Card game : 2 ----------------------------------------------------
         // ---------------------------------------------------------------------------
@@ -637,18 +856,18 @@ class CatanServer {
 
         // barbarians have attacked at least once
         progressCardGame2.session.firstBarbarianAttack = true;
-        
+
         Player[] pc2players = progressCardGame2.session.getPlayers();
         Player pc2p1 = pc2players[0];
         Player pc2p2 = pc2players[1];
         Player pc2p3 = pc2players[2];
-        
+
         // place merchant and robber, set merchant owner
         progressCardGame2.gameboard.setMerchantOwner(pc2p2);
         progressCardGame2.gameboard.setMerchantPosition(GameBoardManager.getHexFromCoordinates(0, 2, progressCardGame2.gameboard));
         progressCardGame2.gameboard.setRobberPosition(GameBoardManager.getHexFromCoordinates(0, 0, progressCardGame2.gameboard));
 
-        
+
         /**
          * player 1 ---------- trade
          * - bishop
@@ -660,7 +879,7 @@ class CatanServer {
         pc2p1.addProgressCard(ProgressCardType.DESERTER);
         pc2p1.addProgressCard(ProgressCardType.DIPLOMAT);
         pc2p1.addProgressCard(ProgressCardType.INTRIGUE);
-        
+
 
         // set flipchart levels: science : 0 - politics : 5 - trade : 0
         pc2p1.getCityImprovements().setScienceLevel(0);
@@ -700,7 +919,7 @@ class CatanServer {
             progressCardGame2.gameboard.addRoadOrShip(edg4);
             progressCardGame2.gameboard.addVillage(vil1);
             progressCardGame2.gameboard.addVillage(vil2);
-            
+
             // add knights
             {
                 int id = progressCardGame.gameboard.nextKnightId();
@@ -721,8 +940,8 @@ class CatanServer {
         pc2p1Map.put(ResourceKind.CLOTH, 3);
         pc2p1Map.put(ResourceKind.WOOL, 2);
         pc2p1.setResources(pc2p1Map);
-        
-        
+
+
         /**
          * player 2 ---------- science
          * - crane
@@ -812,7 +1031,7 @@ class CatanServer {
         pc2p2Map.put(ResourceKind.GRAIN, 1);
         pc2p2Map.put(ResourceKind.PAPER, 1);
         pc2p2.setResources(pc2p2Map);
-        
+
 
         /**
          * player 3 ---------- politics
@@ -820,7 +1039,7 @@ class CatanServer {
          * - merchant
          * - merchant fleet
          * - trade monopoly
-         * 
+         *
          * */
         pc2p3.addProgressCard(ProgressCardType.MASTERMERCHANT);
         pc2p3.addProgressCard(ProgressCardType.MERCHANT);
@@ -862,12 +1081,12 @@ class CatanServer {
             progressCardGame2.gameboard.addVillage(vil1);
             progressCardGame2.gameboard.addVillage(vil2);
         }
-        
+
         // give resources
         ResourceMap pc2p3Map = new ResourceMap();
         pc2p3Map.put(ResourceKind.PAPER, 2);
         pc2p3.setResources(pc2p3Map);
-        
+
         /** remove cards from gameboard stack */
         progressCardGame2.gameboard.removeProgressCard(ProgressCardType.CRANE, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.ALCHEMIST));
         progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MINING, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.COMMERCIALHARBOUR));
@@ -883,8 +1102,8 @@ class CatanServer {
         progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MERCHANT, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.WEDDING));
 
         // savedGames.add(progressCardGame2);
-        
-        
+
+
         // Metropolis saved game ---------------------------------------------------
         //TO DO:
         /*
@@ -938,20 +1157,28 @@ class CatanServer {
         knightGame.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
         knightGame.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
 
-        ResourceMap knightResourceMap = new ResourceMap();
-
-        for (ResourceKind resourceKind : ResourceKind.values()) {
-            knightResourceMap.add(resourceKind, 12);
-        }
 
         //
         Player[] players = knightGame.session.getPlayers();
         {
             Player p1 = players[0];
             {
+                ResourceMap knightResourceMapP1 = new ResourceMap();
+
+                knightResourceMapP1.put(ResourceKind.WOOD, 5);
+                knightResourceMapP1.put(ResourceKind.CLOTH, 4);
+                knightResourceMapP1.put(ResourceKind.WOOL, 5);
+                knightResourceMapP1.put(ResourceKind.COIN, 3);
+                knightResourceMapP1.put(ResourceKind.ORE, 4);
+                knightResourceMapP1.put(ResourceKind.BRICK, 4);
+                knightResourceMapP1.put(ResourceKind.GRAIN, 5);
+                knightResourceMapP1.put(ResourceKind.PAPER, 2);
+                p1.setResources(knightResourceMapP1);
+
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p1, position, id);
+                knight.promote();
                 p1.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
             }
@@ -959,6 +1186,8 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(1, -5, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p1, position, id);
+                knight.promote();
+                knight.promote();
                 p1.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
             }
@@ -968,6 +1197,22 @@ class CatanServer {
                 village.setVillageKind(VillageKind.CITY);
                 p1.addVillage(village);
                 knightGame.gameboard.addVillage(village);
+            }
+            {
+                //ADD SETTLEMENT
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, knightGame.gameboard);
+                Village village = Village.newInstance(p1, position);
+                village.setVillageKind(VillageKind.SETTLEMENT);
+                p1.addVillage(village);
+                knightGame.gameboard.addVillage(village);
+            }
+            {
+                //ADD ROAD
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, knightGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(0, -10, knightGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                p1.addEdgeUnit(road);
+                knightGame.gameboard.addRoadOrShip(road);
             }
             {
                 CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, knightGame.gameboard);
@@ -993,9 +1238,23 @@ class CatanServer {
 
             Player p2 = players[1];
             {
+                ResourceMap knightResourceMapP2 = new ResourceMap();
+
+                knightResourceMapP2.put(ResourceKind.WOOD, 6);
+                knightResourceMapP2.put(ResourceKind.CLOTH, 4);
+                knightResourceMapP2.put(ResourceKind.WOOL, 4);
+                knightResourceMapP2.put(ResourceKind.COIN, 3);
+                knightResourceMapP2.put(ResourceKind.ORE, 4);
+                knightResourceMapP2.put(ResourceKind.BRICK, 3);
+                knightResourceMapP2.put(ResourceKind.GRAIN, 4);
+                knightResourceMapP2.put(ResourceKind.PAPER, 2);
+                p1.setResources(knightResourceMapP2);
+
+
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p2, position, id);
+                knight.promote();
                 p2.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
             }
@@ -1012,6 +1271,23 @@ class CatanServer {
                 village.setVillageKind(VillageKind.CITY);
                 p2.addVillage(village);
                 knightGame.gameboard.addVillage(village);
+            }
+            {
+                //ADD SETELLEMENT
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, knightGame.gameboard);
+                Village village = Village.newInstance(p2, position);
+                village.setVillageKind(VillageKind.SETTLEMENT);
+                p2.addVillage(village);
+                knightGame.gameboard.addVillage(village);
+            }
+
+            {
+                //ADD ROAD!
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, knightGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, knightGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                p2.addEdgeUnit(road);
+                knightGame.gameboard.addRoadOrShip(road);
             }
             {
                 CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, knightGame.gameboard);
@@ -1037,9 +1313,24 @@ class CatanServer {
 
             Player p3 = players[2];
             {
+                ResourceMap knightResourceMapP3 = new ResourceMap();
+
+                knightResourceMapP3.put(ResourceKind.WOOD, 4);
+                knightResourceMapP3.put(ResourceKind.CLOTH, 5);
+                knightResourceMapP3.put(ResourceKind.WOOL, 4);
+                knightResourceMapP3.put(ResourceKind.COIN, 4);
+                knightResourceMapP3.put(ResourceKind.ORE, 3);
+                knightResourceMapP3.put(ResourceKind.BRICK, 4);
+                knightResourceMapP3.put(ResourceKind.GRAIN, 5);
+                knightResourceMapP3.put(ResourceKind.PAPER, 3);
+                p1.setResources(knightResourceMapP3);
+
+
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p3, position, id);
+                knight.promote();
+                knight.promote();
                 p3.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
             }
@@ -1047,6 +1338,7 @@ class CatanServer {
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, knightGame.gameboard);
                 int id = knightGame.gameboard.nextKnightId();
                 Knight knight = Knight.newInstance(p3, position, id);
+                knight.promote();
                 p3.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
             }
@@ -1056,6 +1348,23 @@ class CatanServer {
                 village.setVillageKind(VillageKind.CITY);
                 p3.addVillage(village);
                 knightGame.gameboard.addVillage(village);
+            }
+            {
+                //ADD SETETLEMENT
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, knightGame.gameboard);
+                Village village = Village.newInstance(p3, position);
+                village.setVillageKind(VillageKind.SETTLEMENT);
+                p3.addVillage(village);
+                knightGame.gameboard.addVillage(village);
+            }
+
+            {
+                //ADD ROAD
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, knightGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, knightGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                p3.addEdgeUnit(road);
+                knightGame.gameboard.addRoadOrShip(road);
             }
             {
                 CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, knightGame.gameboard);
@@ -1081,12 +1390,7 @@ class CatanServer {
 
         }
 
-        for (Player player : players) {
-            player.setResources(knightResourceMap);
-        }
-
-
-        // savedGames.add(knightGame);
+        savedGames.add(knightGame);
 
         //barbarian saved game -----------------------------------------------------
         // 3 player where barbarian is soon going to attack island
@@ -1101,17 +1405,205 @@ class CatanServer {
             barbarianAttack.markAsReady(account.getUsername());
         }
 
-        for (ResourceKind resourceKind : ResourceKind.values()) {
-            barbarianResourceMap.add(resourceKind, 20);
-        }
 
         barbarianAttack.session = Session.newInstance(barbarianAttack.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         barbarianAttack.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
         barbarianAttack.session.barbarianPosition = 1;
         barbarianAttack.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
 
-        for (Player player : barbarianAttack.session.getPlayers()) {
-            player.setResources(barbarianResourceMap);
+
+        Player[] barbarianAttackPlayers = barbarianAttack.session.getPlayers();
+        {
+            Player p1 = barbarianAttackPlayers[0];
+            {
+                {
+                    ResourceMap barbResourceMapP1 = new ResourceMap();
+
+                    barbResourceMapP1.put(ResourceKind.WOOD, 5);
+                    barbResourceMapP1.put(ResourceKind.CLOTH, 4);
+                    barbResourceMapP1.put(ResourceKind.WOOL, 5);
+                    barbResourceMapP1.put(ResourceKind.COIN, 3);
+                    barbResourceMapP1.put(ResourceKind.ORE, 4);
+                    barbResourceMapP1.put(ResourceKind.BRICK, 4);
+                    barbResourceMapP1.put(ResourceKind.GRAIN, 5);
+                    barbResourceMapP1.put(ResourceKind.PAPER, 2);
+                    p1.setResources(barbResourceMapP1);
+
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -8, barbarianAttack.gameboard);
+                    Village village = Village.newInstance(p1, position);
+                    village.setVillageKind(VillageKind.CITY);
+                    p1.addVillage(village);
+                    barbarianAttack.gameboard.addVillage(village);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    //ADD SETTLEMENT
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, barbarianAttack.gameboard);
+                    Village village = Village.newInstance(p1, position);
+                    village.setVillageKind(VillageKind.SETTLEMENT);
+                    p1.addVillage(village);
+                    barbarianAttack.gameboard.addVillage(village);
+                }
+                {
+                    //ADD ROAD
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(0, -10, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(2, -8, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -5, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                    p1.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                Player p2 = barbarianAttackPlayers[1];
+                {
+                    ResourceMap barbResourceMapP2 = new ResourceMap();
+
+                    barbResourceMapP2.put(ResourceKind.WOOD, 5);
+                    barbResourceMapP2.put(ResourceKind.CLOTH, 4);
+                    barbResourceMapP2.put(ResourceKind.WOOL, 3);
+                    barbResourceMapP2.put(ResourceKind.COIN, 3);
+                    barbResourceMapP2.put(ResourceKind.ORE, 4);
+                    barbResourceMapP2.put(ResourceKind.BRICK, 4);
+                    barbResourceMapP2.put(ResourceKind.GRAIN, 6);
+                    barbResourceMapP2.put(ResourceKind.PAPER, 4);
+                    p1.setResources(barbResourceMapP2);
+
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, barbarianAttack.gameboard);
+                    Village village = Village.newInstance(p2, position);
+                    village.setVillageKind(VillageKind.CITY);
+                    p2.addVillage(village);
+                    barbarianAttack.gameboard.addVillage(village);
+
+                }
+                {
+                    //ADD SETELLEMENT
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, barbarianAttack.gameboard);
+                    Village village = Village.newInstance(p2, position);
+                    village.setVillageKind(VillageKind.SETTLEMENT);
+                    p2.addVillage(village);
+                    barbarianAttack.gameboard.addVillage(village);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                    p2.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    //ADD ROAD!
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                    p2.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                    p2.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-2, -4, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                    p2.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                Player p3 = barbarianAttackPlayers[2];
+                {
+                    ResourceMap barbResourceMapP3 = new ResourceMap();
+
+                    barbResourceMapP3.put(ResourceKind.WOOD, 6);
+                    barbResourceMapP3.put(ResourceKind.CLOTH, 4);
+                    barbResourceMapP3.put(ResourceKind.WOOL, 4);
+                    barbResourceMapP3.put(ResourceKind.COIN, 4);
+                    barbResourceMapP3.put(ResourceKind.ORE, 4);
+                    barbResourceMapP3.put(ResourceKind.BRICK, 4);
+                    barbResourceMapP3.put(ResourceKind.GRAIN, 5);
+                    barbResourceMapP3.put(ResourceKind.PAPER, 4);
+                    p1.setResources(barbResourceMapP3);
+
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, barbarianAttack.gameboard);
+                    int id = barbarianAttack.gameboard.nextKnightId();
+                    Knight knight = Knight.newInstance(p3, position, id);
+                    knight.promote();
+                    p3.addKnight(knight);
+                    barbarianAttack.gameboard.addKnight(knight, knight.getId());
+                }
+                {
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, barbarianAttack.gameboard);
+                    int id = barbarianAttack.gameboard.nextKnightId();
+                    Knight knight = Knight.newInstance(p3, position, id);
+                    p3.addKnight(knight);
+                    barbarianAttack.gameboard.addKnight(knight, knight.getId());
+                }
+                {
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(1, 1, barbarianAttack.gameboard);
+                    Village village = Village.newInstance(p3, position);
+                    village.setVillageKind(VillageKind.CITY);
+                    p3.addVillage(village);
+                    barbarianAttack.gameboard.addVillage(village);
+                }
+                {
+                    //ADD SETETLEMENT
+                    CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, barbarianAttack.gameboard);
+                    Village village = Village.newInstance(p3, position);
+                    village.setVillageKind(VillageKind.SETTLEMENT);
+                    p3.addVillage(village);
+                    barbarianAttack.gameboard.addVillage(village);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                    p3.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                    p3.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    //ADD ROAD
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                    p3.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+                {
+                    CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, barbarianAttack.gameboard);
+                    CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, 1, barbarianAttack.gameboard);
+                    EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                    p3.addEdgeUnit(road);
+                    barbarianAttack.gameboard.addRoadOrShip(road);
+                }
+
+            }
         }
 
         //savedGames.add(barbarianAttack);
@@ -1131,44 +1623,228 @@ class CatanServer {
         Game winningGame = new Game();
         winningGame.name = "Winning Game";
 
-        for(Account account : accounts) {
+        for (Account account : accounts) {
             winningGame.addPlayer(account, -1);
             winningGame.markAsReady(account.getUsername());
         }
         ResourceMap winningGameMap = new ResourceMap();
         for (ResourceKind resourceKind : ResourceKind.values()) {
-            winningGameMap.add(resourceKind, 12);
+            winningGameMap.add(resourceKind, 6);
         }
         winningGame.session = Session.newInstance(winningGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         winningGame.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
         winningGame.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
 
 
-
         winningGame.session = Session.newInstance(winningGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         //SET SESSION
 
-        for (Player player : winningGame.session.getPlayers()) {
-            player.setResources(winningGameMap);
-        }
-
-        //give victory points 12 to player 1
-        // give player 1 the boot (anyone who has this boot just needs 1 victory point to win the game)
-
-
         Player[] winningGamePlayers = winningGame.session.getPlayers();
-        Player p3 = winningGamePlayers[2];
-        winningGame.gameboard.setaBootOwner(p3);
+        {
+            Player p1 = winningGamePlayers[0];
+            {
 
+                ResourceMap winResourceMapP1 = new ResourceMap();
 
-        Player p2 = players[1];
-        p2.setTokenVictoryPoints(12);
-        CatanGame.client.sendTCP(UpdateVP.newInstance(p2.getUsername()));
-        //winningGame.session.
+                winResourceMapP1.put(ResourceKind.WOOD, 5);
+                winResourceMapP1.put(ResourceKind.CLOTH, 4);
+                winResourceMapP1.put(ResourceKind.WOOL, 5);
+                winResourceMapP1.put(ResourceKind.COIN, 3);
+                winResourceMapP1.put(ResourceKind.ORE, 4);
+                winResourceMapP1.put(ResourceKind.BRICK, 4);
+                winResourceMapP1.put(ResourceKind.GRAIN, 5);
+                winResourceMapP1.put(ResourceKind.PAPER, 2);
+                p1.setResources(winResourceMapP1);
 
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -8, winningGame.gameboard);
+                Village village = Village.newInstance(p1, position);
+                village.setVillageKind(VillageKind.CITY);
+                p1.addVillage(village);
+                winningGame.gameboard.addVillage(village);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                p1.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                //ADD SETTLEMENT
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, winningGame.gameboard);
+                Village village = Village.newInstance(p1, position);
+                village.setVillageKind(VillageKind.SETTLEMENT);
+                p1.addVillage(village);
+                winningGame.gameboard.addVillage(village);
+            }
+            {
+                //ADD ROAD
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(0, -10, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                p1.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(2, -8, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                p1.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -5, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                p1.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
 
+            {
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(1, 1, winningGame.gameboard);
+                Village village = Village.newInstance(p1, position);
+                village.setVillageKind(VillageKind.CITY);
+                p1.addVillage(village);
+                winningGame.gameboard.addVillage(village);
+            }
+            Player p2 = winningGamePlayers[1];
+            {
+                p2.setTokenVictoryPoints(9);
+                CatanGame.client.sendTCP(UpdateVP.newInstance(p2.getUsername()));
 
-       // savedGames.add(winningGame);
+                ResourceMap winResourceMapP2 = new ResourceMap();
+
+                winResourceMapP2.put(ResourceKind.WOOD, 4);
+                winResourceMapP2.put(ResourceKind.CLOTH, 4);
+                winResourceMapP2.put(ResourceKind.WOOL, 4);
+                winResourceMapP2.put(ResourceKind.COIN, 4);
+                winResourceMapP2.put(ResourceKind.ORE, 5);
+                winResourceMapP2.put(ResourceKind.BRICK, 5);
+                winResourceMapP2.put(ResourceKind.GRAIN, 6);
+                winResourceMapP2.put(ResourceKind.PAPER, 4);
+                p2.setResources(winResourceMapP2);
+
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, winningGame.gameboard);
+                Village village = Village.newInstance(p2, position);
+                village.setVillageKind(VillageKind.CITY);
+                p2.addVillage(village);
+                winningGame.gameboard.addVillage(village);
+
+            }
+            {
+                //ADD SETELLEMENT
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, winningGame.gameboard);
+                Village village = Village.newInstance(p2, position);
+                village.setVillageKind(VillageKind.SETTLEMENT);
+                p2.addVillage(village);
+                winningGame.gameboard.addVillage(village);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                p2.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                //ADD ROAD!
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                p2.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                p2.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-2, -4, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                p2.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+
+            Player p3 = winningGamePlayers[2];
+            {
+                winningGame.gameboard.setaBootOwner(p3);
+
+                ResourceMap winResourceMapP3 = new ResourceMap();
+
+                winResourceMapP3.put(ResourceKind.WOOD, 6);
+                winResourceMapP3.put(ResourceKind.CLOTH, 4);
+                winResourceMapP3.put(ResourceKind.WOOL, 4);
+                winResourceMapP3.put(ResourceKind.COIN, 4);
+                winResourceMapP3.put(ResourceKind.ORE, 4);
+                winResourceMapP3.put(ResourceKind.BRICK, 4);
+                winResourceMapP3.put(ResourceKind.GRAIN, 5);
+                winResourceMapP3.put(ResourceKind.PAPER, 4);
+                p3.setResources(winResourceMapP3);
+
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, winningGame.gameboard);
+                int id = winningGame.gameboard.nextKnightId();
+                Knight knight = Knight.newInstance(p3, position, id);
+                knight.promote();
+                p3.addKnight(knight);
+                winningGame.gameboard.addKnight(knight, knight.getId());
+            }
+            {
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, winningGame.gameboard);
+                int id = winningGame.gameboard.nextKnightId();
+                Knight knight = Knight.newInstance(p3, position, id);
+                p3.addKnight(knight);
+                winningGame.gameboard.addKnight(knight, knight.getId());
+            }
+            {
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(1, 1, winningGame.gameboard);
+                Village village = Village.newInstance(p3, position);
+                village.setVillageKind(VillageKind.CITY);
+                p3.addVillage(village);
+                winningGame.gameboard.addVillage(village);
+            }
+            {
+                //ADD SETETLEMENT
+                CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, winningGame.gameboard);
+                Village village = Village.newInstance(p3, position);
+                village.setVillageKind(VillageKind.SETTLEMENT);
+                p3.addVillage(village);
+                winningGame.gameboard.addVillage(village);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                p3.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                p3.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                //ADD ROAD
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                p3.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, winningGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, 1, winningGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                p3.addEdgeUnit(road);
+                winningGame.gameboard.addRoadOrShip(road);
+            }
+        }
+        savedGames.add(winningGame);
 
        /** testing different boards */
        Game testBoard = new Game();
@@ -1183,8 +1859,7 @@ class CatanServer {
        testBoard.gameboard = GameBoard.newInstance(BoardVariants.BOARD_VARIANT1);
 
        savedGames.add(testBoard);
-       
-       
+
         return savedGames;
     }
 

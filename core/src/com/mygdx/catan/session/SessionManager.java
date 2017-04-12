@@ -45,7 +45,6 @@ public class SessionManager {
         aSession = session;
         diceRolls = new MutablePair<>(0, 0);
         resetDiceRoll();
-        resetBarbarianPosition();
     }
 
     /**

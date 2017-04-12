@@ -73,6 +73,7 @@ public class Session {
         bank.add(ResourceKind.CLOTH, 12);
         currentPhase = GamePhase.SETUP_PHASE_ONE;
         clockwise = true;
+        barbarianPosition = 7;
 
 //        progressCardMap = new HashMap<>();
 //        for (ProgressCardType p: ProgressCardType.values()) {

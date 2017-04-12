@@ -929,6 +929,9 @@ public class SessionScreen implements Screen {
             updateScienceImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getScienceLevel());
         }
         updateBarbarianPosition(aSessionController.getSessionManager().getSession().barbarianPosition);
+        if (aSessionController.getGameBoardManager().getGameBoard().getMerchantPosition() != null) {
+            placeMerchant(aSessionController.getGameBoardManager().getGameBoard().getMerchantPosition().getLeftCoordinate(), aSessionController.getGameBoardManager().getGameBoard().getMerchantPosition().getRightCoordinate());
+        }
     }
 
     /** Update the label display the current barbarian position */

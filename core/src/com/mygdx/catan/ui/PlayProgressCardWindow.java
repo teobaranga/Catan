@@ -61,7 +61,7 @@ public class PlayProgressCardWindow extends CatanWindow {
         boolean isLegal = isMyTurn && (currentPhase == GamePhase.TURN_FIRST_PHASE && type == ProgressCardType.ALCHEMIST) || (currentPhase == GamePhase.TURN_SECOND_PHASE && type != ProgressCardType.ALCHEMIST);
         
         if (type == ProgressCardType.BISHOP) {
-            isLegal = firstBarbarianAttack;
+            isLegal = isMyTurn && currentPhase == GamePhase.TURN_SECOND_PHASE && firstBarbarianAttack;
         }
         
         return isLegal;

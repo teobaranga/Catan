@@ -545,6 +545,20 @@ public class GameBoardManager {
     }
     
     /**
+     * @param leftCoordinate x coordinate of hex
+     * @param rightCoordinate y coordinate of hex
+     * @return the hex with coordinates <x,y>, null if such an intersection does not exist
+     * */
+    public static Hex getHexFromCoordinates(int leftCoordinate, int rightCoordinate, GameBoard gameboard) {
+        for (Hex hex : gameboard.getHexes()) {
+            if (hex.getLeftCoordinate() == leftCoordinate && hex.getRightCoordinate() == rightCoordinate) {
+                return hex;
+            }
+        }
+        return null;
+    }
+    
+    /**
      * @precondition it is assumed firstCoordinatePair and secondCoordinatePair are distinct
      * @param firstCoordinatePair first CoordinatePair of Road
      * @param secondCoordinatePair second CoordinatePair of Road

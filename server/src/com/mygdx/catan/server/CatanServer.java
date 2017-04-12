@@ -395,7 +395,7 @@ class CatanServer {
 
         {
             /**
-             * player 1 ---------- science (lots of available build spots)
+             * player 1 ---------- trade
              * - Alchemist
              * - commercial harbor
              * - spy
@@ -417,7 +417,7 @@ class CatanServer {
                 CoordinatePair Mthree_Mseven = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, progressCardGame.gameboard);
                 CoordinatePair Mone_Mone = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, progressCardGame.gameboard);
                 CoordinatePair Mone_one = GameBoardManager.getCoordinatePairFromCoordinates(-1, 1, progressCardGame.gameboard);
-
+                
                 Village vil1 = Village.newInstance(progressCardPlayer1, Mfour_Meight);
                 Mfour_Meight.putVillage(vil1);
                 Village vil2 = Village.newInstance(progressCardPlayer1, Mone_Mone);
@@ -446,7 +446,7 @@ class CatanServer {
             progressCardPlayer1.setResources(progressCardPlayer1Map);
 
             /**
-             * player 2 ---------- politics (knights)
+             * player 2 ---------- science
              * - roadbuilding
              * - medicine
              * - engineer
@@ -538,7 +538,7 @@ class CatanServer {
             progressCardPlayer2.setResources(progressCardPlayer2Map);
 
             /**
-             * player 3 ---------- trade (resources all around to trade)
+             * player 3 ---------- politics 
              * - warlord
              * - inventor
              * - irrigation
@@ -618,8 +618,273 @@ class CatanServer {
         progressCardGame.gameboard.removeProgressCard(ProgressCardType.IRRIGATION, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.IRRIGATION));
         progressCardGame.gameboard.removeProgressCard(ProgressCardType.WEDDING, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.WEDDING));
 
-        savedGames.add(progressCardGame);
+        // savedGames.add(progressCardGame);
 
+        
+        // ---------------------------------------------------------------------------
+        // Progress Card game : 2 ----------------------------------------------------
+        // ---------------------------------------------------------------------------
+
+        Game progressCardGame2 = new Game();
+        progressCardGame2.name = "Progress Card Game 2";
+        for (Account account: accounts) {
+            progressCardGame2.addPlayer(account, -1);
+            progressCardGame2.markAsReady(account.getUsername());
+        }
+        progressCardGame2.session = Session.newInstance(progressCardGame2.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
+        progressCardGame2.gameboard = GameBoard.newInstance();
+        progressCardGame2.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
+
+        // barbarians have attacked at least once
+        progressCardGame2.session.firstBarbarianAttack = true;
+        
+        Player[] pc2players = progressCardGame2.session.getPlayers();
+        Player pc2p1 = pc2players[0];
+        Player pc2p2 = pc2players[1];
+        Player pc2p3 = pc2players[2];
+        
+        // place merchant and robber, set merchant owner
+        progressCardGame2.gameboard.setMerchantOwner(pc2p2);
+        progressCardGame2.gameboard.setMerchantPosition(GameBoardManager.getHexFromCoordinates(0, 2, progressCardGame2.gameboard));
+        progressCardGame2.gameboard.setRobberPosition(GameBoardManager.getHexFromCoordinates(0, 0, progressCardGame2.gameboard));
+
+        
+        /**
+         * player 1 ---------- trade
+         * - bishop
+         * - deserter
+         * - diplomat
+         * - intrigue
+         */
+        pc2p1.addProgressCard(ProgressCardType.BISHOP);
+        pc2p1.addProgressCard(ProgressCardType.DESERTER);
+        pc2p1.addProgressCard(ProgressCardType.DIPLOMAT);
+        pc2p1.addProgressCard(ProgressCardType.INTRIGUE);
+        
+
+        // set flipchart levels: science : 0 - politics : 5 - trade : 0
+        pc2p1.getCityImprovements().setScienceLevel(0);
+        pc2p1.getCityImprovements().setPoliticsLevel(5);
+        pc2p1.getCityImprovements().setTradeLevel(0);
+
+        // place villages and edges on appropriate intersections
+        {
+            CoordinatePair Mfour_Meight = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, progressCardGame2.gameboard);
+            CoordinatePair Mthree_Mseven = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, progressCardGame2.gameboard);
+            CoordinatePair Mone_Mone = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, progressCardGame2.gameboard);
+            CoordinatePair Mone_one = GameBoardManager.getCoordinatePairFromCoordinates(-1, 1, progressCardGame2.gameboard);
+            CoordinatePair zero_two = GameBoardManager.getCoordinatePairFromCoordinates(0, 2, progressCardGame2.gameboard);
+            CoordinatePair Mtwo_two = GameBoardManager.getCoordinatePairFromCoordinates(-2, 2, progressCardGame2.gameboard);
+
+            Village vil1 = Village.newInstance(pc2p1, Mfour_Meight);
+            Mfour_Meight.putVillage(vil1);
+            Village vil2 = Village.newInstance(pc2p1, Mone_Mone);
+            vil2.setVillageKind(VillageKind.POLITICS_METROPOLIS);
+            progressCardGame2.session.politicsMetropolisOwner = pc2p1;
+            Mone_Mone.putVillage(vil2);
+            EdgeUnit edg1 = EdgeUnit.newEdgeUnit(Mfour_Meight, Mthree_Mseven, EdgeUnitKind.ROAD, pc2p1);
+            EdgeUnit edg2 = EdgeUnit.newEdgeUnit(Mone_one, Mone_Mone, EdgeUnitKind.ROAD, pc2p1);
+            EdgeUnit edg3 = EdgeUnit.newEdgeUnit(Mone_one, Mtwo_two, EdgeUnitKind.ROAD, pc2p1);
+            EdgeUnit edg4 = EdgeUnit.newEdgeUnit(Mone_one, zero_two, EdgeUnitKind.ROAD, pc2p1);
+
+            pc2p1.addVillage(vil1);
+            pc2p1.addVillage(vil2);
+            pc2p1.addEdgeUnit(edg1);
+            pc2p1.addEdgeUnit(edg2);
+            pc2p1.addEdgeUnit(edg3);
+            pc2p1.addEdgeUnit(edg4);
+
+            progressCardGame2.gameboard.addRoadOrShip(edg1);
+            progressCardGame2.gameboard.addRoadOrShip(edg2);
+            progressCardGame2.gameboard.addRoadOrShip(edg3);
+            progressCardGame2.gameboard.addRoadOrShip(edg4);
+            progressCardGame2.gameboard.addVillage(vil1);
+            progressCardGame2.gameboard.addVillage(vil2);
+            
+            // add knights
+            {
+                int id = progressCardGame.gameboard.nextKnightId();
+                Knight knight = Knight.newInstance(pc2p1, Mthree_Mseven, id);
+                pc2p1.addKnight(knight);
+                progressCardGame.gameboard.addKnight(knight, knight.getId());
+            } {
+                int id = progressCardGame.gameboard.nextKnightId();
+                Knight knight = Knight.newInstance(pc2p1, zero_two, id);
+                pc2p1.addKnight(knight);
+                progressCardGame.gameboard.addKnight(knight, knight.getId());
+            }
+        }
+
+        // give resources
+        ResourceMap pc2p1Map = new ResourceMap();
+        pc2p1Map.put(ResourceKind.WOOD, 5);
+        pc2p1Map.put(ResourceKind.CLOTH, 3);
+        pc2p1Map.put(ResourceKind.WOOL, 2);
+        pc2p1.setResources(pc2p1Map);
+        
+        
+        /**
+         * player 2 ---------- science
+         * - crane
+         * - mining
+         * - smith
+         */
+        pc2p2.addProgressCard(ProgressCardType.CRANE);
+        pc2p2.addProgressCard(ProgressCardType.MINING);
+        pc2p2.addProgressCard(ProgressCardType.SMITH);
+
+        // set flipchart levels: science : 5 - politics : 0 - trade : 0
+        pc2p2.getCityImprovements().setScienceLevel(5);
+        pc2p2.getCityImprovements().setPoliticsLevel(0);
+        pc2p2.getCityImprovements().setTradeLevel(0);
+
+        // place villages and edges on appropriate intersections
+        {
+            CoordinatePair one_seven = GameBoardManager.getCoordinatePairFromCoordinates(1, 7, progressCardGame.gameboard);
+            CoordinatePair one_five = GameBoardManager.getCoordinatePairFromCoordinates(1, 5, progressCardGame.gameboard);
+            CoordinatePair Mthree_Mone = GameBoardManager.getCoordinatePairFromCoordinates(-3, -1, progressCardGame.gameboard);
+            CoordinatePair Mthree_one = GameBoardManager.getCoordinatePairFromCoordinates(-3, 1, progressCardGame.gameboard);
+            CoordinatePair Mtwo_two = GameBoardManager.getCoordinatePairFromCoordinates(-2, 2, progressCardGame.gameboard);
+            CoordinatePair Mtwo_four = GameBoardManager.getCoordinatePairFromCoordinates(-2, 4, progressCardGame.gameboard);
+            CoordinatePair Mone_five = GameBoardManager.getCoordinatePairFromCoordinates(-1, 5, progressCardGame.gameboard);
+            CoordinatePair zero_four = GameBoardManager.getCoordinatePairFromCoordinates(0, 4, progressCardGame.gameboard);
+            CoordinatePair Mthree_Mfive = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, progressCardGame.gameboard);
+            CoordinatePair Mtwo_Mfour = GameBoardManager.getCoordinatePairFromCoordinates(-2, -4, progressCardGame.gameboard);
+
+            Village vil1 = Village.newInstance(pc2p2, one_seven);
+            one_seven.putVillage(vil1);
+            vil1.setVillageKind(VillageKind.CITY);
+            Village vil2 = Village.newInstance(pc2p2, Mthree_Mone);
+            vil2.setVillageKind(VillageKind.SCIENCE_METROPOLIS);
+            progressCardGame.session.scienceMetropolisOwner = pc2p2;
+            Mthree_Mone.putVillage(vil2);
+            Village vil3 = Village.newInstance(pc2p2, Mthree_Mfive);
+            Mthree_Mfive.putVillage(vil3);
+
+            EdgeUnit edg1 = EdgeUnit.newEdgeUnit(one_five, one_seven, EdgeUnitKind.ROAD, pc2p2);
+            EdgeUnit edg2 = EdgeUnit.newEdgeUnit(Mthree_one, Mthree_Mone, EdgeUnitKind.ROAD, pc2p2);
+            EdgeUnit edg3 = EdgeUnit.newEdgeUnit(Mthree_one, Mtwo_two, EdgeUnitKind.ROAD, pc2p2);
+            EdgeUnit edg4 = EdgeUnit.newEdgeUnit(Mtwo_two, Mtwo_four, EdgeUnitKind.SHIP, pc2p2);
+            EdgeUnit edg5 = EdgeUnit.newEdgeUnit(Mtwo_four, Mone_five, EdgeUnitKind.ROAD, pc2p2);
+            EdgeUnit edg6 = EdgeUnit.newEdgeUnit(Mone_five, zero_four, EdgeUnitKind.ROAD, pc2p2);
+            EdgeUnit edg7 = EdgeUnit.newEdgeUnit(one_five, zero_four, EdgeUnitKind.ROAD, pc2p2);
+            EdgeUnit edg8 = EdgeUnit.newEdgeUnit(Mtwo_Mfour, Mthree_Mfive, EdgeUnitKind.ROAD, pc2p2);
+
+            pc2p2.addVillage(vil1);
+            pc2p2.addVillage(vil2);
+            pc2p2.addVillage(vil3);
+            pc2p2.addEdgeUnit(edg1);
+            pc2p2.addEdgeUnit(edg2);
+            pc2p2.addEdgeUnit(edg3);
+            pc2p2.addEdgeUnit(edg4);
+            pc2p2.addEdgeUnit(edg5);
+            pc2p2.addEdgeUnit(edg6);
+            pc2p2.addEdgeUnit(edg7);
+            pc2p2.addEdgeUnit(edg8);
+            progressCardGame2.gameboard.addRoadOrShip(edg1);
+            progressCardGame2.gameboard.addRoadOrShip(edg2);
+            progressCardGame2.gameboard.addRoadOrShip(edg3);
+            progressCardGame2.gameboard.addRoadOrShip(edg4);
+            progressCardGame2.gameboard.addRoadOrShip(edg5);
+            progressCardGame2.gameboard.addRoadOrShip(edg6);
+            progressCardGame2.gameboard.addRoadOrShip(edg7);
+            progressCardGame2.gameboard.addRoadOrShip(edg8);
+            progressCardGame2.gameboard.addVillage(vil1);
+            progressCardGame2.gameboard.addVillage(vil2);
+            progressCardGame2.gameboard.addVillage(vil3);
+
+            // set longest road owner
+            progressCardGame2.session.longestRoadOwner = pc2p2;
+
+            // add knights
+            {
+                int id = progressCardGame2.gameboard.nextKnightId();
+                Knight knight = Knight.newInstance(pc2p2, Mtwo_two, id);
+                pc2p2.addKnight(knight);
+                progressCardGame2.gameboard.addKnight(knight, knight.getId());
+            }
+        }
+
+        // give resources
+        ResourceMap pc2p2Map = new ResourceMap();
+        pc2p2Map.put(ResourceKind.BRICK, 1);
+        pc2p2Map.put(ResourceKind.WOOD, 2);
+        pc2p2Map.put(ResourceKind.GRAIN, 1);
+        pc2p2Map.put(ResourceKind.PAPER, 1);
+        pc2p2.setResources(pc2p2Map);
+        
+
+        /**
+         * player 3 ---------- politics
+         * - master merchant
+         * - merchant
+         * - merchant fleet
+         * - trade monopoly
+         * 
+         * */
+        pc2p3.addProgressCard(ProgressCardType.MASTERMERCHANT);
+        pc2p3.addProgressCard(ProgressCardType.MERCHANT);
+        pc2p3.addProgressCard(ProgressCardType.MERCHANTFLEET);
+        pc2p3.addProgressCard(ProgressCardType.TRADEMONOPOLY);
+
+        // set flipchart levels: science : 0 - politics : 0 - trade : 5
+        pc2p3.getCityImprovements().setScienceLevel(0);
+        pc2p3.getCityImprovements().setPoliticsLevel(0);
+        pc2p3.getCityImprovements().setTradeLevel(5);
+
+        // place villages and edges on appropriate intersections
+        {
+            CoordinatePair zero_Mten = GameBoardManager.getCoordinatePairFromCoordinates(0, -10, progressCardGame2.gameboard);
+            CoordinatePair two_Mfour = GameBoardManager.getCoordinatePairFromCoordinates(2, -4, progressCardGame2.gameboard);
+            CoordinatePair zero_Meight = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, progressCardGame2.gameboard);
+            CoordinatePair two_Mtwo = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, progressCardGame2.gameboard);
+            CoordinatePair one_Mone = GameBoardManager.getCoordinatePairFromCoordinates(1, -1, progressCardGame2.gameboard);
+
+            Village vil1 = Village.newInstance(pc2p3, zero_Mten);
+            zero_Mten.putVillage(vil1);
+            vil1.setVillageKind(VillageKind.CITY);
+            Village vil2 = Village.newInstance(pc2p3, two_Mfour);
+            vil2.setVillageKind(VillageKind.TRADE_METROPOLIS);
+            progressCardGame2.session.tradeMetropolisOwner = pc2p3;
+            two_Mfour.putVillage(vil2);
+            EdgeUnit edg1 = EdgeUnit.newEdgeUnit(zero_Meight, zero_Mten, EdgeUnitKind.ROAD, pc2p3);
+            EdgeUnit edg2 = EdgeUnit.newEdgeUnit(two_Mtwo, two_Mfour, EdgeUnitKind.ROAD, pc2p3);
+            EdgeUnit edg3 = EdgeUnit.newEdgeUnit(one_Mone, two_Mtwo, EdgeUnitKind.ROAD, pc2p3);
+
+            pc2p3.addVillage(vil1);
+            pc2p3.addVillage(vil2);
+            pc2p3.addEdgeUnit(edg1);
+            pc2p3.addEdgeUnit(edg2);
+            pc2p3.addEdgeUnit(edg3);
+            progressCardGame2.gameboard.addRoadOrShip(edg1);
+            progressCardGame2.gameboard.addRoadOrShip(edg2);
+            progressCardGame2.gameboard.addRoadOrShip(edg3);
+            progressCardGame2.gameboard.addVillage(vil1);
+            progressCardGame2.gameboard.addVillage(vil2);
+        }
+        
+        // give resources
+        ResourceMap pc2p3Map = new ResourceMap();
+        pc2p3Map.put(ResourceKind.PAPER, 2);
+        pc2p3.setResources(pc2p3Map);
+        
+        /** remove cards from gameboard stack */
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.CRANE, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.ALCHEMIST));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MINING, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.COMMERCIALHARBOUR));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.SMITH, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.SPY));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.BISHOP, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.SABOTEUR));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.DESERTER, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.ROADBUILDING));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.DIPLOMAT, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.MEDICINE));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.INTRIGUE, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.ENGINEER));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MASTERMERCHANT, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.RESOURCEMONOPOLY));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MERCHANT, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.WARLORD));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MERCHANTFLEET, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.INVENTOR));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.TRADEMONOPOLY, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.IRRIGATION));
+        progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MERCHANT, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.WEDDING));
+
+        savedGames.add(progressCardGame2);
+        
+        
         // Metropolis saved game ---------------------------------------------------
         //TO DO:
         /*

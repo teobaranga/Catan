@@ -12,6 +12,7 @@ import com.mygdx.catan.moves.Move;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
+import com.mygdx.catan.request.knight.ActivateKnightRequest;
 import com.mygdx.catan.response.DiceRolled;
 import com.mygdx.catan.ui.KnightActor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -1442,8 +1443,7 @@ public class SessionController {
 
     //todo: update gameboard, inform players of move
     public boolean moveKnight(PlayerColor owner, Knight k, CoordinatePair newPosition) {
-        Player currentP = aSessionManager.getPlayerFromColor(owner);
-        aGameBoardManager.moveKnight(currentP, k, newPosition);
+        aGameBoardManager.moveKnight(k.getId(), newPosition);
         k.setActive(false);
         //update session screen
 

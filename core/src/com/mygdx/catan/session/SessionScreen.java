@@ -2369,6 +2369,21 @@ public class SessionScreen implements Screen {
         System.out.println("Knight added at " + knightActor.getKnight().getPosition());
     }
 
+    public void moveKnight(int id, CoordinatePair position) {
+        for (KnightActor knightActor : knights) {
+            if (knightActor.getKnight().getId() == id) {
+                // Compute the new location & move
+                CoordinatePair intersection = CoordinatePair.of(
+                        boardOrigin.getLeft() + position.getLeft() * OFFX,
+                        boardOrigin.getRight() + position.getRight() * -LENGTH / 2, null);
+
+                knightActor.setPosition(intersection.getLeft() - knightActor.getOriginX(),
+                        intersection.getRight() - knightActor.getOriginY());
+                break;
+            }
+        }
+    }
+
     /** Refresh a knight piece as a result of an activation or promotion */
     void refreshKnight(int id) {
         for (KnightActor knightActor : knights) {

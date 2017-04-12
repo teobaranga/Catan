@@ -25,10 +25,6 @@ public class Village {
 	    return village;
 	}
 	
-	
-	public Village() {
-	}
-	
 	/**
 	 * @return the CoordinatePair representing the position of this Village
 	 * */

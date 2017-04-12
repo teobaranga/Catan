@@ -88,6 +88,10 @@ public class CoordinatePair extends Pair<Integer, Integer> {
         }
     }
 
+    public boolean isOccupiedByVillage() {
+        return occupyingVillage != null;
+    }
+
     /**
      * @return the occupying village or null in case this coordinate pair does not
      * represent an intersection or if the intersection is not occupied

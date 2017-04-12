@@ -41,7 +41,7 @@ public class EdgeUnit {
      * */
 	public boolean isConnected(EdgeUnit other) {
 	    boolean isAdjacent = this.isAdjacent(other);
-	    if (isAdjacent && this.getCommonEndpoint(other).isOccupied()) {
+	    if (isAdjacent && this.getCommonEndpoint(other).isOccupiedByVillage()) {
 	        return this.getCommonEndpoint(other).isOccupied(this.owner);
 	    }
 	    

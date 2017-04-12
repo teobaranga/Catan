@@ -12,6 +12,7 @@ import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.enums.SessionScreenModes;
 import com.mygdx.catan.moves.MultiStepMove;
+import com.mygdx.catan.request.knight.KnightRequest;
 import com.mygdx.catan.session.GamePieces;
 import com.mygdx.catan.session.KnightController;
 import com.mygdx.catan.session.SessionController;
@@ -30,20 +31,14 @@ import static com.mygdx.catan.session.SessionScreen.OFFX;
 
 public class KnightHelper {
 
+    private final List<CoordinatePair> validIntersections;
+    private final MutablePair<Integer, Integer> boardOrigin;
+    private final HashSet<Window> popups;
+    private final SessionScreen sessionScreen;
+    private final List<Image> highlightedPositions;
     @Inject SessionController sessionController;
     @Inject KnightController knightController;
     @Inject GamePieces gamePieces;
-
-    private final List<CoordinatePair> validIntersections;
-
-    private final MutablePair<Integer, Integer> boardOrigin;
-
-    private final HashSet<Window> popups;
-
-    private final SessionScreen sessionScreen;
-
-    private final List<Image> highlightedPositions;
-
     private SessionScreenModes prevMode;
 
     public KnightHelper(SessionScreen sessionScreen) {
@@ -198,20 +193,13 @@ public class KnightHelper {
             // Clear the highlighted positions
             endMove();
 
+            KnightRequest request = KnightRequest.move(sessionController.getLocalPlayer().getUsername(),
+                    knightActor.getKnight().getId(),
+                    chosenIntersection);
+            CatanGame.client.sendTCP(request);
+
             // Move the knight
-            CoordinatePair intersection = CoordinatePair.of(
-                    boardOrigin.getLeft() + chosenIntersection.getLeft() * OFFX,
-                    boardOrigin.getRight() + chosenIntersection.getRight() * -LENGTH / 2, null);
-
-            knightActor.getKnight().getPosition().putKnight(null);
-            knightActor.getKnight().setPosition(chosenIntersection);
-            chosenIntersection.putKnight(knightActor.getKnight());
-
-            knightActor.setPosition(intersection.getLeft() - knightActor.getOriginX(),
-                    intersection.getRight() - knightActor.getOriginY());
-
-            // Make it inactive
-            knightActor.getKnight().setActive(false);
+            knightController.moveKnight(knightActor.getKnight().getId(), chosenIntersection);
             knightActor.refresh();
         });
 

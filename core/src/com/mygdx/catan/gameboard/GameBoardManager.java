@@ -273,13 +273,16 @@ public class GameBoardManager {
 
     /**TODO: you may move an active knight to another intersection. in order for the knight to move, you must have built roads
      * linking the intersection the knight is moving from to the intersection that he is moving to
-     * @param player current player
-     * @param knight the knight you'd like to move
-     * @param myKnightPosition desired position
-     * @return total number of cities on the gameboard
+     * @param id ID of the knight you'd like to move
+     * @param position desired position
      */
-    public void moveKnight(Player player, Knight knight, CoordinatePair myKnightPosition) {
+    public void moveKnight(int id, CoordinatePair position) {
+        Knight knight = aGameBoard.getKnight(id);
+        knight.getPosition().putKnight(null);
+        knight.setPosition(position);
+        position.putKnight(knight);
 
+        knight.setActive(false);
     }
 
     public void activateKnight(Knight k) {
@@ -358,7 +361,7 @@ public class GameBoardManager {
     public List<Village> getAdjacentVillages(Hex hex) {
         List<Village> adjacentVillages = new ArrayList<>();
         for (CoordinatePair pair : getAdjacentIntersections(hex)) {
-            if (pair.isOccupied()) {
+            if (pair.isOccupiedByVillage()) {
                 adjacentVillages.add(pair.getOccupyingVillage());
             }
         }

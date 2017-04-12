@@ -1,6 +1,7 @@
-package com.mygdx.catan.request;
+package com.mygdx.catan.request.knight;
 
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.request.ForwardedRequest;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**

@@ -16,6 +16,7 @@ import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 
+import com.mygdx.catan.request.knight.KnightRequest;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;

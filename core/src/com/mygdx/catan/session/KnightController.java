@@ -16,7 +16,7 @@ import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.player.LongestRouteCalculator;
 import com.mygdx.catan.player.Player;
-import com.mygdx.catan.request.KnightRequest;
+import com.mygdx.catan.request.knight.KnightRequest;
 import com.mygdx.catan.ui.KnightActor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -57,12 +57,13 @@ public class KnightController {
                     Gdx.app.postRunnable(() -> {
                         KnightRequest request = (KnightRequest) object;
                         switch (request.getType()) {
-                            case BUILD:
+                            case BUILD: {
                                 Pair<Integer, Integer> position = request.getPosition();
                                 CoordinatePair coordinates = gameBoardManager.getCoordinatePairFromCoordinates(position.getLeft(), position.getRight());
                                 KnightActor knightActor = buildKnight(coordinates, request.getOwner());
                                 sessionScreen.addKnight(knightActor);
                                 break;
+                            }
                             case ACTIVATE: {
                                 // Activate the knight and inform the GUI
                                 int id = request.getId();
@@ -76,6 +77,13 @@ public class KnightController {
                                 gameBoardManager.promoteKnight(id);
                                 sessionScreen.refreshKnight(id);
                                 break;
+                            }
+                            case MOVE: {
+                                int id = request.getId();
+                                Pair<Integer, Integer> position = request.getPosition();
+                                CoordinatePair coordinates = gameBoardManager.getCoordinatePairFromCoordinates(position.getLeft(), position.getRight());
+                                moveKnight(id, coordinates);
+                                sessionScreen.refreshKnight(id);
                             }
                         }
                     });
@@ -230,8 +238,6 @@ public class KnightController {
         List<EdgeUnit> connectedComponent = new ArrayList<>();
         HashMap<EdgeUnit, Boolean> visited = new HashMap<>();
 
-        System.out.println("Starting from " + edgeUnit);
-
         connectedComponent.add(edgeUnit);
 
         ArrayList<EdgeUnit> edges = gameBoardManager.getRoadsAndShips();
@@ -247,6 +253,12 @@ public class KnightController {
                 .distinct()
                 .filter(coordinatePair -> !coordinatePair.isOccupied())
                 .collect(Collectors.toList());
+    }
+
+    /** Move the knight to the new position */
+    public void moveKnight(int id, CoordinatePair position) {
+        gameBoardManager.moveKnight(id, position);
+        sessionScreen.moveKnight(id, position);
     }
 
     //TODO

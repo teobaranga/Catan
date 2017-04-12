@@ -1,6 +1,7 @@
-package com.mygdx.catan.request;
+package com.mygdx.catan.request.knight;
 
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.request.ForwardedRequest;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class KnightRequest extends ForwardedRequest {
@@ -42,6 +43,16 @@ public class KnightRequest extends ForwardedRequest {
         return request;
     }
 
+    public static KnightRequest move(String username, int id, Pair<Integer, Integer> position) {
+        KnightRequest request = new KnightRequest();
+        request.username = username;
+        request.universal = false;
+        request.type = Type.MOVE;
+        request.id = id;
+        request.position = position;
+        return request;
+    }
+
     public static KnightRequest remove(String username, int id) {
         KnightRequest request = new KnightRequest();
         request.username = username;
@@ -68,6 +79,6 @@ public class KnightRequest extends ForwardedRequest {
     }
 
     public enum Type {
-        BUILD, ACTIVATE, PROMOTE, REMOVE
+        BUILD, ACTIVATE, PROMOTE, MOVE, REMOVE
     }
 }

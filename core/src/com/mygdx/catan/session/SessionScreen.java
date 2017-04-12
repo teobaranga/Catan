@@ -599,7 +599,7 @@ public class SessionScreen implements Screen {
         playProgressCardButton = new TextButton("Play Progress Card", CatanGame.skin);
         setupPlayProgressCardButton(playProgressCardButton, "Play Progress Card", null);
         playProgressCardButton.pad(0, 10, 0, 10);
-        menuTable.add(playProgressCardButton).padBottom(10).row();
+      //  menuTable.add(playProgressCardButton).padBottom(10).row();
 
 
         // Add roll dice button

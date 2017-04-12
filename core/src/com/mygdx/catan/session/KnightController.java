@@ -164,7 +164,7 @@ public class KnightController {
      *
      * @return true if the player can build a knight, false otherwise
      */
-    boolean requestBuildKnight() {
+    public boolean requestBuildKnight() {
         // Check if the player has any roads first
         List<EdgeUnit> roads = localPlayer.getRoadsAndShips().stream()
                 .filter(edgeUnit -> edgeUnit.getKind() == EdgeUnitKind.ROAD)

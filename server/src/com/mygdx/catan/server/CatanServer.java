@@ -1382,6 +1382,14 @@ class CatanServer {
                 knightGame.gameboard.addRoadOrShip(road);
             }
             {
+                //ADD ROAD
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -10, knightGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-1, -11, knightGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
+                p1.addEdgeUnit(road);
+                knightGame.gameboard.addRoadOrShip(road);
+            }
+            {
                 CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -8, knightGame.gameboard);
                 CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(1, -7, knightGame.gameboard);
                 EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p1);
@@ -1456,6 +1464,22 @@ class CatanServer {
                 //ADD ROAD!
                 CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -5, knightGame.gameboard);
                 CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-4, -4, knightGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                p2.addEdgeUnit(road);
+                knightGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                //ADD ROAD!
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, knightGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-2, -8, knightGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
+                p2.addEdgeUnit(road);
+                knightGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                //ADD ROAD!
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-2, -4, knightGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-2, -2, knightGame.gameboard);
                 EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p2);
                 p2.addEdgeUnit(road);
                 knightGame.gameboard.addRoadOrShip(road);
@@ -1537,6 +1561,22 @@ class CatanServer {
                 //ADD ROAD
                 CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(0, -2, knightGame.gameboard);
                 CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, knightGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                p3.addEdgeUnit(road);
+                knightGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                //ADD ROAD
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(2, -2, knightGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(3, -1, knightGame.gameboard);
+                EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
+                p3.addEdgeUnit(road);
+                knightGame.gameboard.addRoadOrShip(road);
+            }
+            {
+                //ADD ROAD
+                CoordinatePair pos1 = GameBoardManager.getCoordinatePairFromCoordinates(-1, -1, knightGame.gameboard);
+                CoordinatePair pos2 = GameBoardManager.getCoordinatePairFromCoordinates(-1, 1, knightGame.gameboard);
                 EdgeUnit road = EdgeUnit.newEdgeUnit(pos1, pos2, EdgeUnitKind.ROAD, p3);
                 p3.addEdgeUnit(road);
                 knightGame.gameboard.addRoadOrShip(road);

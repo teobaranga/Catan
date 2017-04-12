@@ -64,8 +64,8 @@ public class ProgressCardHandler {
                 chooseDieResults.<DiceRollPair>addMove(diceResults -> {
                     aSessionController.getSessionScreen().addGameMessage("you chose: " + diceResults.getRed() + ", " + diceResults.getYellow());
                     
-                    // handle roll
-                    aSessionController.handleRoll(diceResults, eventDieResult);
+                    // handle roll: gets done by request
+                    // aSessionController.handleRoll(diceResults, eventDieResult);
 
                     aSessionController.getSessionScreen().addGameMessage(String.format("Rolled a %s", eventDieResult));
 
@@ -73,7 +73,7 @@ public class ProgressCardHandler {
                     RollDice request = RollDice.newInstance(diceResults, eventDieResult, CatanGame.account.getUsername());
                     CatanGame.client.sendTCP(request);
                     
-                    aSessionController.getSessionScreen().interractionDone();
+                    // aSessionController.getSessionScreen().interractionDone();
                 });
                 
                 aSessionController.getSessionScreen().chooseDiceNumbers(chooseDieResults);

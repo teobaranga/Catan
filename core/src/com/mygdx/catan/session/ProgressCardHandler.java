@@ -692,6 +692,7 @@ public class ProgressCardHandler {
             case WARLORD:
                 for (Knight k: currentP.getKnights()) {
                     aSessionController.getKnightController().requestActivateKnight(k);
+                    aSessionController.getSessionScreen().refreshKnight(k.getId());
                     KnightRequest request = KnightRequest.activate(currentP.getUsername(), k.getId());
                     CatanGame.client.sendTCP(request);
                 }

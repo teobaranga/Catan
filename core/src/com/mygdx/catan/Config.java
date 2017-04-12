@@ -1,6 +1,7 @@
 package com.mygdx.catan;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.google.common.collect.Table;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.*;
 import com.mygdx.catan.gameboard.GameBoard;
@@ -12,8 +13,8 @@ import com.mygdx.catan.player.CityImprovements;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.request.game.BrowseGames;
+import com.mygdx.catan.request.game.LoadGame;
 import com.mygdx.catan.response.*;
-import com.mygdx.catan.response.game.GameList;
 import com.mygdx.catan.session.Session;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -81,8 +82,8 @@ public class Config {
         kryo.register(JoinRandomGame.class);
         kryo.register(CreateGame.class);
         kryo.register(StartGame.class);
+        kryo.register(LoadGame.class);
         kryo.register(GameResponse.class);
-        kryo.register(GameList.class);
         kryo.register(MarkAsReady.class);
         kryo.register(MarkedAsReady.class);
         kryo.register(ForwardedRequest.class);
@@ -93,6 +94,7 @@ public class Config {
         kryo.register(Map.class);
         kryo.register(HashMap.class);
         kryo.register(EnumMap.class);
+        kryo.register(Table.class);
         kryo.register(ChooseResourceCardRequest.class);
         kryo.register(TargetedChooseResourceCardRequest.class);
         kryo.register(DistributeResources.class);

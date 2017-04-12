@@ -15,8 +15,8 @@ import com.mygdx.catan.gameboard.*;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 import com.mygdx.catan.request.game.BrowseGames;
+import com.mygdx.catan.request.game.LoadGame;
 import com.mygdx.catan.response.*;
-import com.mygdx.catan.response.game.GameList;
 import com.mygdx.catan.session.Session;
 import com.mygdx.catan.session.SessionManager;
 
@@ -31,9 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 class CatanServer {
 
-    /**
-     * Name of the file storing the game accounts
-     */
+    /** Name of the file storing the game accounts */
     private static final String ACCOUNTS_DB = "accounts.bin";
 
     private static final String SAVED_GAMES_DB = "games.bin";
@@ -87,11 +85,11 @@ class CatanServer {
 
         // Create the test save games if they don't exist
         File saveGameDatabase = new File(SAVED_GAMES_DB);
-        if (!saveGameDatabase.exists()) {
+//        if (!saveGameDatabase.exists()) {
             Output output = new Output(new FileOutputStream(SAVED_GAMES_DB));
             kryo.writeObject(output, createTestSavedGames());
             output.close();
-        }
+//        }
 
         // Load the accounts database
         Input input = new Input(new FileInputStream(ACCOUNTS_DB));
@@ -139,7 +137,35 @@ class CatanServer {
                 } else if (object instanceof CreateGame) {
                     response = createNewGame(connection, ((CreateGame) object).account);
                 } else if (object instanceof BrowseGames) {
-                    response = GameList.newInstance(savedGames);
+                    for (Game savedGame : savedGames) {
+                        GameResponse gameResponse = GameResponse.newInstance(savedGame);
+                        connection.sendTCP(gameResponse);
+                    }
+                    return;
+                } else if (object instanceof LoadGame) {
+                    // Get the username of the player that loaded the game
+                    String username = ((LoadGame) object).getUsername();
+                    String gameId = ((LoadGame) object).getGameId();
+
+                    // Associated the player with the save game
+                    for (Game savedGame : savedGames) {
+                        // Find the game
+                        if (savedGame.name.equals(gameId)) {
+                            // Find the player
+                            Account playerAccount = null;
+                            for (Account account : savedGame.peers.keySet()) {
+                                if (account.getUsername().equals(username)) {
+                                    playerAccount = account;
+                                    gamesMap.put(username, savedGame);
+                                    break;
+                                }
+                            }
+                            // Set its connection id so it can receive and send msgs
+                            savedGame.peers.put(playerAccount, connection.getID());
+                            System.out.println(String.format("Player %s %d loaded game %s", playerAccount.getUsername(), connection.getID(), savedGame.name));
+                            return;
+                        }
+                    }
                 }
 
                 if (object instanceof TargetedRequest) {
@@ -329,6 +355,8 @@ class CatanServer {
                 } else {
                     return DiceRolled.newInstance(username, dice, event);
                 }
+            case TURN_FIRST_PHASE:
+                return DiceRolled.newInstance(username, dice, event);
             default:
                 return null;
         }

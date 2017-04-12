@@ -72,6 +72,11 @@ public class Knight {
 
     public CoordinatePair getPosition() { return position; }
 
+    /** Move the knight */
+    public void setPosition(CoordinatePair position) {
+        this.position = position;
+    }
+
     /** Activate this knight */
     public void activate() {
         active = true;

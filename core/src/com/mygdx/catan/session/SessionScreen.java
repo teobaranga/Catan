@@ -17,20 +17,24 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.catan.*;
 import com.mygdx.catan.enums.*;
+import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.Hex;
 import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.injection.component.SessionComponent;
+import com.mygdx.catan.injection.module.SessionModule;
 import com.mygdx.catan.moves.MultiStepInitMove;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.moves.MultiStepMovingshipMove;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.UpdateOldBoot;
+import com.mygdx.catan.session.helper.KnightHelper;
 import com.mygdx.catan.ui.*;
-import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.inject.Inject;
 import java.util.*;
 import java.util.List;
 
@@ -49,9 +53,10 @@ public class SessionScreen implements Screen {
     private PolygonSpriteBatch polyBatch; // To assign at the beginning
     private PolygonSpriteBatch highlightBatch; // will have blending enabled
 
-    private SessionController aSessionController;
+    @Inject SessionController aSessionController;
 
-    private Stage aSessionStage, gamePiecesStage;
+    public Stage aSessionStage;
+    public Stage gamePiecesStage;
 
     /** The list of polygons representing the board hexes */
     private List<PolygonSprite> boardHexes;
@@ -84,13 +89,13 @@ public class SessionScreen implements Screen {
     private PolygonRegion merchantRegion;
 
     /** The origin of the the hex board */
-    private MutablePair<Integer, Integer> boardOrigin;
+    public MutablePair<Integer, Integer> boardOrigin;
 
     /** The map of resource tables */
     private EnumMap<ResourceKind, Label> resourceLabelMap;
 
     /** Determines the current mode of the session screen */
-    private SessionScreenModes aMode;
+    public SessionScreenModes aMode;
 
     /** Contains the currently performing multi step move */
     private MultiStepMove currentlyPerformingMove;
@@ -98,7 +103,7 @@ public class SessionScreen implements Screen {
     /**
      * The Lists of valid building intersections. Is empty if aMode != CHOOSEINTERSECTIONMODE || != CHOSEEDGEMODE
      */
-    private ArrayList<CoordinatePair> validIntersections;
+    public  ArrayList<CoordinatePair> validIntersections;
     private ArrayList<Pair<CoordinatePair, CoordinatePair>> validEdges;
     private ArrayList<Hex> validHexes;
 
@@ -189,7 +194,7 @@ public class SessionScreen implements Screen {
     private TradeWindow tradeWindow;
 
     /** Set of popup windows */
-    private HashSet<Window> popups;
+    public HashSet<Window> popups;
 
     /**
      * Input adapter that handles general clicks to the screen that are not on buttons or
@@ -199,9 +204,23 @@ public class SessionScreen implements Screen {
 
     private GamePieces gamePieces;
 
+    public final SessionComponent sessionComponent;
+
+    private final KnightHelper knightHelper;
+
     public SessionScreen(CatanGame pGame) {
         aGame = pGame;
-        aSessionController = new SessionController(this);
+
+        com.mygdx.catan.game.Game currentGame = GameManager.getInstance().getCurrentGame();
+        if (currentGame == null) {
+            currentGame = GameManager.newPlaceholderGame();
+            GameManager.getInstance().setCurrentGame(currentGame);
+        }
+
+        sessionComponent = CatanGame.appComponent.plus(new SessionModule(this, currentGame.session, currentGame.gameboard));
+
+        sessionComponent.inject(this);
+
         validIntersections = new ArrayList<>();
         validEdges = new ArrayList<>();
         validHexes = new ArrayList<>();
@@ -221,6 +240,8 @@ public class SessionScreen implements Screen {
         robberSprite = gamePieces.createRobber();
 
         pirateSprite = gamePieces.createRobber(); // TODO change this
+
+        knightHelper = new KnightHelper(this);
 
         setupBoardOrigin(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -495,106 +516,9 @@ public class SessionScreen implements Screen {
         buildKnightButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // TODO uncomment this
-                // Make sure the player has everything required to build a knight
-//                if (!aSessionController.requestBuildKnight()) {
-//                    addGameMessage("You can't build a knight (not enough resources or no valid positions)");
-//                    return;
-//                }
-
-                // Create the highlighted positions showing where a knight could be placed
-                List<Image> highlightedPositions = new ArrayList<>();
-                List<CoordinatePair> validBuildKnightPositions = aSessionController.getValidBuildKnightPositions();
-
-                if (validBuildKnightPositions.isEmpty()) {
-                    Label msg = new Label("There are no valid positions\nwhere you can build a knight.", CatanGame.skin);
-                    msg.setAlignment(Align.center);
-                    new Dialog("Warning", CatanGame.skin)
-                            .text(msg)
-                            .button("OK")
-                            .show(aSessionStage);
-                    return;
-                }
-
-                for (CoordinatePair position : validBuildKnightPositions) {
-                    validIntersections.add(position);
-
-                    CoordinatePair intersection = CoordinatePair.of(
-                            getBoardOrigin().getLeft() + position.getLeft() * OFFX,
-                            getBoardOrigin().getRight() + position.getRight() * -LENGTH / 2, null);
-
-                    Image knightPosition = gamePieces.createKnightPosition(aSessionController.getLocalPlayer());
-
-                    knightPosition.setPosition(intersection.getLeft() - knightPosition.getOriginX(),
-                            intersection.getRight() - knightPosition.getOriginY());
-
-                    gamePiecesStage.addActor(knightPosition);
-                    highlightedPositions.add(knightPosition);
-                }
-
-                // Create a new multi-step move to allow the player to place a knight
-                currentlyPerformingMove = new MultiStepMove();
-
-                // Keep track of the previous session mode
-                final SessionScreenModes prevMode = aMode;
-
-                // Switch the mode to allow the player to choose an intersection
-                aMode = SessionScreenModes.CHOOSEINTERSECTIONMODE;
-
-                // Make the current move place a knight at the specified position
-                currentlyPerformingMove.<CoordinatePair>addMove(chosenIntersection -> {
-                    // Clear the highlighted positions
-                    validIntersections.clear();
-                    for (Image knightPosition : highlightedPositions) {
-                        knightPosition.remove();
-                    }
-                    highlightedPositions.clear();
-                    // Build the knight
-                    KnightActor knightActor = aSessionController.buildKnight(chosenIntersection);
-                    knightActor.addListener(new ChangeListener() {
-                        @Override
-                        public void changed(ChangeEvent event, Actor actor) {
-                            KnightActionsWindow actionWindow = knightActor.displayActions();
-                            actionWindow.setWindowCloseListener(() -> popups.remove(actionWindow));
-                            actionWindow.setOnKnightActivateClick(knightActor1 -> {
-                                // Attempt to activate the knight
-                                if (aSessionController.requestActivateKnight(knightActor.getKnight())) {
-                                    return true;
-                                }
-                                // Inform the player
-                                Label msg = new Label("You do not have sufficient resources\nto activate this knight.", CatanGame.skin);
-                                msg.setAlignment(Align.center);
-                                new Dialog("Insufficient resources", CatanGame.skin)
-                                        .text(msg)
-                                        .button("OK")
-                                        .show(aSessionStage);
-                                return false;
-                            });
-                            actionWindow.setOnKnightUpgradeClick(knightActor1 -> {
-                                // Attempt to promote the knight
-                                if (aSessionController.requestPromoteKnight(knightActor.getKnight())) {
-                                    return true;
-                                }
-                                // Inform the player
-                                Label msg = new Label("You do not have sufficient resources\nto promote this knight.", CatanGame.skin);
-                                msg.setAlignment(Align.center);
-                                new Dialog("Insufficient resources", CatanGame.skin)
-                                        .text(msg)
-                                        .button("OK")
-                                        .show(aSessionStage);
-                                return false;
-                            });
-                            popups.add(actionWindow);
-                        }
-                    });
-                    addKnight(knightActor);
-                    // Go back to the previous mode
-                    aMode = prevMode;
-                    // Mark the coordinate position as occupied
-                    chosenIntersection.putKnight(knightActor.getKnight());
-                    // re-enable all appropriate actions
-                    enablePhase(aSessionController.getCurrentGamePhase());
-                });
+                MultiStepMove buildKnightMove = knightHelper.buildKnight();
+                if (buildKnightMove != null)
+                    currentlyPerformingMove = buildKnightMove;
             }
         });
         buildKnightButton.pad(0, 10, 0, 10);
@@ -694,6 +618,7 @@ public class SessionScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 aSessionController.endTurnNotify();
+                knightHelper.endMove();
             }
         });
         turnTable.add(endTurnButton).padBottom(10).row();
@@ -1933,7 +1858,7 @@ public class SessionScreen implements Screen {
      *
      * @param phase the session's current phase
      */
-    void enablePhase(GamePhase phase) {
+    public void enablePhase(GamePhase phase) {
         switch (phase) {
             case SETUP_PHASE_ONE:
                 // Allow the player only to roll the dice
@@ -2438,7 +2363,7 @@ public class SessionScreen implements Screen {
     }
 
     /** Add a knight piece to the game board */
-    void addKnight(KnightActor knightActor) {
+    public void addKnight(KnightActor knightActor) {
         knights.add(knightActor);
         gamePiecesStage.addActor(knightActor);
         System.out.println("Knight added at " + knightActor.getKnight().getPosition());
@@ -2476,6 +2401,10 @@ public class SessionScreen implements Screen {
         table.row();
         gameLog.layout();
         gameLog.scrollTo(0, 0, 0, 0);
+    }
+
+    public void setCurrentlyPerformingMove(MultiStepMove currentlyPerformingMove) {
+        this.currentlyPerformingMove = currentlyPerformingMove;
     }
 
     public Pair<Integer, Integer> getBoardOrigin() {

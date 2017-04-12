@@ -7,11 +7,7 @@ import com.mygdx.catan.*;
 import com.mygdx.catan.TradeAndTransaction.TradeManager;
 import com.mygdx.catan.TradeAndTransaction.TransactionManager;
 import com.mygdx.catan.enums.*;
-import com.mygdx.catan.game.Game;
-import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.gameboard.*;
-import com.mygdx.catan.injection.component.SessionComponent;
-import com.mygdx.catan.injection.module.SessionModule;
 import com.mygdx.catan.moves.Move;
 import com.mygdx.catan.moves.MultiStepMove;
 import com.mygdx.catan.player.Player;
@@ -22,6 +18,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.inject.Inject;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,8 +29,8 @@ import static com.mygdx.catan.enums.VillageKind.CITY;
 
 public class SessionController {
 
-    private final GameBoardManager aGameBoardManager;
-    private final SessionManager aSessionManager;
+    @Inject GameBoardManager aGameBoardManager;
+    @Inject SessionManager aSessionManager;
     private final TransactionManager aTransactionManager;
     private final TradeManager tradeManager;
 
@@ -70,19 +67,8 @@ public class SessionController {
 
     private final KnightController knightController;
 
-    final SessionComponent sessionComponent;
-
-    SessionController(SessionScreen sessionScreen) {
-        Game currentGame = GameManager.getInstance().getCurrentGame();
-        if (currentGame == null) {
-            currentGame = GameManager.newPlaceholderGame();
-            GameManager.getInstance().setCurrentGame(currentGame);
-        }
-
-        sessionComponent = CatanGame.appComponent.plus(new SessionModule(currentGame.session, currentGame.gameboard));
-
-        aGameBoardManager = GameBoardManager.getInstance(currentGame.gameboard);
-        aSessionManager = SessionManager.getInstance(currentGame.session);
+    public SessionController(SessionScreen sessionScreen) {
+        sessionScreen.sessionComponent.inject(this);
 
         aTransactionManager = TransactionManager.getInstance(aSessionManager);
         tradeManager = TradeManager.getInstance(aTransactionManager);
@@ -1044,7 +1030,7 @@ public class SessionController {
     /**
      * @see KnightController#requestActivateKnight(Knight)
      */
-    boolean requestActivateKnight(Knight knight) {
+    public boolean requestActivateKnight(Knight knight) {
         return knightController.requestActivateKnight(knight);
     }
 
@@ -1296,7 +1282,7 @@ public class SessionController {
     /**
      * Get the valid positions where the local player can build a knight
      */
-    List<CoordinatePair> getValidBuildKnightPositions() {
+    public List<CoordinatePair> getValidBuildKnightPositions() {
         return requestValidKnightIntersections(localPlayer.getColor());
     }
 
@@ -1424,7 +1410,7 @@ public class SessionController {
     /**
      * Build a new basic knight for the local player.
      */
-    KnightActor buildKnight(CoordinatePair position) {
+    public KnightActor buildKnight(CoordinatePair position) {
         return knightController.buildKnight(position);
     }
 
@@ -2420,6 +2406,11 @@ public class SessionController {
                 if (merchantOwner.equals(localPlayer) && resourceKind == aGameRules.getProducingResource(merchantPos.getKind())) {
                     ratio = 2;
                 }
+            }
+
+            // If the player has the merchant guild, the ratio is 2:1
+            if (localPlayer.getCityImprovements().getTradeLevel() >= 3) {
+                ratio = 2;
             }
 
             if (localPlayer.hasEnoughOfResource(resourceKind, ratio)) {

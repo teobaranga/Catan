@@ -2,6 +2,7 @@ package com.mygdx.catan.ui;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -91,8 +92,8 @@ public class KnightActor extends ImageButton {
         setStyle(getStyle());
     }
 
-    public KnightActionsWindow displayActions() {
-        if (getStage() != null) {
+    public KnightActionsWindow displayActions(Stage stage) {
+        if (stage != null) {
             // Create the window if it's not created
             if (actionWindow == null)
                 actionWindow = new KnightActionsWindow(this);
@@ -101,7 +102,7 @@ public class KnightActor extends ImageButton {
 
             // Add the window if not already added
             if (!actionWindow.hasParent())
-                getStage().addActor(actionWindow);
+                stage.addActor(actionWindow);
 
             return actionWindow;
         }

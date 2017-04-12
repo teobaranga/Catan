@@ -105,4 +105,9 @@ public class EdgeUnit {
 	    
 	    return (this.hasEndpoint(otherEdgeUnit.getAFirstCoordinate()) && this.hasEndpoint(otherEdgeUnit.getASecondCoordinate()));
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%s %s %s %s", aFirstCoordinate, aSecondCoordinate, owner, kind);
+	}
 }

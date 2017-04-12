@@ -14,6 +14,7 @@ import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.gameboard.EdgeUnit;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.gameboard.Knight;
+import com.mygdx.catan.player.LongestRouteCalculator;
 import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.KnightRequest;
 import com.mygdx.catan.ui.KnightActor;
@@ -21,7 +22,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,11 +43,11 @@ public class KnightController {
     @Inject GamePieces gamePieces;
     @Inject GameBoardManager gameBoardManager;
 
-    KnightController(SessionController sessionController) {
-        sessionController.sessionComponent.inject(this);
-
+    public KnightController(SessionController sessionController) {
         sessionScreen = sessionController.getSessionScreen();
         localPlayer = sessionController.getLocalPlayer();
+
+        sessionScreen.sessionComponent.inject(this);
 
         listener = new Listener() {
             @Override
@@ -120,7 +121,7 @@ public class KnightController {
     }
 
     /** Build a new basic knight for the local player. */
-    KnightActor buildKnight(CoordinatePair position) {
+    public KnightActor buildKnight(CoordinatePair position) {
         // Make the local player pay for the knight
         transactionManager.payPlayerToBank(localPlayer, gameRules.getbuildBasicKnightCost());
         sessionScreen.updateResourceBar(localPlayer.getResources());
@@ -161,11 +162,11 @@ public class KnightController {
      *
      * @return true if the knight was activated, false otherwise
      */
-    boolean requestActivateKnight(Knight knight) {
+    public boolean requestActivateKnight(Knight knight) {
         ProgressCardType type = sessionManager.getCurrentlyExecutingProgressCard();
         ResourceMap activateKnightCost = gameRules.getActivateKnightCost(type);
         boolean enough = localPlayer.hasEnoughResources(activateKnightCost);
-        if (!enough) {
+        if (enough) {
             knight.activate();
             transactionManager.payPlayerToBank(localPlayer, activateKnightCost);
             sessionScreen.updateResourceBar(localPlayer.getResources());
@@ -185,11 +186,11 @@ public class KnightController {
      *
      * @return true if the knight was promoted, false otherwise
      */
-    boolean requestPromoteKnight(Knight knight) {
+    public boolean requestPromoteKnight(Knight knight) {
         ProgressCardType type = sessionManager.getCurrentlyExecutingProgressCard();
         ResourceMap promoteKnightCost = gameRules.getPromoteKnightCost(type);
         boolean enough = localPlayer.hasEnoughResources(promoteKnightCost);
-        if (!enough) {
+        if (enough) {
             knight.promote();
             transactionManager.payPlayerToBank(localPlayer, promoteKnightCost);
             sessionScreen.updateResourceBar(localPlayer.getResources());
@@ -201,6 +202,51 @@ public class KnightController {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Request valid positions where the given knight could be moved.
+     *
+     * @param knight knight that would like to move
+     */
+    public List<CoordinatePair> getValidMovePositions(Knight knight) {
+
+        EdgeUnit edgeUnit = null;
+        CoordinatePair initialPosition = knight.getPosition();
+        for (EdgeUnit unit : gameBoardManager.getRoadsAndShips()) {
+            if (unit.hasEndpoint(initialPosition)) {
+                edgeUnit = unit;
+                break;
+            }
+        }
+
+        if (edgeUnit == null)
+            return Collections.emptyList();
+
+        return getValidMovePositions(edgeUnit);
+    }
+
+    private List<CoordinatePair> getValidMovePositions(EdgeUnit edgeUnit) {
+        List<EdgeUnit> connectedComponent = new ArrayList<>();
+        HashMap<EdgeUnit, Boolean> visited = new HashMap<>();
+
+        System.out.println("Starting from " + edgeUnit);
+
+        connectedComponent.add(edgeUnit);
+
+        ArrayList<EdgeUnit> edges = gameBoardManager.getRoadsAndShips();
+        for (EdgeUnit other : edges) {
+            LongestRouteCalculator.initVisitedMap(edges, visited);
+            if (LongestRouteCalculator.reachable(edges, visited, edgeUnit, other)) {
+                connectedComponent.add(other);
+            }
+        }
+
+        return connectedComponent.stream()
+                .flatMap(edgeUnit1 -> Stream.of(edgeUnit1.getAFirstCoordinate(), edgeUnit1.getASecondCoordinate()))
+                .distinct()
+                .filter(coordinatePair -> !coordinatePair.isOccupied())
+                .collect(Collectors.toList());
     }
 
     //TODO

@@ -272,7 +272,7 @@ public class GamePieces {
      *
      * @param localPlayer the local player, always
      */
-    Image createKnightPosition(Player localPlayer) {
+    public Image createKnightPosition(Player localPlayer) {
         Image knightPos = new Image(knightBg);
 
         // The highlighted position should be a bit transparent

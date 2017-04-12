@@ -1,12 +1,12 @@
 package com.mygdx.catan.player;
 
+import com.mygdx.catan.CoordinatePair;
+import com.mygdx.catan.gameboard.EdgeUnit;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.gameboard.EdgeUnit;
 
 public class LongestRouteCalculator {
 
@@ -117,7 +117,7 @@ public class LongestRouteCalculator {
         return false;
     }
     
-    boolean reachable(List<EdgeUnit> component, HashMap<EdgeUnit, Boolean> visited, EdgeUnit start, EdgeUnit end) {
+    public static boolean reachable(List<EdgeUnit> component, HashMap<EdgeUnit, Boolean> visited, EdgeUnit start, EdgeUnit end) {
         if (start.equals(end)) {
             return true;
         } else {
@@ -133,7 +133,7 @@ public class LongestRouteCalculator {
         }
     }
     
-    void initVisitedMap(List<EdgeUnit> component, HashMap<EdgeUnit, Boolean> visited) {
+    public static void initVisitedMap(List<EdgeUnit> component, HashMap<EdgeUnit, Boolean> visited) {
         for (EdgeUnit edge : component) {
             visited.put(edge, false);
         }
@@ -163,7 +163,7 @@ public class LongestRouteCalculator {
     /**
      * @return true iff the given edge is an open edge unit in the given component
      * */
-    boolean isEndpoint(EdgeUnit edge, List<EdgeUnit> component) {
+    public static boolean isEndpoint(EdgeUnit edge, List<EdgeUnit> component) {
        
         if (edge.getAFirstCoordinate().isOccupied()) {
             if (!edge.getAFirstCoordinate().isOccupied(edge.getOwner())) {
@@ -195,7 +195,7 @@ public class LongestRouteCalculator {
     /**
      * @return true iff the given coordinate is an open coordinate in the given component
      * */
-    boolean isEndpoint(CoordinatePair end, List<EdgeUnit> component) {
+    public static boolean isEndpoint(CoordinatePair end, List<EdgeUnit> component) {
         int adjacentEndCount = 0;
         for (EdgeUnit edge : component) {
             if (edge.hasEndpoint(end)) {
@@ -279,7 +279,7 @@ public class LongestRouteCalculator {
      * @return a list of all edges adjacent to unit
      * @precondition assumes edges does not contain unit
      * */
-    private List<EdgeUnit> getAdjacentEdges(EdgeUnit unit, List<EdgeUnit> edges) {
+    private static List<EdgeUnit> getAdjacentEdges(EdgeUnit unit, List<EdgeUnit> edges) {
         List<EdgeUnit> adjacentEdges = new ArrayList<>();
         for (EdgeUnit u : edges) {
             if (!unit.equals(u) && u.isConnected(unit)) {

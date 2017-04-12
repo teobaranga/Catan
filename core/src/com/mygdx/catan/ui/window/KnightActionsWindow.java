@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.catan.CatanGame;
+import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.ui.CatanWindow;
 import com.mygdx.catan.ui.KnightActor;
 
@@ -12,12 +13,11 @@ import static com.mygdx.catan.gameboard.Knight.Strength.MIGHTY;
 
 public class KnightActionsWindow extends CatanWindow {
 
+    private final TextButton activateButton, promoteButton, moveButton;
+    private final KnightActor knightActor;
     private KnightActivationListener knightActivationListener;
     private KnightUpgradeListener knightUpgradeListener;
-
-    private final TextButton activateButton, promoteButton;
-
-    private final KnightActor knightActor;
+    private KnightMoveListener knightMoveListener;
 
     public KnightActionsWindow(KnightActor knightActor) {
         super("Actions", CatanGame.skin);
@@ -50,7 +50,21 @@ public class KnightActionsWindow extends CatanWindow {
                 }
             }
         });
-        add(promoteButton).padTop(5).padBottom(10).padLeft(30).padRight(30).row();
+        add(promoteButton).padTop(5).padBottom(5).padLeft(30).padRight(30).row();
+
+        moveButton = new TextButton("Move", CatanGame.skin);
+        moveButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (knightMoveListener != null) {
+                    if (knightMoveListener.onMoveClicked(knightActor)) {
+                        knightActor.refresh();
+                        close();
+                    }
+                }
+            }
+        });
+        add(moveButton).padTop(5).padBottom(10).padLeft(30).padRight(30).row();
 
         setModal(false);
         setMovable(true);
@@ -61,13 +75,10 @@ public class KnightActionsWindow extends CatanWindow {
     protected void setStage(Stage stage) {
         super.setStage(stage);
         // Every time this window is displayed, do these checks...
-        if (knightActor.getKnight().is(MIGHTY))
-            promoteButton.setDisabled(true);
-        if (knightActor.getKnight().isPromotedThisTurn())
-            promoteButton.setDisabled(true);
-        if (knightActor.getKnight().isActivatedThisTurn())
-            activateButton.setDisabled(true);
-
+        Knight knight = knightActor.getKnight();
+        promoteButton.setDisabled(knight.is(MIGHTY) || knight.isPromotedThisTurn());
+        activateButton.setDisabled(knight.isActive() || knight.isActivatedThisTurn());
+        moveButton.setDisabled(!knight.isActive() || knight.isActivatedThisTurn());
     }
 
     public void setOnKnightActivateClick(KnightActivationListener knightActivationListener) {
@@ -78,11 +89,19 @@ public class KnightActionsWindow extends CatanWindow {
         this.knightUpgradeListener = knightUpgradeListener;
     }
 
+    public void setOnKnightMoveClick(KnightMoveListener knightMoveListener) {
+        this.knightMoveListener = knightMoveListener;
+    }
+
     public interface KnightActivationListener {
         boolean onActivateClicked(KnightActor knightActor);
     }
 
     public interface KnightUpgradeListener {
         boolean onUpgradeClicked(KnightActor knightActor);
+    }
+
+    public interface KnightMoveListener {
+        boolean onMoveClicked(KnightActor knightActor);
     }
 }

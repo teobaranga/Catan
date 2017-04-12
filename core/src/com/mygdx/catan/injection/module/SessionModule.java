@@ -5,21 +5,27 @@ import com.mygdx.catan.TradeAndTransaction.TransactionManager;
 import com.mygdx.catan.gameboard.GameBoard;
 import com.mygdx.catan.gameboard.GameBoardManager;
 import com.mygdx.catan.injection.SessionScope;
-import com.mygdx.catan.session.GamePieces;
-import com.mygdx.catan.session.Session;
-import com.mygdx.catan.session.SessionManager;
+import com.mygdx.catan.session.*;
 import dagger.Module;
 import dagger.Provides;
 
 @Module
 public class SessionModule {
 
+    private final SessionScreen sessionScreen;
     private final Session session;
     private final GameBoard gameboard;
 
-    public SessionModule(Session session, GameBoard gameboard) {
+    public SessionModule(SessionScreen sessionScreen, Session session, GameBoard gameboard) {
+        this.sessionScreen = sessionScreen;
         this.session = session;
         this.gameboard = gameboard;
+    }
+
+    @Provides
+    @SessionScope
+    SessionScreen provideSessionScreen() {
+        return sessionScreen;
     }
 
     @Provides
@@ -27,7 +33,6 @@ public class SessionModule {
     SessionManager provideSessionManager() {
         return SessionManager.getInstance(session);
     }
-
 
     @Provides
     @SessionScope
@@ -51,5 +56,17 @@ public class SessionModule {
     @SessionScope
     GameBoardManager provideGameBoardManager() {
         return GameBoardManager.getInstance(gameboard);
+    }
+
+    @Provides
+    @SessionScope
+    SessionController provideSessionController() {
+        return new SessionController(sessionScreen);
+    }
+
+    @Provides
+    @SessionScope
+    KnightController provideKnightController(SessionController sessionController) {
+        return new KnightController(sessionController);
     }
 }

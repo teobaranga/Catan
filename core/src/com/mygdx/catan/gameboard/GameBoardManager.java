@@ -529,6 +529,10 @@ public class GameBoardManager {
         }
         return null;
     }
+
+    public CoordinatePair getCoordinatePair(int x, int y) {
+        return aGameBoard.getIntersections().get(x, y);
+    }
     
     /**
      * @param leftCoordinate x coordinate of hex

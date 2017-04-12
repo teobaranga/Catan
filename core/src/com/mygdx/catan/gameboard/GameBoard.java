@@ -1,5 +1,7 @@
 package com.mygdx.catan.gameboard;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.mygdx.catan.CoordinatePair;
 import com.mygdx.catan.GameRules;
 import com.mygdx.catan.player.Player;
@@ -16,6 +18,7 @@ public class GameBoard {
 
 	private ArrayList<Hex> hexes;
 	private ArrayList<CoordinatePair> aIntersectionPositions;			// Villages will be available through the intersection positions
+	private Table<Integer, Integer, CoordinatePair> intersections;
 	private ArrayList<EdgeUnit> aRoadsAndShips;
 	private Hex aRobberPosition;
 	private Hex aPiratePosition;
@@ -41,6 +44,7 @@ public class GameBoard {
 	private GameBoard() {
 		hexes = new ArrayList<>();
 		aIntersectionPositions = new ArrayList<>();
+		intersections = HashBasedTable.create();
 		aRoadsAndShips = new ArrayList<>();
 		villages = new ArrayList<>();
 		knights = new HashMap<>();
@@ -49,8 +53,9 @@ public class GameBoard {
         aTradeProgressCardStack = new Stack<>();
         aFishTokenStack = new Stack<>();
 
-		HashMap<Integer,TerrainKind> aHexKindSetup = GameRules.getGameRulesInstance().getDefaultTerrainKindMap();
-		HashMap<Integer,Integer> aDiceNumberSetup = GameRules.getGameRulesInstance().getDefaultDiceNumberMap();
+        GameRules rules = GameRules.getGameRulesInstance();
+        HashMap<Integer,TerrainKind> aHexKindSetup = rules.getDefaultTerrainKindMap();
+		HashMap<Integer,Integer> aDiceNumberSetup = rules.getDefaultDiceNumberMap();
 		
         int half = SIZE / 2;
 
@@ -90,32 +95,44 @@ public class GameBoard {
 
                 if (y < 0) { // top half of board
                     // Creates the top, and top left points adjacent to current hex
-                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,y*3 - 1)));
-                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,GameRules.getGameRulesInstance().getHarbourKind(x,y*3 - 2)));
+                    intersections.put(x - 1, y * 3 - 1, CoordinatePair.of(x - 1, y * 3 - 1, rules.getHarbourKind(x - 1, y * 3 - 1)));
+                    intersections.put(x, y*3-2, CoordinatePair.of(x, y * 3 - 2, rules.getHarbourKind(x, y * 3 - 2)));
+                    aIntersectionPositions.add(CoordinatePair.of(x - 1, y * 3 - 1, rules.getHarbourKind(x - 1, y * 3 - 1)));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y * 3 - 2, rules.getHarbourKind(x, y * 3 - 2)));
                     // If the hex is the last column of a row, create the top right point
                     if (col == cols - 1) {
-                        aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y-1)));
+                        intersections.put(x + 1, y *3 - 1, CoordinatePair.of(x + 1, 3 * y - 1, rules.getHarbourKind(x + 1, 3 * y - 1)));
+                        aIntersectionPositions.add(CoordinatePair.of(x + 1, 3 * y - 1, rules.getHarbourKind(x + 1, 3 * y - 1)));
                     }
                 } else if (y == 0) { // middle
                     // Creates the top, and top left points adjacent to current hex
-                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 - 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,3*y-1)));
-                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 - 2,GameRules.getGameRulesInstance().getHarbourKind(x,3*y-2)));
+                    intersections.put(x - 1, y * 3 - 1, CoordinatePair.of(x - 1, y * 3 - 1, rules.getHarbourKind(x - 1, y * 3 - 1)));
+                    intersections.put(x, y*3-2, CoordinatePair.of(x, y * 3 - 2, rules.getHarbourKind(x, y * 3 - 2)));
+                    aIntersectionPositions.add(CoordinatePair.of(x - 1, y * 3 - 1, rules.getHarbourKind(x - 1, 3 * y - 1)));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y * 3 - 2, rules.getHarbourKind(x, 3 * y - 2)));
                     // Creates the bottom, and bottom left points adjacent to current hex
-                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,GameRules.getGameRulesInstance().getHarbourKind(x-1,3*y+1)));
-                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,GameRules.getGameRulesInstance().getHarbourKind(x,3*y+2)));
+                    intersections.put(x - 1, y * 3 + 1, CoordinatePair.of(x - 1, y * 3 + 1, rules.getHarbourKind(x - 1, 3 * y + 1)));
+                    intersections.put(x, y*3+2, CoordinatePair.of(x, y * 3 + 2, rules.getHarbourKind(x, 3 * y + 2)));
+                    aIntersectionPositions.add(CoordinatePair.of(x - 1, y * 3 + 1, rules.getHarbourKind(x - 1, 3 * y + 1)));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y * 3 + 2, rules.getHarbourKind(x, 3 * y + 2)));
                     // If the hex is the last column of a row, create the top right and bottom right points
                     if (col == cols - 1) {
-                        aIntersectionPositions.add(CoordinatePair.of(x+1,3*y-1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y-1)));
-                        aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,GameRules.getGameRulesInstance().getHarbourKind(x+1,3*y+1)));
+                        intersections.put(x + 1, y * 3 - 1, CoordinatePair.of(x + 1, 3 * y - 1, rules.getHarbourKind(x + 1, 3 * y - 1)));
+                        intersections.put(x + 1, y*3 + 1, CoordinatePair.of(x + 1, 3 * y + 1, rules.getHarbourKind(x + 1, 3 * y + 1)));
+                        aIntersectionPositions.add(CoordinatePair.of(x + 1, 3 * y - 1, rules.getHarbourKind(x + 1, 3 * y - 1)));
+                        aIntersectionPositions.add(CoordinatePair.of(x + 1, 3 * y + 1, rules.getHarbourKind(x + 1, 3 * y + 1)));
                     }
                 } else { // bottom half of board
                     // Creates the bottom, and bottom left points adjacent to current hex
                     // FIXME: change to same HarbourKind as above once hashCode function has been fixed
-                    aIntersectionPositions.add(CoordinatePair.of(x-1,y*3 + 1,HarbourKind.NONE));
-                    aIntersectionPositions.add(CoordinatePair.of(x, y*3 + 2,HarbourKind.NONE));
+                    intersections.put(x - 1, y * 3 + 1, CoordinatePair.of(x - 1, y * 3 + 1, HarbourKind.NONE));
+                    intersections.put(x, y*3+2, CoordinatePair.of(x, y * 3 + 2, HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x - 1, y * 3 + 1, HarbourKind.NONE));
+                    aIntersectionPositions.add(CoordinatePair.of(x, y * 3 + 2, HarbourKind.NONE));
                     // If the hex is the last column of a row, create the bottom right point
                     if (col == cols - 1) {
-                        aIntersectionPositions.add(CoordinatePair.of(x+1,3*y+1,HarbourKind.NONE));
+                        intersections.put(x + 1, y * 3 + 1, CoordinatePair.of(x + 1, 3 * y + 1, HarbourKind.NONE));
+                        aIntersectionPositions.add(CoordinatePair.of(x + 1, 3 * y + 1, HarbourKind.NONE));
                     }
                 }
             }
@@ -123,7 +140,7 @@ public class GameBoard {
 
         // Initialize the Side Fisheries
         for(int i = 0; i < 6; i++) {
-            Pair<Integer,Integer> currentPair = GameRules.getGameRulesInstance().getSmallFisheryPair(i);
+            Pair<Integer,Integer> currentPair = rules.getSmallFisheryPair(i);
             CoordinatePair hexCoord = CoordinatePair.of(currentPair.getLeft(), currentPair.getRight(), HarbourKind.NONE);
             Integer lDiceNumber = aDiceNumberSetup.get(hexCoord.hashCode());
             TerrainKind lTerrainKind = aHexKindSetup.get(hexCoord.hashCode());
@@ -139,8 +156,8 @@ public class GameBoard {
 
         // Fills up the progress card stack and shuffles it
         for (ProgressCardType type : ProgressCardType.values()) {
-        	int occurrence = GameRules.getGameRulesInstance().getProgressCardOccurrence(type);
-        	ProgressCardKind kind = GameRules.getGameRulesInstance().getProgressCardKind(type);
+        	int occurrence = rules.getProgressCardOccurrence(type);
+        	ProgressCardKind kind = rules.getProgressCardKind(type);
         	for (int i = 0; i<occurrence; i++) {
         		if (kind == ProgressCardKind.POLITICS) {
         			aPoliticsProgressCardStack.push(type);
@@ -181,6 +198,10 @@ public class GameBoard {
 	public ArrayList<CoordinatePair> getIntersectionsAndEdges() {
 		return aIntersectionPositions;
 	}
+
+	public Table<Integer, Integer, CoordinatePair> getIntersections() {
+	    return intersections;
+    }
 	
 	public ArrayList<Hex> getHexes() {
 		return hexes;

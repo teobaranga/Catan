@@ -294,7 +294,7 @@ class CatanServer {
         // Create its session
         game.session = Session.newInstance(game.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         // Create its gameboard
-        game.gameboard = GameBoard.newInstance();
+        game.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
         System.out.println("gameboard created");
         // Return the game response containing the game along with its session and its gameboard
         return GameResponse.newInstance(game);
@@ -360,7 +360,7 @@ class CatanServer {
             yearsOfPlenty.markAsReady(account.getUsername());
         }
         yearsOfPlenty.session = Session.newInstance(yearsOfPlenty.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
-        yearsOfPlenty.gameboard = GameBoard.newInstance();
+        yearsOfPlenty.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
         yearsOfPlenty.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
 
         ResourceMap resourceMap = new ResourceMap();
@@ -382,7 +382,7 @@ class CatanServer {
             progressCardGame.markAsReady(account.getUsername());
         }
         progressCardGame.session = Session.newInstance(progressCardGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
-        progressCardGame.gameboard = GameBoard.newInstance();
+        progressCardGame.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
         progressCardGame.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
 
         // barbarians have attacked at least once
@@ -632,7 +632,7 @@ class CatanServer {
             progressCardGame2.markAsReady(account.getUsername());
         }
         progressCardGame2.session = Session.newInstance(progressCardGame2.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
-        progressCardGame2.gameboard = GameBoard.newInstance();
+        progressCardGame2.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
         progressCardGame2.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
 
         // barbarians have attacked at least once
@@ -882,7 +882,7 @@ class CatanServer {
         progressCardGame2.gameboard.removeProgressCard(ProgressCardType.TRADEMONOPOLY, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.IRRIGATION));
         progressCardGame2.gameboard.removeProgressCard(ProgressCardType.MERCHANT, GameRules.getGameRulesInstance().getProgressCardKind(ProgressCardType.WEDDING));
 
-        savedGames.add(progressCardGame2);
+        // savedGames.add(progressCardGame2);
         
         
         // Metropolis saved game ---------------------------------------------------
@@ -936,7 +936,7 @@ class CatanServer {
 
         knightGame.session = Session.newInstance(knightGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         knightGame.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
-        knightGame.gameboard = GameBoard.newInstance();
+        knightGame.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
 
         ResourceMap knightResourceMap = new ResourceMap();
 
@@ -1108,7 +1108,7 @@ class CatanServer {
         barbarianAttack.session = Session.newInstance(barbarianAttack.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         barbarianAttack.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
         barbarianAttack.session.barbarianPosition = 1;
-        barbarianAttack.gameboard = GameBoard.newInstance();
+        barbarianAttack.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
 
         for (Player player : barbarianAttack.session.getPlayers()) {
             player.setResources(barbarianResourceMap);
@@ -1141,7 +1141,7 @@ class CatanServer {
         }
         winningGame.session = Session.newInstance(winningGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         winningGame.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
-        winningGame.gameboard = GameBoard.newInstance();
+        winningGame.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
 
 
 
@@ -1168,8 +1168,23 @@ class CatanServer {
 
 
 
-       savedGames.add(winningGame);
+       // savedGames.add(winningGame);
 
+       /** testing different boards */
+       Game testBoard = new Game();
+       testBoard.name = "Winning Game";
+
+       for(Account account : accounts) {
+           testBoard.addPlayer(account, -1);
+           testBoard.markAsReady(account.getUsername());
+       }
+       testBoard.session = Session.newInstance(testBoard.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
+       testBoard.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
+       testBoard.gameboard = GameBoard.newInstance(BoardVariants.BOARD_VARIANT1);
+
+       savedGames.add(testBoard);
+       
+       
         return savedGames;
     }
 

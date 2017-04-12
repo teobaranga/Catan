@@ -49,8 +49,8 @@ public class GameBoardManager {
     /**
      * creates the default game board
      * */
-    public static GameBoard newDefaultGameboard() {
-        GameBoard gameboard = GameBoard.newInstance();
+    public static GameBoard newDefaultGameboard() { 
+        GameBoard gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
 
         return gameboard;
     }

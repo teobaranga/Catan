@@ -48,6 +48,7 @@ public class Config {
         kryo.register(PlayerColor.class);
         kryo.register(Player.class);
         kryo.register(CityImprovements.class);
+        kryo.register(BoardVariants.class);
         kryo.register(Player[].class);
         kryo.register(ImmutablePair.class);
         kryo.register(Pair.class);

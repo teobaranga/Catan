@@ -9,6 +9,7 @@ import com.mygdx.catan.enums.HarbourKind;
 import com.mygdx.catan.enums.ProgressCardKind;
 import com.mygdx.catan.enums.ProgressCardType;
 import com.mygdx.catan.enums.TerrainKind;
+import com.mygdx.catan.enums.BoardVariants;
 import com.mygdx.catan.enums.FishTokenType;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -34,10 +35,14 @@ public class GameBoard {
 
 	private int nextKnightId;
 	
-	private final int SIZE = GameRules.getGameRulesInstance().getSize();
+	public static int SIZE = 0; 
+	public static BoardVariants variant;
 	
-	public static GameBoard newInstance() {
+	public static GameBoard newInstance(BoardVariants boardvariant) {
+	    SIZE = GameRules.getGameRulesInstance().getSize(boardvariant);
+	    variant = boardvariant;
 	    GameBoard gameboard = new GameBoard();
+	    
         return gameboard;
 	}
 	
@@ -52,10 +57,16 @@ public class GameBoard {
         aPoliticsProgressCardStack = new Stack<>();
         aTradeProgressCardStack = new Stack<>();
         aFishTokenStack = new Stack<>();
-
+        setupGameBoard();
+	}
+	
+	private void setupGameBoard() {
+	    if (variant == null) {
+	        variant = BoardVariants.DEFAULT;
+	    }
         GameRules rules = GameRules.getGameRulesInstance();
-        HashMap<Integer,TerrainKind> aHexKindSetup = rules.getDefaultTerrainKindMap();
-		HashMap<Integer,Integer> aDiceNumberSetup = rules.getDefaultDiceNumberMap();
+        HashMap<Integer,TerrainKind> aHexKindSetup = rules.getDefaultTerrainKindMap(variant);
+		HashMap<Integer,Integer> aDiceNumberSetup = rules.getDefaultDiceNumberMap(variant);
 		
         int half = SIZE / 2;
 

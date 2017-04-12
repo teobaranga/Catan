@@ -39,7 +39,7 @@ public class BrowseGamesWindow extends CatanWindow {
         });
         add(loadGame).right().pad(20);
 
-        setSize(400, 200);
+        setSize(400, 400);
         setPosition(Gdx.graphics.getWidth() / 2 - getWidth() / 2, Gdx.graphics.getHeight() / 2 - getHeight() / 2);
     }
 

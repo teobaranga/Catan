@@ -2250,25 +2250,28 @@ public class SessionController {
         } else {
             localPlayer.addResources(resAndComMap);
             aSessionScreen.updateResourceBar(localPlayer.getResources());
-            aSessionScreen.interractionDone();
+            //aqueduct
+            if (diceRoll != 7
+                    && resAndComMap.isEmpty()
+                    && aGameRules.getScienceImprovmentType(localPlayer.getCityImprovements().getScienceLevel()) == CityImprovementTypeScience.AQUEDUCT
+                    && goldNumber == 0) {
+
+                MultiStepMove chooseResource = new MultiStepMove();
+                chooseResource.<ResourceKind>addMove(kind -> {
+                    ResourceMap resources = new ResourceMap();
+                    resources.add(kind, 1);
+                    localPlayer.addResources(resources);
+                    aSessionScreen.updateResourceBar(localPlayer.getResources());
+                    aSessionScreen.interractionDone();
+                });
+                aSessionScreen.chooseResource(Arrays.asList(ResourceKind.values()), chooseResource);
+            } else {
+                aSessionScreen.interractionDone();
+            }
+            
         }
         
-        //aqueduct
-        if (diceRoll != 7
-                && resAndComMap.isEmpty()
-                && aGameRules.getScienceImprovmentType(localPlayer.getCityImprovements().getScienceLevel()) == CityImprovementTypeScience.AQUEDUCT
-                && goldNumber == 0) {
-
-            MultiStepMove chooseResource = new MultiStepMove();
-            chooseResource.<ResourceKind>addMove(kind -> {
-                ResourceMap resources = new ResourceMap();
-                resources.add(kind, 1);
-                localPlayer.addResources(resources);
-                aSessionScreen.updateResourceBar(localPlayer.getResources());
-                aSessionScreen.interractionDone();
-            });
-            aSessionScreen.chooseResource(Arrays.asList(ResourceKind.values()), chooseResource);
-        }
+        
     }
 
     int getBootMalus(Player player) {

@@ -20,12 +20,10 @@ import com.mygdx.catan.game.GameManager;
 import com.mygdx.catan.request.CreateGame;
 import com.mygdx.catan.request.JoinRandomGame;
 import com.mygdx.catan.request.game.BrowseGames;
+import com.mygdx.catan.request.game.LoadGame;
 import com.mygdx.catan.response.GameResponse;
-import com.mygdx.catan.response.game.GameList;
 import com.mygdx.catan.ui.CatanWindow;
 import com.mygdx.catan.ui.window.menu.BrowseGamesWindow;
-
-import java.util.List;
 
 public class MenuScreen implements Screen {
 
@@ -83,11 +81,11 @@ public class MenuScreen implements Screen {
                 Listener listener = new Listener() {
                     @Override
                     public void received(Connection connection, Object object) {
-                        if (object instanceof GameList) {
+                        if (object instanceof GameResponse) {
                             Gdx.app.postRunnable(() -> {
-                                List<Game> games = ((GameList) object).getGames();
-                                window.setGames(games);
-                                CatanGame.client.removeListener(this);
+                                Game game = ((GameResponse) object).getGame();
+                                System.out.println(String.format("Received game %s", game.name));
+                                window.addGame(game);
                             });
                         }
                     }
@@ -95,6 +93,9 @@ public class MenuScreen implements Screen {
 
                 window.setGameListener(game -> {
                     // Set the current game
+                    LoadGame loadGame = LoadGame.newInstance(CatanGame.account.getUsername(), game.name);
+                    CatanGame.client.sendTCP(loadGame);
+
                     GameManager.getInstance().setCurrentGame(game);
                     // Start the game
                     if (CatanGame.client.isConnected()) {

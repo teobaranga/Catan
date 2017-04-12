@@ -64,7 +64,7 @@ public class KnightHelper {
 
         // Create the highlighted positions showing where a knight could be placed
         List<CoordinatePair> validBuildKnightPositions = sessionController.getValidBuildKnightPositions();
-//                List<CoordinatePair> validBuildKnightPositions = sessionController.requestValidInitializationBuildIntersections();
+            //    List<CoordinatePair> validBuildKnightPositions = sessionController.requestValidInitializationBuildIntersections();
 
         if (validBuildKnightPositions.isEmpty()) {
             Label msg = new Label("There are no valid positions\nwhere you can build a knight.", CatanGame.skin);

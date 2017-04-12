@@ -1,6 +1,9 @@
 package com.mygdx.catan.session;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.utils.Align;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.mygdx.catan.CatanGame;
@@ -98,12 +101,51 @@ public class KnightController {
                         
                         removeKnight.<CoordinatePair>addMove((knightIntersection) -> {
                             
-                            int knightStrength = knightIntersection.getOccupyingKnight().getStrength(); 
+                            int knightStrength = knightIntersection.getOccupyingKnight().getStrength();
+                            
                             KnightRemovedResponse response = KnightRemovedResponse.newInstance(knightStrength, localPlayer.getUsername(), request.sender);
                             CatanGame.client.sendTCP(response);
                             removeKnight(knightIntersection);
+                        });
+                        
+                        sessionScreen.initChooseIntersectionMove(getValidKnightPositions(), removeKnight);
+                    });
+                } else if (object instanceof KnightRemovedResponse) {
+                    Gdx.app.postRunnable(() -> {
+                        KnightRemovedResponse response = (KnightRemovedResponse) object;
+                        
+                        MultiStepMove placeKnight = new MultiStepMove();
+                        
+                        placeKnight.addMove((position) -> {
+                            int knightStrength = 0;
+                            
+                            if (localPlayer.getKnights().stream().filter(knight -> knight.is(response.getKnightStrength())).count() == 2) {
+                                if (localPlayer.getKnights().stream().filter(knight -> knight.is(Strength.BASIC)).count() < 2) {
+                                    knightStrength = 1;
+                                }
+                            } else {
+                                knightStrength = response.getKnightStrength();
+                            }
+                            
+                            if (knightStrength == 0) {
+                                sessionScreen.addGameMessage("You do not have any available knights to place");
+                                sessionScreen.interractionDone();
+                            } else {
+                                //TODO place knight with knightStrength at position, without removing cost
+                                
+                                sessionScreen.interractionDone();
+                            }
                             
                         });
+                        
+                        // positions where a knight could be placed
+                        List<CoordinatePair> validBuildKnightPositions = sessionController.getValidBuildKnightPositions();
+
+                        if (!validBuildKnightPositions.isEmpty()) {
+                            sessionScreen.initChooseIntersectionMove(validBuildKnightPositions, placeKnight);
+                        } else {
+                            sessionScreen.interractionDone();
+                        }
                     });
                 }
             }
@@ -272,6 +314,18 @@ public class KnightController {
                 .filter(coordinatePair -> !coordinatePair.isOccupied())
                 .collect(Collectors.toList());
     }
+    
+    /**
+     * @return a list of all the positions with a player's knight on it
+     * */
+    public List<CoordinatePair> getValidKnightPositions() {
+        ArrayList<CoordinatePair> positions = new ArrayList<>();
+        for (Knight k : localPlayer.getKnights()) {
+            positions.add(k.getPosition());
+        }
+            
+        return positions;
+    }
 
     /** Move the knight to the new position */
     public void moveKnight(int id, CoordinatePair position) {
@@ -290,7 +344,10 @@ public class KnightController {
         Player owner = knightToRemove.getOwner();
         owner.removeKnight(knightToRemove);
         sessionScreen.removeKnight(knightToRemove.getId());
-        KnightRequest request = KnightRequest.remove(localPlayer.getUsername(), knightToRemove.getId());
-        CatanGame.client.sendTCP(request);
+        // Inform other players
+        if (localPlayer.getColor() == knightToRemove.getOwner().getColor()) {
+            KnightRequest request = KnightRequest.remove(localPlayer.getUsername(), knightToRemove.getId());
+            CatanGame.client.sendTCP(request);
+        }
     }
 }

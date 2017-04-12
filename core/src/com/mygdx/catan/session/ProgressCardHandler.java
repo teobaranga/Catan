@@ -17,6 +17,8 @@ import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.*;
 
 import com.mygdx.catan.request.knight.KnightRequest;
+import com.mygdx.catan.request.knight.RequestRemoveKnight;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -509,8 +511,11 @@ public class ProgressCardHandler {
                 MultiStepMove choosePlayerToDesert = new MultiStepMove();
                 
                 choosePlayerToDesert.<Player>addMove((opponent) -> {
-                    
+                    RequestRemoveKnight request = RequestRemoveKnight.newInstance(currentP.getUsername(), opponent.getUsername());
+                    CatanGame.client.sendTCP(request);
                 });
+                
+                aSessionController.getSessionScreen().chooseOtherPlayer(opponentsWithKnights, choosePlayerToDesert);
 
                 break;
             case DIPLOMAT:

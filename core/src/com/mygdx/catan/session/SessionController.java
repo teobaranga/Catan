@@ -126,7 +126,6 @@ public class SessionController {
                 } else if (object instanceof DistributeResources) {
                     Gdx.app.postRunnable(() -> {
                         final DistributeResources distributeRequest = (DistributeResources) object;
-
                         resourceProduction(distributeRequest.getDiceResults().getSum());
                     });
                 } else if (object instanceof BuildIntersection) {
@@ -2241,7 +2240,7 @@ public class SessionController {
             MultiStepMove chooseResources = new MultiStepMove();
             EnumMap<ResourceKind, Integer> resourcesToChooseFrom = new EnumMap<>(ResourceKind.class);
             
-            chooseResources.<ResourceMap>addMove((map) -> {
+            chooseResources.<ResourceMap>addMove(map -> {
                 resAndComMap.add(map);
                 localPlayer.addResources(resAndComMap);
                 aSessionScreen.updateResourceBar(localPlayer.getResources());

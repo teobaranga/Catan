@@ -1226,9 +1226,9 @@ class CatanServer {
         
         
         // set flipchart levels: science : 3 - politics : 0 - trade : 0
-        metp1.getCityImprovements().setScienceLevel(3);
-        metp1.getCityImprovements().setPoliticsLevel(0);
-        metp1.getCityImprovements().setTradeLevel(0);
+        metp2.getCityImprovements().setScienceLevel(3);
+        metp2.getCityImprovements().setPoliticsLevel(0);
+        metp2.getCityImprovements().setTradeLevel(0);
         
         {
             CoordinatePair two_Mfour = GameBoardManager.getCoordinatePairFromCoordinates(2, -4, metropolisGame.gameboard);
@@ -1243,7 +1243,7 @@ class CatanServer {
             
             Village vil2 = Village.newInstance(metp2, zero_Mtwo);
             vil2.setVillageKind(VillageKind.CITY);
-            two_Mfour.putVillage(vil2);
+            zero_Mtwo.putVillage(vil2);
             metropolisGame.gameboard.addVillage(vil2);
             metp2.addVillage(vil2);
             
@@ -1263,9 +1263,9 @@ class CatanServer {
         metp2.setResources(metp2Map);
         
         // set flipchart levels: science : 0 - politics : 0 - trade : 1
-        metp1.getCityImprovements().setScienceLevel(0);
-        metp1.getCityImprovements().setPoliticsLevel(0);
-        metp1.getCityImprovements().setTradeLevel(1);
+        metp3.getCityImprovements().setScienceLevel(0);
+        metp3.getCityImprovements().setPoliticsLevel(0);
+        metp3.getCityImprovements().setTradeLevel(1);
         {
             CoordinatePair Mtwo_two = GameBoardManager.getCoordinatePairFromCoordinates(-2, 2, metropolisGame.gameboard);
             CoordinatePair Mtwo_four = GameBoardManager.getCoordinatePairFromCoordinates(-2, 4, metropolisGame.gameboard);

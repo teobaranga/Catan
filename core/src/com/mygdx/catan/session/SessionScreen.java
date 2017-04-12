@@ -845,13 +845,13 @@ public class SessionScreen implements Screen {
         if (aSessionController.getSessionManager().getSession().longestRoadOwner != null) {
             updateLongestRoadOwner(aSessionController.getSessionManager().getSession().longestRoadOwner.getColor(), aSessionController.getSessionManager().getSession().longestRoadOwner.getUsername());
         }
-        if (aSessionController.getCurrentPlayer().getCityImprovements().getPoliticsLevel() != 0) {
+        if (aSessionController.getLocalPlayer().getCityImprovements().getPoliticsLevel() != 0) {
             updatePoliticsImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getPoliticsLevel());
         }
-        if (aSessionController.getCurrentPlayer().getCityImprovements().getTradeLevel() != 0) {
+        if (aSessionController.getLocalPlayer().getCityImprovements().getTradeLevel() != 0) {
             updateTradeImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getTradeLevel());
         }
-        if (aSessionController.getCurrentPlayer().getCityImprovements().getScienceLevel() != 0) {
+        if (aSessionController.getLocalPlayer().getCityImprovements().getScienceLevel() != 0) {
             updateScienceImprovements(aSessionController.getCurrentPlayer().getCityImprovements().getScienceLevel());
         }
         updateBarbarianPosition(aSessionController.getSessionManager().getSession().barbarianPosition);

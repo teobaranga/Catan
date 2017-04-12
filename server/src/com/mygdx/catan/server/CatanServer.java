@@ -1353,6 +1353,7 @@ class CatanServer {
                 position.putKnight(knight);
                 knight.promote();
                 knight.promote();
+                p1.getCityImprovements().setPoliticsLevel(3);
                 p1.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
             }
@@ -1527,6 +1528,7 @@ class CatanServer {
                 position.putKnight(knight);
                 knight.promote();
                 knight.promote();
+                p3.getCityImprovements().setPoliticsLevel(3);
                 p3.addKnight(knight);
                 knightGame.gameboard.addKnight(knight, knight.getId());
             }

@@ -26,7 +26,7 @@ public class Player {
     private PlayerColor color;
     private ArrayList<EdgeUnit> roadsAndShips;
     private List<Village> villages;
-    private List<Knight> knights; //TODO: keep track of knights for each player
+    private List<Knight> knights;
     private int defenderOfCatanPoints;
     private ResourceKind temporaryTradeKind; //temporary 2:1 trade when playing MERCHANTFLEET
     private boolean lostLastCity;

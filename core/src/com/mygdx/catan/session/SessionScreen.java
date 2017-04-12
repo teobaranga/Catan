@@ -31,6 +31,7 @@ import com.mygdx.catan.player.Player;
 import com.mygdx.catan.request.UpdateOldBoot;
 import com.mygdx.catan.session.helper.KnightHelper;
 import com.mygdx.catan.ui.*;
+import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -2364,6 +2365,52 @@ public class SessionScreen implements Screen {
 
     /** Add a knight piece to the game board */
     public void addKnight(KnightActor knightActor) {
+        if (knightActor.getKnight().getOwner().equals(aSessionController.getLocalPlayer())) {
+            knightActor.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    if (!aSessionController.isMyTurn())
+                        return;
+                    KnightActionsWindow actionWindow = knightActor.displayActions(aSessionStage);
+                    actionWindow.setWindowCloseListener(() -> popups.remove(actionWindow));
+                    actionWindow.setOnKnightActivateClick(knightActor1 -> {
+                        // Attempt to activate the knight
+                        if (aSessionController.getKnightController().requestActivateKnight(knightActor.getKnight())) {
+                            return true;
+                        }
+                        // Inform the player
+                        Label msg = new Label("You do not have sufficient resources\nto activate this knight.", CatanGame.skin);
+                        msg.setAlignment(Align.center);
+                        new Dialog("Insufficient resources", CatanGame.skin)
+                                .text(msg)
+                                .button("OK")
+                                .show(aSessionStage);
+                        return false;
+                    });
+                    actionWindow.setOnKnightUpgradeClick(knightActor1 -> {
+                        // Attempt to promote the knight
+                        if (aSessionController.getKnightController().requestPromoteKnight(knightActor.getKnight())) {
+                            return true;
+                        }
+                        // Inform the player
+                        Label msg = new Label("You do not have sufficient resources\nto promote this knight.", CatanGame.skin);
+                        msg.setAlignment(Align.center);
+                        new Dialog("Insufficient resources", CatanGame.skin)
+                                .text(msg)
+                                .button("OK")
+                                .show(aSessionStage);
+                        return false;
+                    });
+                    actionWindow.setOnKnightMoveClick(knightActor1 -> {
+                        MultiStepMove moveKnight = knightHelper.moveKnight(knightActor1);
+                        if (moveKnight != null)
+                            setCurrentlyPerformingMove(moveKnight);
+                        return true;
+                    });
+                    popups.add(actionWindow);
+                }
+            });
+        }
         knights.add(knightActor);
         gamePiecesStage.addActor(knightActor);
         System.out.println("Knight added at " + knightActor.getKnight().getPosition());

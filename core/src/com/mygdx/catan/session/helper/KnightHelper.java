@@ -1,12 +1,10 @@
 package com.mygdx.catan.session.helper;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.CoordinatePair;
@@ -18,7 +16,6 @@ import com.mygdx.catan.session.KnightController;
 import com.mygdx.catan.session.SessionController;
 import com.mygdx.catan.session.SessionScreen;
 import com.mygdx.catan.ui.KnightActor;
-import com.mygdx.catan.ui.window.KnightActionsWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import javax.inject.Inject;
@@ -103,48 +100,6 @@ public class KnightHelper {
 
             // Build the knight
             KnightActor knightActor = knightController.buildKnight(chosenIntersection);
-            knightActor.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    KnightActionsWindow actionWindow = knightActor.displayActions(sessionStage);
-                    actionWindow.setWindowCloseListener(() -> popups.remove(actionWindow));
-                    actionWindow.setOnKnightActivateClick(knightActor1 -> {
-                        // Attempt to activate the knight
-                        if (knightController.requestActivateKnight(knightActor.getKnight())) {
-                            return true;
-                        }
-                        // Inform the player
-                        Label msg = new Label("You do not have sufficient resources\nto activate this knight.", CatanGame.skin);
-                        msg.setAlignment(Align.center);
-                        new Dialog("Insufficient resources", CatanGame.skin)
-                                .text(msg)
-                                .button("OK")
-                                .show(sessionStage);
-                        return false;
-                    });
-                    actionWindow.setOnKnightUpgradeClick(knightActor1 -> {
-                        // Attempt to promote the knight
-                        if (knightController.requestPromoteKnight(knightActor.getKnight())) {
-                            return true;
-                        }
-                        // Inform the player
-                        Label msg = new Label("You do not have sufficient resources\nto promote this knight.", CatanGame.skin);
-                        msg.setAlignment(Align.center);
-                        new Dialog("Insufficient resources", CatanGame.skin)
-                                .text(msg)
-                                .button("OK")
-                                .show(sessionStage);
-                        return false;
-                    });
-                    actionWindow.setOnKnightMoveClick(knightActor1 -> {
-                        MultiStepMove moveKnight = moveKnight(knightActor1);
-                        if (moveKnight != null)
-                            sessionScreen.setCurrentlyPerformingMove(moveKnight);
-                        return true;
-                    });
-                    popups.add(actionWindow);
-                }
-            });
             sessionScreen.addKnight(knightActor);
             // Mark the coordinate position as occupied
             chosenIntersection.putKnight(knightActor.getKnight());
@@ -153,7 +108,7 @@ public class KnightHelper {
         return move;
     }
 
-    private MultiStepMove moveKnight(KnightActor knightActor) {
+    public MultiStepMove moveKnight(KnightActor knightActor) {
         Stage sessionStage = sessionScreen.aSessionStage;
         List<CoordinatePair> validMovePositions = knightController.getValidMovePositions(knightActor.getKnight());
         if (validMovePositions.isEmpty()) {

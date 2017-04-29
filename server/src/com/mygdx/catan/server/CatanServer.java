@@ -1424,7 +1424,7 @@ class CatanServer {
                 knightResourceMapP2.put(ResourceKind.BRICK, 3);
                 knightResourceMapP2.put(ResourceKind.GRAIN, 4);
                 knightResourceMapP2.put(ResourceKind.PAPER, 2);
-                p1.setResources(knightResourceMapP2);
+                p2.setResources(knightResourceMapP2);
 
 
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-3, -7, knightGame.gameboard);
@@ -1519,7 +1519,7 @@ class CatanServer {
                 knightResourceMapP3.put(ResourceKind.BRICK, 4);
                 knightResourceMapP3.put(ResourceKind.GRAIN, 5);
                 knightResourceMapP3.put(ResourceKind.PAPER, 3);
-                p1.setResources(knightResourceMapP3);
+                p3.setResources(knightResourceMapP3);
 
 
                 CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, knightGame.gameboard);
@@ -1703,7 +1703,7 @@ class CatanServer {
                     barbResourceMapP2.put(ResourceKind.BRICK, 4);
                     barbResourceMapP2.put(ResourceKind.GRAIN, 6);
                     barbResourceMapP2.put(ResourceKind.PAPER, 4);
-                    p1.setResources(barbResourceMapP2);
+                    p2.setResources(barbResourceMapP2);
 
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-4, -8, barbarianAttack.gameboard);
                     Village village = Village.newInstance(p2, position);
@@ -1763,7 +1763,7 @@ class CatanServer {
                     barbResourceMapP3.put(ResourceKind.BRICK, 4);
                     barbResourceMapP3.put(ResourceKind.GRAIN, 5);
                     barbResourceMapP3.put(ResourceKind.PAPER, 4);
-                    p1.setResources(barbResourceMapP3);
+                    p3.setResources(barbResourceMapP3);
 
                     CoordinatePair position = GameBoardManager.getCoordinatePairFromCoordinates(-0, -2, barbarianAttack.gameboard);
                     int id = barbarianAttack.gameboard.nextKnightId();
@@ -1860,8 +1860,6 @@ class CatanServer {
         winningGame.session.currentPhase = GamePhase.TURN_FIRST_PHASE;
         winningGame.gameboard = GameBoard.newInstance(BoardVariants.DEFAULT);
 
-
-        winningGame.session = Session.newInstance(winningGame.peers.keySet(), GameRules.getGameRulesInstance().getVpToWin());
         //SET SESSION
 
         Player[] winningGamePlayers = winningGame.session.getPlayers();

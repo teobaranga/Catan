@@ -48,4 +48,16 @@ public class ResourceMap extends EnumMap<ResourceKind, Integer> {
             put(entry.getKey(), get(entry.getKey()) - entry.getValue());
         }
     }
+
+    /**
+     * Return true if the map doesn't contain at least one resource of any kind.
+     */
+    @Override
+    public boolean isEmpty() {
+        for (Integer count : values()) {
+            if (count != 0)
+                return false;
+        }
+        return true;
+    }
 }

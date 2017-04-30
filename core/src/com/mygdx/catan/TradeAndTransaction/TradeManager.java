@@ -1,6 +1,6 @@
 package com.mygdx.catan.TradeAndTransaction;
 
-import com.mygdx.catan.Player;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.enums.ResourceKind;
 
@@ -21,14 +21,14 @@ public class TradeManager {
     }
 
     /**
-     * Perform maritime trade.
+     * Perform domestic trade, which includes maritime trade.
      *
      * @param offer      type of resource that the player is offering
      * @param request    type of resource that the player is requesting
      * @param tradeRatio the number of units of the offered resource necessary to receive one requested resource
      * @param player     the player doing the trade
      */
-    public void maritimeTrade(ResourceKind offer, ResourceKind request, int tradeRatio, Player player) {
+    public void domesticTrade(ResourceKind offer, ResourceKind request, int tradeRatio, Player player) {
         // Compute the resources to be removed from the player
         final ResourceMap removeResourceMap = new ResourceMap();
         removeResourceMap.put(offer, tradeRatio);
@@ -39,5 +39,10 @@ public class TradeManager {
 
         transactionManager.payPlayerToBank(player, removeResourceMap);
         transactionManager.payBankToPlayer(player, addResourceMap);
+    }
+
+    public void trade(Player player, ResourceMap receive, ResourceMap give) {
+        player.removeResources(give);
+        player.addResources(receive);
     }
 }

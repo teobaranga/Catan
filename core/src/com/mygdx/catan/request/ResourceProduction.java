@@ -1,9 +1,8 @@
 package com.mygdx.catan.request;
 
-import java.util.List;
-
-import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
+
+import java.util.List;
 
 public class ResourceProduction extends ForwardedRequest {
     private List<ResourceMap> resourceUpdates;

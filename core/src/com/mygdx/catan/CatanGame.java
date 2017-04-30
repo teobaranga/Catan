@@ -9,10 +9,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
+import com.esotericsoftware.kryonet.KryoSerialization;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.account.AccountManager;
 import com.mygdx.catan.enums.ScreenKind;
-import com.mygdx.catan.screens.create.CreateScreen;
+import com.mygdx.catan.injection.component.AppComponent;
+import com.mygdx.catan.injection.component.DaggerAppComponent;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.screens.login.LoginScreen;
 import com.mygdx.catan.screens.menu.MenuScreen;
@@ -21,6 +23,9 @@ import com.mygdx.catan.session.SessionScreen;
 import java.io.IOException;
 
 public class CatanGame extends Game {
+
+    public static final AppComponent appComponent;
+
     /** The Client representing the current user */
     public static final Client client;
 
@@ -32,11 +37,15 @@ public class CatanGame extends Game {
     public static Account account;
 
     static {
-        client = new Client();
+        appComponent = DaggerAppComponent.builder().build();
+
+        Kryo kryo = new Kryo();
+        kryo.setReferences(true);
+        KryoSerialization serialization = new KryoSerialization(kryo);
+        client = new Client(8192, 9182, serialization);
 
         // Register request & response classes (needed for networking)
         // Must be registered in the same order in the server
-        Kryo kryo = client.getKryo();
         Config.registerKryoClasses(kryo);
         client.start();
 
@@ -64,9 +73,9 @@ public class CatanGame extends Game {
         // Load the UI skin
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 
-        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic.mp3"));
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("sound/buttonClick.mp3"));
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("sound/menuMusic.mp3"));
         menuMusic.setLooping(true);
-        clickSound = Gdx.audio.newSound(Gdx.files.internal("buttonClick.mp3"));
 
         // Load the current account if cached
         account = AccountManager.getLocalAccount();
@@ -94,9 +103,9 @@ public class CatanGame extends Game {
             case BROWSE_GAMES:
                 break;
             case CREATE_GAME:
-                setScreen(new CreateScreen(this, new MenuScreen(this)));
+//                setScreen(new CreateScreen(this, new MenuScreen(this)));
             case IN_GAME:
-                //this.setScreen(new CreateScreen(this, menuScreen));
+                menuMusic.stop();
                 setScreen(new SessionScreen(this));
                 break;
             case LOBBY:

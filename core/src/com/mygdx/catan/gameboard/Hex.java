@@ -11,14 +11,21 @@ public class Hex {
 	
 	
 	/**
-	 * @param Coordinate Pair of the Hex
-	 * @param its Terrain Kind
-	 * @param its dice number
-	 * */
-	public Hex(CoordinatePair pCoordinates, TerrainKind pKind, int pDiceNumber) {
-		aCoordinates = pCoordinates;
-		aKind = pKind;
-		aDiceNumber = pDiceNumber;
+     * @param pCoordinates Coordinate Pair of the Hex
+     * @param pKind its Terrain Kind
+     * @param pDiceNumber its dice number
+     * */
+	public static Hex newInstance(CoordinatePair pCoordinates, TerrainKind pKind, int pDiceNumber) {
+	    Hex hex = new Hex();
+	   
+	    hex.aCoordinates = pCoordinates;
+	    hex.aKind = pKind;
+	    hex.aDiceNumber = pDiceNumber;
+	    
+	    return hex;
+	}
+	
+	public Hex() {
 	}
 	
 	public TerrainKind getKind() {
@@ -27,6 +34,10 @@ public class Hex {
 	
 	public int getDiceNumber() {
 		return aDiceNumber;
+	}
+	
+	public void setDiceNumber(int newDiceNumber) {
+	    aDiceNumber = newDiceNumber;
 	}
 	
 	public int getLeftCoordinate() {

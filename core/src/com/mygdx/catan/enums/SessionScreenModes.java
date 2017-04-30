@@ -1,8 +1,8 @@
 package com.mygdx.catan.enums;
 
 public enum SessionScreenModes {
-    VIEWMODE,
     CHOOSEINTERSECTIONMODE,
     CHOOSEEDGEMODE,
+    CHOOSEHEXMODE,
     CHOOSEACTIONMODE
 }

@@ -1,7 +1,13 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.HarbourKind;
+import com.mygdx.catan.game.Game;
+import com.mygdx.catan.game.GameManager;
+import com.mygdx.catan.gameboard.GameBoardManager;
+import com.mygdx.catan.gameboard.Knight;
 import com.mygdx.catan.gameboard.Village;
+import com.mygdx.catan.player.Player;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 @SuppressWarnings("serial")
@@ -11,6 +17,7 @@ public class CoordinatePair extends Pair<Integer, Integer> {
     private Integer y;
     private HarbourKind aHarbourKind;
     private Village occupyingVillage;
+    private Knight occupyingKnight;
 
     public static CoordinatePair of(Integer x, Integer y, HarbourKind harbourKind) {
         final CoordinatePair coordinatePair = new CoordinatePair();
@@ -65,6 +72,23 @@ public class CoordinatePair extends Pair<Integer, Integer> {
     }
 
     public boolean isOccupied() {
+        return occupyingVillage != null || occupyingKnight != null;
+    }
+    
+    /**
+     * @return true iff this CoordinatePair is occupied by a village or a knight owned by given Player
+     * */
+    public boolean isOccupied(Player owner) {
+        if (occupyingVillage != null) {
+            return occupyingVillage.getOwner().equals(owner);
+        } else if (occupyingKnight != null) {
+            return occupyingKnight.getOwner().equals(owner);
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isOccupiedByVillage() {
         return occupyingVillage != null;
     }
 
@@ -76,6 +100,10 @@ public class CoordinatePair extends Pair<Integer, Integer> {
         return occupyingVillage;
     }
 
+    public Knight getOccupyingKnight() {
+        return occupyingKnight;
+    }
+
     /**
      * Puts a village on this coordinate pair. Assert that this CoordinatePair represents
      * an intersection. Does nothing if the intersection is already occupied. Sets the
@@ -83,5 +111,22 @@ public class CoordinatePair extends Pair<Integer, Integer> {
      */
     public void putVillage(Village village) {
         occupyingVillage = village;
+    }
+
+    public void putKnight(Knight knight) {
+        occupyingKnight = knight;
+    }
+
+    public boolean hasKnight() {
+        final Game currentGame = GameManager.getInstance().getCurrentGame();
+        for(Knight k: GameBoardManager.getInstance(currentGame.gameboard).getGameBoard().getKnights()) {
+            if ((x == (k.getPosition().getLeft())) && (y == (k.getPosition().getRight()))) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
     }
 }

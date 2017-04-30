@@ -19,6 +19,8 @@ import com.mygdx.catan.enums.TerrainKind;
 import com.mygdx.catan.screens.lobby.LobbyScreen;
 import com.mygdx.catan.ui.CatanWindow;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -162,7 +164,7 @@ public class CreateScreen implements Screen {
                 int x = -cols + 2 * col + 1;
                 int y = (row - half);
                 aHexKindSetup[index] = 3;
-                aHexPositions[index++] = new Pair(x, y);
+                aHexPositions[index++] = new MutablePair<>(x, y);
             }
         }
 
@@ -284,8 +286,9 @@ public class CreateScreen implements Screen {
                 break;
             case SEA:
                 break;
-            case DESERT:
-                aTexture = aDesertTextureSolid;
+            case BIG_FISHERY:
+                break;
+            case SMALL_FISHERY:
                 break;
             case GOLDFIELD:
                 aTexture = aGoldfieldTextureSolid;
@@ -311,37 +314,4 @@ public class CreateScreen implements Screen {
 
         boardHexes.add(polyReg);
     }
-}
-
-class Pair<L, R> {
-
-    private final L left;
-    private final R right;
-
-    public Pair(L left, R right) {
-        this.left = left;
-        this.right = right;
-    }
-
-    public L getLeft() {
-        return left;
-    }
-
-    public R getRight() {
-        return right;
-    }
-
-    @Override
-    public int hashCode() {
-        return left.hashCode() ^ right.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Pair)) return false;
-        Pair pairo = (Pair) o;
-        return this.left.equals(pairo.getLeft()) &&
-                this.right.equals(pairo.getRight());
-    }
-
 }

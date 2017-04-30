@@ -1,6 +1,6 @@
 package com.mygdx.catan.TradeAndTransaction;
 
-import com.mygdx.catan.Player;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.session.SessionManager;
 

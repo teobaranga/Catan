@@ -100,24 +100,18 @@ public class LobbyScreen implements Screen {
 
         // Create & add the window
         CatanWindow window = new CatanWindow(TITLE + " : " + CatanGame.client.getRemoteAddressTCP(), CatanGame.skin);
-        // TODO: Closing the lobby window should bring the user back to the MainMenu
         window.setWindowCloseListener(() -> {
             game.clickSound.play(0.2F);
             game.switchScreen(ScreenKind.MAIN_MENU);
             CatanGame.client.sendTCP(LeaveGame.newInstance(CatanGame.account.getUsername()));
         });
-//        window.debugAll();
 
         // Create the container table
         Table contentTable = new Table(CatanGame.skin);
-//        contentTable.background(game.skin.newDrawable("background", Color.RED));
-//        contentTable.debugAll();
 
         // Create the left table, which contains the map & game rules
         Table mapAndRules = new Table(CatanGame.skin);
         mapAndRules.top();
-//        mapAndRules.debugAll();
-//        mapAndRules.background(CatanGame.skin.newDrawable("background", Color.BLUE));
         Label mapAndRulesLabel = new Label(" Maps & Rules", CatanGame.skin, "lobby-header");
         mapAndRules.add(mapAndRulesLabel).expandX().fillX();
 
@@ -130,7 +124,10 @@ public class LobbyScreen implements Screen {
         playersTable.add(playersLabel).expandX().fillX();
         if (currentGame != null) {
             for (Account account : currentGame.peers.keySet()) {
-                addPlayer(account.getUsername());
+                final String username = account.getUsername();
+                addPlayer(username);
+                if (currentGame.isReady(username))
+                    markPlayerAsReady(username);
             }
         }
 
@@ -144,7 +141,6 @@ public class LobbyScreen implements Screen {
         playersAndChatTable.add(playersTable).height(200).expandX().fillX();
         playersAndChatTable.row();
         playersAndChatTable.add(chatTable).expand().fill();
-//        chatTable.pack();
 
         TextButton ready = new TextButton("Ready", CatanGame.skin);
         ready.addListener(new ChangeListener() {
@@ -156,7 +152,6 @@ public class LobbyScreen implements Screen {
             }
         });
 
-//        contentTable.top().left();
         contentTable.add(mapAndRules).width(400).height(400).expandX();
         contentTable.add(playersAndChatTable).width(400).height(400).expandX().fillX();
         contentTable.row();
@@ -173,9 +168,7 @@ public class LobbyScreen implements Screen {
             startGameButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    // TODO start the game
                     game.clickSound.play(0.2F);
-                    game.menuMusic.stop();
                     CatanGame.client.sendTCP(StartGame.newInstance(CatanGame.account.getUsername()));
                 }
             });
@@ -185,8 +178,6 @@ public class LobbyScreen implements Screen {
             contentTable.add(ready).height(50).width(400).padTop(20).colspan(2);
         }
 
-//        contentTable.pack();
-        window.row();
         window.add(contentTable).expandX().fillX();
         stage.addActor(window);
     }
@@ -297,6 +288,7 @@ public class LobbyScreen implements Screen {
             playersTable.removeActor(playerTable);
     }
 
+    // TODO finish implementing chat
     private void setupChat(Table chatTable) {
         final Skin skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         String reallyLongString = "This\nIs\nA\nReally\nLong\nString\nThat\nHas\nLots\nOf\nLines\nAnd\nRepeats.\n"

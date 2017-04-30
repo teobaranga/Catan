@@ -1,10 +1,14 @@
 package com.mygdx.catan;
 
 import com.mygdx.catan.enums.*;
-import com.mygdx.catan.gameboard.Hex;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+
+// import com.sun.javaws.progress.Progress;
 
 /**
  * Singleton object describing the game rules
@@ -16,18 +20,65 @@ public class GameRules {
 	private ResourceMap shipCost = new ResourceMap();
 	private ResourceMap cityCost = new ResourceMap();
 	private ResourceMap cityWallCost = new ResourceMap();
+	private ResourceMap cityCostWithMedicine = new ResourceMap();
+	private ResourceMap buildBasicKnightCost = new ResourceMap();
+	private ResourceMap activateKnightCost = new ResourceMap();
+	private ResourceMap promoteKnightCost = new ResourceMap();
 
-	private EnumMap<ProgressCardKind, Integer> progressCardOccurences = new EnumMap<ProgressCardKind, Integer>(ProgressCardKind.class);
-	private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
+	//City improvement costs
+    private ResourceMap tradeLevel1= new ResourceMap();
+    private ResourceMap tradeLevel2= new ResourceMap();
+    private ResourceMap tradeLevel3= new ResourceMap();
+    private ResourceMap tradeLevel4= new ResourceMap();
+    private ResourceMap tradeLevel5= new ResourceMap();
+
+    private ResourceMap scienceLevel1= new ResourceMap();
+    private ResourceMap scienceLevel2= new ResourceMap();
+    private ResourceMap scienceLevel3= new ResourceMap();
+    private ResourceMap scienceLevel4= new ResourceMap();
+    private ResourceMap scienceLevel5= new ResourceMap();
+
+    private ResourceMap politicsLevel1= new ResourceMap();
+    private ResourceMap politicsLevel2= new ResourceMap();
+    private ResourceMap politicsLevel3= new ResourceMap();
+    private ResourceMap politicsLevel4= new ResourceMap();
+    private ResourceMap politicsLevel5= new ResourceMap();
+
+
+	private EnumMap<ProgressCardType, Integer> progressCardOccurences = new EnumMap<ProgressCardType, Integer>(ProgressCardType.class);
+	private EnumMap<ProgressCardType, ProgressCardKind> progressCardKind = new EnumMap<ProgressCardType, ProgressCardKind>(ProgressCardType.class);
+	private EnumMap<FishTokenType, Integer> fishTokenOccurences = new EnumMap<FishTokenType, Integer>(FishTokenType.class);
+
+	private EnumMap<CityImprovementTypeTrade, ResourceMap> tradeImprovementCosts = new EnumMap<CityImprovementTypeTrade, ResourceMap>(CityImprovementTypeTrade.class);
+    private EnumMap<CityImprovementTypePolitics, ResourceMap> politicsImprovementCosts = new EnumMap<CityImprovementTypePolitics, ResourceMap>(CityImprovementTypePolitics.class);
+    private EnumMap<CityImprovementTypeScience, ResourceMap> scienceImprovementCosts = new EnumMap<CityImprovementTypeScience, ResourceMap>(CityImprovementTypeScience.class);
+
+    private HashMap<Integer, CityImprovementTypeTrade> tradeImprovementLevelMap = new HashMap<Integer, CityImprovementTypeTrade>();
+    private HashMap<Integer, CityImprovementTypePolitics> politicsImprovementLevelMap = new HashMap<Integer, CityImprovementTypePolitics>();
+    private HashMap<Integer, CityImprovementTypeScience> scienceImprovementLevelMap = new HashMap<Integer, CityImprovementTypeScience>();
+
+    private HashMap<TerrainKind, ResourceKind> producingResourcemap = new HashMap<>();
+    
+    /** default map */
+    private HashMap<Integer,TerrainKind> defaultTerrainKindMap = new HashMap<Integer,TerrainKind>();
 	private HashMap<Integer,Integer> defaultDiceNumberMap = new HashMap<Integer,Integer>();
 	private HashMap<Integer,HarbourKind> defaultHarbourMap = new HashMap<Integer,HarbourKind>();
+	private ArrayList<Pair<Integer, Integer>> smallFisheryPosition = new ArrayList<>();
+	
+	/** variant1 map */
+	private HashMap<Integer,TerrainKind> variant1TerrainKindMap = new HashMap<Integer,TerrainKind>();
+    private HashMap<Integer,Integer> variant1DiceNumberMap = new HashMap<Integer,Integer>();
+    private HashMap<Integer,HarbourKind> variant1HarbourMap = new HashMap<Integer,HarbourKind>();
+    // private ArrayList<Pair<Integer, Integer>> smallFisheryPosition = new ArrayList<>(); 
 
+	//private int vpToWin = 13;
 	private int vpToWin = 13;
 	private int settlementVp = 1;
 	private int cityVp = 2;
 	private int metropolisVp = 2;
 
-	private final int SIZE = 7;
+	public static final int SIZE = 7;
+	public static final int ALTSIZE = 9;
 
 	// private int genericTradeRatio = 4;
 	// private int specialTradeRation = 3;
@@ -35,16 +86,34 @@ public class GameRules {
 	private static GameRules aGameRules = new GameRules();
 
 	private GameRules() {
-		initializeProgressCardOccurences();
+		
+	    /** setup default map */
 		setupDefaultTerrainMap();
 		setupDefaultDiceMap();
 		setupDefaultHarbourMap();
+        setupDefaultSmallFisheryPair();
+        
+        /** setup variant1 map */
+        setupVariant1TerrainMap();
+        setupVariant1DiceMap();
+        // setupVariant1SmallFisheryPair();
 
+        /** rule invariants */
 		setupSettlementCost();
 		setupRoadCost();
 		setupShipCost();
 		setupCityCost();
 		setupCityWallCost();
+		setupCityCostWithMedicine();
+		setupBuildBasicKnightCost();
+		setupActivateKnightCost();
+		setupPromoteKnightCost();
+		setupCityImprovementCosts();
+		initializeCityImprovementCostMap();
+        initializeCityImprovementLevelMaps();
+		setupProducingResourcesmap();
+		initializeProgressCards();
+        initializeFishTokens();
 	}
 
 	/**
@@ -72,21 +141,100 @@ public class GameRules {
 		cityCost.put(ResourceKind.ORE, 3);
 	}
 
+	private void setupCityCostWithMedicine(){
+		cityCostWithMedicine.put(ResourceKind.GRAIN, 1);
+		cityCostWithMedicine.put(ResourceKind.ORE, 2);
+	}
+
 	private void setupCityWallCost(){
 		cityWallCost.put(ResourceKind.BRICK, 2);
 	}
+
+	private void setupBuildBasicKnightCost() {
+		buildBasicKnightCost.put(ResourceKind.WOOL, 1);
+		buildBasicKnightCost.put(ResourceKind.ORE, 1);
+	}
+
+	private void setupActivateKnightCost() {
+		activateKnightCost.put(ResourceKind.GRAIN, 1);
+	}
+
+	private void setupPromoteKnightCost() {
+		promoteKnightCost.put(ResourceKind.WOOL, 1);
+		promoteKnightCost.put(ResourceKind.ORE, 1);
+	}
+
+	private void setupCityImprovementCosts() {
+	    tradeLevel1.put(ResourceKind.CLOTH, 1);
+        tradeLevel2.put(ResourceKind.CLOTH, 2);
+        tradeLevel3.put(ResourceKind.CLOTH, 3);
+        tradeLevel4.put(ResourceKind.CLOTH, 4);
+        tradeLevel5.put(ResourceKind.CLOTH, 5);
+
+        politicsLevel1.put(ResourceKind.COIN, 1);
+        politicsLevel2.put(ResourceKind.COIN, 2);
+        politicsLevel3.put(ResourceKind.COIN, 3);
+        politicsLevel4.put(ResourceKind.COIN, 4);
+        politicsLevel5.put(ResourceKind.COIN, 5);
+
+        scienceLevel1.put(ResourceKind.PAPER, 1);
+        scienceLevel2.put(ResourceKind.PAPER, 2);
+        scienceLevel3.put(ResourceKind.PAPER, 3);
+        scienceLevel4.put(ResourceKind.PAPER, 4);
+        scienceLevel5.put(ResourceKind.PAPER, 5);
+    }
+
+	private void setupDefaultSmallFisheryPair() {
+	    smallFisheryPosition.add(new ImmutablePair<>(-7,1));
+        smallFisheryPosition.add(new ImmutablePair<>(7,1));
+        smallFisheryPosition.add(new ImmutablePair<>(-7,-1));
+        smallFisheryPosition.add(new ImmutablePair<>(7,-1));
+        smallFisheryPosition.add(new ImmutablePair<>(0,4));
+        smallFisheryPosition.add(new ImmutablePair<>(2,4));
+    }
+
+    public ArrayList<Pair<Integer,Integer>>  getDefaultSmallFisheryPairVariant1() {
+        ArrayList<Pair<Integer,Integer>> smallFisheryPosition = new ArrayList<>();
+        smallFisheryPosition.add(new ImmutablePair<>(-8,2));
+        smallFisheryPosition.add(new ImmutablePair<>(8,2));
+        smallFisheryPosition.add(new ImmutablePair<>(-7,3));
+        smallFisheryPosition.add(new ImmutablePair<>(7,3));
+        smallFisheryPosition.add(new ImmutablePair<>(-6,4));
+        smallFisheryPosition.add(new ImmutablePair<>(4,0));
+        return smallFisheryPosition;
+    }
+
+
+	private void setupProducingResourcesmap() {
+	    producingResourcemap.put(TerrainKind.FIELDS, ResourceKind.GRAIN);
+	    producingResourcemap.put(TerrainKind.FOREST, ResourceKind.WOOD);
+	    producingResourcemap.put(TerrainKind.HILLS, ResourceKind.BRICK);
+	    producingResourcemap.put(TerrainKind.MOUNTAINS, ResourceKind.ORE);
+	    producingResourcemap.put(TerrainKind.PASTURE, ResourceKind.WOOL);
+	}
+
+    public Pair getSmallFisheryPair(int index) {
+	    return smallFisheryPosition.get(index);
+    }
 
 	/**
 	 * hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
 	 * */
 	private void setupDefaultTerrainMap() {
-		defaultTerrainKindMap.put(getHashCodeofPair(-3,-3), TerrainKind.FIELDS);
-		defaultTerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.DESERT);
+        defaultTerrainKindMap.put(getHashCodeofPair(-7,1), TerrainKind.SMALL_FISHERY);
+        defaultTerrainKindMap.put(getHashCodeofPair(7,1), TerrainKind.SMALL_FISHERY);
+        defaultTerrainKindMap.put(getHashCodeofPair(-7,-1), TerrainKind.SMALL_FISHERY);
+        defaultTerrainKindMap.put(getHashCodeofPair(7,-1), TerrainKind.SMALL_FISHERY);
+        defaultTerrainKindMap.put(getHashCodeofPair(0,4), TerrainKind.SMALL_FISHERY);
+        defaultTerrainKindMap.put(getHashCodeofPair(2,4), TerrainKind.SMALL_FISHERY);
+
+        defaultTerrainKindMap.put(getHashCodeofPair(0,-2), TerrainKind.BIG_FISHERY);
+        defaultTerrainKindMap.put(getHashCodeofPair(-3,-3), TerrainKind.FIELDS);
 		defaultTerrainKindMap.put(getHashCodeofPair(1,-3), TerrainKind.HILLS);
-		defaultTerrainKindMap.put(getHashCodeofPair(3,-3), TerrainKind.SEA);
+  	  	defaultTerrainKindMap.put(getHashCodeofPair(3,-3), TerrainKind.SEA);
 		defaultTerrainKindMap.put(getHashCodeofPair(-4,-2), TerrainKind.FOREST);
 		defaultTerrainKindMap.put(getHashCodeofPair(-2,-2), TerrainKind.MOUNTAINS);
-		defaultTerrainKindMap.put(getHashCodeofPair(0,-2), TerrainKind.PASTURE);
+		defaultTerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.PASTURE);
 		defaultTerrainKindMap.put(getHashCodeofPair(2,-2), TerrainKind.PASTURE);
 		defaultTerrainKindMap.put(getHashCodeofPair(4,-2), TerrainKind.SEA);
 		defaultTerrainKindMap.put(getHashCodeofPair(-5,-1), TerrainKind.SEA);
@@ -118,18 +266,107 @@ public class GameRules {
 		defaultTerrainKindMap.put(getHashCodeofPair(1,3), TerrainKind.MOUNTAINS);
 		defaultTerrainKindMap.put(getHashCodeofPair(3,3), TerrainKind.SEA);
 	}
+	
+	/**
+     * hardcodes the default terrainKind map (each integer represents the hashcode of the CoordinatePair with coordinates x and y (assumes size <= 7)
+     * */
+    private void setupVariant1TerrainMap() {
+
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,-4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,-4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,-4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,-4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,-4), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-5,-3), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-3,-3), TerrainKind.FIELDS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-1,-3), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(1,-3), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(3,-3), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(5,-3), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-6,-2), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,-2), TerrainKind.FOREST);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,-2), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,-2), TerrainKind.BIG_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,-2), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,-2), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(6,-2), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-7,-1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-5,-1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-3,-1), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-1,-1), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(1,-1), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(3,-1), TerrainKind.FIELDS);
+		variant1TerrainKindMap.put(getHashCodeofPair(5,-1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(7,-1), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-8,0), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-6,0), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,0), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,0), TerrainKind.FOREST);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,0), TerrainKind.FOREST);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,0), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,0), TerrainKind.SMALL_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(6,0), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(8,0), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-7,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-5,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-3,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-1,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(1,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(3,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(5,1), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(7,1), TerrainKind.SEA);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-8,2), TerrainKind.SMALL_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(-6,2), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,2), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,2), TerrainKind.GOLDFIELD);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,2), TerrainKind.FIELDS);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,2), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,2), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(6,2), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(8,2), TerrainKind.SMALL_FISHERY);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-7,3), TerrainKind.SMALL_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(-5,3), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(-3,3), TerrainKind.MOUNTAINS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-1,3), TerrainKind.PASTURE);
+		variant1TerrainKindMap.put(getHashCodeofPair(1,3), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(3,3), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(5,3), TerrainKind.GOLDFIELD);
+		variant1TerrainKindMap.put(getHashCodeofPair(7,3), TerrainKind.SMALL_FISHERY);
+
+		variant1TerrainKindMap.put(getHashCodeofPair(-6,4), TerrainKind.SMALL_FISHERY);
+		variant1TerrainKindMap.put(getHashCodeofPair(-4,4), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(-2,4), TerrainKind.HILLS);
+		variant1TerrainKindMap.put(getHashCodeofPair(0,4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(2,4), TerrainKind.SEA);
+		variant1TerrainKindMap.put(getHashCodeofPair(4,4), TerrainKind.FOREST);
+	}
 
 	/**
 	 * hardcodes default dice number map (keys exactly as above) (assumes size <= 7)
 	 * */
 	private void setupDefaultDiceMap() {
-		defaultDiceNumberMap.put(getHashCodeofPair(-3,-3), 6);
-		defaultDiceNumberMap.put(getHashCodeofPair(-1,-3), 0);
-		defaultDiceNumberMap.put(getHashCodeofPair(1,-3), 8);
-		defaultDiceNumberMap.put(getHashCodeofPair(3,-3), 0);
-		defaultDiceNumberMap.put(getHashCodeofPair(-4,-2), 5);
-		defaultDiceNumberMap.put(getHashCodeofPair(-2,-2), 3);
-		defaultDiceNumberMap.put(getHashCodeofPair(0,-2), 10);
+        defaultDiceNumberMap.put(getHashCodeofPair(0,-2), 0);
+        defaultDiceNumberMap.put(getHashCodeofPair(-7,1), 6);
+        defaultDiceNumberMap.put(getHashCodeofPair(7,1), 8);
+        defaultDiceNumberMap.put(getHashCodeofPair(-7,-1), 5);
+        defaultDiceNumberMap.put(getHashCodeofPair(7,-1), 9);
+        defaultDiceNumberMap.put(getHashCodeofPair(0,4), 4);
+        defaultDiceNumberMap.put(getHashCodeofPair(2,4), 10);
+
+        defaultDiceNumberMap.put(getHashCodeofPair(-3,-3), 6);
+        defaultDiceNumberMap.put(getHashCodeofPair(-1,-3), 10);
+        defaultDiceNumberMap.put(getHashCodeofPair(1,-3), 8);
+        defaultDiceNumberMap.put(getHashCodeofPair(3,-3), 0);
+        defaultDiceNumberMap.put(getHashCodeofPair(-4,-2), 5);
+        defaultDiceNumberMap.put(getHashCodeofPair(-2,-2), 3);
 		defaultDiceNumberMap.put(getHashCodeofPair(2,-2), 2);
 		defaultDiceNumberMap.put(getHashCodeofPair(4,-2), 0);
 		defaultDiceNumberMap.put(getHashCodeofPair(-5,-1), 0);
@@ -162,6 +399,92 @@ public class GameRules {
 		defaultDiceNumberMap.put(getHashCodeofPair(3,3), 0);
 	}
 
+	private void setupVariant1DiceMap() {
+		variant1DiceNumberMap.put(getHashCodeofPair(-8,2),5);
+		variant1DiceNumberMap.put(getHashCodeofPair(8,2),9);
+		variant1DiceNumberMap.put(getHashCodeofPair(-7,3),6);
+		variant1DiceNumberMap.put(getHashCodeofPair(7,3),8);
+		variant1DiceNumberMap.put(getHashCodeofPair(-6,4),4);
+		variant1DiceNumberMap.put(getHashCodeofPair(6,4),10);
+
+		variant1DiceNumberMap.put(getHashCodeofPair(0,-2), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(-7,1), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(7,1), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(-7,-1), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(7,-1), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(0,4), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(2,4), 0);
+
+	    variant1DiceNumberMap.put(getHashCodeofPair(-4,-4), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(-2,-4), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(0,-4), 0);
+	    variant1DiceNumberMap.put(getHashCodeofPair(2,-4), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(4,-4), 0);
+        
+        variant1DiceNumberMap.put(getHashCodeofPair(-5,-3), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-3,-3), 6);
+        variant1DiceNumberMap.put(getHashCodeofPair(-1,-3), 10);
+        variant1DiceNumberMap.put(getHashCodeofPair(1,-3), 8);
+        variant1DiceNumberMap.put(getHashCodeofPair(3,-3), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(5,-3), 0);
+        
+        variant1DiceNumberMap.put(getHashCodeofPair(-6,-2), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-4,-2), 5);
+        variant1DiceNumberMap.put(getHashCodeofPair(-2,-2), 3);
+        variant1DiceNumberMap.put(getHashCodeofPair(2,-2), 2);
+        variant1DiceNumberMap.put(getHashCodeofPair(4,-2), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(6,-2), 0);
+        
+        // variant1DiceNumberMap.put(getHashCodeofPair(-7,-1), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-5,-1), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-3,-1), 11);
+        variant1DiceNumberMap.put(getHashCodeofPair(-1,-1), 9);
+        variant1DiceNumberMap.put(getHashCodeofPair(1,-1), 5);
+        variant1DiceNumberMap.put(getHashCodeofPair(3,-1), 4);
+        variant1DiceNumberMap.put(getHashCodeofPair(5,-1), 0);
+        // variant1DiceNumberMap.put(getHashCodeofPair(7,-1), 0);
+        
+        variant1DiceNumberMap.put(getHashCodeofPair(-8,0), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-6,0), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-4,0), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-2,0), 8);
+        variant1DiceNumberMap.put(getHashCodeofPair(0,0), 10);
+        variant1DiceNumberMap.put(getHashCodeofPair(2,0), 6);
+        variant1DiceNumberMap.put(getHashCodeofPair(4,0), 10);
+        variant1DiceNumberMap.put(getHashCodeofPair(6,0), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(8,0), 0);
+        
+        // variant1DiceNumberMap.put(getHashCodeofPair(-7,1), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-5,1), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-3,1), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-1,1), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(1,1), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(3,1), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(5,1), 0);
+        // variant1DiceNumberMap.put(getHashCodeofPair(7,1), 0);
+        
+        variant1DiceNumberMap.put(getHashCodeofPair(-6,2), 4);
+        variant1DiceNumberMap.put(getHashCodeofPair(-4,2), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(-2,2), 4);
+        variant1DiceNumberMap.put(getHashCodeofPair(0,2), 3);
+        variant1DiceNumberMap.put(getHashCodeofPair(2,2), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(4,2), 12);
+        variant1DiceNumberMap.put(getHashCodeofPair(6,2), 9);
+        
+        variant1DiceNumberMap.put(getHashCodeofPair(-5,3),3);
+        variant1DiceNumberMap.put(getHashCodeofPair(-3,3),10);
+        variant1DiceNumberMap.put(getHashCodeofPair(-1,3), 6);
+        variant1DiceNumberMap.put(getHashCodeofPair(1,3), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(3,3), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(5,3), 5);
+        
+        variant1DiceNumberMap.put(getHashCodeofPair(-4,4), 3);
+        variant1DiceNumberMap.put(getHashCodeofPair(-2,4), 8);
+        // variant1DiceNumberMap.put(getHashCodeofPair(0,4), 0);
+        // variant1DiceNumberMap.put(getHashCodeofPair(2,4), 0);
+        variant1DiceNumberMap.put(getHashCodeofPair(4,4), 3);
+	}
+	
 	/**
      * hardcodes default harbour map (keys exactly as above) (assumes size <= 7)
      * */
@@ -185,35 +508,133 @@ public class GameRules {
     }
 
 	/**
-	 * initializes progress card occurences
+	 * initializes progress card occurences and kind
 	 * */
-	private void initializeProgressCardOccurences() {
-		progressCardOccurences.put(ProgressCardKind.ALCHEMIST, 2);
-		progressCardOccurences.put(ProgressCardKind.BISHOP, 2);
-		progressCardOccurences.put(ProgressCardKind.COMMERCIALHARBOUR, 2);
-		progressCardOccurences.put(ProgressCardKind.CONSTITUTION, 1);
-		progressCardOccurences.put(ProgressCardKind.CRANE, 2);
-		progressCardOccurences.put(ProgressCardKind.DESERTER, 2);
-		progressCardOccurences.put(ProgressCardKind.DIPLOMAT, 2);
-		progressCardOccurences.put(ProgressCardKind.ENGINEER, 1);
-		progressCardOccurences.put(ProgressCardKind.INTRIGUE, 2);
-		progressCardOccurences.put(ProgressCardKind.INVENTOR, 2);
-		progressCardOccurences.put(ProgressCardKind.IRRIGATION, 2);
-		progressCardOccurences.put(ProgressCardKind.MASTERMERCHANT, 2);
-		progressCardOccurences.put(ProgressCardKind.MEDICINE, 2);
-		progressCardOccurences.put(ProgressCardKind.MERCHANTFLEET, 2);
-		progressCardOccurences.put(ProgressCardKind.MINING, 2);
-		progressCardOccurences.put(ProgressCardKind.PRINTER, 1);
-		progressCardOccurences.put(ProgressCardKind.RESOURCEMONOPOLY, 4);
-		progressCardOccurences.put(ProgressCardKind.ROADBUILDING, 2);
-		progressCardOccurences.put(ProgressCardKind.SABOTEUR, 2);
-		progressCardOccurences.put(ProgressCardKind.SMITH, 2);
-		progressCardOccurences.put(ProgressCardKind.SPY, 3);
-		progressCardOccurences.put(ProgressCardKind.TRADEMONOPOLY, 2);
-		progressCardOccurences.put(ProgressCardKind.WARLORD, 2);
-		progressCardOccurences.put(ProgressCardKind.WEDDING, 2);
-		progressCardOccurences.put(ProgressCardKind.MERCHANT, 6);
+	private void initializeProgressCards() {
+		progressCardOccurences.put(ProgressCardType.ALCHEMIST, 2);
+		progressCardKind.put(ProgressCardType.ALCHEMIST, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.BISHOP, 2);
+		progressCardKind.put(ProgressCardType.BISHOP, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.COMMERCIALHARBOUR, 2);
+		progressCardKind.put(ProgressCardType.COMMERCIALHARBOUR, ProgressCardKind.TRADE);
+
+		progressCardOccurences.put(ProgressCardType.CONSTITUTION, 1);
+		progressCardKind.put(ProgressCardType.CONSTITUTION, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.CRANE, 2);
+		progressCardKind.put(ProgressCardType.CRANE, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.DESERTER, 2);
+		progressCardKind.put(ProgressCardType.DESERTER, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.DIPLOMAT, 2);
+		progressCardKind.put(ProgressCardType.DIPLOMAT, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.ENGINEER, 1);
+		progressCardKind.put(ProgressCardType.ENGINEER, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.INTRIGUE, 2);
+		progressCardKind.put(ProgressCardType.INTRIGUE, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.INVENTOR, 2);
+		progressCardKind.put(ProgressCardType.INVENTOR, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.IRRIGATION, 2);
+		progressCardKind.put(ProgressCardType.IRRIGATION, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.MASTERMERCHANT, 2);
+		progressCardKind.put(ProgressCardType.MASTERMERCHANT, ProgressCardKind.TRADE);
+
+		progressCardOccurences.put(ProgressCardType.MEDICINE, 2);
+		progressCardKind.put(ProgressCardType.MEDICINE, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.MERCHANTFLEET, 2);
+		progressCardOccurences.put(ProgressCardType.MINING, 2);
+		progressCardKind.put(ProgressCardType.MINING, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.PRINTER, 1);
+		progressCardKind.put(ProgressCardType.PRINTER, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.RESOURCEMONOPOLY, 4);
+		progressCardKind.put(ProgressCardType.RESOURCEMONOPOLY, ProgressCardKind.TRADE);
+
+		progressCardOccurences.put(ProgressCardType.ROADBUILDING, 2);
+		progressCardKind.put(ProgressCardType.ROADBUILDING, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.SABOTEUR, 2);
+		progressCardKind.put(ProgressCardType.SABOTEUR, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.SMITH, 2);
+		progressCardKind.put(ProgressCardType.SMITH, ProgressCardKind.SCIENCE);
+
+		progressCardOccurences.put(ProgressCardType.SPY, 3);
+		progressCardKind.put(ProgressCardType.SPY, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.TRADEMONOPOLY, 2);
+		progressCardKind.put(ProgressCardType.TRADEMONOPOLY, ProgressCardKind.TRADE);
+
+		progressCardOccurences.put(ProgressCardType.WARLORD, 2);
+		progressCardKind.put(ProgressCardType.WARLORD, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.WEDDING, 2);
+		progressCardKind.put(ProgressCardType.WEDDING, ProgressCardKind.POLITICS);
+
+		progressCardOccurences.put(ProgressCardType.MERCHANT, 6);
+		progressCardKind.put(ProgressCardType.MERCHANT, ProgressCardKind.TRADE);
 	}
+
+	/**
+	 *	Initializes the occurrences of each FishToken type.
+	 */
+	private void initializeFishTokens() {
+		fishTokenOccurences.put(FishTokenType.ONE_FISH, 11);
+		fishTokenOccurences.put(FishTokenType.TWO_FISH, 10);
+		fishTokenOccurences.put(FishTokenType.THREE_FISH, 8);
+		fishTokenOccurences.put(FishTokenType.OLD_BOOT, 1);
+	}
+
+	private void initializeCityImprovementCostMap() {
+	    tradeImprovementCosts.put(CityImprovementTypeTrade.MARKET, tradeLevel1);
+        tradeImprovementCosts.put(CityImprovementTypeTrade.TRADINGHOUSE, tradeLevel2);
+        tradeImprovementCosts.put(CityImprovementTypeTrade.MERCHANTGUILD, tradeLevel3);
+        tradeImprovementCosts.put(CityImprovementTypeTrade.BANK, tradeLevel4);
+        tradeImprovementCosts.put(CityImprovementTypeTrade.GREATEXCHANGE, tradeLevel5);
+
+        politicsImprovementCosts.put(CityImprovementTypePolitics.TOWNHALL, politicsLevel1);
+        politicsImprovementCosts.put(CityImprovementTypePolitics.CHURCH, politicsLevel2);
+        politicsImprovementCosts.put(CityImprovementTypePolitics.FORTRESS, politicsLevel3);
+        politicsImprovementCosts.put(CityImprovementTypePolitics.CATHEDRAL, politicsLevel4);
+        politicsImprovementCosts.put(CityImprovementTypePolitics.HIGHASSEMBLY, politicsLevel5);
+
+        scienceImprovementCosts.put(CityImprovementTypeScience.ABBEY, scienceLevel1);
+        scienceImprovementCosts.put(CityImprovementTypeScience.LIBRARY, scienceLevel2);
+        scienceImprovementCosts.put(CityImprovementTypeScience.AQUEDUCT, scienceLevel3);
+        scienceImprovementCosts.put(CityImprovementTypeScience.THEATER, scienceLevel4);
+        scienceImprovementCosts.put(CityImprovementTypeScience.UNIVERSITY, scienceLevel5);
+
+    }
+
+    private void initializeCityImprovementLevelMaps() {
+        tradeImprovementLevelMap.put(1, CityImprovementTypeTrade.MARKET);
+        tradeImprovementLevelMap.put(2, CityImprovementTypeTrade.TRADINGHOUSE);
+        tradeImprovementLevelMap.put(3, CityImprovementTypeTrade.MERCHANTGUILD);
+        tradeImprovementLevelMap.put(4, CityImprovementTypeTrade.BANK);
+        tradeImprovementLevelMap.put(5, CityImprovementTypeTrade.GREATEXCHANGE);
+
+        politicsImprovementLevelMap.put(1, CityImprovementTypePolitics.TOWNHALL);
+        politicsImprovementLevelMap.put(2, CityImprovementTypePolitics.CHURCH);
+        politicsImprovementLevelMap.put(3, CityImprovementTypePolitics.FORTRESS);
+        politicsImprovementLevelMap.put(4, CityImprovementTypePolitics.CATHEDRAL);
+        politicsImprovementLevelMap.put(5, CityImprovementTypePolitics.HIGHASSEMBLY);
+
+        scienceImprovementLevelMap.put(1, CityImprovementTypeScience.ABBEY);
+        scienceImprovementLevelMap.put(2, CityImprovementTypeScience.LIBRARY);
+        scienceImprovementLevelMap.put(3, CityImprovementTypeScience.AQUEDUCT);
+        scienceImprovementLevelMap.put(4, CityImprovementTypeScience.THEATER);
+        scienceImprovementLevelMap.put(5, CityImprovementTypeScience.UNIVERSITY);
+    }
 
 
 	/**
@@ -224,6 +645,18 @@ public class GameRules {
 	private int getHashCodeofPair(int x, int y) {
 		return (x + 30) * 10 + (y + 30);
 	}
+
+    /**
+     * @param p x/y coordinates
+     * @return the hashCode of the CoordinatePair <x,y>
+     */
+    private int getHashCodeofPair(Pair<Integer, Integer> p) {
+	    return (p.getKey() + 30) * 10 + (p.getValue() + 30);
+    }
+
+    public ResourceKind getProducingResource(TerrainKind kind) {
+        return producingResourcemap.get(kind);
+    }
 
 	/**
 	 * @return singleton instance of GameRules
@@ -254,29 +687,65 @@ public class GameRules {
 	 * @param
 	 * @return occurence of pKind in the progress card stack
 	 * */
-	public int getProgressCardOccurence(ProgressCardKind pKind) {
+	public int getProgressCardOccurrence(ProgressCardType pKind) {
 		return progressCardOccurences.get(pKind);
 	}
 
 	/**
+	 * @param
+	 * @return kind of pType in the progress card stack
+	 * */
+	public ProgressCardKind getProgressCardKind(ProgressCardType pType) {
+		return progressCardKind.get(pType);
+	}
+
+	public int getFishTokenOccurrence(FishTokenType fType) {
+	    return fishTokenOccurences.get(fType);
+    }
+
+	/**
 	 * @return size of the gameboard: corresponds to the number of tiles on the longest diagonal
 	 * */
-	public int getSize() {
-		return SIZE;
+	public int getSize(BoardVariants variant) {
+	    switch (variant) {
+        case BOARD_VARIANT1:
+            return ALTSIZE;
+        case DEFAULT:
+            return SIZE;
+        default:
+            return 0;
+	    }
+		
 	}
 
-	public HashMap<Integer,TerrainKind> getDefaultTerrainKindMap() {
-		return defaultTerrainKindMap;
+	public HashMap<Integer,TerrainKind> getDefaultTerrainKindMap(BoardVariants variant) {
+	    switch (variant) {
+        case BOARD_VARIANT1:
+            return variant1TerrainKindMap;
+        case DEFAULT:
+            return defaultTerrainKindMap;
+        default:
+            return null;
+	    
+	    }
+		
 	}
 
-	public HashMap<Integer,Integer> getDefaultDiceNumberMap() {
-		return defaultDiceNumberMap;
+	public HashMap<Integer,Integer> getDefaultDiceNumberMap(BoardVariants variant) {
+	    switch (variant) {
+        case BOARD_VARIANT1:
+            return variant1DiceNumberMap;
+        case DEFAULT:
+            return defaultDiceNumberMap;
+        default:
+            return null;
+	    }
 	}
-
+/*
 	public Integer getDiceNumber(Hex hex) {
 	    return defaultDiceNumberMap.get(getHashCodeofPair(hex.getLeftCoordinate(),hex.getRightCoordinate()));
 	}
-
+*/
 	public HarbourKind getHarbourKind(int leftCoordinate, int rightCoordinate) {
 	    if (defaultHarbourMap.get(getHashCodeofPair(leftCoordinate, rightCoordinate)) == null) {
 	        return HarbourKind.NONE;
@@ -422,10 +891,167 @@ public class GameRules {
 	 * @return standard cost of things that can be built throughout the game
 	 */
 	public ResourceMap getSettlementCost() { return settlementCost; }
-	public ResourceMap getRoadCost() { return roadCost; }
-	public ResourceMap getShipCost() { return shipCost; }
-	public ResourceMap getCityCost() { return cityCost; }
-	public ResourceMap getCityWallCost() { return cityWallCost; }
 
+	public ResourceMap getRoadCost(ProgressCardType type) {
+	    if (type == null) {
+            return roadCost;
+        }
+	    switch (type) {
+	    case ROADBUILDING:
+	        return new ResourceMap();
+        default:
+            return roadCost;
+	    }
+	}
+
+	public ResourceMap getShipCost(ProgressCardType type) {
+	    if (type == null) {
+            return shipCost;
+        }
+	    switch (type) {
+	    case ROADBUILDING:
+	        return new ResourceMap();
+        default:
+            return shipCost;
+	    }
+	}
+
+	public ResourceMap getCityCost(ProgressCardType type) {
+	    if (type == null) {
+	        return cityCost;
+	    }
+	    switch (type) {
+	    case MEDICINE:
+	        return cityCostWithMedicine;
+	    default :
+	        return cityCost;
+	    }
+	}
+
+	public ResourceMap getCityWallCost(ProgressCardType type) {
+	    if (type == null) {
+            return cityWallCost;
+        }
+	    switch (type) {
+	    case ENGINEER:
+	        return new ResourceMap();
+        default:
+            return cityWallCost;
+	    }
+	}
+
+	public ResourceMap getbuildBasicKnightCost() {
+		return buildBasicKnightCost;
+	}
+
+	public ResourceMap getActivateKnightCost(ProgressCardType type) {
+	    // Activating a knight is free with the Warlord card
+		if (type == ProgressCardType.WARLORD)
+		    return new ResourceMap();
+
+        return activateKnightCost;
+	}
+
+	public ResourceMap getPromoteKnightCost(ProgressCardType type) {
+	    // Upgrading a knight is free with the Smith card
+        ResourceMap costWithSmith = new ResourceMap();
+        if (type == ProgressCardType.SMITH){
+            costWithSmith.put(ResourceKind.GRAIN, 0);
+            return costWithSmith;
+        }
+
+        return promoteKnightCost;
+    }
+
+    public ResourceMap getScienceCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {
+        if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
+            ResourceMap costWithCrane = new ResourceMap();
+            costWithCrane.put(ResourceKind.PAPER, level - 1);
+            return costWithCrane;
+        } else {
+            switch (level) {
+                case 1:
+                    return scienceLevel1;
+                case 2:
+                    return scienceLevel2;
+                case 3:
+                    return scienceLevel3;
+                case 4:
+                    return scienceLevel4;
+                case 5:
+                    return scienceLevel5;
+                default:
+                    return new ResourceMap();
+            }
+        }
+    }
+
+    public ResourceMap getPoliticsCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {
+        if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
+            ResourceMap costWithCrane = new ResourceMap();
+            costWithCrane.put(ResourceKind.COIN, level - 1);
+            return costWithCrane;
+        } else {
+            switch (level) {
+                case 1:
+                    return politicsLevel1;
+                case 2:
+                    return politicsLevel2;
+                case 3:
+                    return politicsLevel3;
+                case 4:
+                    return politicsLevel4;
+                case 5:
+                    return politicsLevel5;
+                default:
+                    return new ResourceMap();
+            }
+        }
+    }
+
+    public ResourceMap getTradeCityImprovementCost(int level, ProgressCardType currentlyExecutingProgressCard) {
+        if (currentlyExecutingProgressCard == ProgressCardType.CRANE) {
+            ResourceMap costWithCrane = new ResourceMap();
+            costWithCrane.put(ResourceKind.CLOTH, level - 1);
+            return costWithCrane;
+        } else {
+            switch (level) {
+                case 1:
+                    return tradeLevel1;
+                case 2:
+                    return tradeLevel2;
+                case 3:
+                    return tradeLevel3;
+                case 4:
+                    return tradeLevel4;
+                case 5:
+                    return tradeLevel5;
+                default:
+                    return new ResourceMap();
+            }
+        }
+    }
+
+    public CityImprovementTypeScience getScienceImprovmentType(int level) {
+	    return scienceImprovementLevelMap.get(level);
+    }
+
+    public CityImprovementTypePolitics getPoliticsImprovementType(int level) {
+	    return politicsImprovementLevelMap.get(level);
+    }
+
+    public CityImprovementTypeTrade getTradeImprovementType(int level) {
+	    return tradeImprovementLevelMap.get(level);
+    }
+
+    public ArrayList<ProgressCardType> getProgressCardTypes() {
+		ArrayList<ProgressCardType> progressCards = new ArrayList<ProgressCardType>();
+		for(ProgressCardType type: ProgressCardType.values()) {
+			progressCards.add(type);
+		}
+		return progressCards;
+	}
 
 }
+
+

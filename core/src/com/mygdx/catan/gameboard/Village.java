@@ -1,7 +1,7 @@
 package com.mygdx.catan.gameboard;
 
 import com.mygdx.catan.CoordinatePair;
-import com.mygdx.catan.Player;
+import com.mygdx.catan.player.Player;
 import com.mygdx.catan.enums.VillageKind;
 
 public class Village {
@@ -12,13 +12,17 @@ public class Village {
 	private Player owner;
 	
 	/**
-	 * @param the intersection where this Village will be built
-	 * */
-	public Village(Player pOwner, CoordinatePair pPosition) {
-		position = pPosition;
-		owner = pOwner;
-		cityWall = false;
-		villageKind = VillageKind.SETTLEMENT;
+     * @param pPosition intersection where this Village will be built
+     * */
+	public static Village newInstance(Player pOwner, CoordinatePair pPosition) {
+	    Village village = new Village();
+	    
+	    village.position = pPosition;
+	    village.owner = pOwner;
+	    village.cityWall = false;
+	    village.villageKind = VillageKind.SETTLEMENT;
+	    
+	    return village;
 	}
 	
 	/**
@@ -36,7 +40,7 @@ public class Village {
 	}
 	
 	/**
-	 * @param boolean for city wall status
+	 * @param newCityWallStatus new city wall status
 	 * */
 	public void setCityWalls(boolean newCityWallStatus) {
 		cityWall = newCityWallStatus;

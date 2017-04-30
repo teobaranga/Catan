@@ -2,16 +2,19 @@ package com.mygdx.catan.session;
 
 import com.mygdx.catan.CatanGame;
 import com.mygdx.catan.GameRules;
-import com.mygdx.catan.Player;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.PlayerColor;
+import com.mygdx.catan.enums.ProgressCardType;
+import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.player.Player;
+import com.mygdx.catan.request.UpdateLongestRoad;
+
 import org.apache.commons.lang3.tuple.MutablePair;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 public class SessionManager {
 
@@ -42,7 +45,6 @@ public class SessionManager {
         aSession = session;
         diceRolls = new MutablePair<>(0, 0);
         resetDiceRoll();
-        resetBarbarianPosition();
     }
 
     /**
@@ -50,16 +52,23 @@ public class SessionManager {
      * If the session is null, then a dummy session will be created.
      */
     public static SessionManager getInstance(Session session) {
-        if (!sessionManagerInstances.containsKey(session)) {
-            if (session == null) {
-                // Create a dummy session, for testing purposes
-                List<Account> accounts = new ArrayList<>();
-                accounts.add(CatanGame.account);
-                session = Session.newInstance(accounts, GameRules.getGameRulesInstance().getVpToWin());
-            }
+        if (!sessionManagerInstances.containsKey(session))
             sessionManagerInstances.put(session, new SessionManager(session));
-        }
         return sessionManagerInstances.get(session);
+    }
+
+    /** Create a dummy session, for testing purposes */
+    public static Session newPlaceholderSession(Collection<Account> accounts) {
+        Session session = Session.newInstance(accounts, GameRules.getGameRulesInstance().getVpToWin());
+
+        // Add lots of resources to the players to make it easy to test
+        ResourceMap resourceMap = new ResourceMap();
+        for (ResourceKind resourceKind : ResourceKind.values())
+            resourceMap.add(resourceKind, 100);
+        for (Player player : session.getPlayers())
+            player.addResources(resourceMap);
+
+        return session;
     }
 
     /** Get the session associated with this session manager */
@@ -102,7 +111,7 @@ public class SessionManager {
         aSession.currentPhase = phase;
     }
 
-    public Player getCurrentPlayerFromColor(PlayerColor c) {
+    public Player getPlayerFromColor(PlayerColor c) {
         Player currentP = null;
         for (Player p : getPlayers()) {
             if (p.getColor().equals(c)) {
@@ -112,6 +121,33 @@ public class SessionManager {
         return currentP;
     }
 
+    public void updateLongestRoadOwner() {
+        int max = 0;
+        if (aSession.longestRoadOwner != null) {
+            max = aSession.longestRoadOwner.getLongestShippingRoute();
+        }
+        for (Player p : aSession.getPlayers()) {
+            int longestRoad = p.getLongestShippingRoute();
+            if (longestRoad > max) {
+                max = longestRoad;
+                if (longestRoad >= 5) {
+                    aSession.longestRoadOwner = p;
+                }
+            }
+        }
+        
+        if (max < 5) {
+            aSession.longestRoadOwner = null;
+        }
+        
+        PlayerColor newOwner = null;
+        if (aSession.longestRoadOwner != null) {
+            newOwner = aSession.longestRoadOwner.getColor();
+        }
+        UpdateLongestRoad request = UpdateLongestRoad.newInstance(newOwner, CatanGame.account.getUsername());
+        CatanGame.client.sendTCP(request);
+    }
+    
     /**
      * Returns the current value of the yellow dice.
      *
@@ -260,5 +296,47 @@ public class SessionManager {
         if (lastPlayerIndex < 0)
             lastPlayerIndex = aSession.getPlayers().length - 1;
         return aSession.playerIndex == (aSession.clockwise ? aSession.firstPlayerIndex : lastPlayerIndex);
+    }
+
+    public Player getlongestRoadOwner() {
+        return aSession.longestRoadOwner;
+    }
+
+    public void setlongestRoadOwner(Player player) {
+        aSession.longestRoadOwner = player;
+    }
+
+    public void setCurrentlyExecutingProgressCard(ProgressCardType type) {
+        aSession.setCurrentlyExecutingProgressCard(type);
+        
+        //TODO: loop through players and remove card from players hand
+    }
+    
+    public void finishCurrentlyExecutingProgressCard() {
+        aSession.setCurrentlyExecutingProgressCard(null);
+    }
+    
+    public ProgressCardType getCurrentlyExecutingProgressCard() {
+        return aSession.getCurrentlyExecutingProgressCard();
+    }
+    
+//    public void incrementProgressCardMap (ProgressCardType pType) {
+//        Integer currentValue = aSession.getProgressCardMap().get(pType);
+//        aSession.getProgressCardMap().put(pType, currentValue++);
+//    }
+//
+//    public void decrementProgressCardMap (ProgressCardType pType) {
+//        Integer currentValue = aSession.getProgressCardMap().get(pType);
+//        aSession.getProgressCardMap().put(pType, currentValue--);
+//    }
+//
+//    public HashMap<ProgressCardType, Integer> clearProgressCardsInPlay () {
+//        for(Integer i: aSession.getProgressCardMap().values()) {
+//            i = 0;
+//        }
+//        return aSession.getProgressCardMap();
+//    }
+    public void incrementTokenVP (Player currentP) {
+        currentP.incrementTokenVictoryPoints();
     }
 }

@@ -3,9 +3,6 @@
     default: {
       file: default.fnt
     },
-    arial-13: {
-      file: arial-13.fnt
-    },
     droid-sans-15: {
       file: droid-sans-15.fnt
     }
@@ -14,7 +11,15 @@
     green: {a: 1, b: 0, g: 1, r: 0},
     white: {a: 1, b: 1, g: 1, r: 1},
     red: {a: 1, b: 0, g: 0, r: 1},
-    black: {a: 1, b: 0, g: 0, r: 0}
+    black: {a: 1, b: 0, g: 0, r: 0},
+    wood: {hex: #679861},
+    brick: {hex: #CC6633},
+    ore: {hex: #996633},
+    grain: {hex: #FFFF66},
+    wool: {hex: #66FF66},
+    coin: {hex: #FF9A00},
+    cloth: {hex: #CDCDFF},
+    paper: {hex: #E6E6B9}
   },
   com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
     dialogDim: {
@@ -28,6 +33,38 @@
     readyBackground: {
       name: white,
       color: {r: 0.49020, g: 0.79216, b: 0.36078, a: 1}
+    },
+    wood-color: {
+      name: white,
+      color: wood
+    },
+    brick-color: {
+      name: white,
+      color: brick
+    },
+    ore-color: {
+      name: white,
+      color: ore
+    },
+    grain-color: {
+      name: white,
+      color: grain
+    },
+    wool-color: {
+      name: white,
+      color: wool
+    },
+    coin-color: {
+      name: white,
+      color: coin
+    },
+    cloth-color: {
+      name: white,
+      color: cloth
+    },
+    paper-color: {
+      name: white,
+      color: paper
     }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
@@ -120,7 +157,6 @@
     default: {
       vScroll: default-scroll,
       hScrollKnob: default-round-large,
-      background: default-rect,
       hScroll: default-scroll,
       vScrollKnob: default-round-large
     }

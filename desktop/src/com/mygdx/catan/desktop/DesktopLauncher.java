@@ -13,7 +13,7 @@ public class DesktopLauncher {
 		// TODO : Set the game to match the demo computer resolution & fullscreen to true
 		config.width = 1280;
 		config.height = 720;
-//		config.fullscreen = true;
+		//config.fullscreen = true;
 		new LwjglApplication(new CatanGame(), config);
 	}
 }

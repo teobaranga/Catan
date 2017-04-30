@@ -2,6 +2,7 @@ package com.mygdx.catan.game;
 
 import com.mygdx.catan.Config;
 import com.mygdx.catan.account.Account;
+import com.mygdx.catan.gameboard.GameBoard;
 import com.mygdx.catan.session.Session;
 
 import java.util.LinkedHashMap;
@@ -22,10 +23,14 @@ public class Game {
      */
     private final Map<Account, Boolean> readyStatus;
 
-    /** The admin of the game, ie. the player who created this game */
-    private Account admin;
+    public String name;
 
     public Session session;
+    
+    public GameBoard gameboard;
+
+    /** The admin of the game, ie. the player who created this game */
+    private Account admin;
 
     public Game() {
         peers = new LinkedHashMap<>(Config.MAX_PLAYERS);
@@ -79,6 +84,19 @@ public class Game {
     }
 
     /**
+     * Check if a player of this game is ready.
+     *
+     * @param username username of the player
+     */
+    public boolean isReady(String username) {
+        for (Map.Entry<Account, Boolean> entry : readyStatus.entrySet()) {
+            if (entry.getKey().getUsername().equals(username))
+                return entry.getValue();
+        }
+        return false;
+    }
+
+    /**
      * Check if the game is ready to start, ie. if there are at least a few
      * players in the game and they're all marked as ready.
      *
@@ -129,5 +147,10 @@ public class Game {
             }
         }
         return playerAccount;
+    }
+
+    @Override
+    public String toString() {
+        return (name == null ? "Unnamed" : name) + " ID:" + Integer.toHexString(hashCode());
     }
 }

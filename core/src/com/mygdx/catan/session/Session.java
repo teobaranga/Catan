@@ -1,16 +1,19 @@
 package com.mygdx.catan.session;
 
-import com.mygdx.catan.Player;
+import com.mygdx.catan.player.Player;
+import com.mygdx.catan.DiceRollPair;
 import com.mygdx.catan.ResourceMap;
 import com.mygdx.catan.account.Account;
 import com.mygdx.catan.enums.EventKind;
 import com.mygdx.catan.enums.GamePhase;
 import com.mygdx.catan.enums.PlayerColor;
 import com.mygdx.catan.enums.ResourceKind;
+import com.mygdx.catan.enums.ProgressCardType;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+
 
 public class Session {
 
@@ -19,6 +22,7 @@ public class Session {
 
     /** The last event rolled on the event die */
     public EventKind eventDie;
+    public DiceRollPair diceResult;
 
     /** The position of the barbarians */
     public int barbarianPosition;
@@ -29,6 +33,12 @@ public class Session {
 
     /** Index of the first player */
     public int firstPlayerIndex;
+    
+    /** owners of the metropolises */
+    public Player scienceMetropolisOwner;
+    public Player tradeMetropolisOwner;
+    public Player politicsMetropolisOwner;
+
 
     /** Index of the current player */
     public int playerIndex;
@@ -36,8 +46,18 @@ public class Session {
     /** Flag indicating whether the next player is determined in a clockwise fashion. */
     public boolean clockwise;
 
+    /** Longest Road Owner */
+    public Player longestRoadOwner;
+
     private Player[] players;
     private ResourceMap bank;
+
+    public boolean firstBarbarianAttack;
+    
+    /** Describes the currently executing progress card. Null if no progress card is executing */
+    private ProgressCardType currentlyExecutingProgressCard;
+
+    //private HashMap<ProgressCardType, Integer> progressCardMap;
 
     //TODO: change this to fit design, so far this is only placeholder!
     public Session() {
@@ -53,6 +73,12 @@ public class Session {
         bank.add(ResourceKind.CLOTH, 12);
         currentPhase = GamePhase.SETUP_PHASE_ONE;
         clockwise = true;
+        barbarianPosition = 7;
+
+//        progressCardMap = new HashMap<>();
+//        for (ProgressCardType p: ProgressCardType.values()) {
+//            progressCardMap.put(p, 0);
+//        }
     }
 
     public static Session newInstance(Collection<Account> accounts, int VPsToWin) {
@@ -76,6 +102,8 @@ public class Session {
         return players;
     }
 
+   // public HashMap<ProgressCardType, Integer> getProgressCardMap () { return progressCardMap; }
+
     /**
      * Add resources to the bank.
      */
@@ -96,5 +124,13 @@ public class Session {
             cost.put(entry.getKey(), (diff > 0) ? diff : entry.getValue());
         }
         return cost;
+    }
+    
+    public ProgressCardType getCurrentlyExecutingProgressCard() {
+        return currentlyExecutingProgressCard;
+    }
+    
+    public void setCurrentlyExecutingProgressCard(ProgressCardType type) {
+        currentlyExecutingProgressCard = type;
     }
 }

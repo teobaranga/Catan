@@ -1,8 +1,8 @@
 package com.mygdx.catan.enums;
 
 public enum PlayerColor {
-	BLUE,
 	WHITE,
+	BLUE,
 	RED,
 	ORANGE,
 	YELLOW
